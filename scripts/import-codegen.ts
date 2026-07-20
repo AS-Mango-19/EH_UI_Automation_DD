@@ -17,7 +17,8 @@ import Papa from 'papaparse';
 type ArgSet = {
   module: string;
   feature: string;
-  inputFile: string;
+  /** Path to the codegen recording. Optional: when omitted, resolved from the feature's 02_selectors_repo/. */
+  inputFile?: string;
   page?: string;
   /** TC_ID to seed testdata rows with, and to print in the master.csv hint. */
   tcId?: string;
@@ -83,7 +84,10 @@ const LOGIN_FLOW = 'flows/login.csv';
 
 function usage(): void {
   console.log([
-    'Usage: npm run import-codegen -- <Module> <Feature> <recording.ts|txt> [--tc TC_05] [--page LoginPage]',
+    'Usage: npm run import-codegen -- <Module> <Feature> [recording.ts|txt] [--tc TC_05] [--page LoginPage]',
+    '',
+    'The recording is optional: if omitted, it is auto-discovered from the',
+    "feature's 02_selectors_repo/ folder (save it there as recording.ts).",
     '',
     'Creates (or refreshes) a feature from a Playwright codegen recording:',
     '  00_config/feature.config.json     skeleton config',
@@ -132,7 +136,10 @@ function parseArgs(argv: string[]): ParsedArgs {
     positionals.push(arg);
   }
   const [module, feature, inputFile] = positionals;
-  if (!module || !feature || !inputFile) return { help: true };
+  // inputFile is optional: when omitted, main() looks for a recording inside the
+  // feature's 02_selectors_repo/ folder (recordings live WITH the feature, not
+  // scattered in the repo root).
+  if (!module || !feature) return { help: true };
   return { args: { module, feature, inputFile, page, tcId } };
 }
 
@@ -146,6 +153,49 @@ function ensureDir(dir: string): void {
 
 function readLines(file: string): string[] {
   return fs.readFileSync(file, 'utf8').split(/\r?\n/);
+}
+
+/**
+ * Read a CSV into its header and row-objects (keyed by column name). Uses the
+ * same parser as the rest of the tool so quoted commas survive. Missing/empty
+ * file => empty header and no rows.
+ */
+function readCsvGrid(filePath: string): { header: string[]; rows: Record<string, string>[] } {
+  if (!fs.existsSync(filePath)) return { header: [], rows: [] };
+  const content = fs.readFileSync(filePath, 'utf8').trim();
+  if (!content) return { header: [], rows: [] };
+  const parsed = Papa.parse<Record<string, string>>(content, { header: true, skipEmptyLines: true });
+  const header = (parsed.meta.fields ?? []).map((f) => f.trim());
+  const rows = (parsed.data ?? []).filter(Boolean);
+  return { header, rows };
+}
+
+/**
+ * Find a codegen recording inside a feature's 02_selectors_repo/ folder.
+ *
+ * Prefers the conventional names, then falls back to ANY .ts/.txt whose content
+ * looks like codegen (`await page.`). Deliberately skips selectors.csv and the
+ * locators.json / stray note files that also live in that folder.
+ */
+function findRecording(dir: string): string | undefined {
+  if (!fs.existsSync(dir)) return undefined;
+  const preferred = ['recording.ts', 'recording.txt', 'codegen.ts', 'codegen.txt'];
+  for (const name of preferred) {
+    const p = path.join(dir, name);
+    if (fs.existsSync(p)) return p;
+  }
+  const candidates = fs
+    .readdirSync(dir)
+    .filter((f) => /\.(ts|txt)$/i.test(f) && f.toLowerCase() !== 'selectors.csv')
+    .map((f) => path.join(dir, f))
+    .filter((p) => {
+      try {
+        return /await\s+page\./.test(fs.readFileSync(p, 'utf8'));
+      } catch {
+        return false;
+      }
+    });
+  return candidates[0];
 }
 
 function inferControlKind(objectName: string, locatorType: string, roleName: string, roleType = ''): ControlKind {
@@ -1109,11 +1159,33 @@ function main(): number {
   const moduleRoot = path.resolve(process.cwd(), parsed.args.module);
   const featureName = featureFolderName(parsed.args.feature);
   const targetRoot = path.join(moduleRoot, featureName);
-  const inputFile = path.resolve(process.cwd(), parsed.args.inputFile);
 
-  if (!fs.existsSync(inputFile)) {
-    console.error(`Codegen file not found: ${inputFile}`);
-    return 1;
+  // Recordings live WITH the feature, in its 02_selectors_repo/ (alongside the
+  // selectors they produce), not scattered in the repo root. An explicit path
+  // still wins; otherwise auto-discover a recording there.
+  const selectorsDir = path.join(targetRoot, '02_selectors_repo');
+  let inputFile: string;
+  if (parsed.args.inputFile) {
+    inputFile = path.resolve(process.cwd(), parsed.args.inputFile);
+    if (!fs.existsSync(inputFile)) {
+      console.error(`Codegen file not found: ${inputFile}`);
+      return 1;
+    }
+  } else {
+    const found = findRecording(selectorsDir);
+    if (!found) {
+      console.error(
+        [
+          `No recording given and none found in ${path.relative(process.cwd(), selectorsDir)}/.`,
+          `Record one with:  npm run codegen`,
+          `then save it as   ${path.relative(process.cwd(), path.join(selectorsDir, 'recording.ts'))}`,
+          `or pass an explicit path:  npm run import-codegen -- ${parsed.args.module} ${parsed.args.feature} <recording.ts>`,
+        ].join('\n'),
+      );
+      return 1;
+    }
+    inputFile = found;
+    console.log(`Using recording: ${path.relative(process.cwd(), inputFile)}`);
   }
   // Scaffold on demand: the tester should only need testdata + a recording, so
   // a missing feature folder is created rather than being a hard stop.
@@ -1153,21 +1225,44 @@ function main(): number {
   fs.writeFileSync(metadataPath, metadataCsv, 'utf8');
   fs.writeFileSync(featureConfigPath, buildFeatureConfig(parsed.args.feature.replace(/^feature_/, ''), parsed.args.module), 'utf8');
 
-  // Testdata is seeded with the values the recording actually used, so the
-  // import is runnable as-is instead of being an empty header the tester must
-  // decode. Never overwrite a file that already has data — the tester's own
-  // testdata always wins.
+  // Testdata columns are MERGED with the metadata, never left to drift.
+  //
+  // Each feature has its own fields, so a re-import (or a first import over a
+  // pre-existing testdata file) can introduce columns the old testdata lacks.
+  // Skipping the file then leaves metadata referencing ${data.x.Y} for a column
+  // that does not exist -> a validation failure. So instead: keep every existing
+  // column and value the tester authored, and ADD any metadata-referenced column
+  // that is missing (seeding its value from the recording into the first row).
+  // Existing values always win; nothing the tester typed is overwritten.
   const tcId = parsed.args.tcId ?? 'TC_01';
   const writtenData: string[] = [];
   for (const file of ['inputset', 'project', 'design']) {
-    const cols = [...(dataColumns.get(file) ?? new Set<string>())].filter((c) => c && c !== 'TC_ID' && c !== 'IterationID');
+    const needed = [...(dataColumns.get(file) ?? new Set<string>())].filter((c) => c && c !== 'TC_ID' && c !== 'IterationID');
     const dataPath = path.join(targetRoot, '01_testdata', `${file}.csv`);
-    const existing = fs.existsSync(dataPath) ? fs.readFileSync(dataPath, 'utf8').trim() : '';
-    if (existing !== '' && existing.split(/\r?\n/).length > 1) continue; // tester already has data
-    const header = ['TC_ID', 'IterationID', ...cols].join(',');
-    const row = [tcId, 'ITER_01', ...cols.map((c) => dataValues.get(`${file}|${c}`) ?? '')].map((v) => csvEscape(String(v))).join(',');
-    fs.writeFileSync(dataPath, cols.length ? `${header}\n${row}\n` : `${header}\n`, 'utf8');
-    if (cols.length) writtenData.push(`${file}.csv (${cols.length} column(s) seeded from the recording)`);
+    const { header: existingHeader, rows: existingRows } = readCsvGrid(dataPath);
+
+    // Union: TC_ID, IterationID, existing columns (order preserved), then any new
+    // metadata columns the testdata does not yet have.
+    const base = existingHeader.length ? existingHeader : ['TC_ID', 'IterationID'];
+    const finalCols = [...base];
+    for (const c of ['TC_ID', 'IterationID']) if (!finalCols.includes(c)) finalCols.unshift(c);
+    const added = needed.filter((c) => !finalCols.includes(c));
+    finalCols.push(...added);
+
+    const seedFor = (col: string): string =>
+      col === 'TC_ID' ? tcId : col === 'IterationID' ? 'ITER_01' : dataValues.get(`${file}|${col}`) ?? '';
+
+    // Preserve existing rows; append recorded values only for the newly-added
+    // columns, and only into the first row (the others get blanks to fill in).
+    const outRows = existingRows.length
+      ? existingRows.map((r, i) => finalCols.map((c) => r[c] ?? (i === 0 ? seedFor(c) : c === 'TC_ID' ? r['TC_ID'] ?? tcId : c === 'IterationID' ? r['IterationID'] ?? 'ITER_01' : '')))
+      : [finalCols.map(seedFor)];
+
+    if (existingHeader.length && added.length === 0) continue; // already in sync, leave untouched
+    const csv = [finalCols.join(','), ...outRows.map((r) => r.map((v) => csvEscape(String(v))).join(','))].join('\n');
+    fs.writeFileSync(dataPath, `${csv}\n`, 'utf8');
+    if (added.length) writtenData.push(`${file}.csv (+${added.length} column(s): ${added.join(', ')})`);
+    else if (!existingHeader.length) writtenData.push(`${file}.csv (${needed.length} column(s) seeded from the recording)`);
   }
 
   const rel = path.join(parsed.args.module, featureName);
