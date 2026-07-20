@@ -21,20 +21,41 @@ function parseGroupedOptionLabel(input: string): { label: string; category?: str
   return { label: match[1].trim(), category: match[2].trim() };
 }
 
-async function clickExactOption(page: Parameters<typeof targetLocator>[0]['page'], label: string, timeout: number): Promise<boolean> {
-  const option = page.getByRole('option', { name: label, exact: true }).first();
-  if (await option.count().catch(() => 0)) {
-    await option.click({ timeout });
-    return true;
-  }
-  return false;
-}
-
-async function clickExactText(page: Parameters<typeof targetLocator>[0]['page'], label: string, timeout: number): Promise<boolean> {
-  const text = page.getByText(label, { exact: true }).first();
-  if (await text.count().catch(() => 0)) {
-    await text.click({ timeout });
-    return true;
+/**
+ * Click a menu choice by visible name, covering every role a custom dropdown may
+ * render its options with — option (ARIA listbox), link (Bootstrap dropdown-item),
+ * menuitem — exact first, then SUBSTRING. Substring is essential: Playwright
+ * codegen frequently truncates a long option's accessible name (e.g. records
+ * "One Arm Exploratory /" for "One Arm Exploratory / Confirmatory"), and an exact
+ * match on the truncated string never lands. Returns false when NO real choice
+ * matched, so the caller can escalate instead of a silent no-op success.
+ */
+async function clickMenuChoice(page: LocatorRoot, label: string, timeout: number): Promise<boolean> {
+  const attempts: Array<() => ReturnType<LocatorRoot['getByText']>> = [
+    () => page.getByRole('option', { name: label, exact: true }).first(),
+    () => page.getByRole('link', { name: label, exact: true }).first(),
+    () => page.getByRole('menuitem', { name: label, exact: true }).first(),
+    () => page.getByText(label, { exact: true }).first(),
+    () => page.getByRole('option', { name: label }).first(),
+    () => page.getByRole('link', { name: label }).first(),
+    () => page.getByRole('menuitem', { name: label }).first(),
+  ];
+  // The menu was JUST opened by the trigger click; its options often animate in a
+  // beat later. A bare count() the instant after opening races that render and
+  // finds zero — the bug that made link menus fall through to a no-op keyboard
+  // "success". So first WAIT (briefly) for any matching choice to become visible,
+  // then click. Race resolves the moment the first candidate appears, or after
+  // the short timeout if nothing matches (then we return false and the caller
+  // escalates honestly).
+  await Promise.race(
+    attempts.map((make) => make().waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false)),
+  ).catch(() => undefined);
+  for (const make of attempts) {
+    const loc = make();
+    if (await loc.count().catch(() => 0)) {
+      await loc.click({ timeout });
+      return true;
+    }
   }
   return false;
 }
@@ -190,6 +211,7 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
     logger.info(`select: using label-targeted combobox handling for ${step.objectName}.`);
     const grouped = parseGroupedOptionLabel(step.input);
     try {
+      // Open the menu.
       await target.click({ timeout: step.timeout });
       // Grouped menus first: option names repeat across groups, so (group,label)
       // is the only unique identity. Must precede every name-only match below —
@@ -197,48 +219,47 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
       if (grouped.category && (await clickOptionInGroup(ctx.root(), grouped.label, grouped.category, step.timeout))) {
         return;
       }
-      // role=option next: it is the semantic match and cannot collide with
-      // incidental copy. getByText('3') would happily hit the control's own
-      // selected-value node, or any stray "3" on the form, and report success.
-      // Bootstrap-style menus render <a class="dropdown-item"> (role=link), so
-      // they fall through to the exact-text pass below.
-      if (await clickExactOption(ctx.root(), step.input, step.timeout)) {
-        return;
-      }
-      if (await clickExactText(ctx.root(), step.input, step.timeout)) {
+      // Click the actual option element — option / link / menuitem / exact text,
+      // then substring (codegen truncates long option names). This is what makes
+      // a link-based custom dropdown (trigger says "Select", options are <a>)
+      // actually commit instead of silently no-op'ing on the keyboard fallback.
+      if (await clickMenuChoice(ctx.root(), step.input, step.timeout)) {
         return;
       }
       // Ungrouped menu whose option text simply happens to contain parentheses.
-      if (grouped.category && grouped.label !== step.input) {
-        if (await clickExactOption(ctx.root(), grouped.label, step.timeout)) {
-          return;
-        }
-        if (await clickExactText(ctx.root(), grouped.label, step.timeout)) {
-          return;
-        }
+      if (grouped.category && grouped.label !== step.input && (await clickMenuChoice(ctx.root(), grouped.label, step.timeout))) {
+        return;
       }
+      // Last resort: a searchable combobox that filters as you type. Only reached
+      // when no option element matched — flagged loudly because, unlike a real
+      // option click, this cannot confirm the value was actually selected.
+      logger.warn(
+        `select: no option element matched "${step.input}" for ${step.objectName}; using type+Enter fallback (a non-searchable menu will NOT select — check the value against the live options).`,
+      );
       await _page.keyboard.type(step.input, { delay: 25 });
       await _page.keyboard.press('Enter');
       return;
     } catch {
-      logger.warn(`select: typing path failed for ${step.objectName}; trying option click for "${step.input}".`);
+      logger.warn(`select: primary path failed for ${step.objectName}; reopening and retrying option click for "${step.input}".`);
       try {
         await target.click({ timeout: step.timeout });
-        if (await clickExactText(ctx.root(), step.input, step.timeout)) {
+        if (await clickMenuChoice(ctx.root(), step.input, step.timeout)) {
           return;
         }
-        if (await clickExactOption(ctx.root(), step.input, step.timeout)) {
+        if (grouped.category && grouped.label !== step.input && (await clickMenuChoice(ctx.root(), grouped.label, step.timeout))) {
           return;
         }
-        if (grouped.category && grouped.label !== step.input) {
-          if (await clickExactText(ctx.root(), grouped.label, step.timeout)) {
+        if (fallbackLoc) {
+          logger.warn(`select: using fallback selector for ${step.objectName}`);
+          await fallbackLoc.click({ timeout: step.timeout });
+          if (await clickMenuChoice(ctx.root(), step.input, step.timeout)) {
             return;
           }
-          if (await clickExactOption(ctx.root(), grouped.label, step.timeout)) {
-            return;
-          }
+          await _page.keyboard.type(step.input, { delay: 25 });
+          await _page.keyboard.press('Enter');
+          return;
         }
-        await ctx.root().getByRole('option', { name: step.input }).first().click({ timeout: step.timeout });
+        throw new Error(`select: unable to resolve ${step.objectName}`);
       } catch {
         if (fallbackLoc) {
           logger.warn(`select: using fallback selector for ${step.objectName}`);
@@ -249,7 +270,6 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
         }
         throw new Error(`select: unable to resolve ${step.objectName}`);
       }
-      return;
     }
   }
 

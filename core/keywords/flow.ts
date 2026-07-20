@@ -20,16 +20,37 @@ export const callReusable: KeywordHandler = async (_page, ctx, step) => {
   await runSteps(ctx, steps, { source: step.input });
 };
 
-/** callCustom: invoke a named export from custom/<Feature>/customSteps.ts. */
-export const callCustom: KeywordHandler = async (page, ctx, step) => {
-  const modulePath = abs('custom', ctx.feature.feature, 'customSteps.ts');
-  const mod = (await import(pathToFileURL(modulePath).href)) as Record<string, unknown>;
-  const fnName = step.input.trim() || 'default';
-  const fn = (mod[fnName] ?? mod['default']) as KeywordHandler | undefined;
-  if (typeof fn !== 'function') {
-    throw new FrameworkError(`callCustom: export "${fnName}" not found in ${modulePath}`, { stepId: step.stepId });
+/**
+ * callCustom: invoke a named export from custom/<Feature>/customSteps.ts, falling
+ * back to custom/_shared/customSteps.ts for generic handlers (extractAllResultTables,
+ * selectStartDate, ...). The feature's own module always wins, so a feature can
+ * override any shared handler; an imported feature that only needs the generic
+ * ones does not need a customSteps.ts file at all. Resolution order:
+ * feature[fnName] > shared[fnName] > feature.default > shared.default.
+ */
+const loadCustomModule = async (modulePath: string): Promise<Record<string, unknown> | undefined> => {
+  try {
+    return (await import(pathToFileURL(modulePath).href)) as Record<string, unknown>;
+  } catch {
+    return undefined; // file may not exist for this feature — fall back to shared
   }
-  logger.info(`callCustom -> ${ctx.feature.feature}/customSteps.${fnName}`);
+};
+
+export const callCustom: KeywordHandler = async (page, ctx, step) => {
+  const fnName = step.input.trim() || 'default';
+  const featurePath = abs('custom', ctx.feature.feature, 'customSteps.ts');
+  const sharedPath = abs('custom', '_shared', 'customSteps.ts');
+  const featureMod = await loadCustomModule(featurePath);
+  const sharedMod = await loadCustomModule(sharedPath);
+
+  const fn = (featureMod?.[fnName] ?? sharedMod?.[fnName] ?? featureMod?.['default'] ?? sharedMod?.['default']) as
+    | KeywordHandler
+    | undefined;
+  if (typeof fn !== 'function') {
+    throw new FrameworkError(`callCustom: export "${fnName}" not found in ${featurePath} or ${sharedPath}`, { stepId: step.stepId });
+  }
+  const source = featureMod?.[fnName] ? ctx.feature.feature : '_shared';
+  logger.info(`callCustom -> ${source}/customSteps.${fnName}`);
   return fn(page, ctx, step);
 };
 

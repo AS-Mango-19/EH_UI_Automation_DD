@@ -78,9 +78,50 @@ const STEP_HEADER = 'Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,Stor
 const SELECTOR_HEADER = 'ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact';
 const RESULT_NAME_COLUMN = 'Result Name';
 
+/**
+ * compare.config for the extractAllResultTables output shape. That handler always
+ * emits a tidy TableName/RowLabel/ColumnName/Value row-set (+ volatile provenance),
+ * so a feature that uses it MUST compare on exactly these columns. A feature that
+ * carried an older, differently-shaped compare.config would otherwise SCHEMA_MISMATCH
+ * on every run. The four identity/value columns are the compatibility fingerprint.
+ */
+const GENERIC_COMPARE_COLUMNS = ['TableName', 'RowLabel', 'ColumnName', 'Value'];
+const GENERIC_COMPARE_CONFIG = [
+  'ColumnName,IsKey,Compare,DataType,AbsTolerance,RelTolerance,RoundTo,Normalize,Notes',
+  'TableName,TRUE,FALSE,string,,,,trim,Row identity',
+  'RowLabel,TRUE,FALSE,string,,,,trim,Row identity',
+  'ColumnName,TRUE,FALSE,string,,,,trim,Row identity',
+  'Value,FALSE,TRUE,string,,,,trim,The compared cell',
+  'RunID,FALSE,FALSE,string,,,,,Volatile',
+  'Timestamp,FALSE,FALSE,string,,,,,Volatile',
+  'ProjectID,FALSE,FALSE,string,,,,,Volatile',
+  '',
+].join('\n');
+
 /** The app cold-starts slowly and never goes network-idle, so readiness is polled, never slept on. */
 const READINESS_TIMEOUT_MS = 220000;
 const LOGIN_FLOW = 'flows/login.csv';
+
+/**
+ * The objects flows/login.csv drives, injected into every imported feature.
+ *
+ * The importer skips recorded identity-provider steps (login is shared, one
+ * callReusable), so it never derives these from the recording. Without them a
+ * feature's selectors.csv either lacks the login objects or keeps stale
+ * placeholders, and callReusable login fails on the first fill. These are the
+ * proven-good definitions from the reference feature; they OVERRIDE any existing
+ * rows of the same name on merge, so a re-import repairs bad login selectors.
+ * If your login page differs, edit these here (they are the shared contract with
+ * flows/login.csv), not per feature.
+ */
+const LOGIN_SELECTORS: LocatorRef[] = [
+  { page: 'LoginPage', objectName: 'txt_Username', selectorType: 'role', selectorValue: 'textbox', roleName: 'Username', fieldType: 'textbox', fallbackSelector: '', dynamic: false, description: 'Username field (login flow)', exact: false },
+  { page: 'LoginPage', objectName: 'btn_Next', selectorType: 'role', selectorValue: 'button', roleName: 'Next', fieldType: 'button', fallbackSelector: '', dynamic: false, description: 'Next button (login flow)', exact: false },
+  { page: 'LoginPage', objectName: 'txt_Password', selectorType: 'role', selectorValue: 'textbox', roleName: 'Password', fieldType: 'textbox', fallbackSelector: '', dynamic: false, description: 'Password field (login flow)', exact: false },
+  { page: 'LoginPage', objectName: 'btn_Login', selectorType: 'role', selectorValue: 'button', roleName: 'Sign In', fieldType: 'button', fallbackSelector: '', dynamic: false, description: 'Sign in button (login flow)', exact: false },
+  { page: 'ProjectsPage', objectName: 'btn_New_Project', selectorType: 'role', selectorValue: 'button', roleName: 'New Project', fieldType: 'button', fallbackSelector: '', dynamic: false, description: 'New Project button (login flow landing)', exact: false },
+  { page: 'ProjectsPage', objectName: 'div_Spinner', selectorType: 'css', selectorValue: '#spinner', roleName: '', fieldType: 'unknown', fallbackSelector: '', dynamic: false, description: 'loading overlay (login flow landing)', exact: false },
+];
 
 function usage(): void {
   console.log([
@@ -327,6 +368,21 @@ function isDropdownOpener(event: ParsedEvent): boolean {
 }
 
 /**
+ * A click that specifically OPENS a combobox/react-select — used to recognise the
+ * user's consistent "label -> open -> option" recording pattern and collapse the
+ * open+option pair into one select even when the option is a plain getByText with
+ * no exact flag. Deliberately NARROWER than isDropdownOpener: it must NOT match a
+ * generic nav button (Continue, Save), or the next unrelated click would be
+ * swallowed as a bogus option. So: an explicit combobox role, a select/dropdown/
+ * combobox/creatable container, or a placeholder-value trigger ("Select"/"Choose").
+ */
+function isComboboxOpener(event: ParsedEvent): boolean {
+  if (event.action !== 'click') return false;
+  if (event.roleType === 'combobox') return true;
+  return /select|dropdown|combobox|creatable/i.test(`${event.selectorValue} ${event.roleName}`);
+}
+
+/**
  * An event that picks a value out of an ALREADY-OPEN menu.
  *
  * Identified by evidence codegen actually emits, not by guessing at the opener:
@@ -339,8 +395,17 @@ function isDropdownOpener(event: ParsedEvent): boolean {
  */
 function isOptionChoice(event: ParsedEvent): boolean {
   if (event.action !== 'click') return false;
-  if (event.roleType === 'option') return true;
-  return event.kind === 'text' && event.exact;
+  // ONLY the semantic menu roles are reliable option signals: role=option (ARIA
+  // listbox) and role=link/menuitem (Bootstrap-style <a> dropdown-items). Result
+  // links are excluded separately via !isResultLink at the collapse site.
+  //
+  // A plain getByText(..., exact:true) is deliberately NOT treated as an option:
+  // in real recordings its sole occurrence was a stray label click on a results
+  // panel, which then mis-collapsed into a bogus dropdown step. Genuine plain-text
+  // options (e.g. a react-select showing getByText('Simon\'s Two Stage')) are
+  // caught instead by the isComboboxOpener path — a real open-trigger immediately
+  // precedes them — which is the user's consistent label -> open -> option shape.
+  return event.roleType === 'option' || event.roleType === 'link' || event.roleType === 'menuitem';
 }
 
 function isResultNameField(event: ParsedEvent): boolean {
@@ -349,6 +414,42 @@ function isResultNameField(event: ParsedEvent): boolean {
 
 function isResultLink(event: ParsedEvent): boolean {
   return event.action === 'click' && event.roleType === 'link' && /result/i.test(event.roleName);
+}
+
+/**
+ * A manual "watch the run status" click — the human clicking the Status column and
+ * "Completed" while waiting. These are NOT test steps: the result tail's
+ * waitForSimulation polls the status properly, and importing the raw clicks both
+ * duplicates that and breaks (getByText('Completed') is ambiguous once the grid
+ * shows it in more than one place). Dropped.
+ */
+function isStatusWatch(event: ParsedEvent): boolean {
+  if (event.action !== 'click') return false;
+  const text = (event.selectorValue || event.roleName || event.ref || '').trim();
+  return /^(status|completed|in[ -]?progress|running|failed|queued|pending|processing|not started)$/i.test(text);
+}
+
+/** A date picker, not a dropdown: the field cannot be typed and its options are calendar day cells. */
+function isDateField(event: ParsedEvent, label: string): boolean {
+  const hay = `${label} ${event.roleName} ${event.selectorValue} ${event.ref}`.toLowerCase();
+  return /\bdate\b/.test(hay) || /mm.?dd.?yyyy|dd.?mm.?yyyy|yyyy.?mm.?dd/.test(hay);
+}
+
+/** A project-name field: its value is made unique per run so re-runs are not rejected as duplicates. */
+function looksLikeProjectName(objectName: string, column: string): boolean {
+  return /project.?name/i.test(`${objectName} ${column}`);
+}
+
+/** Best-effort date from a recorded calendar option like "Choose Monday, July 20th, 2026" -> "7/20/2026". */
+function dateFromCalendarOption(optionText: string): string {
+  const cleaned = optionText.replace(/^choose\s+/i, '');
+  const m = /([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?/.exec(cleaned);
+  if (!m || !m[1] || !m[2]) return '';
+  const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+  const month = months.indexOf(m[1].toLowerCase()) + 1;
+  if (!month) return '';
+  const year = m[3] ? Number(m[3]) : new Date().getFullYear();
+  return `${month}/${Number(m[2])}/${year}`;
 }
 
 function isChoiceEvent(event: ParsedEvent): boolean {
@@ -542,6 +643,10 @@ function parseCodegen(lines: string[]): {
   let seq = 0;
   let emittedReadiness = false;
   let seenIdp = false;
+  let sawResultLink = false;
+  // The result name lives with the design data (the recording's result flow is on
+  // the design/results page); the tail's click token references this file.
+  const resultDataFile = 'design';
 
   // Login is decided up front so the callReusable step lands FIRST, before any
   // navigate. flows/login.csv does its own goto, so a recorded pre-login landing
@@ -631,6 +736,9 @@ function parseCodegen(lines: string[]): {
       SkipIf: '',
       Description: 'Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature',
     });
+    // callReusable login references these objects; the recording never provides
+    // them (login events are skipped), so inject the shared, proven definitions.
+    for (const sel of LOGIN_SELECTORS) addSelector(sel);
   }
 
   for (let index = 0; index < events.length; index++) {
@@ -693,11 +801,21 @@ function parseCodegen(lines: string[]): {
     // option choice is the whole dropdown interaction — treating it as noise
     // silently deletes the step.
     if (isNoiseContextEvent(event) && !(nextEvent && isOptionChoice(nextEvent))) {
-      pendingLabel = labelToColumnName(event.ref);
+      // Keep the RAW label ("Phase (Optional)"), not the column-normalised form
+      // ("Phase"). A `select` scoped to this label must match the on-screen text
+      // exactly; consumers that want the column name (deriveColumnName, the
+      // dropdown collapse) strip the suffix themselves.
+      pendingLabel = event.ref.replace(/\s+/g, ' ').trim();
       continue;
     }
 
     if (inLogin) {
+      continue;
+    }
+
+    // Drop manual status-watch clicks (Status / Completed / In progress ...): the
+    // result tail's waitForSimulation handles this properly.
+    if (isStatusWatch(event)) {
       continue;
     }
 
@@ -740,32 +858,73 @@ function parseCodegen(lines: string[]): {
     // combobox, opens the menu, and commits the option (including grouped menus
     // via the "Option (Group)" syntax). So collapse the pair. The FIELD label
     // becomes the testdata column; the recorded OPTION text becomes its value.
-    if (event.action === 'click' && nextEvent && isOptionChoice(nextEvent) && !isResultLink(nextEvent)) {
+    // Collapse an open+option pair into one select when EITHER the next click is a
+    // recognisable menu choice (option/link/menuitem/exact-text), OR this click is
+    // a combobox opener and the next is any click — the user's recordings always go
+    // label -> open -> option, so a plain getByText option after a react-select
+    // opener is still the choice. Result links are excluded (handled separately).
+    const nextIsChoice =
+      !!nextEvent &&
+      !isResultLink(nextEvent) &&
+      (isOptionChoice(nextEvent) || (isComboboxOpener(event) && nextEvent.action === 'click'));
+    if (event.action === 'click' && nextIsChoice && nextEvent) {
       const optionText = nextEvent.roleName || nextEvent.selectorValue || nextEvent.ref;
-      // A text/label opener carries the real field label, so strip straight from
-      // it: labelToColumnName turns "Phase (Optional)" into "Phase". Going via
-      // columnName would not — deriveColumnName normalises punctuation away
-      // FIRST, leaving "Phase Optional" with no parens left to strip.
-      // For a css opener there is no label, so fall back to the normalised ref
-      // ('#type-0' -> 'type 0'); the tester renames it to a business name.
-      const ddlColumn = event.kind === 'text' || event.kind === 'label'
-        ? labelToColumnName(event.selectorValue)
-        : columnName;
-      // ObjectName drops the "(Optional)" suffix (ddl_Phase, not
-      // ddl_Phase_Optional) while SelectorValue below keeps the raw text, which
-      // is what actually has to match the label in the DOM.
+
+      // DATE PICKER, not a dropdown: the field cannot be typed and the "option"
+      // is a calendar day cell. `select` would fail to set a real date, so emit
+      // a callCustom selectStartDate (shared handler) driven by a Start Date
+      // column, seeded best-effort from the recorded day and flagged for review.
+      if (isDateField(event, pendingLabel || event.selectorValue)) {
+        registerDataValue(dataFile === 'inputset' ? 'project' : dataFile, 'Start Date', dateFromCalendarOption(optionText));
+        addStep({
+          StepID: stepId,
+          StepGroup: stepGroup,
+          Page: pageName,
+          Action: 'callCustom',
+          ObjectName: '',
+          InputValue: 'selectStartDate',
+          StoreAs: '',
+          AssertType: '',
+          ExpectedValue: '',
+          WaitCondition: '',
+          Timeout: 15000,
+          Optional: 'FALSE',
+          Retry: 0,
+          Screenshot: 'always',
+          SkipIf: '',
+          Description: 'Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording',
+        });
+        pendingLabel = '';
+        index++; // consume the day-cell click
+        currentPage = nextPageForAction(ref, 'select', currentPage);
+        continue;
+      }
+      // The field label: a text/label opener carries it directly; otherwise the
+      // preceding dropped label click (e.g. getByText("Study Objective")) left it
+      // in pendingLabel. labelToColumnName turns "Phase (Optional)" into "Phase".
+      const fieldLabel = event.kind === 'text' || event.kind === 'label' ? event.selectorValue : pendingLabel || '';
+      const ddlColumn = fieldLabel ? labelToColumnName(fieldLabel) : columnName;
       const ddlObject = objectNameFromRef(ddlColumn || event.roleName || event.selectorValue, 'dropdown');
-      // A text-click opener becomes a `label` selector, not `text`: the select
-      // keyword special-cases SelectorType==='label' and walks from the label to
-      // the adjacent interactive control. A raw `text` selector would click the
-      // label element itself, which does not open the menu.
-      const ddlType = event.kind === 'text' ? 'label' : event.selectorType;
+      // Choose what to scope the select by:
+      //  - A GENERIC placeholder trigger ("Select"/"Choose") does not identify the
+      //    field, and is often shared across fields, so scope by the field LABEL
+      //    (the select keyword walks the label to its control). e.g. Study Objective.
+      //  - A trigger showing a SPECIFIC current value ("Time to Event") DOES
+      //    identify the control. This is the table-cell dropdown case, where the
+      //    "label" is really a column header with no adjacent control — the
+      //    label-walk fails there, so target the value trigger directly. e.g.
+      //    Endpoint Type. The data COLUMN still comes from the header text.
+      const openerName = (event.roleName || '').trim();
+      const isPlaceholderTrigger = !openerName || /^(select|choose|pick|search|--|\.\.\.)/i.test(openerName);
+      const useLabel = Boolean(fieldLabel) && (event.kind === 'text' || event.kind === 'label' || isPlaceholderTrigger);
+      const ddlType = useLabel ? 'label' : event.selectorType;
+      const ddlSelectorValue = useLabel ? fieldLabel : event.selectorValue;
       addSelector({
         page: pageName,
         objectName: ddlObject,
         selectorType: ddlType,
-        selectorValue: event.selectorValue,
-        roleName: event.roleName,
+        selectorValue: ddlSelectorValue,
+        roleName: useLabel ? '' : event.roleName,
         fieldType: 'dropdown',
         fallbackSelector: '',
         dynamic: false,
@@ -792,7 +951,7 @@ function parseCodegen(lines: string[]): {
           SkipIf: '',
           Description: `Select ${ddlColumn}. select opens the menu and commits the option itself - works for native and custom dropdowns`,
         },
-        { page: pageName, stepGroup, action: 'select', objectName: ddlObject, selectorType: ddlType, selectorValue: event.selectorValue, roleName: event.roleName },
+        { page: pageName, stepGroup, action: 'select', objectName: ddlObject, selectorType: ddlType, selectorValue: ddlSelectorValue, roleName: useLabel ? '' : event.roleName },
       );
       pendingLabel = '';
       index++; // consume the option click; it is part of this select step
@@ -875,6 +1034,10 @@ function parseCodegen(lines: string[]): {
         exact: event.exact,
       });
       registerDataValue(dataFile, columnName, stripQuotes(event.args));
+      // A project name must be unique per run or the app rejects the re-run as a
+      // duplicate, so append the run id token. Everything else fills verbatim.
+      const isProjName = looksLikeProjectName(objectName, columnName);
+      const fillValue = isProjName ? `${buildDataToken(dataFile, columnName)}_\${runId}` : buildDataToken(dataFile, columnName);
       emitStep(
         {
           StepID: stepId,
@@ -882,7 +1045,7 @@ function parseCodegen(lines: string[]): {
           Page: pageName,
           Action: 'fill',
           ObjectName: objectName,
-          InputValue: buildDataToken(dataFile, columnName),
+          InputValue: fillValue,
           StoreAs: '',
           AssertType: '',
           ExpectedValue: '',
@@ -892,7 +1055,7 @@ function parseCodegen(lines: string[]): {
           Retry: 0,
           Screenshot: 'never',
           SkipIf: '',
-          Description: `fill ${columnName}`,
+          Description: isProjName ? `fill ${columnName} (made unique per run with runId)` : `fill ${columnName}`,
         },
         { page: pageName, stepGroup, action: 'fill', objectName, selectorType: event.selectorType, selectorValue: event.selectorValue, roleName: event.roleName },
       );
@@ -902,8 +1065,13 @@ function parseCodegen(lines: string[]): {
     }
 
     if (isResultLink(event)) {
+      // Do NOT emit the result-link click HERE — it must run AFTER the status is
+      // Completed. Just register the selector/column and flag it; the result tail
+      // emits waitForSimulation -> click lnk_ResultName -> extract -> compare in
+      // the correct order. Emitting inline puts the open-result click before the
+      // status poll (wrong) and duplicates the tail's work.
       addSelector({
-        page: pageName,
+        page: 'ResultsPage',
         objectName: 'lnk_ResultName',
         selectorType: 'role',
         selectorValue: 'link',
@@ -914,32 +1082,11 @@ function parseCodegen(lines: string[]): {
         // (resolver.ts buildLocator), so {0} in RoleName is correct here.
         dynamic: true,
         description: 'result link from codegen',
-        exact: true,
+        exact: false,
       });
-      registerDataColumn(dataFile, RESULT_NAME_COLUMN);
-      emitStep(
-        {
-          StepID: stepId,
-          StepGroup: stepGroup,
-          Page: pageName,
-          Action: 'click',
-          ObjectName: 'lnk_ResultName',
-          InputValue: buildDataToken(dataFile, RESULT_NAME_COLUMN),
-          StoreAs: '',
-          AssertType: '',
-          ExpectedValue: '',
-          WaitCondition: 'visible',
-          Timeout: 10000,
-          Optional: 'FALSE',
-          Retry: 0,
-          Screenshot: 'never',
-          SkipIf: '',
-          Description: 'open result by name',
-        },
-        { page: pageName, stepGroup, action: 'click', objectName: 'lnk_ResultName', selectorType: 'role', selectorValue: 'link', roleName: '{0}' },
-      );
+      registerDataValue(resultDataFile, RESULT_NAME_COLUMN, event.roleName || event.selectorValue);
+      sawResultLink = true;
       pendingLabel = '';
-      currentPage = nextPageForAction(ref, 'click', currentPage);
       continue;
     }
 
@@ -954,8 +1101,12 @@ function parseCodegen(lines: string[]): {
         fieldType: 'option',
         fallbackSelector: '',
         dynamic: true,
-        description: 'choice from codegen',
-        exact: true,
+        // Honor the recorded exactness, do NOT force exact. Codegen often TRUNCATES
+        // a long accessible name (e.g. "One Arm Exploratory /") and records it
+        // WITHOUT exact:true; forcing exact then never matches the full link text.
+        // If a menu has ambiguous options, codegen emits exact:true and we keep it.
+        description: event.exact ? 'choice from codegen (exact)' : 'choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option)',
+        exact: event.exact,
       });
       registerDataValue(dataFile, columnName, event.roleName || event.selectorValue);
       emitStep(
@@ -1057,7 +1208,7 @@ function parseCodegen(lines: string[]): {
   // LOOKED at the numbers. Capture + compare is the entire point of the test,
   // so synthesise the tail — but only when the recording actually shows a
   // compute/result, never speculatively.
-  if (steps.some((s) => /compute|simulate/i.test(String(s.Description ?? '')) || String(s.ObjectName ?? '') === 'lnk_ResultName')) {
+  if (sawResultLink || steps.some((s) => /compute|simulate/i.test(String(s.Description ?? '')))) {
     addSelector({
       page: 'ResultsPage',
       objectName: 'lbl_RunStatus',
@@ -1090,6 +1241,28 @@ function parseCodegen(lines: string[]): {
       SkipIf: '',
       Description: 'Poll the run status until Completed before opening the result',
     });
+    // Open the result — AFTER the status is Completed. Only when the recording
+    // actually clicked a result link.
+    if (sawResultLink) {
+      addStep({
+        StepID: stepId,
+        StepGroup: 'ExtractResults',
+        Page: 'ResultsPage',
+        Action: 'click',
+        ObjectName: 'lnk_ResultName',
+        InputValue: buildDataToken(resultDataFile, RESULT_NAME_COLUMN),
+        StoreAs: '',
+        AssertType: '',
+        ExpectedValue: '',
+        WaitCondition: 'visible',
+        Timeout: 180000,
+        Optional: 'FALSE',
+        Retry: 0,
+        Screenshot: 'always',
+        SkipIf: '',
+        Description: 'Open the computed result by name (only appears once compute finishes)',
+      });
+    }
     addStep({
       StepID: stepId,
       StepGroup: 'ExtractResults',
@@ -1210,24 +1383,23 @@ function main(): number {
     ensureDir(path.join(targetRoot, dir));
   }
   const compareConfigPath = path.join(targetRoot, '06_baseline', 'compare.config.csv');
-  if (!fs.existsSync(compareConfigPath)) {
-    fs.writeFileSync(
-      compareConfigPath,
-      ['ColumnName,IsKey,Compare,DataType,AbsTolerance,RelTolerance,RoundTo,Normalize,Notes',
-        'TableName,TRUE,FALSE,string,,,,trim,Row identity',
-        'RowLabel,TRUE,FALSE,string,,,,trim,Row identity',
-        'ColumnName,TRUE,FALSE,string,,,,trim,Row identity',
-        'Value,FALSE,TRUE,string,,,,trim,The compared cell',
-        'RunID,FALSE,FALSE,string,,,,,Volatile',
-        'Timestamp,FALSE,FALSE,string,,,,,Volatile',
-        'ProjectID,FALSE,FALSE,string,,,,,Volatile',
-        ''].join('\n'),
-      'utf8',
-    );
-  }
 
   const lines = readLines(inputFile);
   const { selectors, steps, dataColumns, dataValues, sawLogin } = parseCodegen(lines);
+
+  // compare.config: write/repair only when this import emits the extractAllResultTables
+  // tail, because THAT fixes the output schema. Create it if missing; overwrite it
+  // if an existing one is incompatible (lacks the TableName/RowLabel/ColumnName/Value
+  // fingerprint) — a stale, differently-shaped config would SCHEMA_MISMATCH forever.
+  // A config that already has the right columns is left alone so tester tolerances survive.
+  const emitsResultTail = steps.some((s) => String(s.InputValue ?? '') === 'extractAllResultTables');
+  if (emitsResultTail) {
+    const existing = readCsvGrid(compareConfigPath);
+    const hasGenericCols = GENERIC_COMPARE_COLUMNS.every((c) => existing.rows.some((r) => (r.ColumnName ?? '').trim() === c));
+    if (!existing.header.length || !hasGenericCols) {
+      fs.writeFileSync(compareConfigPath, GENERIC_COMPARE_CONFIG, 'utf8');
+    }
+  }
 
   const selectorPath = path.join(targetRoot, '02_selectors_repo', 'selectors.csv');
   const metadataPath = path.join(targetRoot, '03_metadata', 'metadata.csv');
@@ -1249,8 +1421,8 @@ function main(): number {
   // Skipping the file then leaves metadata referencing ${data.x.Y} for a column
   // that does not exist -> a validation failure. So instead: keep every existing
   // column and value the tester authored, and ADD any metadata-referenced column
-  // that is missing (seeding its value from the recording into the first row).
-  // Existing values always win; nothing the tester typed is overwritten.
+  // that is missing (seeding its recorded value into that column for every row).
+  // Existing columns/values always win; nothing the tester typed is overwritten.
   const tcId = parsed.args.tcId ?? 'TC_01';
   const writtenData: string[] = [];
   for (const file of ['inputset', 'project', 'design']) {
@@ -1269,10 +1441,13 @@ function main(): number {
     const seedFor = (col: string): string =>
       col === 'TC_ID' ? tcId : col === 'IterationID' ? 'ITER_01' : dataValues.get(`${file}|${col}`) ?? '';
 
-    // Preserve existing rows; append recorded values only for the newly-added
-    // columns, and only into the first row (the others get blanks to fill in).
+    // Preserve every existing column and value; seed the recorded value into the
+    // newly-ADDED columns for EVERY row (a brand-new column has no per-row value
+    // to preserve, and each TC row must resolve its ${data.x.Y} tokens — seeding
+    // only row 0 left TC_02 with blank projectName/Start Date and a failing run).
+    const addedSet = new Set(added);
     const outRows = existingRows.length
-      ? existingRows.map((r, i) => finalCols.map((c) => r[c] ?? (i === 0 ? seedFor(c) : c === 'TC_ID' ? r['TC_ID'] ?? tcId : c === 'IterationID' ? r['IterationID'] ?? 'ITER_01' : '')))
+      ? existingRows.map((r) => finalCols.map((c) => (addedSet.has(c) ? seedFor(c) : r[c] ?? '')))
       : [finalCols.map(seedFor)];
 
     if (existingHeader.length && added.length === 0) continue; // already in sync, leave untouched
