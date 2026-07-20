@@ -320,10 +320,6 @@ function isNoiseContextEvent(event: ParsedEvent): boolean {
   return false;
 }
 
-function isTextboxLike(event: ParsedEvent): boolean {
-  return event.roleType === 'textbox' || event.selectorValue.includes('input') || event.selectorValue.startsWith('#');
-}
-
 function isDropdownOpener(event: ParsedEvent): boolean {
   if (event.action !== 'click') return false;
   if (event.roleType === 'button' || event.roleType === 'combobox') return true;
@@ -400,10 +396,10 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
       selectorType: 'role',
       selectorValue: roleCall[2] ?? '',
       roleType: roleCall[2] ?? '',
-      roleName: roleCall[4] ?? '',
+      roleName: unescapeJsString(roleCall[4] ?? ''),
       action: roleCall[6] ?? 'click',
       args: roleCall[7] ?? '',
-      ref: roleCall[4] ?? roleCall[2] ?? '',
+      ref: unescapeJsString(roleCall[4] ?? roleCall[2] ?? ''),
       raw: trimmed,
       exact: Boolean(roleCall[5]),
     };
@@ -418,13 +414,13 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
       lineNo,
       kind: 'label',
       selectorType: 'label',
-      selectorValue: labelCall[2] ?? '',
+      selectorValue: unescapeJsString(labelCall[2] ?? ''),
       exact: /exact:\s*true/.test(labelCall[3] ?? ''),
       roleType: '',
       roleName: '',
       action: labelCall[4] ?? 'click',
       args: labelCall[5] ?? '',
-      ref: labelCall[2] ?? '',
+      ref: unescapeJsString(labelCall[2] ?? ''),
       raw: trimmed,
     };
   }
@@ -435,13 +431,13 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
       lineNo,
       kind: 'text',
       selectorType: 'text',
-      selectorValue: textCall[2] ?? '',
+      selectorValue: unescapeJsString(textCall[2] ?? ''),
       exact: /exact:\s*true/.test(textCall[3] ?? ''),
       roleType: '',
       roleName: '',
       action: textCall[4] ?? 'click',
       args: textCall[5] ?? '',
-      ref: textCall[2] ?? '',
+      ref: unescapeJsString(textCall[2] ?? ''),
       raw: trimmed,
     };
   }
@@ -471,11 +467,20 @@ function buildDataToken(file: string, column: string): string {
   return `${'${'}data.${file}.${column}}`;
 }
 
-/** Codegen args arrive as source text (`'Week'`); unwrap to the literal value. */
+/**
+ * Turn a JS string-literal body back into the real text it represents.
+ * Codegen writes `Simon\'s Two Stage` for the on-screen text `Simon's Two Stage`;
+ * without this the escaping backslash leaks into selector names and data columns.
+ */
+function unescapeJsString(value: string): string {
+  return value.replace(/\\(['"`\\/])/g, '$1').replace(/\\[nt]/g, ' ');
+}
+
+/** Codegen args arrive as source text (`'Week'`); unwrap AND unescape to the literal value. */
 function stripQuotes(value: string): string {
   const trimmed = (value ?? '').trim();
   const match = /^(['"`])([\s\S]*)\1$/.exec(trimmed);
-  return match ? (match[2] ?? '') : trimmed;
+  return unescapeJsString(match ? (match[2] ?? '') : trimmed);
 }
 
 function deriveColumnName(event: ParsedEvent, pendingLabel: string, fallbackRef: string): string {
@@ -795,10 +800,9 @@ function parseCodegen(lines: string[]): {
       continue;
     }
 
-    // MUST precede the textbox branch: isTextboxLike() matches anything whose
-    // selector starts with '#', so a native <select> recorded as
-    // locator('#testtype').selectOption(...) would otherwise be imported as a
-    // `fill` and never reach this branch at all.
+    // Native <select> recorded as locator('#testtype').selectOption(...) — emit a
+    // `select` step. Kept before the fill branch for clarity, though the fill
+    // branch no longer claims arbitrary `#id` selectors.
     if (targetAction === 'selectOption') {
       addSelector({
         page: pageName,
@@ -839,12 +843,25 @@ function parseCodegen(lines: string[]): {
       continue;
     }
 
-    if (event.action === 'fill' || (event.kind === 'role' && event.roleType === 'textbox') || isTextboxLike(event)) {
-      const nextIsFillOnSameTarget = nextEvent && nextEvent.action === 'fill' && nextEvent.selectorType === event.selectorType && nextEvent.selectorValue === event.selectorValue;
-      if (nextIsFillOnSameTarget && event.action === 'click') {
-        // A click that only focuses a field the next event fills — drop it.
-        continue;
-      }
+    // A click that only focuses a field the next event fills is noise — codegen
+    // records the focus click and the fill as two events. Drop the focus click so
+    // one input does not become a click + fill pair. General (any selector kind),
+    // so it must run before the fill/click branches below.
+    if (
+      event.action === 'click' &&
+      nextEvent &&
+      nextEvent.action === 'fill' &&
+      nextEvent.selectorType === event.selectorType &&
+      nextEvent.selectorValue === event.selectorValue
+    ) {
+      continue;
+    }
+
+    // Fill ONLY when the recording actually filled, or the control is a textbox by
+    // role. A `.click()` is NOT coerced into a fill just because its selector is a
+    // `#id` — that turned button clicks like `#credit-alert-primary` into bogus
+    // data-driven fills. A real click falls through to the click branch below.
+    if (event.action === 'fill' || (event.kind === 'role' && event.roleType === 'textbox')) {
       addSelector({
         page: pageName,
         objectName,
