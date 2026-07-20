@@ -1,0 +1,3 @@
+TC_ID,IterationID,Test,Hypothesis,Computed Parameter,Sample Size (n),Power,Test Type,Type 1 Error (?),Mean Control,Mean Treatment,Test Statistic,Coefficient of Variation of Data,Follow-up Time,Probability of Dropout,Enrollment,Include,Enrollment Rate,Result Name
+TC_01,ITER_01,Ratio of Means (Parallel Design),Superiority,Power,120,Computed,1-Sided,0.0356,2.78,1.55,t,0.58,3.3,0.078,yes,yes,9,Result - Set1
+TC_04,ITER_01,Ratio of Means (Parallel Design),Superiority,Power,120,Computed,1-Sided,0.0356,2.78,1.55,t,0.58,3.3,0.078,yes,yes,9,Result - Set1

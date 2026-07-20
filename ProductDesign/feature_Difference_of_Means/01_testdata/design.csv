@@ -1,0 +1,2 @@
+TC_ID,IterationID,Allocation,Power,TestType,Type1Error,MeanControl,MeanTreatment,StdDev
+TC_03,ITER_01,1:1,0.90,2-Sided,0.05,10.0,12.5,5.0

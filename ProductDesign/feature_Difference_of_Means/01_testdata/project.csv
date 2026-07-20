@@ -1,0 +1,2 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_03,ITER_01,TRUE,AutoProj_Means,Week,Now,Two Arm Superiority,3,Adult,EXP,Primary,EP_Cont,Continuous,Larger Value

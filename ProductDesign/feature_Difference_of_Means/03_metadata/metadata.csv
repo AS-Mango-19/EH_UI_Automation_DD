@@ -1,0 +1,30 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+10,Login,-,callReusable,,flows/login.csv,,,,,60000,FALSE,0,never,,Reusable login flow
+100,CreateProject,ProjectsPage,click,btn_NewProject,,,,,visible,15000,FALSE,1,never,${master.ProjectID}!=EMPTY,Open new-project dialog
+110,CreateProject,ProjectPage,fill,txt_ProjectName,${data.project.ProjectName}_${runId},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Unique project name
+120,CreateProject,ProjectPage,select,ddl_TimeUnit,${data.project.TimeUnit},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Time unit
+130,CreateProject,ProjectPage,fill,txt_StartDate,${today},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,StartDate token
+140,CreateProject,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Study phase
+170,CreateProject,ProjectPage,fill,txt_EndpointName,${data.project.EndpointName},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Endpoint name
+190,CreateProject,ProjectPage,select,ddl_EndpointType,${data.project.EndpointType},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Endpoint type = Continuous
+200,CreateProject,ProjectPage,select,ddl_BetterResponse,${data.project.BetterResponse},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Better response direction
+210,CreateProject,ProjectPage,click,btn_SaveProject,,,,,,20000,FALSE,0,onFailure,${master.ProjectID}!=EMPTY,Save project
+220,CreateProject,ProjectPage,storeAttribute,lbl_ProjectId|data-id,,projectId,,,visible,20000,FALSE,0,never,${master.ProjectID}!=EMPTY,Capture generated project id
+240,OpenProject,ProjectsPage,navigate,,${env.BASE_URL}/projects/${master.ProjectID},,,,networkidle,30000,FALSE,0,never,${master.ProjectID}==EMPTY,Reuse existing project instead of creating one
+310,CreateInputSet,InputSetPage,fill,txt_InputSetName,${data.inputset.InputSetname}_${runId},,,,,10000,FALSE,0,never,,Unique input set name
+320,CreateInputSet,InputSetPage,select,ddl_SelectTask,${data.inputset.SelectTask},,,,,10000,FALSE,0,never,,Task = Design
+330,CreateInputSet,InputSetPage,select,ddl_Test,${data.inputset.SelectTest},,,,,10000,FALSE,0,never,,Test = Difference of Means
+340,CreateInputSet,InputSetPage,click,btn_CreateInputSet,,,,,,15000,FALSE,0,never,,Create the input set
+410,ConfigureDesign,DesignPage,fill,txt_Allocation,${data.design.Allocation},,,,,10000,FALSE,0,never,,Allocation ratio
+420,ConfigureDesign,DesignPage,fill,txt_Power,${data.design.Power},,,,,10000,FALSE,0,never,,Target power
+430,ConfigureDesign,DesignPage,select,ddl_TestType,${data.design.TestType},,,,,10000,FALSE,0,never,,1-Sided / 2-Sided
+440,ConfigureDesign,DesignPage,fill,txt_Type1Error,${data.design.Type1Error},,,,,10000,FALSE,0,never,,Type-1 error
+450,ConfigureDesign,DesignPage,fill,txt_MeanControl,${data.design.MeanControl},,,,,10000,FALSE,0,never,,Mean under control
+460,ConfigureDesign,DesignPage,fill,txt_MeanTreatment,${data.design.MeanTreatment},,,,,10000,FALSE,0,never,,Mean under treatment
+465,ConfigureDesign,DesignPage,fill,txt_StdDev,${data.design.StdDev},,,,,10000,FALSE,0,never,,Common standard deviation
+470,ConfigureDesign,DesignPage,assertEnabled,btn_Compute,,,enabled,,visible,10000,FALSE,0,onFailure,,Guard - inputs valid before compute
+500,Simulate,DesignPage,click,btn_Compute,,,,,,20000,FALSE,0,never,,Trigger simulation
+510,Simulate,DesignPage,waitForSimulation,lbl_RunStatus,,,,Completed,custom,900000,FALSE,0,onFailure,,Poll status per feature.config.json
+600,ExtractResults,ResultsPage,extractTable,tbl_Results,,,,,visible,60000,FALSE,0,always,,Grid to 07_actual_results
+610,CompareBaseline,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare actual vs baseline
+700,Cleanup,-,apiRequest,,DELETE /api/projects/${runtime.projectId},,,,,30000,TRUE,0,never,${master.ProjectID}!=EMPTY,Delete only projects this run created

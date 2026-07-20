@@ -1,0 +1,86 @@
+name: UI Regression
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly full regression at 02:30 UTC.
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Tag expression (OR "," AND "+" NOT "~")'
+        required: false
+        default: 'regression'
+      env:
+        description: 'Environment (.env.<env> + baseline scope)'
+        required: false
+        default: 'qa'
+
+concurrency:
+  group: ui-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Fail fast, browser-free: every CSV schema error before anything opens.
+      - run: npm run validate
+      - run: npm run typecheck
+      - run: npm run unit
+
+  test:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ENV: ${{ github.event.inputs.env || 'qa' }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      APP_USERNAME: ${{ secrets.APP_USERNAME }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      HEADLESS: 'true'
+      WORKERS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # PR -> smoke; nightly/dispatch -> full regression (or the requested tags).
+      - name: Run tests
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run test -- --tags smoke
+          else
+            npm run test -- --tags "${{ github.event.inputs.tags || 'regression' }}"
+          fi
+
+      - name: Publish JUnit
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: 'reports/**/junit.xml'
+
+      - name: Upload artifacts (reports, traces, diffs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-regression-${{ github.run_id }}
+          path: |
+            reports/**
+            artifacts/**
+            ProductDesign/**/08_diffs/**
+            ProductDesign/**/09_html_report/**
+          retention-days: 14
+          if-no-files-found: warn

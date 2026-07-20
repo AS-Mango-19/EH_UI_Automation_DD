@@ -1,0 +1,52 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,button from codegen
+txt_project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen
+opt_Month,ProjectPage,role,option,Month,,FALSE,option from codegen
+txt_MM_dd_yyyy,ProjectPage,role,textbox,MM/dd/yyyy,,FALSE,textbox from codegen
+opt_Choose_Wednesday_July_15th,ProjectPage,role,option,"Choose Wednesday, July 15th,",,FALSE,option from codegen
+btn_Select,ProjectPage,role,button,Select,,FALSE,button from codegen
+opt_Two_Arm_Confirmatory,ProjectPage,role,link,{0},,TRUE,choice from codegen
+ddl_react_creatable_select_input_container,ProjectPage,css,.react-creatable-select__input-container,,,FALSE,textbox from codegen
+opt_3,ProjectPage,role,option,3,,FALSE,option from codegen
+txt_population_Name_0,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen
+txt_control_Arm_0,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen
+txt_treatment_Arm_0,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen
+txt_endpoint_Name_0,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen
+btn_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,button from codegen
+opt_Endpoint_Type,ProjectPage,role,link,{0},,TRUE,choice from codegen
+btn_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,button from codegen
+opt_Better_Response,ProjectPage,role,link,{0},,TRUE,choice from codegen
+txt_Follow_up_Time,ProjectPage,css,#followUpTime-0,,,FALSE,textbox from codegen
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen
+txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen
+ddl_react_select_input_container,InputSetPage,css,.react-select__input-container,,,FALSE,textbox from codegen
+txt_test_Id_14,InputSetPage,css,#testId-14,,,FALSE,textbox from codegen
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen
+txt_Hypothesis,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen
+opt_Computed_Parameter,DesignPage,role,radio,{0},,TRUE,choice from codegen
+txt_sample_Size,ResultsPage,css,#sampleSize,,,FALSE,textbox from codegen
+txt_Test_Type,ResultsPage,css,#testtype,,,FALSE,textbox from codegen
+txt_type1Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen
+txt_mean_Control,ResultsPage,css,#meanControl,,,FALSE,textbox from codegen
+txt_mean_Treatment,ResultsPage,css,#meanTreatment,,,FALSE,textbox from codegen
+txt_test_Statistic,ResultsPage,css,#testStatistic,,,FALSE,textbox from codegen
+txt_coefficient_Of_Variation,ResultsPage,css,#coefficientOfVariation,,,FALSE,textbox from codegen
+txt_follow_Up_Time,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen
+txt_probability_Of_Dropout,ResultsPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen
+btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,button from codegen
+chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen
+txt_id_enrollment_Table_0_avg_Subjects_Enrolled,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen
+btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codegen
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen
+btn_Compute,ResultsPage,role,button,Compute,,FALSE,button from codegen
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen

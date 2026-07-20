@@ -1,0 +1,13 @@
+ColumnName,IsKey,Compare,DataType,AbsTolerance,RelTolerance,RoundTo,Normalize,Notes
+DesignType,TRUE,TRUE,string,,,,trim,Optimal or Minimax - row key
+Stage1_SampleSize_n1,FALSE,TRUE,numeric,0,,0,,Integer - exact match
+Stage1_Responses_r1,FALSE,TRUE,numeric,0,,0,,Integer - exact match
+Total_SampleSize_n,FALSE,TRUE,numeric,0,,0,,Integer - exact match
+Total_Responses_r,FALSE,TRUE,numeric,0,,0,,Integer - exact match
+PET_p0,FALSE,TRUE,numeric,0.0005,0.001,4,,Probability of early termination
+EN_p0,FALSE,TRUE,numeric,0.01,0.001,3,,Expected sample size under null
+Attained_Alpha,FALSE,TRUE,numeric,0.0005,0.01,5,,Attained type 1 error
+Attained_Power,FALSE,TRUE,numeric,0.0005,0.01,5,,Attained power
+RunID,FALSE,FALSE,string,,,,,Volatile - never compare
+Timestamp,FALSE,FALSE,date,,,,,Volatile - never compare
+ProjectID,FALSE,FALSE,string,,,,,Volatile - never compare

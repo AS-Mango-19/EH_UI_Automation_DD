@@ -1,0 +1,37 @@
+{
+  "feature": "ROM(PD)",
+  "module": "ProductDesign",
+  "serial": false,
+  "_comment_reuseAuthState": "false on purpose: reuse logs in with a SEPARATE browser, saves storageState, closes it, then opens a second browser for the iteration. With a single iteration that reuse saves nothing and just shows two windows. false => the orchestrator skips auth setup, the iteration keeps its own context, and step 5 logs in inline. Set back to true if this feature ever runs many iterations across workers, and delete step 5 when you do.",
+  "reuseAuthState": false,
+  "testdata": {
+    "format": "csv",
+    "files": {
+      "inputset": "inputset.csv",
+      "project": "project.csv",
+      "design": "design.csv"
+    },
+    "joinKey": [
+      "TC_ID",
+      "IterationID"
+    ]
+  },
+  "simulation": {
+    "pollObject": "lbl_RunStatus",
+    "successText": "Completed",
+    "failureText": "Failed",
+    "pollIntervalMs": 5000,
+    "maxWaitMs": 900000
+  },
+  "resultsExtraction": {
+    "mode": "domTable",
+    "domTableObject": "tbl_Results",
+    "downloadTrigger": "btn_ExportResults",
+    "outputFileName": "results_${TC_ID}_${IterationID}.csv",
+    "columnMap": {},
+    "sortBy": []
+  },
+  "cleanup": {
+    "deleteCreatedProjects": true
+  }
+}

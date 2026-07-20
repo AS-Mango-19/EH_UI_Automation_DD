@@ -1,0 +1,3 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,Treatment Arm,Control Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Follow-up Time ()
+TC_01,ITER_01,TRUE,AutoProj_ROM,Week,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Larger Value,3
+TC_04,ITER_01,TRUE,AutoProj_ROM,Week,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Larger Value,3

@@ -1,0 +1,29 @@
+# Secrets & local env
+# Ignore ALL .env variants (incl. .bak copies) except the safe template.
+# A narrow `.env` + `.env.*.local` once let .env.bak-180754 slip in with real creds.
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+
+# Run outputs (never committed)
+artifacts/
+reports/
+**/07_actual_results/*.csv
+**/08_diffs/*
+**/09_html_report/*
+
+# Playwright
+test-results/
+playwright-report/
+.auth/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# NOTE: 06_baseline/ is intentionally NOT ignored — baselines are committed.
+# Generated POM/spec files ARE committed so diffs are reviewable, but are never hand-edited.

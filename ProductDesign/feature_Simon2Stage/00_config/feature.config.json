@@ -1,0 +1,37 @@
+{
+  "feature": "Simon2Stage",
+  "module": "ProductDesign",
+  "serial": false,
+  "reuseAuthState": true,
+  "testdata": {
+    "format": "csv",
+    "files": { "inputset": "inputset.csv", "project": "project.csv", "design": "design.csv" },
+    "joinKey": ["TC_ID", "IterationID"]
+  },
+  "simulation": {
+    "pollObject": "lbl_RunStatus",
+    "successText": "Completed",
+    "failureText": "Failed",
+    "pollIntervalMs": 5000,
+    "maxWaitMs": 900000
+  },
+  "resultsExtraction": {
+    "mode": "domTable",
+    "domTableObject": "tbl_Results",
+    "downloadTrigger": "btn_ExportResults",
+    "outputFileName": "results_${TC_ID}_${IterationID}.csv",
+    "columnMap": {
+      "Design": "DesignType",
+      "n1": "Stage1_SampleSize_n1",
+      "r1": "Stage1_Responses_r1",
+      "n": "Total_SampleSize_n",
+      "r": "Total_Responses_r",
+      "PET(p0)": "PET_p0",
+      "EN(p0)": "EN_p0",
+      "Alpha": "Attained_Alpha",
+      "Power": "Attained_Power"
+    },
+    "sortBy": ["DesignType"]
+  },
+  "cleanup": { "deleteCreatedProjects": true }
+}

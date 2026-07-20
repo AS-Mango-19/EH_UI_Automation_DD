@@ -1,0 +1,48 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+10,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,networkidle,30000,FALSE,0,never,,Navigate to app page
+20,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,click New Project
+30,ConfigureDesign,ProjectPage,fill,txt_project_Name,${data.project.Project Name},,,,,10000,FALSE,0,never,,fill Project Name
+40,ConfigureDesign,ProjectPage,click,opt_Month,,,,,,10000,FALSE,0,never,,click Month
+50,ConfigureDesign,ProjectPage,fill,txt_MM_dd_yyyy,${data.project.Start Date},,,,,10000,FALSE,0,never,,fill Start Date
+60,ConfigureDesign,ProjectPage,click,opt_Choose_Wednesday_July_15th,,,,,,10000,FALSE,0,never,,click Choose Wednesday July 15th
+70,ConfigureDesign,ProjectPage,click,btn_Select,,,,,,10000,FALSE,0,never,,click Select
+80,ConfigureDesign,ProjectPage,click,opt_Two_Arm_Confirmatory,${data.project.Study Objective},,,,,10000,FALSE,0,never,,select Study Objective
+90,ConfigureDesign,ProjectPage,fill,ddl_react_creatable_select_input_container,${data.project.Phase},,,,,10000,FALSE,0,never,,fill Phase
+100,ConfigureDesign,ProjectPage,click,opt_3,,,,,,10000,FALSE,0,never,,click 3
+110,ConfigureDesign,ProjectPage,fill,txt_population_Name_0,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,fill TargetPopulation
+120,ConfigureDesign,ProjectPage,fill,txt_control_Arm_0,${data.project.Control Arm},,,,,10000,FALSE,0,never,,fill Control Arm
+130,ConfigureDesign,ProjectPage,fill,txt_treatment_Arm_0,${data.project.Treatment Arm},,,,,10000,FALSE,0,never,,fill Treatment Arm
+140,ConfigureDesign,ProjectPage,fill,txt_endpoint_Name_0,${data.project.Endpoint Name},,,,,10000,FALSE,0,never,,fill Endpoint Name
+150,ConfigureDesign,ProjectPage,click,btn_Endpoint_Type,,,,,,10000,FALSE,0,never,,click Endpoint Type
+160,ConfigureDesign,ProjectPage,click,opt_Endpoint_Type,${data.project.Endpoint Type},,,,,10000,FALSE,0,never,,select Endpoint Type
+170,ConfigureDesign,ProjectPage,click,btn_Better_Response,,,,,,10000,FALSE,0,never,,click Better Response
+180,ConfigureDesign,ProjectPage,click,opt_Better_Response,${data.project.Better Response},,,,,10000,FALSE,0,never,,select Better Response
+190,ConfigureDesign,ProjectPage,fill,txt_Follow_up_Time,${data.project.Follow-up Time ()},,,,,10000,FALSE,0,never,,fill Follow-up Time ()
+200,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+210,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+220,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+230,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.InputSetname},,,,,10000,FALSE,0,never,,fill InputSetname
+240,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.InputSetname},,,,,10000,FALSE,0,never,,fill InputSetname
+250,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
+260,ConfigureDesign,InputSetPage,fill,ddl_react_select_input_container,${data.inputset.SelectTask},,,,,10000,FALSE,0,never,,fill SelectTask
+270,ConfigureDesign,InputSetPage,fill,txt_test_Id_14,${data.inputset.TestIndex},,,,,10000,FALSE,0,never,,fill TestIndex
+280,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+290,ConfigureDesign,DesignPage,fill,txt_Hypothesis,${data.design.Hypothesis},,,,,10000,FALSE,0,never,,fill Hypothesis
+300,Simulate,DesignPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
+310,ConfigureDesign,ResultsPage,fill,txt_sample_Size,${data.design.Sample Size (n)},,,,,10000,FALSE,0,never,,fill Sample Size (n)
+320,ConfigureDesign,ResultsPage,fill,txt_Test_Type,${data.design.Test Type},,,,,10000,FALSE,0,never,,fill Test Type
+330,ConfigureDesign,ResultsPage,fill,txt_type1Error,${data.design.Type 1 Error (?)},,,,,10000,FALSE,0,never,,fill Type 1 Error (?)
+340,ConfigureDesign,ResultsPage,fill,txt_mean_Control,${data.design.Mean Control},,,,,10000,FALSE,0,never,,fill Mean Control
+350,ConfigureDesign,ResultsPage,fill,txt_mean_Treatment,${data.design.Mean Treatment},,,,,10000,FALSE,0,never,,fill Mean Treatment
+360,ConfigureDesign,ResultsPage,fill,txt_test_Statistic,${data.design.Test Statistic},,,,,10000,FALSE,0,never,,fill Test Statistic
+370,ConfigureDesign,ResultsPage,fill,txt_coefficient_Of_Variation,${data.design.Coefficient of Variation of Data},,,,,10000,FALSE,0,never,,fill Coefficient of Variation of Data
+380,ConfigureDesign,ResultsPage,fill,txt_follow_Up_Time,${data.design.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+390,ConfigureDesign,ResultsPage,fill,txt_probability_Of_Dropout,${data.design.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+400,ConfigureDesign,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+410,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,never,,check Include
+420,ConfigureDesign,ResultsPage,click,txt_id_enrollment_Table_0_avg_Subjects_Enrolled,,,,,,10000,FALSE,0,never,,click id enrollmentTable 0 avgSubjectsEnrolled
+430,ConfigureDesign,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+440,Simulate,DesignPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+450,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+460,ExtractResults,ResultsPage,click,btn_Compute,,,,,,10000,FALSE,0,never,,click Compute
+470,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,10000,FALSE,0,never,,open result by name
