@@ -29,7 +29,12 @@ function metadataFileRelFor(row: MasterRow): string {
 }
 function testDataDirRelFor(row: MasterRow): string {
   if (row.TestDataDir.trim()) return row.TestDataDir.trim();
-  if (row.TestDataFile.trim()) return path.dirname(row.TestDataFile.trim());
+  const file = row.TestDataFile.trim();
+  // TestDataFile may hold either the testdata folder (e.g. "01_testdata") or a
+  // specific CSV in it (e.g. "01_testdata/inputset.csv"). A value with a file
+  // extension contributes only its directory; a bare folder is used as-is — the
+  // whole folder is loaded either way, so both forms resolve to the same dir.
+  if (file) return path.extname(file) ? path.dirname(file) : file;
   return FRAMEWORK_CONFIG.defaultTestDataDir;
 }
 
@@ -68,6 +73,8 @@ export function validateAll(opts: { master?: string } = {}): ValidationReport {
     if (!f) continue;
 
     validateMetadata(f, issues, warnings);
+    validateTestDataCoverage(f, warnings);
+    validateIterationCompleteness(f, issues);
     validateSelectors(f, warnings);
     validateCompareConfig(f, issues, warnings);
     validateColumnMap(f, warnings);
@@ -142,6 +149,112 @@ function validateMetadata(
         } else if (!cols.has(col)) {
           issues.push(`${where}: \${data.${file}.${col}} refers to unknown column "${col}" in ${file}.csv.`);
         }
+      }
+    }
+  }
+}
+
+/**
+ * Coverage: a value that sits in the testdata but is never entered during a run is
+ * a silent gap (e.g. design.csv Power=0.88 with no fill step — the app default is
+ * used instead). Warn about every testdata column that HOLDS a value yet is not
+ * referenced by any metadata token. A warning (not an error) because a column can
+ * be legitimately unused. Columns consumed by a callCustom step (which resolves
+ * them at runtime, leaving no metadata token) are suppressed by matching the
+ * column name against the feature's / shared custom-step source.
+ */
+function validateTestDataCoverage(
+  f: NonNullable<ReturnType<typeof loadFeatureAll>['value']>,
+  warnings: string[],
+): void {
+  const referenced = new Map<string, Set<string>>();
+  for (const step of f.steps) {
+    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName]) {
+      for (const token of extractTokens(cell)) {
+        const m = /^data\.([^.]+)\.(.+)$/.exec(token);
+        if (!m) continue;
+        const file = m[1] ?? '';
+        const col = m[2] ?? '';
+        if (!referenced.has(file)) referenced.set(file, new Set());
+        referenced.get(file)!.add(col);
+      }
+    }
+  }
+  // A callCustom step consumes columns at runtime with no metadata token. Treat a
+  // column as used if its name appears literally in the feature's or shared
+  // custom-step source (e.g. selectStartDate reads "Start Date").
+  let customSrc = '';
+  for (const rel of [path.join('custom', f.feature, 'customSteps.ts'), path.join('custom', '_shared', 'customSteps.ts')]) {
+    try {
+      customSrc += fs.readFileSync(abs(rel), 'utf8');
+    } catch {
+      /* no custom module for this feature */
+    }
+  }
+  const CONTROL = new Set(['TC_ID', 'IterationID', 'Run']);
+  for (const [file, parsed] of f.testDataParsed) {
+    const ref = referenced.get(file) ?? new Set<string>();
+    for (const col of parsed.headers) {
+      if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col)) continue;
+      const hasValue = parsed.records.some((r) => (r.data[col] ?? '').trim() !== '');
+      if (hasValue) {
+        warnings.push(
+          `[${f.feature}] testdata: column "${col}" in ${file}.csv has a value but no step enters it — add a step to apply it or remove the column.`,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Iteration completeness: iterations are the union of (TC_ID, IterationID) rows
+ * across the testdata files. If one referenced file has a row for an iteration
+ * that another lacks, the run fails at that step with "No testdata row". Catch it
+ * here (an ERROR — it is a guaranteed runtime failure) so a half-authored
+ * multi-iteration testdata set is fixed before a browser opens.
+ */
+function validateIterationCompleteness(
+  f: NonNullable<ReturnType<typeof loadFeatureAll>['value']>,
+  issues: string[],
+): void {
+  const referencedFiles = new Set<string>();
+  for (const step of f.steps) {
+    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName]) {
+      for (const token of extractTokens(cell)) {
+        const m = /^data\.([^.]+)\./.exec(token);
+        if (m && m[1]) referencedFiles.add(m[1]);
+      }
+    }
+  }
+  const pairsByFile = new Map<string, Set<string>>();
+  const allPairs = new Set<string>();
+  for (const file of referencedFiles) {
+    const parsed = f.testDataParsed.get(file);
+    if (!parsed) continue; // unknown file is reported by validateMetadata
+    // Only files KEYED by TC_ID + IterationID are matched per-iteration. A file
+    // without those columns uses a first-row fallback for every iteration (e.g.
+    // an inputset with just InputSetname/SelectTest), so it can't be "missing a
+    // row" — skip it to avoid false positives.
+    if (!parsed.headers.includes('TC_ID') || !parsed.headers.includes('IterationID')) continue;
+    const pairs = new Set<string>();
+    for (const rec of parsed.records) {
+      const tc = (rec.data.TC_ID ?? '').trim();
+      const iter = (rec.data.IterationID ?? '').trim();
+      if (tc || iter) {
+        const key = `${tc}|${iter}`;
+        pairs.add(key);
+        allPairs.add(key);
+      }
+    }
+    pairsByFile.set(file, pairs);
+  }
+  for (const [file, pairs] of pairsByFile) {
+    for (const pair of allPairs) {
+      if (!pairs.has(pair)) {
+        const [tc, iter] = pair.split('|');
+        issues.push(
+          `[${f.feature}] testdata: ${file}.csv has no row for ${tc}/${iter}, but another referenced testdata file does — the run will fail with "No testdata row". Add the row or align the IterationIDs.`,
+        );
       }
     }
   }

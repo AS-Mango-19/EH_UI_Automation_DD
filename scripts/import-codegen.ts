@@ -1034,10 +1034,12 @@ function parseCodegen(lines: string[]): {
         exact: event.exact,
       });
       registerDataValue(dataFile, columnName, stripQuotes(event.args));
-      // A project name must be unique per run or the app rejects the re-run as a
-      // duplicate, so append the run id token. Everything else fills verbatim.
+      // A project name must be globally unique or the app rejects it as a
+      // duplicate. runId makes it unique across runs; iterationId makes it unique
+      // across the iterations WITHIN a run (they share one runId, so runId alone
+      // collides on the 2nd iteration). Everything else fills verbatim.
       const isProjName = looksLikeProjectName(objectName, columnName);
-      const fillValue = isProjName ? `${buildDataToken(dataFile, columnName)}_\${runId}` : buildDataToken(dataFile, columnName);
+      const fillValue = isProjName ? `${buildDataToken(dataFile, columnName)}_\${runId}_\${iterationId}` : buildDataToken(dataFile, columnName);
       emitStep(
         {
           StepID: stepId,
@@ -1308,11 +1310,14 @@ function buildFeatureConfig(feature: string, module: string): string {
   const cfg = {
     feature,
     module,
-    serial: false,
-    // false => one browser: the iteration logs in inline via the callReusable
-    // login step. true spins up a SEPARATE browser to save storageState, closes
-    // it, then reopens — which for a single iteration saves nothing and shows
-    // two windows. Flip to true only when running many iterations across workers.
+    // serial: true is REQUIRED because the app (East Horizon) allows only ONE
+    // active session per user. Running iterations in parallel logs in twice with
+    // the same credentials, and the app force-logs-out all but the newest session
+    // ("another session started from a different location") — so parallel runs
+    // fail with a spurious login/forced-logout. Serial runs iterations one at a
+    // time, so each login stands alone. Do not flip to false for this app.
+    serial: true,
+    // false => the iteration logs in inline via the callReusable login step.
     reuseAuthState: false,
     testdata: {
       format: 'csv',
@@ -1387,6 +1392,43 @@ function main(): number {
   const lines = readLines(inputFile);
   const { selectors, steps, dataColumns, dataValues, sawLogin } = parseCodegen(lines);
 
+  // Reuse the tester's existing testdata columns instead of adding parallel
+  // duplicates. The tester owns the testdata; when a recorded field's derived
+  // name matches a column that already exists (comparing on letters+digits only,
+  // so "Test Type" == "TestType" == "test_type"), rewrite the generated metadata
+  // token to reference the tester's column and DROP the derived one — the run
+  // then reads the tester's value and no duplicate column is created. Only a
+  // field with no existing column is still seeded (below). First existing
+  // occurrence wins, so a tester's canonical column beats a stale importer
+  // duplicate from a prior import.
+  const reuseLog: string[] = [];
+  const normalizeColName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const file of ['inputset', 'project', 'design']) {
+    const cols = dataColumns.get(file);
+    if (!cols) continue;
+    const { header } = readCsvGrid(path.join(targetRoot, '01_testdata', `${file}.csv`));
+    const existingByNorm = new Map<string, string>();
+    for (const h of header) {
+      const n = normalizeColName(h);
+      if (n && !existingByNorm.has(n)) existingByNorm.set(n, h);
+    }
+    for (const derived of [...cols]) {
+      if (derived === 'TC_ID' || derived === 'IterationID') continue;
+      const existing = existingByNorm.get(normalizeColName(derived));
+      if (!existing || existing === derived) continue;
+      const from = buildDataToken(file, derived);
+      const to = buildDataToken(file, existing);
+      for (const step of steps) {
+        if (typeof step.InputValue === 'string' && step.InputValue.includes(from)) {
+          step.InputValue = step.InputValue.split(from).join(to);
+        }
+      }
+      cols.delete(derived);
+      dataValues.delete(`${file}|${derived}`);
+      reuseLog.push(`${file}.csv: reused existing column "${existing}" for recorded field "${derived}"`);
+    }
+  }
+
   // compare.config: write/repair only when this import emits the extractAllResultTables
   // tail, because THAT fixes the output schema. Create it if missing; overwrite it
   // if an existing one is incompatible (lacks the TableName/RowLabel/ColumnName/Value
@@ -1447,20 +1489,39 @@ function main(): number {
     // only row 0 left TC_02 with blank projectName/Start Date and a failing run).
     const addedSet = new Set(added);
     const outRows = existingRows.length
-      ? existingRows.map((r) => finalCols.map((c) => (addedSet.has(c) ? seedFor(c) : r[c] ?? '')))
+      ? existingRows.map((r) =>
+          finalCols.map((c) => {
+            if (addedSet.has(c)) return seedFor(c);
+            const existing = r[c] ?? '';
+            // Backfill blank identity cells. A row must be findable by TC_ID +
+            // IterationID or the runner fails at runtime with "No testdata row"
+            // — and validate cannot catch it (the column exists, only the value
+            // is missing). Older/partial testdata often left these blank; every
+            // real value the tester typed is still preserved.
+            if (!existing.trim() && (c === 'TC_ID' || c === 'IterationID')) return seedFor(c);
+            return existing;
+          }),
+        )
       : [finalCols.map(seedFor)];
 
-    if (existingHeader.length && added.length === 0) continue; // already in sync, leave untouched
+    // "In sync" = header present and no new columns. Still rewrite if any row has
+    // a blank TC_ID/IterationID to backfill, else the run fails with "No testdata row".
+    const hasBlankIdentity = existingRows.some(
+      (r) => !(r['TC_ID'] ?? '').trim() || !(r['IterationID'] ?? '').trim(),
+    );
+    if (existingHeader.length && added.length === 0 && !hasBlankIdentity) continue; // already in sync, leave untouched
     const csv = [finalCols.join(','), ...outRows.map((r) => r.map((v) => csvEscape(String(v))).join(','))].join('\n');
     fs.writeFileSync(dataPath, `${csv}\n`, 'utf8');
     if (added.length) writtenData.push(`${file}.csv (+${added.length} column(s): ${added.join(', ')})`);
     else if (!existingHeader.length) writtenData.push(`${file}.csv (${needed.length} column(s) seeded from the recording)`);
+    else if (hasBlankIdentity) writtenData.push(`${file}.csv (backfilled blank TC_ID/IterationID)`);
   }
 
   const rel = path.join(parsed.args.module, featureName);
   console.log(`Imported codegen -> ${rel}`);
   console.log(`  ${steps.length} step(s) -> 03_metadata/metadata.csv`);
   console.log(`  ${mergedSelectors.length} selector(s) -> 02_selectors_repo/selectors.csv`);
+  for (const r of reuseLog) console.log(`  ${r}`);
   for (const d of writtenData) console.log(`  ${d}`);
   console.log('');
   console.log('NEXT STEPS (the importer cannot infer these):');

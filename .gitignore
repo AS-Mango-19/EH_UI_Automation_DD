@@ -5,6 +5,12 @@
 .env.*
 !.env.example
 
+# Codegen recordings — Playwright codegen captures the LOGIN steps verbatim,
+# including the typed password, so recordings hold real credentials. They stay
+# local (the importer reads them to scaffold a feature); never commit them.
+**/02_selectors_repo/recording.*
+**/02_selectors_repo/codegen.*
+
 # Node
 node_modules/
 

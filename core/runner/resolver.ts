@@ -79,8 +79,10 @@ function resolveToken(scope: ResolverScope, expr: string, loc: ErrorLocation): s
   if (expr.startsWith('faker.')) {
     return resolveFaker(expr.slice(6), loc, expr);
   }
-  // runId / timestamp
+  // runId / timestamp / identity
   if (expr === 'runId') return scope.runId;
+  if (expr === 'iterationId') return scope.iterationId;
+  if (expr === 'tcId') return scope.tcId;
   if (expr === 'timestamp') return scope.timestamp;
   // date tokens: today, today+30d, today-7d, Now
   if (isDateToken(expr)) return resolveDateToken(expr, scope.startedAt);

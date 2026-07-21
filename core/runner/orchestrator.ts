@@ -38,7 +38,12 @@ function metadataFileRelFor(entry: MasterEntry): string {
 }
 function testDataDirRelFor(entry: MasterEntry): string {
   if (entry.row.TestDataDir.trim()) return entry.row.TestDataDir.trim();
-  if (entry.row.TestDataFile.trim()) return path.dirname(entry.row.TestDataFile.trim());
+  const file = entry.row.TestDataFile.trim();
+  // TestDataFile may hold either the testdata folder (e.g. "01_testdata") or a
+  // specific CSV in it (e.g. "01_testdata/inputset.csv"). A value with a file
+  // extension contributes only its directory; a bare folder is used as-is — the
+  // whole folder is loaded either way, so both forms resolve to the same dir.
+  if (file) return path.extname(file) ? path.dirname(file) : file;
   return FRAMEWORK_CONFIG.defaultTestDataDir;
 }
 function envNameFor(entry: MasterEntry, filters: CliFilters): string {

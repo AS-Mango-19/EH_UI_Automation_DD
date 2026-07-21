@@ -6,7 +6,8 @@ import type { KeywordHandler } from './types.js';
 import { targetLocator } from './util.js';
 import { selectorKey } from '../loaders/featureLoader.js';
 import { resolveLocator, type LocatorRoot } from '../locators/resolver.js';
-import { logger } from '../utils/logger.js';
+import { logger, mask } from '../utils/logger.js';
+import { FrameworkError } from '../utils/errors.js';
 
 function buildFallbackLocator(root: Parameters<typeof targetLocator>[0]['root'] extends (...args: never[]) => infer R ? R : never, fallback: string) {
   return root.locator(fallback.startsWith('//') || fallback.startsWith('xpath=') ? fallback : fallback);
@@ -178,7 +179,41 @@ export const rightClick: KeywordHandler = async (_page, ctx, step) => {
 };
 
 export const fill: KeywordHandler = async (_page, ctx, step) => {
-  await (await targetLocator(ctx, step)).fill(step.input, { timeout: step.timeout });
+  const want = step.input;
+  // Rule: a testdata value of "Computed" marks the computed-OUTPUT field — the app
+  // greys it out (disabled) and it must NOT be edited. This is the ONLY case a fill
+  // is skipped. Every other testdata value is REQUIRED: it must be entered and then
+  // verified below, so a value present in the testdata can never be silently dropped.
+  if (/^computed$/i.test(want.trim())) {
+    logger.info(`fill: "${step.objectName}" = "Computed" — computed-output field (disabled by the app), skipping.`);
+    return;
+  }
+  const loc = (await targetLocator(ctx, step)).first();
+  // The field must be present. A missing field is a hard failure (clear message,
+  // not a generic fill timeout) — the required value could not be entered.
+  const found = await loc.waitFor({ state: 'attached', timeout: step.timeout }).then(() => true).catch(() => false);
+  if (!found) {
+    throw new FrameworkError(`fill: field "${step.objectName}" not found — required value could not be entered`, { stepId: step.stepId });
+  }
+  // The field must be editable. A required value cannot land in a disabled field,
+  // so this fails rather than passing silently.
+  if (await loc.isDisabled().catch(() => false)) {
+    throw new FrameworkError(`fill: field "${step.objectName}" is disabled but testdata requires a value — "${mask(want)}" was not entered`, { stepId: step.stepId });
+  }
+  await loc.fill(want, { timeout: step.timeout });
+  // "Must be entered" means verified: read the value back and confirm it took.
+  // Only for standard inputs we can read (skip contenteditable/custom to stay stable).
+  const initial = await loc.inputValue().then((v) => ({ readable: true, v: v.trim() })).catch(() => ({ readable: false, v: '' }));
+  if (initial.readable) {
+    let got = initial.v;
+    if (got !== want.trim()) {
+      await _page.waitForTimeout(200).catch(() => undefined); // allow an async commit/reformat
+      got = (await loc.inputValue().catch(() => '')).trim();
+    }
+    if (got !== want.trim()) {
+      throw new FrameworkError(`fill: field "${step.objectName}" did not accept the value — expected "${mask(want)}", field shows "${mask(got)}"`, { stepId: step.stepId });
+    }
+  }
 };
 
 export const type: KeywordHandler = async (_page, ctx, step) => {
@@ -198,7 +233,16 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
   const selector = ctx.feature.selectorIndex.get(selectorKey(step.page, step.objectName));
   const loc = await resolveLabelInteractiveTarget(ctx, step);
   const fallbackLoc = selector?.FallbackSelector ? buildFallbackLocator(ctx.root(), selector.FallbackSelector) : null;
-  const locCount = await loc.count().catch(() => 0);
+  // The previous step often triggers a re-render (e.g. clicking Continue mounts
+  // the design form a beat later). Sampling count() instantly then races that
+  // render, sees 0, and misclassifies a native <select> as a custom combobox —
+  // which throws "unable to resolve". Only when the target is initially absent,
+  // wait for it to attach and re-count; a present target pays no penalty.
+  let locCount = await loc.count().catch(() => 0);
+  if (locCount === 0) {
+    await loc.first().waitFor({ state: 'attached', timeout: step.timeout }).catch(() => undefined);
+    locCount = await loc.count().catch(() => 0);
+  }
   const labelFallback = selector?.SelectorType === 'label'
     ? ctx.root().getByText(selector.SelectorValue, { exact: true }).first()
     : null;
