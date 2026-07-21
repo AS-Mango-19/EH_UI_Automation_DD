@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,projectName,Time Unit,MM dd yyyy,Study Objective,Phase,populationName 0,treatmentArm 0,Priority,endpointName 0,Endpoint Type,Better Response,Follow-up Time (),Start Date
+TC_05,ITER_01,TRUE,AutoProj_MeansofPairedRatio,Day,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value,10,7/16/2026
+TC_05,ITER_02,TRUE,AutoProj_MeansofPairedRatio,Month,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Smaller Value,2.5,7/16/2026
+TC_05,ITER_03,TRUE,AutoProj_MeansofPairedRatio,Week,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value,4.5,7/16/2026
+TC_05,ITER_04,TRUE,AutoProj_MeansofPairedRatio,Year,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value,15,7/16/2026

@@ -3,3 +3,4 @@ TC_01,ProductDesign,regression,One Arm Exploratory / Confirmatory,SinglePoissonR
 TC_02,ProductDesign,regression,One Arm Exploratory / Confirmatory,Simon2Stage,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 TC_03,ProductDesign,regression,Two Arm Superiority,Difference_of_Means,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_05,ProductDesign,regression,One Arm Exploratory / Confirmatory,MeanofPairedRatios,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
