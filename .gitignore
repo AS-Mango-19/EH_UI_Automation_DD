@@ -7,12 +7,17 @@
 
 # Codegen recordings — Playwright codegen captures the LOGIN steps verbatim,
 # including the typed password, so recordings hold real credentials. Never commit
-# them. A recording is a .txt/.ts and can be named anything (recording.txt,
-# codegen.ts, <Feature>.txt, "new 2.txt"). The only files that belong in this
-# folder are selectors.csv and (optionally) locators.json, so ignore EVERY
-# .txt/.ts here regardless of name.
-**/02_selectors_repo/*.txt
-**/02_selectors_repo/*.ts
+# them. A recording can be named anything (recording.txt, codegen.ts,
+# <Feature>.txt, "new 2.txt") and saved in any format codegen or a human picks.
+#
+# So this is an ALLOWLIST, not a blacklist. Blacklisting extensions only covered
+# *.txt/*.ts directly in this folder — a recording.json, a .har, or one dropped in
+# a subfolder would have sailed straight through. The only files that belong here
+# are selectors.csv and (optionally) locators.json; everything else is ignored by
+# default, whatever it is called.
+**/02_selectors_repo/**
+!**/02_selectors_repo/selectors.csv
+!**/02_selectors_repo/locators.json
 
 # Node
 node_modules/

@@ -911,8 +911,10 @@ Why there: the recording lives *with* the feature it produces, and the importer
 
 > **The recording is gitignored and never committed.** Playwright codegen writes
 > the login steps verbatim, including the typed **password**, so recordings hold
-> real credentials. The rule `**/02_selectors_repo/recording.*` in `.gitignore`
-> keeps them local. Share recordings out-of-band, not through the repo.
+> real credentials. `.gitignore` **allowlists** this folder — everything under
+> `**/02_selectors_repo/` is ignored except `selectors.csv` and `locators.json` —
+> so a recording is excluded whatever it is named or however it is saved. Share
+> recordings out-of-band, not through the repo.
 
 > **⭐ The single most important recording habit: click a field's LABEL before you
 > touch it — for EVERY field, not just dropdowns.**
