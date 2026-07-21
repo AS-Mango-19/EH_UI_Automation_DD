@@ -1,3 +1,3 @@
-TC_ID,IterationID,Test,Design Type,Upper Limit for Sample Size,Power,Test Type,Type 1 Error (?),Proportion Response under Null,Proportion Response under Alternative
-TC_01,ITER_01,Simon's Two Stage (One Arm Design),Optimal,150,0.88,1-Sided,0.025,0.15,0.45
-TC_02,ITER_01,Simon's Two Stage (One Arm Design),Minimax,150,0.88,1-Sided,0.025,0.15,0.45
+TC_ID,IterationID,Test,Design Type,Upper Limit for Sample Size,Power,Test Type,Type 1 Error (?),Proportion Response under Null,Proportion Response under Alternative,Select Test,Result Name
+TC_01,ITER_01,Simon's Two Stage (One Arm Design),Optimal,150,0.88,1-Sided,0.025,0.15,0.45,Simon's Two Stage,Result - set1
+TC_02,ITER_01,Simon's Two Stage (One Arm Design),Minimax,150,0.88,1-Sided,0.025,0.15,0.45,Simon's Two Stage,Result - set1

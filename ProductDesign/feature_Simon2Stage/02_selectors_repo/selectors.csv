@@ -1,31 +1,69 @@
-ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description
-txt_Username,LoginPage,testid,login-username,,#username,FALSE,Username field
-txt_Password,LoginPage,testid,login-password,,#password,FALSE,Password field
-btn_Login,LoginPage,role,button,Sign in,,FALSE,Sign in button
-btn_NewProject,ProjectsPage,testid,new-project,,button:has-text("New Project"),FALSE,Open new-project dialog
-txt_ProjectName,ProjectPage,label,Project Name,,,FALSE,Project name input
-ddl_TimeUnit,ProjectPage,label,Time Unit,,,FALSE,Time unit dropdown
-txt_StartDate,ProjectPage,label,Start Date,,,FALSE,Start date input
-ddl_Phase,ProjectPage,label,Phase,,,FALSE,Study phase dropdown
-ddl_TargetPopulation,ProjectPage,label,Target Population,,,FALSE,Target population dropdown
-txt_TreatmentArm,ProjectPage,label,Treatment Arm,,,FALSE,Treatment arm input
-txt_EndpointName,ProjectPage,label,Endpoint Name,,,FALSE,Endpoint name input
-ddl_EndpointType,ProjectPage,label,Endpoint Type,,,FALSE,Endpoint type dropdown
-ddl_BetterResponse,ProjectPage,label,Better Response,,,FALSE,Better response direction dropdown
-btn_SaveProject,ProjectPage,testid,save-project,,button:has-text("Save"),FALSE,Save project button
-lbl_ProjectId,ProjectPage,testid,project-id,,,FALSE,Element carrying the generated project id in data-id
-txt_InputSetName,InputSetPage,label,Input Set Name,,,FALSE,Input set name input
-ddl_SelectTask,InputSetPage,label,Task,,,FALSE,Task dropdown (Design)
-ddl_Test,InputSetPage,label,Test,,,FALSE,Statistical test dropdown
-btn_CreateInputSet,InputSetPage,testid,create-input-set,,button:has-text("Create"),FALSE,Create input set button
-ddl_DesignType,DesignPage,label,Design Type,,,FALSE,Optimal / Minimax dropdown
-txt_UpperLimit,DesignPage,label,Upper Limit for Sample Size,,,FALSE,Upper limit for sample size
-txt_Power,DesignPage,label,Power,,,FALSE,Target power input
-ddl_TestType,DesignPage,label,Test Type,,,FALSE,1-Sided / 2-Sided dropdown
-txt_Type1Error,DesignPage,label,Type 1 Error,,,FALSE,Type-1 error input
-txt_PropNull,DesignPage,label,Response Proportion Under Null,,,FALSE,p0 input
-txt_PropAlt,DesignPage,label,Response Proportion Under Alternative,,,FALSE,p1 input
-btn_Compute,DesignPage,testid,compute,,button:has-text("Compute"),FALSE,Compute / simulate button
-lbl_RunStatus,DesignPage,testid,run-status,,,FALSE,Status polled during simulation
-tbl_Results,ResultsPage,testid,results-grid,,table.results,FALSE,Results grid to extract
-btn_ExportResults,ResultsPage,testid,export-results,,button:has-text("Export"),FALSE,Export results download trigger
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_NewProject,ProjectsPage,testid,new-project,,"button:has-text(""New Project"")",FALSE,Open new-project dialog,FALSE
+txt_ProjectName,ProjectPage,label,Project Name,,,FALSE,Project name input,FALSE
+ddl_TimeUnit,ProjectPage,label,Time Unit,,,FALSE,Time unit dropdown,FALSE
+txt_StartDate,ProjectPage,label,Start Date,,,FALSE,Start date input,FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_TargetPopulation,ProjectPage,label,Target Population,,,FALSE,Target population dropdown,FALSE
+txt_TreatmentArm,ProjectPage,label,Treatment Arm,,,FALSE,Treatment arm input,FALSE
+txt_EndpointName,ProjectPage,label,Endpoint Name,,,FALSE,Endpoint name input,FALSE
+ddl_EndpointType,ProjectPage,label,Endpoint Type,,,FALSE,Endpoint type dropdown,FALSE
+ddl_BetterResponse,ProjectPage,label,Better Response,,,FALSE,Better response direction dropdown,FALSE
+btn_SaveProject,ProjectPage,testid,save-project,,"button:has-text(""Save"")",FALSE,Save project button,FALSE
+lbl_ProjectId,ProjectPage,testid,project-id,,,FALSE,Element carrying the generated project id in data-id,FALSE
+txt_InputSetName,InputSetPage,label,Input Set Name,,,FALSE,Input set name input,FALSE
+ddl_SelectTask,InputSetPage,label,Task,,,FALSE,Task dropdown (Design),FALSE
+ddl_Test,InputSetPage,label,Test,,,FALSE,Statistical test dropdown,FALSE
+btn_CreateInputSet,InputSetPage,testid,create-input-set,,"button:has-text(""Create"")",FALSE,Create input set button,FALSE
+ddl_DesignType,DesignPage,label,Design Type,,,FALSE,Optimal / Minimax dropdown,FALSE
+txt_UpperLimit,DesignPage,label,Upper Limit for Sample Size,,,FALSE,Upper limit for sample size,FALSE
+txt_Power,DesignPage,label,Power,,,FALSE,Target power input,FALSE
+ddl_TestType,DesignPage,label,Test Type,,,FALSE,1-Sided / 2-Sided dropdown,FALSE
+txt_Type1Error,DesignPage,label,Type 1 Error,,,FALSE,Type-1 error input,FALSE
+txt_PropNull,DesignPage,label,Response Proportion Under Null,,,FALSE,p0 input,FALSE
+txt_PropAlt,DesignPage,label,Response Proportion Under Alternative,,,FALSE,p1 input,FALSE
+btn_Compute,DesignPage,testid,compute,,"button:has-text(""Compute"")",FALSE,Compute / simulate button,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+tbl_Results,ResultsPage,testid,results-grid,,table.results,FALSE,Results grid to extract,FALSE
+btn_ExportResults,ResultsPage,testid,export-results,,"button:has-text(""Export"")",FALSE,Export results download trigger,FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+txt_project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Start_Date,ProjectPage,role,textbox,MM/dd/yyyy,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Study_Objective,ProjectPage,role,button,Select,,FALSE,button from codegen,FALSE
+opt_Study_Objective,ProjectPage,role,link,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+txt_population_Name_0,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_treatment_Arm_0,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+txt_endpoint_Name_0,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+btn_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,button from codegen,FALSE
+opt_Endpoint_Type,ProjectPage,role,link,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+btn_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,button from codegen,FALSE
+opt_Better_Response,ProjectPage,role,link,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Design_Compute_or_simulate_a,DesignPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,ResultsPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Simon_s_Two_Stage,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE
+ddl_Simon_s_Two_Stage_One_Arm,ResultsPage,label,Simon's Two Stage (One Arm,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Design_Type,ResultsPage,css,#upperLimitForSampleSize,,,FALSE,textbox from codegen,FALSE
+txt_power,ResultsPage,css,#power,,,FALSE,textbox from codegen,FALSE
+txt_type1Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_prop_Response_Under_Null,ResultsPage,css,#propResponseUnderNull,,,FALSE,textbox from codegen,FALSE
+txt_prop_Response_Under_Alt,ResultsPage,css,#propResponseUnderAlt,,,FALSE,textbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,ResultsPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Status,ResultsPage,text,Completed,,,FALSE,textbox from codegen,FALSE
+btn_Continue,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE

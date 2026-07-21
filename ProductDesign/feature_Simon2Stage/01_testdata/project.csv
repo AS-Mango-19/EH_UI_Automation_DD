@@ -1,3 +1,3 @@
-TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
-TC_01,ITER_01,TRUE,AutoProj_Simon,Week,Now,Two Arm Confirmatory,2,Adult,EXP,Primary,EP1,Binary,Larger Value
-TC_02,ITER_01,TRUE,AutoProj_Simon,Week,Now,Two Arm Confirmatory,2,Adult,EXP,Primary,EP1,Binary,Larger Value
+TC_ID,IterationID,Run,projectName,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,Endpoint Type,Better Response
+TC_01,ITER_01,TRUE,Project 21,Week,7/20/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value
+TC_02,ITER_01,TRUE,Project 21,Week,7/20/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value

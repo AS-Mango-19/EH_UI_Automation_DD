@@ -1,0 +1,41 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,click New Project
+5,50,ConfigureDesign,ProjectPage,fill,txt_project_Name,${data.project.projectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill projectName (made unique per run with runId)
+6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
+8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.StudyObjective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,100,ConfigureDesign,ProjectPage,fill,txt_population_Name_0,${data.project.populationName 0},,,,,10000,FALSE,0,never,,fill populationName 0
+11,110,ConfigureDesign,ProjectPage,fill,txt_treatment_Arm_0,${data.project.treatmentArm 0},,,,,10000,FALSE,0,never,,fill treatmentArm 0
+12,120,ConfigureDesign,ProjectPage,fill,txt_endpoint_Name_0,${data.project.endpointName 0},,,,,10000,FALSE,0,never,,fill endpointName 0
+13,130,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.EndpointType},,,,,15000,FALSE,0,always,,Select Endpoint Type. select opens the menu and commits the option itself - works for native and custom dropdowns
+14,140,ConfigureDesign,ProjectPage,select,ddl_Better_Response,${data.project.BetterResponse},,,,,15000,FALSE,0,always,,Select Better Response. select opens the menu and commits the option itself - works for native and custom dropdowns
+15,150,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+16,160,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+17,170,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+18,180,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
+19,190,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,click Design Compute or simulate a
+20,200,ExtractResults,ResultsPage,select,ddl_Select_Test,${data.design.Select Test},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
+21,210,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+22,220,ExtractResults,ResultsPage,select,ddl_Test_Type,${data.design.TestType},,,,,10000,FALSE,0,always,,Select Test Type. Native <select> - select matches by visible label first
+23,230,ExtractResults,ResultsPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
+24,240,ExtractResults,ResultsPage,click,txt_sample_Size,,,,,,10000,FALSE,0,never,,click sampleSize
+25,250,ExtractResults,ResultsPage,click,txt_sample_Size,,,,,,10000,FALSE,0,never,,click sampleSize
+26,260,ExtractResults,ResultsPage,fill,txt_sample_Size,${data.design.Sample Size},,,,,10000,FALSE,0,never,,fill sampleSize
+27,265,ExtractResults,ResultsPage,fill,txt_Power,${data.design.Power},,,,,10000,FALSE,0,never,,fill Power (skipped automatically when Power is the Computed parameter)
+28,270,ExtractResults,ResultsPage,fill,txt_type1Error,${data.design.Type1Error},,,,,10000,FALSE,0,never,,fill type1Error
+29,280,ExtractResults,ResultsPage,fill,txt_rate_Under_Null,${data.design.Rate under Null�},,,,,10000,FALSE,0,never,,fill rateUnderNull
+30,290,ExtractResults,ResultsPage,fill,txt_rate_Under_Alternative,${data.design.Rate under Alternative�},,,,,10000,FALSE,0,never,,fill rateUnderAlternative
+31,300,ExtractResults,ResultsPage,fill,txt_follow_Up_Time,${data.design.Follow-Up Time�},,,,,10000,FALSE,0,never,,fill followUpTime
+32,310,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+33,320,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+34,330,ExtractResults,ResultsPage,click,txt_ResultName,,,,,,10000,FALSE,0,never,,click Result Name
+35,340,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+36,350,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
+37,360,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+38,370,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+39,380,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+40,390,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL

@@ -1,5 +1,5 @@
 {
-  "feature": "Simon2Stage",
+  "feature": "SinglePoissonRate",
   "module": "ProductDesign",
   "serial": true,
   "reuseAuthState": false,

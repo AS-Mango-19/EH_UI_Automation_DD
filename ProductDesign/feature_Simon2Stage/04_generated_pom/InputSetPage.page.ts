@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 03_selectors_repo/selectors.csv (hash: f00709c3230c404c5a62d56a7b9c2b8da1a87e1f1328ad9b67bf6cac973dfa55)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: faafc544262c0ef03b2be021ea1aa0732419cb383bf0f17ff6be0e1a3e1b855c)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -27,5 +27,15 @@ export class InputSetPage {
   /** Create input set button */
   btn_CreateInputSet(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'InputSetPage', 'btn_CreateInputSet', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_New_Input_Set(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'InputSetPage', 'btn_New_Input_Set', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_collection_Name(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'InputSetPage', 'txt_collection_Name', { dynamicArgs });
   }
 }

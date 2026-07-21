@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: faafc544262c0ef03b2be021ea1aa0732419cb383bf0f17ff6be0e1a3e1b855c)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 4f407725cf78c20268cc95239e0064c7a314addf5ff3fe14dcaf191ae4ffa9a1)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -14,6 +14,11 @@ export class LoginPage {
     return resolveLocator(this.page, this.selectors, 'LoginPage', 'txt_Username', { dynamicArgs });
   }
 
+  /** Next button (login flow) */
+  btn_Next(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'LoginPage', 'btn_Next', { dynamicArgs });
+  }
+
   /** Password field (login flow) */
   txt_Password(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'LoginPage', 'txt_Password', { dynamicArgs });
@@ -22,10 +27,5 @@ export class LoginPage {
   /** Sign in button (login flow) */
   btn_Login(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'LoginPage', 'btn_Login', { dynamicArgs });
-  }
-
-  /** Next button (login flow) */
-  btn_Next(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'LoginPage', 'btn_Next', { dynamicArgs });
   }
 }

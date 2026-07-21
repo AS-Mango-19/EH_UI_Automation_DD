@@ -1,9 +1,9 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: c57ae1b978249dd88ae2d2e33ee632818b6c277ede315fd2249348b04441fee9)
+// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: c9de9bc49a8e3bcd9384f4241ea4295a7a27d5dee54039c6adfb0f82a631e2a7)
 import { runGeneratedSpec } from '../../../core/runner/specRuntime.js';
 
 runGeneratedSpec({
   module: "ProductDesign",
-  feature: "Simon2Stage",
+  feature: "SinglePoissonRate",
   metadataFileRel: "03_metadata/metadata.csv",
   testDataDirRel: "01_testdata",
 });
