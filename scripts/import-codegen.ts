@@ -526,7 +526,12 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
     };
   }
 
-  const textCall = /getByText\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(click|fill|check|selectOption))?\((.*?)\);?$/.exec(trimmed);
+  // Tolerate .nth(N)/.first()/.last() between getByText(...) and the action:
+  // codegen adds .nth(1) when a label's text appears more than once on the page
+  // (e.g. "Power" is both a radio and a field label). Without this the whole label
+  // click is dropped and the following field is named after its id (`power`)
+  // instead of the label ("Power").
+  const textCall = /getByText\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(?:nth\(\d+\)|first\(\)|last\(\)))*(?:\.(click|fill|check|selectOption))?\((.*?)\);?$/.exec(trimmed);
   if (textCall) {
     return {
       lineNo,
@@ -1426,6 +1431,42 @@ function main(): number {
       cols.delete(derived);
       dataValues.delete(`${file}|${derived}`);
       reuseLog.push(`${file}.csv: reused existing column "${existing}" for recorded field "${derived}"`);
+    }
+  }
+
+  // Superset-recording dedup. A superset recording toggles the controlling
+  // dropdowns/radios (e.g. Input Method 1->2->1, Hypothesis 2->1, Computed
+  // Parameter several times) to reveal every conditional field, which emits the
+  // SAME value-entering action on the SAME object more than once. Collapse to the
+  // FIRST occurrence: the step is data-driven (${data.*}), so the recorded value
+  // is irrelevant — the testdata decides it at runtime. Only select/check/fill are
+  // deduped (a click may legitimately repeat). A single-path recording has no such
+  // duplicates, so this is a NO-OP there and never alters an existing feature.
+  {
+    const seenValueStep = new Set<string>();
+    const deduped: StepRow[] = [];
+    let dropped = 0;
+    for (const step of steps) {
+      const action = String(step.Action ?? '');
+      if (action === 'select' || action === 'check' || action === 'fill') {
+        const key = `${step.Page}|${step.ObjectName}|${action}`;
+        if (seenValueStep.has(key)) {
+          dropped++;
+          continue;
+        }
+        seenValueStep.add(key);
+      }
+      deduped.push(step);
+    }
+    if (dropped) {
+      // Close the gaps the removals leave: Seq 1..N, StepID 10,20,30…
+      deduped.forEach((step, i) => {
+        step.Seq = i + 1;
+        step.StepID = (i + 1) * 10;
+      });
+      steps.length = 0;
+      steps.push(...deduped);
+      console.log(`  Collapsed ${dropped} duplicate control/field step(s) from the superset recording.`);
     }
   }
 

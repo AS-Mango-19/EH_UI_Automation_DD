@@ -203,12 +203,26 @@ export const fill: KeywordHandler = async (_page, ctx, step) => {
   await loc.fill(want, { timeout: step.timeout });
   // "Must be entered" means verified: read the value back and confirm it took.
   // Only for standard inputs we can read (skip contenteditable/custom to stay stable).
-  const initial = await loc.inputValue().then((v) => ({ readable: true, v: v.trim() })).catch(() => ({ readable: false, v: '' }));
-  if (initial.readable) {
-    let got = initial.v;
-    if (got !== want.trim()) {
+  const readable = await loc.inputValue().then(() => true).catch(() => false);
+  if (readable) {
+    const settle = async (): Promise<string> => {
       await _page.waitForTimeout(200).catch(() => undefined); // allow an async commit/reformat
-      got = (await loc.inputValue().catch(() => '')).trim();
+      return (await loc.inputValue().catch(() => '')).trim();
+    };
+    let got = (await loc.inputValue().catch(() => '')).trim();
+    if (got !== want.trim()) got = await settle();
+    if (got !== want.trim()) {
+      // A one-shot fill() reverts on some grid cells — they commit only on
+      // per-keystroke input + blur, so a bulk fill is discarded and the cell
+      // snaps back to its model value ("Endpoint 1"). Escalate: focus,
+      // select-all, type the value key-by-key, and commit with Tab. Only reached
+      // when the plain fill did NOT hold, so normal fields are never affected.
+      logger.warn(`fill: "${step.objectName}" did not hold after a plain fill (showed "${mask(got)}") — retrying key-by-key + commit.`);
+      await loc.click({ timeout: step.timeout }).catch(() => undefined);
+      await loc.press('Control+a').catch(() => undefined);
+      await loc.pressSequentially(want, { delay: 30, timeout: step.timeout }).catch(() => undefined);
+      await loc.press('Tab').catch(() => undefined);
+      got = await settle();
     }
     if (got !== want.trim()) {
       throw new FrameworkError(`fill: field "${step.objectName}" did not accept the value — expected "${mask(want)}", field shows "${mask(got)}"`, { stepId: step.stepId });
@@ -250,6 +264,33 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
   const isNativeSelect = locCount > 0
     ? await target.evaluate((element) => element.tagName.toLowerCase() === 'select').catch(() => false)
     : false;
+
+  // A disabled control is fixed by another field (e.g. Test Type is forced to
+  // "1-Sided" for Non-Inferiority; Input Method is fixed to "Ratio of Means" when
+  // the ratio is the computed parameter). If it ALREADY shows the intended value
+  // the intent is met — skip. If it shows something else, the app is in a state
+  // the testdata disagrees with — fail. Mirrors `fill`'s disabled handling.
+  if (locCount > 0 && (await target.isDisabled().catch(() => false))) {
+    const want = step.input.trim();
+    const shown: string[] = await target
+      .evaluate((el) => {
+        const sel = el as HTMLSelectElement;
+        if (sel.options && typeof sel.selectedIndex === 'number' && sel.selectedIndex >= 0) {
+          const opt = sel.options[sel.selectedIndex];
+          return [opt?.text ?? '', opt?.value ?? '', sel.value ?? ''];
+        }
+        return [(el as HTMLInputElement).value ?? '', el.textContent ?? ''];
+      })
+      .catch(() => [] as string[]);
+    if (shown.some((s) => String(s).trim() === want)) {
+      logger.info(`select: "${step.objectName}" is disabled and already shows "${want}" — fixed by another field, skipping.`);
+      return;
+    }
+    throw new FrameworkError(
+      `select: field "${step.objectName}" is disabled and shows "${mask(String(shown[0] ?? ''))}", not the required "${mask(want)}"`,
+      { stepId: step.stepId },
+    );
+  }
 
   if (!isNativeSelect) {
     logger.info(`select: using label-targeted combobox handling for ${step.objectName}.`);

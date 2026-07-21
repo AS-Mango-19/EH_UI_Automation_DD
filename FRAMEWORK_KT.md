@@ -12,6 +12,9 @@ one, and where the sharp edges are.
     iterations that compute different parameters), showing the `Computed` rule
     (§6.2) and per-iteration unique names.
   - `feature_Simon2Stage` (`TC_02`) — a group-stage design with a native `<select>`.
+  - `feature_MeanofPairedRatios` (`TC_05`) — the **conditional-fields, multi-scenario**
+    example: one metadata, four iterations (Superiority/Non-Inferiority × Ratio-of-Means/
+    Individual-Means), driven entirely by `N/A` cells and disabled-field skips (§6.3, §4.5).
 - **Every claim here is code-backed.** File and line references are given so you
   can verify rather than trust.
 
@@ -19,7 +22,7 @@ one, and where the sharp edges are.
 
 ## Contents
 
-**In a hurry?** → [Run a test](#2-quick-start) · [Add a feature](#13-adding-a-new-feature) · [All commands](#14-command-reference) · [Share a report](#111-sharing-a-report--use-npm-run-reportshare) · [Something broke](#16-where-to-look-when-something-breaks) · [Traps](#15-traps-and-known-issues)
+**In a hurry?** → [Run a test](#2-quick-start) · [Add a feature](#13-adding-a-new-feature) · [AI import agent](#139-the-ai-agent-path--import-feature) · [All commands](#14-command-reference) · [Share a report](#111-sharing-a-report--use-npm-run-reportshare) · [Something broke](#16-where-to-look-when-something-breaks) · [Traps](#15-traps-and-known-issues)
 
 | § | Section | What's in it |
 | --- | --- | --- |
@@ -35,7 +38,7 @@ one, and where the sharp edges are.
 | 10 | [Environments and auth](#10-environments-and-auth) | How `AD` is chosen, and login. |
 | 11 | [Reports and artifacts](#11-reports-and-artifacts) | What is written where, and sharing. |
 | 12 | [Extension points](#12-extension-points) | Reusable flows and custom steps. |
-| 13 | [Adding a new feature](#13-adding-a-new-feature) | **Step-by-step, with commands.** |
+| 13 | [Adding a new feature](#13-adding-a-new-feature) | **Two paths — manual importer + the AI agent (§13.9).** Step-by-step. |
 | 14 | [Command reference](#14-command-reference) | Every command and flag. |
 | 15 | [Traps and known issues](#15-traps-and-known-issues) | **Read before debugging.** |
 | 16 | [Where to look when something breaks](#16-where-to-look-when-something-breaks) | Symptom → where to look. |
@@ -59,6 +62,7 @@ one, and where the sharp edges are.
   - [Navigation](#navigation) · [Input](#input) · [Wait](#wait) · [Capture](#capture) · [Assert](#assert) · [Flow](#flow) · [API / Comparison](#api--comparison)
   - [6.1 `select` — read this before touching a dropdown](#61-select--read-this-before-touching-a-dropdown)
   - [6.2 `fill` — every value must land, and the `Computed` rule](#62-fill--every-testdata-value-must-land-and-the-computed-rule)
+  - [6.3 Disabled fields, grid cells, and the skip rules at a glance](#63-disabled-fields-grid-cells-and-the-skip-rules-at-a-glance)
 - **[7. Selector resolution](#7-selector-resolution)**
   - [7.1 Types and priority](#71-types-and-priority)
   - [7.2 FallbackSelector](#72-fallbackselector)
@@ -86,6 +90,7 @@ one, and where the sharp edges are.
   - [Step 7 — Approve the benchmark](#step-7--approve-the-benchmark)
   - [Step 8 — Real runs](#step-8--real-runs)
   - [What still needs a human](#what-still-needs-a-human)
+  - [13.9 The AI agent path — `/import-feature`](#139-the-ai-agent-path--import-feature)
 - **[14. Command reference](#14-command-reference)**
   - [Everyday](#everyday) · [`test` flags](#test-flags-corecliargsts) · [Authoring a feature](#authoring-a-feature) · [Sharing results](#sharing-results-111) · [Maintenance](#maintenance)
 - **[15. Traps and known issues](#15-traps-and-known-issues)**
@@ -349,6 +354,24 @@ Two rules the validator enforces so a half-authored multi-iteration set fails at
 computed output — leave it blank/greyed." `fill` skips it; every other value must
 be entered (§6.2).
 
+**Blank / `N/A` = not applicable to this iteration → the step is SKIPPED.** A
+value-entering step (`fill` / `select` / `type` / `check`) whose testdata cell is
+**blank** or **`N/A`** is skipped for that iteration (`core/runner/stepRunner.ts`).
+The field doesn't apply to this data combination — it may not even exist on the
+page (e.g. a Non-Inferiority margin on a Superiority design). The **same** step
+still runs for iterations whose row *does* supply a value.
+
+> **This is the answer to "one metadata or many?" — you keep ONE metadata per test
+> case.** Different iterations switch steps on/off by leaving cells blank; you never
+> fork the metadata. Records the superset of steps once, data-drive the rest.
+>
+> Two caveats: (1) skipping only triggers when the cell is fed by a `${data.*}`
+> token, so a static step with a deliberately empty InputValue is never skipped;
+> (2) a cell left blank *by accident* is silently skipped — write `N/A` when you
+> mean "not applicable" so intent is explicit. This also means the rule only helps
+> for fields that are **optional** across scenarios; if two scenarios use
+> *different* fields (different ids), that's a different flow — re-record it.
+
 ### 4.6 `06_baseline/compare.config.csv` — the compare rules
 
 | Column | Meaning |
@@ -522,6 +545,26 @@ radio value drives which field becomes `"Computed"`.)
 > is an input) you must **add the `fill` step by hand** — see the worked example in
 > §13 "What still needs a human". `npm run validate` will warn you: *"column
 > `Power` has a value but no step enters it."*
+
+### 6.3 Disabled fields, grid cells, and the skip rules at a glance
+
+The framework handles these app behaviours the **same** way across `fill` / `select`
+/ `check`, which is what lets **one metadata serve many data-combination iterations**
+(§4.5). Per iteration, the resolved testdata value decides:
+
+| Situation | `fill` | `select` |
+| --- | --- | --- |
+| a real value | enter it, then **read back to verify it landed** | pick the option |
+| **blank / `N/A`** | **skip** — field not applicable to this iteration | **skip** |
+| `"Computed"` | **skip** — greyed computed-output field | — |
+| field **disabled but already shows the intended value** — *fixed by another control* (e.g. Test Type forced to "1-Sided" for Non-Inferiority; Input Method fixed to "Ratio of Means" when computing the ratio) | — | **skip** — intent already met |
+| field **disabled, shows something else** | **fail** | **fail** |
+| field **not found** but a value is required | **fail** (`field not found`) | **fail** |
+| **grid cell** that discards a one-shot fill and reverts | auto-escalates to **type key-by-key + Tab** to commit | — |
+
+The disabled-and-fixed skip (`select`) and the grid escalation (`fill`) fire **only**
+when the plain path fails, so ordinary fields are never affected. All of these are in
+`core/keywords/input.ts`; the blank/`N/A` skip is central in `core/runner/stepRunner.ts`.
 
 ---
 
@@ -810,7 +853,19 @@ cover those cases now).
 
 ## 13. Adding a new feature
 
-**Goal: you supply a recording and testdata. The importer does the rest.**
+**You supply a recording + testdata; the tooling turns it into a runnable test.**
+There are **two ways** to do the turning — pick by how much judgment the feature needs:
+
+| Path | What runs | Use it when |
+| --- | --- | --- |
+| **A — Manual importer** (`npm run import-codegen`) | A deterministic CLI: captures selectors, generates steps + `${data.*}` tokens, dedups a superset recording, derives clean column names. | A straightforward single-path feature, or you want full control and will wire the details yourself. |
+| **B — AI agent** (`/import-feature`) | The importer **plus** a judgment layer: consolidates conditional fields, sets/verifies `N/A` per iteration, screenshot-verifies each run, fixes quirks — scoped to that one feature. | A feature with conditional fields / multiple scenarios, or when you want it wired *and verified* end-to-end. Works with **Claude Code and GitHub Copilot** — see §13.9. |
+
+Both use the **same importer** and the **same recording** — the agent just does the
+steps a deterministic parser can't (understanding intent, seeing the page). Steps 1-8
+are Path A in full; **§13.9** is Path B. Either way you start by recording (Step 1),
+and the golden rule holds for both: **follow the testdata** — a value must land
+(verified), blank/`N/A` skips, and a valued field that isn't found fails the test.
 
 ### Step 1 — Record the flow, and save it INTO the feature folder
 ```bash
@@ -831,8 +886,26 @@ Why there: the recording lives *with* the feature it produces, and the importer
 > real credentials. The rule `**/02_selectors_repo/recording.*` in `.gitignore`
 > keeps them local. Share recordings out-of-band, not through the repo.
 
-*Tip:* click a dropdown's **label**, then its **option** — the importer collapses
-that pair into one `select` step. This is the shape it expects for every dropdown.
+> **⭐ The single most important recording habit: click a field's LABEL before you
+> touch it — for EVERY field, not just dropdowns.**
+>
+> ```
+> getByText('Sample Size (n)').click();   // 1. click the label
+> #sampleSize.fill('100');                //  2. then fill/select
+> ```
+>
+> The importer names each testdata column after the **label** you clicked. So if
+> you click "Sample Size (n)" first, the column becomes `Sample Size (n)` and
+> **merges with the column you already have**. If you skip the label and only do
+> `#sampleSize.fill(...)`, the importer can only name the column after the field
+> **id** (`sampleSize`) — which won't match your `Sample Size (n)` column, so it
+> **adds a duplicate**. (The reuse logic bridges case/spacing/punctuation, not
+> id-vs-human-name differences like `sampleSize` ↔ `Sample Size (n)`.)
+>
+> For dropdowns the pattern also collapses the label + option into one `select`
+> step. Two rules of thumb: **click the label first**, and **don't click stray
+> labels** between fields — a stray `getByText('Test Type').click()` right before a
+> different field's fill makes the importer mis-name that field's column.
 
 ### Step 2 — Import (auto-discovers the recording)
 ```bash
@@ -865,6 +938,15 @@ What it does for you:
 - **Reuses your existing testdata columns.** If you already made a column
   `TestType`, a recorded field "Test Type" is matched to it (case/spacing
   ignored) instead of adding a duplicate. Only genuinely-new fields are added.
+- **Clean column names from labels** — a field you clicked the label for becomes
+  `Sample Size (n)`, `Target Population`, etc. (not the id `sampleSize`). It even
+  reads `getByText('Power').nth(1).click()` labels (codegen adds `.nth()` when the
+  text repeats on the page). Only a field recorded with **no** label falls back to
+  its id name.
+- **Dedups a superset recording.** If you toggled a control to reveal conditional
+  fields (Input Method 1→2→1, Hypothesis 2→1), the repeated `select`/`check`/`fill`
+  on the same object collapse into one data-driven step. Single-path recordings are
+  untouched.
 - **Project name made unique per iteration** — `..._${runId}_${iterationId}` — so
   two iterations don't collide on "name already exists".
 - **Backfills blank `TC_ID`/`IterationID`** in the seeded rows so they resolve.
@@ -912,12 +994,60 @@ The importer cannot infer these from a recording — it prints them as NEXT STEP
 | Thing | Why | Fix |
 | --- | --- | --- |
 | **Date pickers** | A date must be *picked*, not typed. The import clicks the recorded day cell, pinned to the recorded month. | Data-drive it, or use a `callCustom` hook. |
-| **Business column names** | A css-only dropdown (`#type-0`) has no label, so the column becomes `type 0`. | Rename to `Endpoint Type` in metadata + testdata. |
+| **A label-less field's name** | If you *don't* click a field's label while recording, the importer can only name the column after the field id (`sampleSize`, `type 0`). | Click the label when recording (Step 1) → clean name. Otherwise rename the column and I'll repoint the token. |
 | **A computed field that is an input elsewhere** | If a parameter was *computed* (greyed) while recording, codegen never typed it → no `fill` step. In another iteration it's an input. | Add a `fill` step + selector by hand (§6.2). `validate` warns which column. |
 | **Unique names** | The recording used one literal name. | Project names are auto-suffixed `_${runId}_${iterationId}`. For other must-be-unique fields, append the same. |
 | **`extractAllResultTables`** | Result capture is app-specific (§14). | Export it from `custom/<Feature>/customSteps.ts` (or reuse `custom/_shared/`). |
 | **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |
 | **Tolerances** | Only you know what "close enough" means. | Edit `compare.config.csv`. |
+
+### 13.9 The AI agent path — `/import-feature`
+
+Path A (the importer) does the deterministic ~80%. The **AI agent** does the
+judgment ~20% the importer can't — and it is **tool-agnostic**: the whole workflow
+lives in one playbook, [`AI_IMPORT_AGENT.md`](AI_IMPORT_AGENT.md), that any AI
+assistant follows. The importer still runs on its own (Path A); the agent sits on
+top of it.
+
+**Invoke it** — both entry points load the same playbook:
+
+| Tool | Command | Entry file |
+| --- | --- | --- |
+| **Claude Code** | `/import-feature` | `.claude/skills/import-feature/SKILL.md` |
+| **GitHub Copilot** | `/import-feature` | `.github/prompts/import-feature.prompt.md` |
+
+Then name the feature (Module, feature folder, TC id), e.g.
+`ProductDesign feature_MeanofPairedRatios TC_05`. Adding another AI tool later = one
+more small pointer to the same playbook.
+
+**What the agent does** (detail is in the playbook):
+1. Runs `npm run import-codegen` — the **same** manual importer.
+2. **Consolidates** a superset recording — one data-driven step per control,
+   ordered controls-before-dependent-fields.
+3. **Reconciles columns** and adds steps the recording couldn't capture (a computed
+   field that is an input in another iteration; mutually-exclusive `_NI`/`_SP`
+   variants).
+4. `npm run validate`.
+5. Runs the test and **screenshot-verifies every iteration** — confirms `N/A`
+   cells skip, valued fields land, and the right conditional fields are present.
+6. Fixes quirks (grid cells, disabled-fixed selects, wrong ids) and reports.
+
+**Guardrail:** the agent edits **only that feature's folder + its `master.csv`
+row** — never `core/` or another feature. If a genuine framework bug forces a
+`core/` change, it tests on a throwaway feature and re-runs `npm run validate` to
+prove every committed feature still passes.
+
+**Manual vs agent — the split that keeps this scalable:**
+
+| Deterministic → the **importer** (Path A) | Judgment → the **agent** (Path B) |
+| --- | --- |
+| selectors, steps, tokens, dedup, clean names | consolidate a toggling superset recording |
+| reuse columns, unique names, `serial: true` | decide `N/A` per iteration; check scenario consistency |
+| validate structure | screenshot-verify; fix disabled/grid/id quirks |
+
+Use the importer alone for a simple, single-path feature. Add the agent when the
+feature has conditional fields, multiple data-combination iterations, or you want it
+wired **and verified** end-to-end.
 
 ---
 
@@ -953,12 +1083,22 @@ npm run test -- --testcase TC_04 --update-baseline   # re-approve the benchmark
 | `--trigger <name>` | Label the run (`local` / `ci`). |
 
 ### Authoring a feature
+
+**Path A — manual importer** (deterministic, runnable on its own):
 ```bash
 npm run codegen                                              # record; save into the feature's 02_selectors_repo/ as recording.txt
 npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05   # recording auto-discovered -> feature
 npm run scaffold-feature -- <Module> <Feature>               # empty tree (import does this too)
 npm run xlsx-to-csv -- <file.xlsx>                           # Excel -> CSV
 ```
+
+**Path B — the AI agent** (importer + judgment + screenshot verification, §13.9):
+```text
+/import-feature ProductDesign feature_MyFeature TC_05
+```
+Same command in **Claude Code** and **GitHub Copilot** — both follow
+`AI_IMPORT_AGENT.md`. It runs the importer above, then consolidates the metadata,
+validates, runs, and screenshot-verifies each iteration — scoped to that one feature.
 
 > The recording is **auto-discovered** from `feature_MyFeature/02_selectors_repo/`
 > (`recording.txt`/`recording.ts`) — do not pass a path. If you must, it is a 3rd

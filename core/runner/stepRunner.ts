@@ -27,6 +27,15 @@ export interface RunStepsOptions {
   source?: string;
 }
 
+/** Keywords that enter a testdata value — a blank/N/A value skips them (see below). */
+const VALUE_ENTERING_ACTIONS = new Set(['fill', 'type', 'select', 'check']);
+
+/** A testdata value meaning "this field is not applicable to this iteration". */
+function isNotApplicable(value: string): boolean {
+  const t = value.trim();
+  return t === '' || /^(n\/a|not applicable)$/i.test(t);
+}
+
 function resolveStep(ctx: RunContext, step: MetadataStep): ResolvedStep {
   const loc = { stepId: step.StepID };
   const input = ctx.resolve(step.InputValue, { ...loc, column: 'InputValue' });
@@ -95,6 +104,25 @@ export async function runStep(ctx: RunContext, step: MetadataStep): Promise<Step
     resolved = resolveStep(ctx, step);
   } catch (e) {
     return handleFailure(ctx, step, base, started, e as Error, optional, '');
+  }
+
+  // --- Not-applicable skip ---
+  // A value-entering step whose testdata value resolved to blank or "N/A" is
+  // SKIPPED: the field is not applicable to THIS iteration (it may not even exist
+  // on the page for this data combination — e.g. a Non-Inferiority margin on a
+  // Superiority design). The same step still runs for iterations whose row
+  // supplies a value, so ONE metadata serves every data combination — no
+  // per-iteration metadata. Guarded by "InputValue references ${data.*}" so a
+  // static action with a deliberately empty InputValue is never skipped.
+  if (
+    VALUE_ENTERING_ACTIONS.has(step.Action) &&
+    /\$\{data\./.test(step.InputValue) &&
+    isNotApplicable(resolved.input)
+  ) {
+    const result: StepResult = { ...base, resolvedInput: '', status: 'skipped', durationMs: Date.now() - started };
+    ctx.stepResults.push(result);
+    logger.info(`SKIP  [${step.StepID}] ${step.Action} ${step.ObjectName} — testdata value blank/N/A (field not applicable to this iteration).`);
+    return result;
   }
 
   const maskedInput = mask(resolved.input);
