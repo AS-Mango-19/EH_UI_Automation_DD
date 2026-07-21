@@ -5,8 +5,13 @@ Read this top to bottom once and you will understand how a test runs, how to add
 one, and where the sharp edges are.
 
 - **Audience:** QA engineers and developers joining the project.
-- **Reference feature:** `ProductDesign/feature_ROM(PD)` (test `TC_04`) — the one
-  fully working end-to-end example. When in doubt, copy it.
+- **Reference features (all working end-to-end):**
+  - `feature_ROM(PD)` (`TC_04`) — the canonical single-iteration example. When in
+    doubt, copy it.
+  - `feature_SinglePoissonRate` (`TC_01`) — a **multi-iteration** example (two
+    iterations that compute different parameters), showing the `Computed` rule
+    (§6.2) and per-iteration unique names.
+  - `feature_Simon2Stage` (`TC_02`) — a group-stage design with a native `<select>`.
 - **Every claim here is code-backed.** File and line references are given so you
   can verify rather than trust.
 
@@ -53,6 +58,7 @@ one, and where the sharp edges are.
 - **[6. The keyword catalog](#6-the-keyword-catalog)**
   - [Navigation](#navigation) · [Input](#input) · [Wait](#wait) · [Capture](#capture) · [Assert](#assert) · [Flow](#flow) · [API / Comparison](#api--comparison)
   - [6.1 `select` — read this before touching a dropdown](#61-select--read-this-before-touching-a-dropdown)
+  - [6.2 `fill` — every value must land, and the `Computed` rule](#62-fill--every-testdata-value-must-land-and-the-computed-rule)
 - **[7. Selector resolution](#7-selector-resolution)**
   - [7.1 Types and priority](#71-types-and-priority)
   - [7.2 FallbackSelector](#72-fallbackselector)
@@ -220,14 +226,17 @@ maps by header *name*.
 | `Environment` | no | `''` | Env name. **Selects `.env.<env>` AND `06_baseline/<env>/`.** Currently `AD`. |
 | `BaselineMode` | no | `compare` | `compare` \| `create` \| `update`. |
 | `MetadataFile` | no | `03_metadata/metadata.csv` | Relative to the **feature** dir. Default at `config/framework.config.ts:18`. |
-| `TestDataFile` | no | `''` | Its *directory* becomes the testdata dir. |
+| `TestDataFile` | no | `''` | The testdata **directory**. Accepts either the folder (`01_testdata`) or a file inside it (`01_testdata/inputset.csv`) — both resolve to the folder, and the whole folder is loaded. Blank → default `01_testdata`. |
 | `ProjectID` | no | `''` | Reuse an existing project instead of creating one. |
 | `StudyObjective`, `Priority`, `IterationID`, `DependsOn`, `Owner`, `Description` | no | `''` | Metadata / gating. |
 
-Current contents:
+Current contents (one row per working feature):
 
 ```csv
 TC_ID,Module,Tags,StudyObjective,Feature,ProjectID,Browser,TestDataFile,MetadataFile,Execute,Environment
+TC_01,ProductDesign,regression,One Arm Exploratory / Confirmatory,SinglePoissonRate,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_02,ProductDesign,regression,One Arm Exploratory / Confirmatory,Simon2Stage,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_03,ProductDesign,regression,Two Arm Superiority,Difference_of_Means,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 ```
 
@@ -243,8 +252,8 @@ Schema: `core/schema/featureConfig.schema.ts`.
 | Key | Meaning |
 | --- | --- |
 | `feature`, `module` | Identity. |
-| `serial` | Force iterations to run one at a time. |
-| `reuseAuthState` | `true` = log in once in a **separate** browser, save `.auth/<env>.json`, reuse it. `false` = one browser, log in inline via a `callReusable` step. ROM(PD) uses **false** — see §10.2. |
+| `serial` | Run iterations one at a time. **Keep this `true`** — the app allows only **one active session per user**, so two iterations logging in at once force each other out ("another session started from a different location"). The importer now defaults it to `true`. See Trap 15. |
+| `reuseAuthState` | `true` = log in once in a **separate** browser, save `.auth/<env>.json`, reuse it. `false` = one browser, log in inline via a `callReusable` step. Features use **false** — see §10.2. |
 | `testdata.files` | Logical name -> CSV. `{inputset, project, design}` become the `${data.<name>.<Column>}` namespaces. |
 | `testdata.joinKey` | How a testdata row is matched to an iteration — `["TC_ID","IterationID"]`. |
 | `simulation` | `pollObject`, `successText`, `failureText`, `pollIntervalMs`, `maxWaitMs` for `waitForSimulation`. |
@@ -319,6 +328,27 @@ Keyed by `joinKey` (`TC_ID` + `IterationID`). Each file becomes a namespace:
 `project.csv` -> `${data.project.<Column>}`. Column names may contain spaces
 (`${data.project.Time Unit}`).
 
+**Multiple iterations.** One TC runs once per distinct `IterationID` in the
+testdata. Two rows (`ITER_01`, `ITER_02`) → two runs of the same steps with
+different values. Iterations are the **union** of `IterationID`s across the files.
+
+Two rules the validator enforces so a half-authored multi-iteration set fails at
+`npm run validate`, not mid-run:
+
+- **Iteration completeness (error).** If a file *keyed* by `TC_ID`+`IterationID`
+  has a row for an iteration another keyed file lacks, that's a guaranteed
+  "No testdata row" at runtime → validation **fails** with the exact missing
+  `file/TC/iteration`. (A file with no `TC_ID`/`IterationID` columns — e.g. a
+  one-row inputset — uses a first-row fallback and is exempt.)
+- **Coverage (warning).** A column that holds a value but is referenced by **no**
+  step is flagged: *"column X has a value but no step enters it."* It's how you
+  catch a testdata value that silently never reaches the screen (columns consumed
+  by a `callCustom` step are recognised and not flagged).
+
+**The `Computed` convention.** A cell value of `Computed` means "this field is the
+computed output — leave it blank/greyed." `fill` skips it; every other value must
+be entered (§6.2).
+
 ### 4.6 `06_baseline/compare.config.csv` — the compare rules
 
 | Column | Meaning |
@@ -388,7 +418,7 @@ rejects it.
 | Keyword | Required | Notes |
 | --- | --- | --- |
 | `click` | ObjectName | Walks a `label` selector to the real control. |
-| `fill` | ObjectName, InputValue | |
+| **`fill`** | ObjectName, InputValue | **Enters the value and verifies it landed — see §6.2.** |
 | `type` | ObjectName, InputValue | Types key-by-key. |
 | `clear` | ObjectName | |
 | **`select`** | ObjectName, InputValue | **Does the whole dropdown — see §6.1.** |
@@ -455,6 +485,44 @@ ${data.inputset.SelectTest}  ->  "Ratio of Means (Parallel Design)"
 Matching on the label alone and taking `.first()` silently picks whichever group
 renders first — a **wrong-value PASS**, which is worse than a failure.
 
+### 6.2 `fill` — every testdata value must land, and the `Computed` rule
+
+A value that sits in the testdata but never reaches the screen is a silent bug.
+So `fill` (`core/keywords/input.ts`) is strict:
+
+1. **Field missing** → the step **fails** with `field "X" not found`, not a vague
+   timeout.
+2. **Field disabled** with a real value to enter → **fails** (`field "X" is
+   disabled but testdata requires a value`). The app disabled a field you needed.
+3. **Value entered, then read back** to confirm it actually took. If the field
+   didn't accept it → **fails**.
+4. **The one exception — `"Computed"`.** If the testdata value is the literal
+   `Computed`, the field is skipped. In these design tools the *computed* parameter
+   is greyed out (you can't type into it), and `"Computed"` is how the testdata
+   says "this one is the output, not an input."
+
+**Why this matters for multi-iteration.** The same field can be an input in one
+iteration and the computed output in another — the metadata has **one** `fill`
+step; the testdata decides per iteration:
+
+```
+design.csv:
+  IterationID  Computed Parameter  Sample Size  Power
+  ITER_01      Sample Size         Computed     0.88     <- Sample Size skipped, Power=0.88 entered
+  ITER_02      Power               155          Computed  <- Power skipped, Sample Size=155 entered
+```
+
+One `fill txt_Power ${data.design.Power}` step handles both: 0.88 is typed for
+ITER_01, and `"Computed"` is skipped for ITER_02. (Radios use `check`, and a
+radio value drives which field becomes `"Computed"`.)
+
+> **Corollary:** a recording can only capture fields that were *editable* when you
+> recorded. If Power was the computed field during recording, codegen never typed
+> it, so the importer emits no Power step. For the *other* iteration (where Power
+> is an input) you must **add the `fill` step by hand** — see the worked example in
+> §13 "What still needs a human". `npm run validate` will warn you: *"column
+> `Power` has a value but no step enters it."*
+
 ---
 
 ## 7. Selector resolution
@@ -515,7 +583,9 @@ tokens is preserved — so `Proj_${runId}` works.
 | `${master.<Column>}` | A column of this test's `master.csv` row. | `${master.ProjectID}` |
 | `${runtime.<name>}` | A value captured earlier via **`StoreAs`**. | `${runtime.projectId}` |
 | `${config.<dotted.path>}` | A scalar from `feature.config.json`. | `${config.simulation.successText}` |
-| `${runId}` | This run's id — **the way to make values unique.** | `${runId}` |
+| `${runId}` | This run's id — unique across **runs**. | `${runId}` |
+| `${iterationId}` | This iteration's id (`ITER_01`, `ITER_02`) — unique across **iterations within a run**. | `${iterationId}` |
+| `${tcId}` | This test case's id. | `${tcId}` |
 | `${timestamp}` | Run timestamp. | `${timestamp}` |
 | `${today}`, `${today+30d}`, `${today-7d}`, `${Now}` | Date tokens (`core/utils/dates.ts`). | `${today+30d}` |
 | `${faker.<method>}` | Random data. Supported: `uuid`, `company`, `firstName`, `lastName`, `email`, `word`, `number`. | `${faker.email}` |
@@ -523,8 +593,14 @@ tokens is preserved — so `Proj_${runId}` works.
 Combine freely:
 
 ```
-${data.project.Project Name}_${runId}     ->  MyProject_20260717T012349_c9c5be
+${data.project.projectName}_${runId}                 ->  MyProject_20260717T012349_c9c5be
+${data.project.projectName}_${runId}_${iterationId}  ->  MyProject_20260717T012349_c9c5be_ITER_02
 ```
+
+> **For a globally-unique name across a multi-iteration run, use BOTH `${runId}`
+> and `${iterationId}`.** `runId` alone is shared by every iteration of a run, so
+> the 2nd iteration would try the same name and the app rejects it as a duplicate.
+> The importer already appends both to project-name fields.
 
 > **Hard rule: an unresolvable token THROWS.** It is never silently replaced with
 > an empty string. `resolver.ts:7` says why — *"a blank form field costs a day to
@@ -724,31 +800,54 @@ ROM(PD) exports: `extractAllResultTables` (used), plus `selectStartDate`,
 `uniqueProjectName`, `selectTestOption` (currently unused — the generic keywords
 cover those cases now).
 
+> **Shared fallback — `custom/_shared/customSteps.ts`.** `callCustom` resolves a
+> handler from the feature's own module **first**, then falls back to
+> `custom/_shared/`. Generic helpers (`selectStartDate`, `extractAllResultTables`)
+> live in `_shared`, so a new feature gets them for free without its own file. A
+> feature can still override by exporting its own handler of the same name.
+
 ---
 
 ## 13. Adding a new feature
 
 **Goal: you supply a recording and testdata. The importer does the rest.**
 
-### Step 1 — Record the flow
+### Step 1 — Record the flow, and save it INTO the feature folder
 ```bash
 npm run codegen
 ```
-Walk the app exactly as the test should. Save the generated code as
-`recording.ts` in the repo root.
+Walk the app exactly as the test should. Then **save the recording inside the
+feature's `02_selectors_repo/` folder** as `recording.txt` (or `recording.ts`):
+
+```
+ProductDesign/feature_MyFeature/02_selectors_repo/recording.txt
+```
+
+Why there: the recording lives *with* the feature it produces, and the importer
+**auto-discovers it** from that folder (Step 2) — you never pass a file path.
+
+> **The recording is gitignored and never committed.** Playwright codegen writes
+> the login steps verbatim, including the typed **password**, so recordings hold
+> real credentials. The rule `**/02_selectors_repo/recording.*` in `.gitignore`
+> keeps them local. Share recordings out-of-band, not through the repo.
 
 *Tip:* click a dropdown's **label**, then its **option** — the importer collapses
-that pair into one `select` step.
+that pair into one `select` step. This is the shape it expects for every dropdown.
 
-### Step 2 — Import
+### Step 2 — Import (auto-discovers the recording)
 ```bash
-npm run import-codegen -- ProductDesign MyFeature recording.ts --tc TC_05
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05
 ```
+No recording path — it finds `recording.txt`/`recording.ts` in the feature's
+`02_selectors_repo/`. (You *may* still pass an explicit path as a 3rd argument,
+but it must be relative to the repo root, e.g.
+`ProductDesign/feature_MyFeature/02_selectors_repo/recording.txt`.)
+
 This creates the whole feature (no separate scaffold needed):
 
 | Created | Contents |
 | --- | --- |
-| `00_config/feature.config.json` | skeleton (`reuseAuthState:false`) |
+| `00_config/feature.config.json` | skeleton (`serial:true`, `reuseAuthState:false`) |
 | `01_testdata/*.csv` | columns **and values seeded from the recording** |
 | `02_selectors_repo/selectors.csv` | locators, with `Exact` carried from codegen |
 | `03_metadata/metadata.csv` | ordered steps with `Seq` |
@@ -757,10 +856,18 @@ This creates the whole feature (no separate scaffold needed):
 What it does for you:
 - Okta/login -> one `callReusable flows/login.csv` step, placed **first**.
 - `navigate` with `domcontentloaded` + a polled readiness `waitForSelector`.
-- **Dropdowns -> one `select` step each** (custom *and* native).
+- **Dropdowns -> one `select` step each** (custom, native `<select>`, radios).
 - Codegen's `exact: true` -> the `Exact` column.
 - A result tail (`waitForSimulation` -> `callCustom` -> `compareWithBaseline`)
   when the recording shows a compute.
+- **`serial: true`** in the config — the app allows one session per user, so
+  iterations must run one at a time (see §4.2 / Trap 15).
+- **Reuses your existing testdata columns.** If you already made a column
+  `TestType`, a recorded field "Test Type" is matched to it (case/spacing
+  ignored) instead of adding a duplicate. Only genuinely-new fields are added.
+- **Project name made unique per iteration** — `..._${runId}_${iterationId}` — so
+  two iterations don't collide on "name already exists".
+- **Backfills blank `TC_ID`/`IterationID`** in the seeded rows so they resolve.
 
 ### Step 3 — Register the test
 Add the row the importer prints to `master.csv`:
@@ -806,8 +913,9 @@ The importer cannot infer these from a recording — it prints them as NEXT STEP
 | --- | --- | --- |
 | **Date pickers** | A date must be *picked*, not typed. The import clicks the recorded day cell, pinned to the recorded month. | Data-drive it, or use a `callCustom` hook. |
 | **Business column names** | A css-only dropdown (`#type-0`) has no label, so the column becomes `type 0`. | Rename to `Endpoint Type` in metadata + testdata. |
-| **Unique values** | The recording used one literal name. | Append `_${runId}`. |
-| **`extractAllResultTables`** | Result capture is app-specific (§14). | Export it from `custom/<Feature>/customSteps.ts`. |
+| **A computed field that is an input elsewhere** | If a parameter was *computed* (greyed) while recording, codegen never typed it → no `fill` step. In another iteration it's an input. | Add a `fill` step + selector by hand (§6.2). `validate` warns which column. |
+| **Unique names** | The recording used one literal name. | Project names are auto-suffixed `_${runId}_${iterationId}`. For other must-be-unique fields, append the same. |
+| **`extractAllResultTables`** | Result capture is app-specific (§14). | Export it from `custom/<Feature>/customSteps.ts` (or reuse `custom/_shared/`). |
 | **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |
 | **Tolerances** | Only you know what "close enough" means. | Edit `compare.config.csv`. |
 
@@ -846,11 +954,15 @@ npm run test -- --testcase TC_04 --update-baseline   # re-approve the benchmark
 
 ### Authoring a feature
 ```bash
-npm run codegen                                              # record
-npm run import-codegen -- <Module> <Feature> rec.ts --tc TC_05  # recording -> feature
+npm run codegen                                              # record; save into the feature's 02_selectors_repo/ as recording.txt
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05   # recording auto-discovered -> feature
 npm run scaffold-feature -- <Module> <Feature>               # empty tree (import does this too)
 npm run xlsx-to-csv -- <file.xlsx>                           # Excel -> CSV
 ```
+
+> The recording is **auto-discovered** from `feature_MyFeature/02_selectors_repo/`
+> (`recording.txt`/`recording.ts`) — do not pass a path. If you must, it is a 3rd
+> positional arg **relative to the repo root**, not the feature folder.
 
 ### Sharing results (§11.1)
 ```bash
@@ -912,6 +1024,17 @@ Ordered by how much time they will cost you.
 13. **Excel locks CSVs.** Close the file or writes fail with `EPERM`.
 14. **CSV commas.** An unquoted comma in `Description` shifts every later column.
     Keep descriptions comma-free or quote the field.
+15. **One session per user (Forced Log Out).** The app kills all but the newest
+    session for a login. So iterations must run **serially** — `serial: true` in
+    the feature config (now the importer default). With `serial: false`, two
+    iterations log in at once and you get a spurious login failure / "Forced Log
+    Out" screen. Note: `serial: true` on *any* selected feature makes the whole
+    run serial.
+16. **A recording can't capture a computed field.** If a parameter was the
+    *computed* (greyed) field while you recorded, codegen never typed it, so the
+    importer emits no `fill` for it. When that field is an **input** in another
+    iteration, add the `fill` step by hand (§6.2 / §13). A re-import wipes manual
+    additions — re-add them.
 
 ---
 
@@ -926,6 +1049,9 @@ Ordered by how much time they will cost you.
 | Wrong value silently selected | Substring match (§7.3) or grouped options (§6.1). |
 | `BASELINE_CREATED` when you expected PASS | Baseline is not where the env points (§9.4/§10.1). |
 | Compare FAIL | `08_diffs/` — cell-level differences. |
+| "Forced Log Out" / bounced to the login page | Iterations ran in parallel against a one-session app. Set `serial: true` (Trap 15). |
+| `field "X" not found` / `... is disabled but testdata requires a value` | The `fill` value can't land — wrong selector, or the field is greyed (should its value be `Computed`?). §6.2. |
+| `No testdata row for TC/ITER` | A keyed testdata file is missing that iteration's row. `validate` now catches this first (§4.5). |
 | Nothing obvious | `artifacts/<runId>/<TC>_<ITER>/` — the screenshots show the actual screen at the failing step. |
 
 ---
