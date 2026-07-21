@@ -384,9 +384,15 @@ still runs for iterations whose row *does* supply a value.
 | `Normalize` | e.g. `trim`. |
 | `Notes` | Why. |
 
-ROM(PD): `TableName`/`RowLabel`/`ColumnName` are keys, `Value` is compared, and
-`RunID`/`Timestamp`/`ProjectID` are volatile (never compared —
+Every feature uses the same shape: `TableName`/`RowLabel`/`ColumnName` are keys,
+`Value` is compared, and `RunID`/`ProjectID` are volatile (never compared —
 `framework.config.ts:22`).
+
+> **There is no `Timestamp` column.** It changed on every run, so it could never
+> be compared — it only added noise to the captured CSV. If you are looking at an
+> old baseline that still has one, re-record it with `--update-baseline`; the
+> column list here and the one in `extractAllResultTables` must match exactly or
+> the compare reports `SCHEMA_MISMATCH`.
 
 ---
 
@@ -839,15 +845,37 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
 480,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,...
 ```
 
-ROM(PD) exports: `extractAllResultTables` (used), plus `selectStartDate`,
-`uniqueProjectName`, `selectTestOption` (currently unused — the generic keywords
-cover those cases now).
+ROM(PD) exports `selectStartDate`, `uniqueProjectName`, `selectTestOption`
+(currently unused — the generic keywords cover those cases now). It used to carry
+its **own copy** of `extractAllResultTables`; the copies drifted, so fixes landed
+on one and not the other. That copy is gone — ROM(PD) now inherits the shared one.
 
 > **Shared fallback — `custom/_shared/customSteps.ts`.** `callCustom` resolves a
 > handler from the feature's own module **first**, then falls back to
 > `custom/_shared/`. Generic helpers (`selectStartDate`, `extractAllResultTables`)
 > live in `_shared`, so a new feature gets them for free without its own file. A
 > feature can still override by exporting its own handler of the same name.
+>
+> Prefer **not** to override `extractAllResultTables`. It is feature-agnostic on
+> purpose, and a per-feature copy is how the ROM(PD) drift happened.
+
+#### What `extractAllResultTables` captures
+
+It discovers the result page rather than assuming a fixed set of tables, and
+flattens everything to one cell per row (`TableName | RowLabel | ColumnName |
+Value`) so any table shape fits the schema `compare.config.csv` describes once.
+
+| It handles | Why it has to |
+| --- | --- |
+| **Leaf grids only** | AG Grid wraps a nested `.ag-root` for grouped views. Reading every `.ag-root` captured each cell **twice** — once flat, once through the wrapper, whose blank first column produced `row_1`-style placeholder keys. |
+| **Scrolls each grid** | AG Grid only keeps *visible* rows in the DOM. A tall table silently truncated; it now scrolls the body viewport and merges rows until it has the `aria-rowcount` the grid claims, and warns if it still falls short. |
+| **Cells keyed by `col-id`/`row-index`** | Pinned columns emit one `[role=row]` per container; positional binding would silently bind cells to the wrong headers. |
+| **Narrative panels** | The headline numbers live in prose ("a total of **571** pairs … power of **88.02%**"), not in any grid. A heading with no grid/table of its own is captured as a single `Narrative` cell. |
+| **Skips hidden + chrome panels** | A single-page app keeps hidden dialogs mounted (the "Sign Out" confirmation) and toolbars read as panel text (`RenameDeleteHomeDetails`). Panels must be **visible**, and their text is measured with buttons/links/tabs/icons stripped out. |
+
+Grids that share a heading are numbered in document order (`Design Summary #1`,
+`#2`). Those names are **baseline keys** — if the app reorders the panels, expect
+a diff and re-record.
 
 ---
 
@@ -997,7 +1025,7 @@ The importer cannot infer these from a recording — it prints them as NEXT STEP
 | **A label-less field's name** | If you *don't* click a field's label while recording, the importer can only name the column after the field id (`sampleSize`, `type 0`). | Click the label when recording (Step 1) → clean name. Otherwise rename the column and I'll repoint the token. |
 | **A computed field that is an input elsewhere** | If a parameter was *computed* (greyed) while recording, codegen never typed it → no `fill` step. In another iteration it's an input. | Add a `fill` step + selector by hand (§6.2). `validate` warns which column. |
 | **Unique names** | The recording used one literal name. | Project names are auto-suffixed `_${runId}_${iterationId}`. For other must-be-unique fields, append the same. |
-| **`extractAllResultTables`** | Result capture is app-specific (§14). | Export it from `custom/<Feature>/customSteps.ts` (or reuse `custom/_shared/`). |
+| **`extractAllResultTables`** | Nothing — it is feature-agnostic and lives in `custom/_shared/`. | Nothing to write. It discovers the tables and narrative panels itself (§12.2). Only override it if this app's result page is genuinely unlike the others. |
 | **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |
 | **Tolerances** | Only you know what "close enough" means. | Edit `compare.config.csv`. |
 

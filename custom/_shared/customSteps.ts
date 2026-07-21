@@ -159,17 +159,54 @@ function disambiguate(names: string[]): string[] {
   });
 }
 
+/** Merge every currently-RENDERED row of a grid into `byRow`, keyed by row-index. */
+async function collectRenderedRows(grid: Locator, byRow: Map<string, Map<string, string>>): Promise<void> {
+  const rowEls = grid.locator('[role="row"][row-index]');
+  const rowCount = await rowEls.count().catch(() => 0);
+  for (let r = 0; r < rowCount; r++) {
+    const row = rowEls.nth(r);
+    const idx = (await row.getAttribute('row-index').catch(() => null)) ?? String(r);
+    const cells = row.locator('[role="gridcell"][col-id]');
+    const cellCount = await cells.count().catch(() => 0);
+    let bucket = byRow.get(idx);
+    if (!bucket) {
+      bucket = new Map<string, string>();
+      byRow.set(idx, bucket);
+    }
+    for (let c = 0; c < cellCount; c++) {
+      const cell = cells.nth(c);
+      const id = await cell.getAttribute('col-id').catch(() => null);
+      if (!id) continue;
+      const text = squash((await cell.textContent().catch(() => '')) ?? '');
+      if (text !== '' || !bucket.has(id)) bucket.set(id, text);
+    }
+  }
+}
+
 async function readAgGrids(page: Page): Promise<Record<string, string>[]> {
   const out: Record<string, string>[] = [];
-  const grids = page.locator('div.ag-root');
-  const gridCount = await grids.count().catch(() => 0);
+  const allGrids = page.locator('div.ag-root');
+  const total = await allGrids.count().catch(() => 0);
+
+  // Keep only LEAF grids. AG Grid wraps a nested .ag-root for grouped / master-detail
+  // views, so capturing every .ag-root recorded the same data twice — once flat and
+  // once through the wrapper, whose blank first column produced `row_1`-style
+  // placeholder keys. Only the innermost grid holds the real rows.
+  const leaf: number[] = [];
+  for (let g = 0; g < total; g++) {
+    const nested = await allGrids.nth(g).locator('div.ag-root').count().catch(() => 0);
+    if (nested === 0) leaf.push(g);
+  }
+  if (total !== leaf.length) {
+    logger.info(`extractAllResultTables: ${total} grid container(s), ${leaf.length} leaf grid(s) — skipped ${total - leaf.length} wrapper(s).`);
+  }
 
   const rawNames: string[] = [];
-  for (let g = 0; g < gridCount; g++) rawNames.push(await gridLabel(grids.nth(g), g));
+  for (let k = 0; k < leaf.length; k++) rawNames.push(await gridLabel(allGrids.nth(leaf[k]), k));
   const names = disambiguate(rawNames);
 
-  for (let g = 0; g < gridCount; g++) {
-    const grid = grids.nth(g);
+  for (let k = 0; k < leaf.length; k++) {
+    const grid = allGrids.nth(leaf[k]);
     const headerCells = grid.locator('.ag-header-cell[col-id]');
     const headerCount = await headerCells.count().catch(() => 0);
     const colOrder: string[] = [];
@@ -183,32 +220,39 @@ async function readAgGrids(page: Page): Promise<Record<string, string>[]> {
     }
     if (colOrder.length === 0) continue;
 
-    const tableName = names[g];
-    const rowEls = grid.locator('[role="row"][row-index]');
-    const rowCount = await rowEls.count().catch(() => 0);
+    const tableName = names[k];
     const byRow = new Map<string, Map<string, string>>();
-    for (let r = 0; r < rowCount; r++) {
-      const row = rowEls.nth(r);
-      const idx = (await row.getAttribute('row-index').catch(() => null)) ?? String(r);
-      const cells = row.locator('[role="gridcell"][col-id]');
-      const cellCount = await cells.count().catch(() => 0);
-      let bucket = byRow.get(idx);
-      if (!bucket) {
-        bucket = new Map<string, string>();
-        byRow.set(idx, bucket);
-      }
-      for (let c = 0; c < cellCount; c++) {
-        const cell = cells.nth(c);
-        const id = await cell.getAttribute('col-id').catch(() => null);
-        if (!id) continue;
-        bucket.set(id, squash((await cell.textContent().catch(() => '')) ?? ''));
-      }
-    }
 
+    // Defeat virtualization: AG Grid only keeps VISIBLE rows in the DOM, so a tall
+    // grid silently truncates. Scroll the body viewport in steps and merge the rows
+    // rendered at each position until we have every row the grid claims
+    // (aria-rowcount - 1 header) or scrolling stops making progress.
     const claimed = Number((await grid.getAttribute('aria-rowcount').catch(() => null)) ?? '0');
-    if (claimed > 0 && claimed - 1 > byRow.size) {
+    const target = claimed > 1 ? claimed - 1 : 0;
+    const viewport = grid.locator('.ag-body-viewport').first();
+    const canScroll = (await viewport.count().catch(() => 0)) > 0;
+    let lastSeen = -1;
+    for (let pass = 0; pass < 40; pass++) {
+      await collectRenderedRows(grid, byRow);
+      if (target > 0 && byRow.size >= target) break;
+      if (pass > 0 && byRow.size === lastSeen) break; // no new rows appeared
+      lastSeen = byRow.size;
+      if (!canScroll) break;
+      const moved = await viewport
+        .evaluate((el) => {
+          const before = el.scrollTop;
+          el.scrollTop = before + Math.max(el.clientHeight * 0.8, 40);
+          return el.scrollTop !== before;
+        })
+        .catch(() => false);
+      if (!moved) break;
+      await page.waitForTimeout(120);
+    }
+    if (canScroll) await viewport.evaluate((el) => { el.scrollTop = 0; }).catch(() => undefined);
+
+    if (target > 0 && byRow.size < target) {
       logger.warn(
-        `extractAllResultTables: "${tableName}" reports ${claimed - 1} data row(s) but only ${byRow.size} rendered — AG Grid virtualization truncating.`,
+        `extractAllResultTables: "${tableName}" reports ${target} data row(s) but only ${byRow.size} could be rendered even after scrolling.`,
       );
     }
 
@@ -258,6 +302,82 @@ async function readNativeTables(page: Page): Promise<Record<string, string>[]> {
 }
 
 /**
+ * A container's text with interactive chrome removed. Buttons, links, tabs and
+ * icons are controls, not results: without this a toolbar reads as the "content"
+ * of its panel (e.g. "RenameDeleteHomeDetails") and lands in the baseline.
+ */
+async function panelText(node: Locator): Promise<string> {
+  return node
+    .evaluate((el) => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone
+        .querySelectorAll('button, a, svg, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"]')
+        .forEach((n) => n.remove());
+      return clone.textContent ?? '';
+    })
+    .catch(() => '');
+}
+
+/**
+ * Capture the non-tabular result INFORMATION — narrative panels such as "Summary",
+ * which carry headline numbers ("a total of 571 pairs", "power of 88.02%") in prose
+ * and are invisible to a table reader. A panel qualifies when it is visible, has a
+ * heading, and owns no grid/table of its own (those are captured cell-by-cell).
+ */
+async function readInfoPanels(page: Page): Promise<Record<string, string>[]> {
+  const MAX_TEXT = 4000;
+  const headings = page.locator('h1,h2,h3,h4,h5,h6');
+  const count = await headings.count().catch(() => 0);
+  const titles: string[] = [];
+  const bodies: string[] = [];
+  const seen = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    const heading = headings.nth(i);
+
+    // Skip anything not on screen. A single-page app keeps hidden dialogs mounted
+    // (the "Sign Out" confirmation, collapsed panels); their prose is not a result.
+    if (!(await heading.isVisible().catch(() => false))) continue;
+
+    const title = squash((await heading.textContent().catch(() => '')) ?? '');
+    if (!title) continue;
+
+    // Walk out from the heading and take the FIRST (deepest, therefore tightest)
+    // container that adds text beyond the title. Bail out as soon as a container
+    // owns a grid/table — past that we are swallowing the whole page.
+    let node = heading.locator('xpath=..');
+    let body = '';
+    for (let up = 0; up < 4; up++) {
+      if ((await node.locator('div.ag-root, table').count().catch(() => 0)) > 0) break;
+      const full = squash(await panelText(node));
+      const candidate = squash(full.startsWith(title) ? full.slice(title.length) : full);
+      if (candidate) {
+        body = candidate;
+        break;
+      }
+      node = node.locator('xpath=..');
+    }
+
+    if (!body || body.length > MAX_TEXT || seen.has(body)) continue;
+    seen.add(body);
+    titles.push(title);
+    bodies.push(body);
+  }
+
+  const names = disambiguate(titles);
+  const out = names.map((name, i) => ({
+    TableName: name,
+    RowLabel: 'Narrative',
+    ColumnName: 'Text',
+    Value: bodies[i],
+  }));
+  for (const row of out) {
+    logger.info(`extractAllResultTables: info panel "${row['TableName']}" -> ${row['Value'].length} char(s)`);
+  }
+  return out;
+}
+
+/**
  * The result opens as a TAB inside a tabbed SPA — the URL never changes and the
  * click tears down/re-renders the grid, so an immediate read sees zero tables.
  * Poll until the table count is non-zero AND has stopped changing.
@@ -289,15 +409,20 @@ async function waitForTablesToSettle(page: Page, timeout: number): Promise<void>
  */
 export const extractAllResultTables: KeywordHandler = async (page, ctx, step) => {
   await waitForTablesToSettle(page, step.timeout);
-  const rows = [...(await readAgGrids(page)), ...(await readNativeTables(page))];
+  const rows = [
+    ...(await readAgGrids(page)),
+    ...(await readNativeTables(page)),
+    ...(await readInfoPanels(page)),
+  ];
 
   if (rows.length === 0) {
     throw new Error('extractAllResultTables: no tables found on the result page — check that the result detail view actually opened.');
   }
 
+  // No Timestamp: it changes every run, so it can never be compared and only adds
+  // noise to the captured CSV. RunID/ProjectID stay as non-compared provenance.
   for (const row of rows) {
     row['RunID'] = ctx.runId;
-    row['Timestamp'] = ctx.timestamp;
     row['ProjectID'] = ctx.createdProjectId ?? ctx.master.ProjectID ?? '';
   }
 
@@ -308,7 +433,7 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
       a['ColumnName'].localeCompare(b['ColumnName']),
   );
 
-  const columns = ['TableName', 'RowLabel', 'ColumnName', 'Value', 'RunID', 'Timestamp', 'ProjectID'];
+  const columns = ['TableName', 'RowLabel', 'ColumnName', 'Value', 'RunID', 'ProjectID'];
   ensureDir(ctx.feature.paths.actualResults);
   const outputPath = path.join(ctx.feature.paths.actualResults, `results_${ctx.tcId}_${ctx.iterationId}.csv`);
   writeCsv(outputPath, rows, columns);

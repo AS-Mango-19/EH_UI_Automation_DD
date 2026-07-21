@@ -4,5 +4,4 @@ RowLabel,TRUE,FALSE,string,,,,trim,First column of the grid row - the parameter 
 ColumnName,TRUE,FALSE,string,,,,trim,The grid column header. Keying on it is what makes headers part of the comparison: a renamed or dropped header surfaces as a missing/extra row instead of passing silently
 Value,FALSE,TRUE,string,,,,trim,The captured cell. DataType=string not numeric because a single Value column carries both numbers and free text; the run is an Analytical Design so it is deterministic and exact matching is correct. Switch to numeric + a tolerance only if a table ever holds simulated (RNG) output
 RunID,FALSE,FALSE,string,,,,,Volatile provenance - never compared
-Timestamp,FALSE,FALSE,string,,,,,Volatile provenance - never compared
 ProjectID,FALSE,FALSE,string,,,,,Volatile provenance - unique per run

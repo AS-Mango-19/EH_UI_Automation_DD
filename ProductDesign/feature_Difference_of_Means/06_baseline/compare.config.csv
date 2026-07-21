@@ -6,5 +6,4 @@ Total_SampleSize_N,FALSE,TRUE,numeric,0,,0,,Integer - exact match
 Attained_Alpha,FALSE,TRUE,numeric,0.0005,0.01,5,,Attained type 1 error
 Attained_Power,FALSE,TRUE,numeric,0.0005,0.01,5,,Attained power
 RunID,FALSE,FALSE,string,,,,,Volatile - never compare
-Timestamp,FALSE,FALSE,date,,,,,Volatile - never compare
 ProjectID,FALSE,FALSE,string,,,,,Volatile - never compare
