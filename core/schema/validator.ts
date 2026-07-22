@@ -14,6 +14,7 @@ import { featureDir, abs } from '../utils/paths.js';
 import { getKeywordSpec } from '../keywords/catalog.js';
 import { FRAMEWORK_CONFIG } from '../../config/framework.config.js';
 import type { MasterRow } from './master.schema.js';
+import { JOIN_KEYS, RUN_COLUMN } from './testdata.schema.js';
 
 export interface ValidationReport {
   issues: string[];
@@ -191,7 +192,7 @@ function validateTestDataCoverage(
       /* no custom module for this feature */
     }
   }
-  const CONTROL = new Set(['TC_ID', 'IterationID', 'Run']);
+  const CONTROL = new Set<string>([...JOIN_KEYS, RUN_COLUMN]);
   for (const [file, parsed] of f.testDataParsed) {
     const ref = referenced.get(file) ?? new Set<string>();
     for (const col of parsed.headers) {

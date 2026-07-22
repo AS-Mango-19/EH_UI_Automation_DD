@@ -5,9 +5,11 @@
  * Tolerant of your attached format: a file WITHOUT TC_ID/IterationID (e.g.
  * testdata.csv) is treated as a single implicit row that applies to the current
  * test case & every iteration. Files WITH those columns join normally, and
- * iterations are discovered from Run=TRUE rows.
+ * iterations are discovered from their IterationID values — an optional `Run`
+ * column switches an individual iteration off (see iterationsFor).
  */
 import type { ParsedCsv } from '../csv/reader.js';
+import { RUN_COLUMN } from '../schema/testdata.schema.js';
 import { FrameworkError } from '../utils/errors.js';
 
 const DEFAULT_ITERATION = 'ITER_01';
@@ -30,21 +32,39 @@ export class TestDataStore {
     return [...this.files.keys()];
   }
 
-  /** Distinct iterations to run for a test case, from Run=TRUE rows across files. */
+  /**
+   * Distinct iterations to run for a test case.
+   *
+   * The iteration list is the UNION over every testdata file that has an
+   * IterationID column, so `Run` has to be a VETO rather than a vote: a file
+   * that carries the column switches an iteration off for the whole feature,
+   * and files without the column cannot switch it back on. Otherwise you would
+   * have to repeat the flag in every testdata file to make it stick, and
+   * setting Run=FALSE in just one of them would silently do nothing.
+   */
   iterationsFor(tcId: string): string[] {
     const iterations = new Set<string>();
+    const switchedOff = new Set<string>();
+
     for (const parsed of this.files.values()) {
       if (!parsed.headers.includes('IterationID')) continue;
       const hasTc = parsed.headers.includes('TC_ID');
-      const hasRun = parsed.headers.includes('Run');
+      const hasRun = parsed.headers.includes(RUN_COLUMN);
       for (const rec of parsed.records) {
         if (hasTc && rec.data['TC_ID'] !== tcId) continue;
-        if (hasRun && !truthy(rec.data['Run'])) continue;
         const iter = rec.data['IterationID'];
-        if (iter) iterations.add(iter);
+        if (!iter) continue;
+        if (hasRun && !truthy(rec.data[RUN_COLUMN])) switchedOff.add(iter);
+        else iterations.add(iter);
       }
     }
-    if (iterations.size === 0) return [DEFAULT_ITERATION];
+
+    // Distinguish "no iterations are declared anywhere" (a file with no
+    // IterationID column is one implicit row -> ITER_01) from "every declared
+    // iteration was switched off", which must run nothing at all.
+    if (iterations.size === 0 && switchedOff.size === 0) return [DEFAULT_ITERATION];
+
+    for (const iter of switchedOff) iterations.delete(iter);
     return [...iterations].sort();
   }
 

@@ -337,6 +337,26 @@ Keyed by `joinKey` (`TC_ID` + `IterationID`). Each file becomes a namespace:
 testdata. Two rows (`ITER_01`, `ITER_02`) → two runs of the same steps with
 different values. Iterations are the **union** of `IterationID`s across the files.
 
+**The `Run` column — switching one iteration off.** An optional `Run` column
+parks an iteration without deleting its data. `TRUE` / `1` / `YES` / `Y` **and
+blank** all mean *run it* — the column is opt-**out**, so a row is on unless you
+explicitly say `FALSE`.
+
+You only need the column in **one** file (`project.csv` by convention). Because
+the iteration list is a union, `Run` is a **veto**: `FALSE` anywhere switches that
+iteration off for the whole feature, and a file without the column cannot switch
+it back on. Keeping the flag in one place is the intended usage — you do not
+repeat it across `design.csv` / `inputset.csv`.
+
+| `project.csv` | result |
+| --- | --- |
+| `TC_05,ITER_02,FALSE,...` | ITER_02 is skipped; the other iterations still run |
+| `TC_05,ITER_02,,...` | blank → ITER_02 **runs** |
+| every row `FALSE` | the test case runs **nothing** (not a phantom `ITER_01`) |
+
+Leave the row in place — deleting it instead would trip the iteration-completeness
+error below, because the other keyed files still have a row for that iteration.
+
 Two rules the validator enforces so a half-authored multi-iteration set fails at
 `npm run validate`, not mid-run:
 
