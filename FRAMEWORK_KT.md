@@ -370,9 +370,32 @@ Two rules the validator enforces so a half-authored multi-iteration set fails at
   catch a testdata value that silently never reaches the screen (columns consumed
   by a `callCustom` step are recognised and not flagged).
 
+### What to put in a testdata cell
+
+Adding a new data combination is this decision, per field, per iteration. Look at the
+field **on screen with that combination selected**: is it there, and can you type in it?
+
+| On screen, for THIS combination | Cell value | Result |
+| --- | --- | --- |
+| **Not on the page** (hidden by a controlling option) | `N/A` | step skipped |
+| **Editable**, you choose the input | the real value | entered + read back to verify |
+| **Greyed, literally showing "Computed"** (the parameter being solved for) | `Computed` | step skipped — the app owns it |
+| **Greyed, showing a derived number** | the expected number, wired as `assertValue` | the app's arithmetic is **verified** |
+| Greyed derived number you don't care about | `N/A` | step skipped |
+| Editable but you want the app default | blank | step skipped |
+
+`N/A` and `Computed` both skip, so mixing them up won't fail a run — it just
+mis-documents *why* the field was left alone. `N/A` = not on the page.
+`Computed` = on the page, app-owned.
+
+**Never `fill` a calculated value into a greyed field** — the step hard-fails on a
+disabled field. Put the number in `ExpectedValue` with `assertValue` instead.
+
 **The `Computed` convention.** A cell value of `Computed` means "this field is the
-computed output — leave it blank/greyed." `fill` skips it; every other value must
-be entered (§6.2).
+computed output — leave it blank/greyed." The skip is central in
+`core/runner/stepRunner.ts`, so it holds for `fill` / `select` / `check` / `type` /
+`uncheck` alike — a greyed *dropdown* marked `Computed` is skipped too, rather than
+sending `select` hunting for an option named "Computed" (§6.2).
 
 > **If you know what the app *should* compute, assert it instead of skipping it.**
 > A greyed field can't be filled, but it can be verified: give the column the

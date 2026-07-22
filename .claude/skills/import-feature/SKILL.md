@@ -16,6 +16,12 @@ Non-negotiables (full detail is in the playbook):
 - **Follow the testdata** — a value must land (verified by read-back); blank/`N/A` skips; a
   valued field that isn't found **FAILS** the test. Fix the data or selector — never delete a
   step to force a pass.
+- **Every `fill`/`select`/`check` must carry a `${data.*}` token** — a blank InputValue is not
+  driven by anything, fires every iteration, and silently overrides an earlier data-driven
+  choice. Delete it or bind it to a column.
+- **A new data combination is one decision per field** — see "What to put in a testdata cell"
+  in the playbook. Hidden → `N/A`; editable → the value; greyed showing "Computed" →
+  `Computed`; greyed showing a derived number → assert it, never `fill` it.
 - **Screenshot-verify every iteration.** Green ≠ correct.
 - The deterministic importer (`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX`)
   is runnable **standalone**; this skill only adds the judgment layer on top of it.

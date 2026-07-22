@@ -15,6 +15,12 @@ Non-negotiables:
 - **Follow the testdata** — a value must land (verified by read-back); blank/`N/A` skips; a
   valued field that isn't found **FAILS** the test. Fix the data or the selector — never delete
   a step to force a pass.
+- **Every `fill`/`select`/`check` must carry a `${data.*}` token.** A value-entering step with
+  a blank InputValue is not driven by anything: it fires on every iteration and silently
+  overrides a data-driven choice made earlier. Delete it, or bind it to a column.
+- **Adding a new data combination is one decision per field** — see "What to put in a testdata
+  cell" in the playbook. Hidden → `N/A`; editable → the value; greyed showing "Computed" →
+  `Computed`; greyed showing a derived number → assert it, never `fill` it.
 - **Screenshot-verify every iteration** (open `artifacts/<runId>/<TC>_<ITER>/…`). Green ≠ correct.
 
 Steps (detail in the playbook): run `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX`

@@ -56,8 +56,50 @@ the *judgment* the importer can't.
   record the **superset**: select each controlling option (Hypothesis, Input Method, …) and
   touch **every** field it reveals, clicking each field's **label first** (KT §13, Step 1).
 - **Testdata** — `01_testdata/*.csv`, one row per iteration: values for the fields that apply
-  to that iteration's option combination, `N/A` for the ones that don't.
+  to that iteration's option combination, `N/A` for the ones that don't. **What to put in a
+  cell is decided by the table below — get this right and a new combination just works.**
 - **master.csv row** — `TC_XX,<Module>,regression,,<Name>,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD`.
+
+---
+
+## What to put in a testdata cell — decide by looking at the field on screen
+
+Adding a new design combination is **only** this decision, per field, per iteration. Open the
+page with that combination selected and ask two questions: *is the field there?* and *can I
+type in it?*
+
+| On screen, for THIS combination | Put in the cell | What happens | Why |
+|---|---|---|---|
+| **Not on the page** (hidden by a controlling option — e.g. Noninferiority Margin on a Superiority design) | `N/A` | step **skipped** | The field doesn't exist; there is nothing to enter or check. |
+| **Editable** — you are choosing the input | the real value | entered, then **read back to verify it landed** | The normal case. |
+| **Greyed, showing the literal word "Computed"** — this is the parameter being solved for | `Computed` | step **skipped** | The app owns it. Trying to set it fails; it is an *output* of this iteration. |
+| **Greyed, showing a derived NUMBER** (e.g. Mean Treatment μt0 = Mean Control × NI Margin) | the number you expect | **asserted** via `assertValue` | Best case: your arithmetic becomes a live check on the app's. |
+| Greyed derived number, but you don't want to check it | `N/A` | step **skipped** | Fine — you just verify nothing there. |
+| Editable, but you want the app's default | leave **blank** | step **skipped** | Blank is treated as `N/A`. |
+
+**`N/A` and `Computed` are not interchangeable.** Both skip the step today, so a mix-up
+won't fail the run — it will quietly mis-document *why* a field was left alone, and the next
+person (or the next agent) will draw the wrong conclusion about the design. `N/A` = the field
+isn't there. `Computed` = the field is there and the app fills it.
+
+**Never put a calculated value in a cell that is `fill`ed into a greyed field.** The step
+will hard-fail on a disabled field. If you know the expected number, wire it as `assertValue`
+(step's `ExpectedValue`, not `InputValue`) and the derived field is *verified* rather than
+skipped — `N/A` still skips it on the iterations where the field isn't rendered, so one
+metadata keeps serving every combination.
+
+> Worked example — ROM(PD) `#nonInf_nhMeanTreatment`: greyed, showing `0.99328`, which is
+> `Mean Control 2.56 × NI Margin 0.388`. Filling it would fail on a disabled field; `Computed`
+> would discard a known-good number. It is asserted, so ITER_02 now proves the app's maths
+> and the other four iterations skip it as `N/A`.
+
+### Two fields that share a visible label
+
+Name the column after the **DOM id**, not the label. Both Mean Treatment boxes read
+*"Mean Treatment"*, so `nonInf_nhMeanTreatment` / `nonInf_ahMeanTreatment` are the only
+unambiguous headings — and the importer's column reuse deliberately refuses to guess between
+ambiguous names rather than bind your step to the wrong field. The heading never has to match
+the id or the label; it only has to match the metadata token exactly.
 
 ---
 

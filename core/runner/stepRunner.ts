@@ -45,6 +45,19 @@ function isNotApplicable(value: string): boolean {
   return t === '' || /^(n\/a|not applicable)$/i.test(t);
 }
 
+/**
+ * A testdata value meaning "the APP owns this field" — it is greyed/derived, so
+ * the run must not try to set it. Distinct from N/A: the field IS on the page.
+ *
+ * Centralised here so it holds for every value-entering keyword. It used to live
+ * only inside `fill`, which meant a greyed DROPDOWN marked `Computed` sent
+ * `select` hunting for an option literally named "Computed" — a confusing failure
+ * for something the tester had already flagged correctly.
+ */
+function isAppComputed(value: string): boolean {
+  return /^computed$/i.test(value.trim());
+}
+
 function resolveStep(ctx: RunContext, step: MetadataStep): ResolvedStep {
   const loc = { stepId: step.StepID };
   const input = ctx.resolve(step.InputValue, { ...loc, column: 'InputValue' });
@@ -126,7 +139,7 @@ export async function runStep(ctx: RunContext, step: MetadataStep): Promise<Step
   const entersNotApplicable =
     VALUE_ENTERING_ACTIONS.has(step.Action) &&
     /\$\{data\./.test(step.InputValue) &&
-    isNotApplicable(resolved.input);
+    (isNotApplicable(resolved.input) || isAppComputed(resolved.input));
   const assertsNotApplicable =
     VALUE_ASSERTING_ACTIONS.has(step.Action) &&
     /\$\{data\./.test(step.ExpectedValue) &&
@@ -135,7 +148,10 @@ export async function runStep(ctx: RunContext, step: MetadataStep): Promise<Step
   if (entersNotApplicable || assertsNotApplicable) {
     const result: StepResult = { ...base, resolvedInput: '', status: 'skipped', durationMs: Date.now() - started };
     ctx.stepResults.push(result);
-    logger.info(`SKIP  [${step.StepID}] ${step.Action} ${step.ObjectName} — testdata value blank/N/A (field not applicable to this iteration).`);
+    const why = isAppComputed(resolved.input)
+      ? 'testdata says "Computed" — the app owns this field (greyed/derived), so the run must not set it.'
+      : 'testdata value blank/N/A (field not applicable to this iteration).';
+    logger.info(`SKIP  [${step.StepID}] ${step.Action} ${step.ObjectName} — ${why}`);
     return result;
   }
 
