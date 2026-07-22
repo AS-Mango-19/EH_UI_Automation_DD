@@ -370,7 +370,7 @@ Two rules the validator enforces so a half-authored multi-iteration set fails at
   catch a testdata value that silently never reaches the screen (columns consumed
   by a `callCustom` step are recognised and not flagged).
 
-### What to put in a testdata cell
+#### What to put in a testdata cell
 
 Adding a new data combination is this decision, per field, per iteration. Look at the
 field **on screen with that combination selected**: is it there, and can you type in it?
@@ -409,6 +409,34 @@ sending `select` hunting for an option named "Computed" (§6.2).
 > such columns after the **DOM id** (`nonInf_nhMeanTreatment`), not the label —
 > a label-derived name collides, and the importer's reuse deliberately refuses to
 > guess between ambiguous names.
+
+#### Two kinds of greyed field — only one needs you to do anything
+
+The importer can only emit what codegen recorded, and **codegen cannot type into a
+disabled field**. That single fact splits greyed fields in two:
+
+| | Greyed in **some** iterations (the computed *parameter* rotates) | Greyed in **all** iterations (permanently derived) |
+| --- | --- | --- |
+| Example | Sample Size / Power / Type 1 Error | Mean Treatment `μt0`, `μt1` |
+| In the recording? | **yes** — you typed it in the iteration where it was the input | **no** — never typeable, so absent |
+| Importer emits | a normal `fill` step | **nothing** — no selector, no step |
+| You do | **nothing.** Keep the `fill`; put `Computed` in the greyed cells | add the selector + an `assertValue` step **by hand** (optional) |
+
+You never *convert* a `fill` into an `assertValue`. In the right-hand case no step ever
+existed — you are *adding* one, and only if you want that field covered.
+
+**`validate` tells you when one is missing.** Add the column with its expected numbers
+and run `npm run validate`:
+
+```
+column "nonInf_nhMeanTreatment" in design.csv has a value but no step enters it
+  — add a step to apply it or remove the column.
+```
+
+That warning is the prompt to wire the `assertValue` step (or drop the column), so a
+derived field gets noticed without anyone remembering to look for it. The workflow for a
+new data combination is therefore: **import → add testdata → `npm run validate` → wire
+whatever it warns about.**
 
 **Blank / `N/A` = not applicable to this iteration → the step is SKIPPED.** A
 value-entering step (`fill` / `select` / `type` / `check`) whose testdata cell is
@@ -1099,6 +1127,7 @@ The importer cannot infer these from a recording — it prints them as NEXT STEP
 | **Date pickers** | A date must be *picked*, not typed. The import clicks the recorded day cell, pinned to the recorded month. | Data-drive it, or use a `callCustom` hook. |
 | **A label-less field's name** | If you *don't* click a field's label while recording, the importer can only name the column after the field id (`sampleSize`, `type 0`). | Click the label when recording (Step 1) → clean name. Otherwise rename the column and I'll repoint the token. |
 | **A computed field that is an input elsewhere** | If a parameter was *computed* (greyed) while recording, codegen never typed it → no `fill` step. In another iteration it's an input. | Add a `fill` step + selector by hand (§6.2). `validate` warns which column. |
+| **A permanently derived field** (e.g. Mean Treatment `μt0` = Mean Control × NI Margin) | Never typeable, so it is absent from the recording entirely — the importer emits **no** selector and **no** step. | Optional: add the selector + an **`assertValue`** step so the testdata verifies the app's arithmetic (§4.5). Never `fill` it — that hard-fails on a disabled field. `validate` warns if the column has values but no step. |
 | **Unique names** | The recording used one literal name. | Project names are auto-suffixed `_${runId}_${iterationId}`. For other must-be-unique fields, append the same. |
 | **`extractAllResultTables`** | Nothing — it is feature-agnostic and lives in `custom/_shared/`. | Nothing to write. It discovers the tables and narrative panels itself (§12.2). Only override it if this app's result page is genuinely unlike the others. |
 | **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |

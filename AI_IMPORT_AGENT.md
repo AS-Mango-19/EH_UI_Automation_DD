@@ -139,9 +139,31 @@ steps. Turn it into the clean data-driven form:
   > testdata said `120` and `0.58`. Open the design screenshot and compare it to the row.
 - **Fields the recording couldn't capture** — add the step + selector by hand:
   - a **computed/greyed** field that is an *input* in another iteration (e.g. Power),
-  - a field the recording only **clicked as a stray label** (e.g. Test Type).
+  - a field the recording only **clicked as a stray label** (e.g. Test Type),
+  - a field that is **always greyed** (see below).
   Infer the `#id` from the app's pattern and **confirm from the live DOM (DevTools) or a
   probe** before trusting it.
+
+- **Two kinds of greyed field — only one needs you to do anything.** The importer can only
+  emit what codegen recorded, and codegen cannot type into a disabled field.
+
+  | | Greyed in SOME iterations (the computed *parameter* rotates) | Greyed in ALL iterations (permanently derived) |
+  |---|---|---|
+  | Example | Sample Size / Power / Type 1 Error | Mean Treatment `μt0`, `μt1` |
+  | Recorded? | **Yes** — you typed into it in the iteration where it was an input | **No** — never typeable, so it is absent from the recording |
+  | Importer emits | a normal `fill` step | **nothing at all** — no selector, no step |
+  | You do | **nothing.** Keep the `fill`; put `Computed` in the greyed cells | add the selector + an `assertValue` step **by hand**, if you want it verified |
+
+  So you are never *converting* a `fill` into an `assertValue`. In the second case the step
+  never existed — you are *adding* one. It is also **optional**: skip it and you simply have
+  no coverage of that field.
+
+- **`validate` tells you when one is missing.** Add the column with its expected numbers and
+  run `npm run validate`:
+  `column "nonInf_nhMeanTreatment" in design.csv has a value but no step enters it — add a
+  step to apply it or remove the column.`
+  That warning is the prompt to add the `assertValue` step (or drop the column). It is how a
+  derived field gets noticed without anyone remembering to look for it.
 - **Mutually-exclusive variants** (`#ratioOfMeans_NI` vs `#ratioOfMeans_SP`) → separate
   columns + separate steps; each iteration `N/A`s the variant it doesn't use.
 
