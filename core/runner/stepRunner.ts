@@ -28,7 +28,16 @@ export interface RunStepsOptions {
 }
 
 /** Keywords that enter a testdata value — a blank/N/A value skips them (see below). */
-const VALUE_ENTERING_ACTIONS = new Set(['fill', 'type', 'select', 'check']);
+const VALUE_ENTERING_ACTIONS = new Set(['fill', 'type', 'select', 'check', 'uncheck']);
+
+/**
+ * Keywords that CHECK a testdata value. Same "N/A = not applicable to this
+ * iteration" rule, but the value lives in ExpectedValue rather than InputValue:
+ * a field that does not exist for this data combination cannot be asserted
+ * either. Without this, data-driving an assertion would force one metadata per
+ * iteration — the exact thing the blank/N/A convention exists to avoid.
+ */
+const VALUE_ASSERTING_ACTIONS = new Set(['assertText', 'assertContains', 'assertValue', 'assertCount']);
 
 /** A testdata value meaning "this field is not applicable to this iteration". */
 function isNotApplicable(value: string): boolean {
@@ -114,11 +123,16 @@ export async function runStep(ctx: RunContext, step: MetadataStep): Promise<Step
   // supplies a value, so ONE metadata serves every data combination — no
   // per-iteration metadata. Guarded by "InputValue references ${data.*}" so a
   // static action with a deliberately empty InputValue is never skipped.
-  if (
+  const entersNotApplicable =
     VALUE_ENTERING_ACTIONS.has(step.Action) &&
     /\$\{data\./.test(step.InputValue) &&
-    isNotApplicable(resolved.input)
-  ) {
+    isNotApplicable(resolved.input);
+  const assertsNotApplicable =
+    VALUE_ASSERTING_ACTIONS.has(step.Action) &&
+    /\$\{data\./.test(step.ExpectedValue) &&
+    isNotApplicable(resolved.expected);
+
+  if (entersNotApplicable || assertsNotApplicable) {
     const result: StepResult = { ...base, resolvedInput: '', status: 'skipped', durationMs: Date.now() - started };
     ctx.stepResults.push(result);
     logger.info(`SKIP  [${step.StepID}] ${step.Action} ${step.ObjectName} — testdata value blank/N/A (field not applicable to this iteration).`);

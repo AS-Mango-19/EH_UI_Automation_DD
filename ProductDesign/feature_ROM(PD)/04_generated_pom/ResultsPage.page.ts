@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 5637e2d95694298075cb88f4186289a4a6bb30258b6ba817cd64006144d23481)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c3d31c67533606984f30a42f6d81196ecf9f58948f557425ed2fa088ecb32281)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -162,5 +162,15 @@ export class ResultsPage {
   /** NI Mean Control (id confirmed present in recording.txt) */
   txt_nonInf_Mean_Control(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_nonInf_Mean_Control', { dynamicArgs });
+  }
+
+  /** Mean Treatment (μt0) under Null Hypothesis - COMPUTED by the app from Mean Control x NI Margin */
+  txt_nonInf_NH_Mean_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_nonInf_NH_Mean_Treatment', { dynamicArgs });
+  }
+
+  /** Mean Treatment (μt1) under Alternative Hypothesis - COMPUTED by the app from Mean Control x Ratio of Means */
+  txt_nonInf_AH_Mean_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_nonInf_AH_Mean_Treatment', { dynamicArgs });
   }
 }

@@ -39,14 +39,16 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 38,390,ExtractResults,ResultsPage,fill,txt_Noninferiority_Margin_0,${data.design.Noninferiority Margin},,,,,10000,FALSE,0,never,${data.design.Hypothesis}==Superiority,fill Noninferiority Margin (ρ0 = µ
 39,395,ExtractResults,ResultsPage,fill,txt_nonInf_Mean_Control,${data.design.nonInf_meanControl},,,,,10000,FALSE,0,never,${data.design.Hypothesis}==Superiority,fill Mean Control (Non-Inferiority variant; N/A on Superiority)
 40,400,ExtractResults,ResultsPage,fill,txt_Ratio_of_Means_1_t1_c,${data.design.nonInf_ratioOfMeans},,,,,10000,FALSE,0,never,${data.design.Hypothesis}==Superiority,fill Ratio of Means
-41,422,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,Open the Enrollment section (was a mis-named click; needed to reach Include/Enrollment Rate)
-42,424,ExtractResults,ResultsPage,check,chk_Include,${data.design.Include},,,,visible,10000,FALSE,0,never,,Include this enrollment row (N/A skips it for an iteration)
-43,426,ExtractResults,ResultsPage,fill,txt_Enrollment_Rate_per_Week,${data.design.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
-44,428,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
-45,430,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save & Compute
-46,432,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
-47,434,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,confirm the credit alert
-48,440,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
-49,450,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
-50,460,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
-51,470,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+41,402,ExtractResults,ResultsPage,assertValue,txt_nonInf_NH_Mean_Treatment,,,,${data.design.nonInf_nhMeanTreatment},,10000,FALSE,0,never,,"VERIFY the app computed Mean Treatment (μt0). Greyed/derived field - assert, never fill. N/A skips it."
+42,404,ExtractResults,ResultsPage,assertValue,txt_nonInf_AH_Mean_Treatment,,,,${data.design.nonInf_ahMeanTreatment},,10000,FALSE,0,never,,"VERIFY the app computed Mean Treatment (μt1). Greyed/derived field - assert, never fill. N/A skips it."
+43,422,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,Open the Enrollment section (was a mis-named click; needed to reach Include/Enrollment Rate)
+44,424,ExtractResults,ResultsPage,check,chk_Include,${data.design.Include},,,,visible,10000,FALSE,0,never,,Include this enrollment row (N/A skips it for an iteration)
+45,426,ExtractResults,ResultsPage,fill,txt_Enrollment_Rate_per_Week,${data.design.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
+46,428,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+47,430,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save & Compute
+48,432,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+49,434,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,confirm the credit alert
+50,440,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+51,450,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+52,460,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+53,470,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL

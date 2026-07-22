@@ -55,3 +55,5 @@ txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox f
 lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
 lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
 txt_nonInf_Mean_Control,ResultsPage,css,#nonInf_meanControl,,,FALSE,NI Mean Control (id confirmed present in recording.txt),FALSE
+txt_nonInf_NH_Mean_Treatment,ResultsPage,css,#nonInf_nhMeanTreatment,,,FALSE,Mean Treatment (μt0) under Null Hypothesis - COMPUTED by the app from Mean Control x NI Margin,FALSE
+txt_nonInf_AH_Mean_Treatment,ResultsPage,css,#nonInf_ahMeanTreatment,,,FALSE,Mean Treatment (μt1) under Alternative Hypothesis - COMPUTED by the app from Mean Control x Ratio of Means,FALSE

@@ -374,6 +374,19 @@ Two rules the validator enforces so a half-authored multi-iteration set fails at
 computed output — leave it blank/greyed." `fill` skips it; every other value must
 be entered (§6.2).
 
+> **If you know what the app *should* compute, assert it instead of skipping it.**
+> A greyed field can't be filled, but it can be verified: give the column the
+> expected number and use `assertValue` with `ExpectedValue = ${data.<file>.<Column>}`.
+> ROM(PD) does this for the two derived Mean Treatment fields — `μt0 = Mean Control ×
+> NI Margin` and `μt1 = Mean Control × Ratio of Means` — so the testdata checks the
+> app's arithmetic rather than ignoring it. `N/A` still skips the assertion on
+> iterations where the field doesn't exist, so one metadata still serves them all.
+>
+> Two fields can share a visible label (both of those read *Mean Treatment*). Name
+> such columns after the **DOM id** (`nonInf_nhMeanTreatment`), not the label —
+> a label-derived name collides, and the importer's reuse deliberately refuses to
+> guess between ambiguous names.
+
 **Blank / `N/A` = not applicable to this iteration → the step is SKIPPED.** A
 value-entering step (`fill` / `select` / `type` / `check`) whose testdata cell is
 **blank** or **`N/A`** is skipped for that iteration (`core/runner/stepRunner.ts`).
@@ -582,6 +595,7 @@ The framework handles these app behaviours the **same** way across `fill` / `sel
 | --- | --- | --- |
 | a real value | enter it, then **read back to verify it landed** | pick the option |
 | **blank / `N/A`** | **skip** — field not applicable to this iteration | **skip** |
+| **blank / `N/A`** in a data-driven `ExpectedValue` | **skip** — same rule for `assertText` / `assertContains` / `assertValue` / `assertCount`: a field that doesn't exist for this data combination can't be *asserted* either | — |
 | `"Computed"` | **skip** — greyed computed-output field | — |
 | field **disabled but already shows the intended value** — *fixed by another control* (e.g. Test Type forced to "1-Sided" for Non-Inferiority; Input Method fixed to "Ratio of Means" when computing the ratio) | — | **skip** — intent already met |
 | field **disabled, shows something else** | **fail** | **fail** |
