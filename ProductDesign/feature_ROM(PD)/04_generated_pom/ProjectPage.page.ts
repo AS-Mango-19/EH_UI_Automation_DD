@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 03_selectors_repo/selectors.csv (hash: 699c4f50134cf016d55e7ab4e9d0e1a607586c11ca6d69e7f4515fb0f95709c7)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 5637e2d95694298075cb88f4186289a4a6bb30258b6ba817cd64006144d23481)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -10,108 +10,58 @@ export class ProjectPage {
   ) {}
 
   /** textbox from codegen */
-  txt_project_Name(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_project_Name', { dynamicArgs });
+  txt_Project_Name(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Project_Name', { dynamicArgs });
   }
 
-  /** Time Unit custom dropdown. Label-targeted: the walk finds the combobox input next to the label. Never target react-select__input-container itself - it is a ~2px grid cell behind the selected-value node and is not clickable */
+  /** dropdown (opener+option collapsed into one select step) */
   ddl_Time_Unit(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Time_Unit', { dynamicArgs });
   }
 
-  /** Phase custom dropdown. Label text really is "Phase (Optional)" */
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Study_Objective(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Study_Objective', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
   ddl_Phase(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Phase', { dynamicArgs });
   }
 
-  /** Endpoint Type custom dropdown in the endpoints TABLE. Cannot be label-targeted: "Endpoint Type" is a TH in THEAD while the button is a TD in TBODY so no sibling/parent walk reaches it. #type-0 is the button; -0 is the endpoint row index */
+  /** textbox from codegen */
+  txt_Target_Population(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Target_Population', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Control_Arm(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Control_Arm', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Treatment_Arm(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Treatment_Arm', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Endpoint_Name(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Endpoint_Name', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
   ddl_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Endpoint_Type', { dynamicArgs });
   }
 
-  /** Better Response custom dropdown in the endpoints TABLE - same THEAD/TBODY split as Endpoint Type. Options depend on Endpoint Type so step 150 must run first */
+  /** dropdown (opener+option collapsed into one select step) */
   ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
   }
 
-  /** option from codegen */
-  opt_Month(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_Month', { dynamicArgs });
-  }
-
   /** textbox from codegen */
-  txt_MM_dd_yyyy(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_MM_dd_yyyy', { dynamicArgs });
-  }
-
-  /** option from codegen */
-  opt_Choose_Wednesday_July_15th(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_Choose_Wednesday_July_15th', { dynamicArgs });
-  }
-
-  /** button from codegen */
-  btn_Select(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Select', { dynamicArgs });
-  }
-
-  /** Study Objective menu option. Exact=TRUE because the menu also contains a Multiple Endpoints variant that a substring match ties with */
-  opt_Two_Arm_Confirmatory(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_Two_Arm_Confirmatory', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  ddl_react_creatable_select_input_container(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_react_creatable_select_input_container', { dynamicArgs });
-  }
-
-  /** option from codegen */
-  opt_3(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_3', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_population_Name_0(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_population_Name_0', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_control_Arm_0(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_control_Arm_0', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_treatment_Arm_0(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_treatment_Arm_0', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_endpoint_Name_0(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_endpoint_Name_0', { dynamicArgs });
-  }
-
-  /** button from codegen */
-  btn_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Endpoint_Type', { dynamicArgs });
-  }
-
-  /** choice from codegen */
-  opt_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_Endpoint_Type', { dynamicArgs });
-  }
-
-  /** button from codegen */
-  btn_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Better_Response', { dynamicArgs });
-  }
-
-  /** choice from codegen */
-  opt_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_Better_Response', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_Follow_up_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Follow_up_Time', { dynamicArgs });
+  txt_Follow_up_Time_Week(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Follow_up_Time_Week', { dynamicArgs });
   }
 
   /** button from codegen */

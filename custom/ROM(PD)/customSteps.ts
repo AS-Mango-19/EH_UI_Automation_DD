@@ -202,6 +202,42 @@ export const selectTestOption: KeywordHandler = async (page, ctx, step) => {
   throw new Error(`selectTestOption: unable to resolve dropdown index ${groupIndex}-${valueIndex} for "${resolved}"`);
 };
 
+export const selectInputSetTaskAndTest: KeywordHandler = async (page, ctx, step) => {
+  const resolvedTest = ctx.resolve('${data.inputset.SelectTest}', { stepId: step.stepId, column: 'InputValue' });
+
+  logger.info(`selectInputSetTaskAndTest -> ${resolvedTest}`);
+
+  await page.getByRole('button', { name: 'Design Compute or simulate a' }).click({ timeout: step.timeout });
+  await page.getByRole('heading', { name: 'Select Test' }).click({ timeout: step.timeout }).catch(() => undefined);
+
+  const testContainer = page.locator('.react-select__input-container').last();
+  if (await testContainer.count().catch(() => 0)) {
+    await testContainer.click({ timeout: step.timeout, force: true }).catch(() => undefined);
+  }
+
+  const optionCandidates = [
+    () => page.getByRole('option', { name: resolvedTest, exact: true }).click({ timeout: step.timeout }),
+    () => page.getByText(resolvedTest, { exact: true }).click({ timeout: step.timeout }),
+    () => page.locator('#testId-14').click({ timeout: step.timeout }),
+  ];
+
+  for (const candidate of optionCandidates) {
+    try {
+      await candidate();
+      return;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  throw new Error(`selectInputSetTaskAndTest: unable to resolve input-set test "${resolvedTest}"`);
+};
+
+/* completeResultsAndSave was removed: it hid six app interactions inside
+ * TypeScript, where the testdata cannot reach them - no per-iteration N/A skip,
+ * no read-back verification, no per-step screenshot. They are now ordinary
+ * metadata steps 422-434. Keep app interactions in metadata.csv. */
+
 /* ------------------------------------------------------------------ *
  * Result-page capture lives in custom/_shared/customSteps.ts.
  *

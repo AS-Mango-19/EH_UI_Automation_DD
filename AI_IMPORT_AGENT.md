@@ -26,6 +26,20 @@ the *judgment* the importer can't.
    (verified by read-back). Blank / `N/A` → the step is skipped (field not applicable to that
    iteration). A valued cell whose field **isn't found → the test FAILS** — that's correct;
    **fix the data or the selector, never delete the step to force a pass.**
+
+   **Corollary — every `fill`/`select`/`check` must carry a `${data.*}` token.** A
+   value-entering step with a **blank InputValue** is not driven by anything: it can only
+   re-assert whatever the recording happened to click, so it fires on every iteration and
+   **silently overrides a data-driven choice made earlier in the run**. It is recording
+   noise — **delete it** (or bind it to a column). `npm run validate` now rejects a blank
+   `check`/`uncheck`, and the importer refuses to emit one; if you see one in the metadata,
+   something hand-edited it back in.
+
+   > This is not hypothetical. ROM(PD) had `check radio_Type_1_Error` with a blank
+   > InputValue. Step 240 correctly set Computed Parameter = `Power` from the testdata;
+   > step 360 then blindly clicked the `Type 1 Error` radio, which greyed out the α the
+   > run had just typed and turned Power into a stale `0.9`. The design submitted matched
+   > no iteration and the simulation returned **"Failed"**.
 3. **Verify with your eyes.** After each run, open the design/failing screenshots in
    `artifacts/<runId>/<TC>_<ITER>/` and confirm the fields hold the intended values and the
    right conditional fields are present. **Green ≠ correct** (a missing baseline is green and
@@ -72,7 +86,15 @@ steps. Turn it into the clean data-driven form:
 ### 3 — Reconcile columns & add missing steps *(judgment)*
 - **Duplicate columns.** Where the importer added an id-named column (`sampleSize`) that
   duplicates your human column (`Sample Size (n)`), repoint the metadata token to your column
-  and delete the duplicate. (Reuse bridges case/spacing, not whole-word differences.)
+  and delete the duplicate. Reuse bridges case/spacing **and a truncated recorded label**
+  (`Sample Size` → `Sample Size (n)`), but it deliberately gives up when the prefix is
+  **ambiguous** (`Mean` matches both `Mean Control` and `Mean Treatment`) — those you
+  reconcile by hand.
+
+  > **Check the values, not just the column names.** A duplicate column is not a cosmetic
+  > problem: the run reads the *duplicate*, which holds the value from the recording, so the
+  > test silently exercises numbers nobody chose. ROM(PD) typed `123` and `0.56` while the
+  > testdata said `120` and `0.58`. Open the design screenshot and compare it to the row.
 - **Fields the recording couldn't capture** — add the step + selector by hand:
   - a **computed/greyed** field that is an *input* in another iteration (e.g. Power),
   - a field the recording only **clicked as a stray label** (e.g. Test Type).

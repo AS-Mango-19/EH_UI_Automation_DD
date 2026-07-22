@@ -1,59 +1,57 @@
 ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
-txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field
-btn_Next,LoginPage,role,button,Next,,FALSE,Next button
-txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field
-btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button
-div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay
-btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,button from codegen
-txt_project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen
-ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,Time Unit custom dropdown. Label-targeted: the walk finds the combobox input next to the label. Never target react-select__input-container itself - it is a ~2px grid cell behind the selected-value node and is not clickable,FALSE
-ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,Phase custom dropdown. Label text really is "Phase (Optional)",FALSE
-ddl_Endpoint_Type,ProjectPage,css,#type-0,,,FALSE,Endpoint Type custom dropdown in the endpoints TABLE. Cannot be label-targeted: "Endpoint Type" is a TH in THEAD while the button is a TD in TBODY so no sibling/parent walk reaches it. #type-0 is the button; -0 is the endpoint row index,FALSE
-ddl_Better_Response,ProjectPage,css,#betterResponse-0,,,FALSE,Better Response custom dropdown in the endpoints TABLE - same THEAD/TBODY split as Endpoint Type. Options depend on Endpoint Type so step 150 must run first,FALSE
-opt_Month,ProjectPage,role,option,Month,,FALSE,option from codegen
-txt_MM_dd_yyyy,ProjectPage,role,textbox,MM/dd/yyyy,,FALSE,textbox from codegen
-opt_Choose_Wednesday_July_15th,ProjectPage,role,option,"Choose Wednesday, July 15th,",,FALSE,option from codegen
-btn_Select,ProjectPage,role,button,Select,,FALSE,button from codegen
-opt_Two_Arm_Confirmatory,ProjectPage,role,link,{0},,TRUE,Study Objective menu option. Exact=TRUE because the menu also contains a Multiple Endpoints variant that a substring match ties with,TRUE
-ddl_react_creatable_select_input_container,ProjectPage,css,.react-creatable-select__input-container,,,FALSE,textbox from codegen
-opt_3,ProjectPage,role,option,3,,FALSE,option from codegen
-txt_population_Name_0,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen
-txt_control_Arm_0,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen
-txt_treatment_Arm_0,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen
-txt_endpoint_Name_0,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen
-btn_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,button from codegen
-opt_Endpoint_Type,ProjectPage,role,link,{0},,TRUE,choice from codegen
-btn_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,button from codegen
-opt_Better_Response,ProjectPage,role,link,{0},,TRUE,choice from codegen
-txt_Follow_up_Time,ProjectPage,css,#followUpTime-0,,,FALSE,textbox from codegen
-btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen
-btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen
-btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen
-txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen
-txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen
-btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen
-ddl_Select_Test,InputSetPage,css,#test,,,FALSE,Test picker custom dropdown on the input-set page. #test is the combobox input - the input-set page has no LABEL elements at all so label targeting is impossible here,FALSE
-ddl_react_select_input_container,InputSetPage,css,.react-select__input-container,,,FALSE,textbox from codegen
-txt_test_Id_14,InputSetPage,css,#testId-14,,,FALSE,textbox from codegen
-btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen
-txt_Hypothesis,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen
-opt_Computed_Parameter,DesignPage,role,radio,{0},,TRUE,choice from codegen
-txt_sample_Size,ResultsPage,css,#sampleSize,,,FALSE,textbox from codegen
-txt_Test_Type,ResultsPage,css,#testtype,,,FALSE,textbox from codegen
-txt_type1Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen
-txt_mean_Control,ResultsPage,css,#meanControl,,,FALSE,textbox from codegen
-txt_mean_Treatment,ResultsPage,css,#meanTreatment,,,FALSE,textbox from codegen
-txt_test_Statistic,ResultsPage,css,#testStatistic,,,FALSE,textbox from codegen
-txt_coefficient_Of_Variation,ResultsPage,css,#coefficientOfVariation,,,FALSE,textbox from codegen
-txt_follow_Up_Time,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen
-txt_probability_Of_Dropout,ResultsPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen
-btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,button from codegen
-chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen
-txt_id_enrollment_Table_0_avg_Subjects_Enrolled,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen
-btn_Save,ResultsPage,role,button,Save,,FALSE,Save button. Exact=TRUE because "Save" is a substring of the adjacent "Save & Compute" button and a substring match ties with both,TRUE
-btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codegen
-txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen
-btn_Compute,ResultsPage,css,#credit-alert-primary,,,FALSE,Confirm button inside the credit-alert modal. MUST be css not role: the modal is shown but carries aria-hidden=true so ARIA queries cannot see inside it - getByRole(button Compute) skips this button and matches the Save & Compute button behind the modal instead which the modal then blocks,FALSE
-tbl_Results,ResultsPage,css,div.ag-root,,,FALSE,AG Grid root on the results list page. Used to confirm the app landed on the grid and as the extractTable target - readGrid falls back to the ARIA row/gridcell path for div grids,FALSE
-lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status DATA cell in the results AG Grid. role=gridcell is load-bearing: AG Grid puts col-id on the HEADER cell too (role=columnheader class=ag-header-cell) and waitForSimulation takes .first() so a bare col-id selector polls the header text Status forever instead of the badge. textContent picks up the nested span.badge,FALSE
-lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Control_Arm,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Follow_up_Time_Week,ProjectPage,css,#followUpTime-0,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+ddl_SelectTask,InputSetPage,label,Task,,,FALSE,Task dropdown (Design),FALSE
+ddl_Test,InputSetPage,label,Test,,,FALSE,Statistical test dropdown,FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+btn_Design_Compute_or_simulate_a,DesignPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,ResultsPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,ResultsPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+opt_Computed_Parameter,ResultsPage,role,radio,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+txt_Sample_Size_n,ResultsPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Type,ResultsPage,css,#testtype,,,FALSE,native <select> from codegen,FALSE
+txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+ddl_Input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Ratio_of_Means_t_c,ResultsPage,css,#ratioOfMeans,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,ResultsPage,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_Coefficient_of_Variation_of,ResultsPage,css,#coefficientOfVariation,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,ResultsPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Control_c,ResultsPage,css,#meanControl,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Treatment_t,ResultsPage,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
+radio_Type_1_Error,ResultsPage,role,radio,Type 1 Error,,FALSE,radio button from codegen,FALSE
+txt_Power,ResultsPage,css,#power,,,FALSE,textbox from codegen,FALSE
+ddl_Hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
+txt_Noninferiority_Margin_0,ResultsPage,css,#nonInf_margin,,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Means_1_t1_c,ResultsPage,css,#nonInf_ratioOfMeans,,,FALSE,textbox from codegen,FALSE
+radio_Ratio_of_Means,ResultsPage,role,radio,Ratio of Means,,FALSE,radio button from codegen,FALSE
+btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,opens the Enrollment section - name was mis-derived by the importer,FALSE
+chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen,FALSE
+txt_Enrollment_Rate_per_Week,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,ResultsPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+txt_nonInf_Mean_Control,ResultsPage,css,#nonInf_meanControl,,,FALSE,NI Mean Control (id confirmed present in recording.txt),FALSE

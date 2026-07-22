@@ -67,8 +67,14 @@ const list: KeywordSpec[] = [
   spec('type', 'input', ['ObjectName', 'InputValue'], true),
   spec('clear', 'input', ['ObjectName'], true),
   spec('select', 'input', ['ObjectName', 'InputValue'], true),
-  spec('check', 'input', ['ObjectName'], true),
-  spec('uncheck', 'input', ['ObjectName'], true),
+  // check/uncheck REQUIRE an InputValue even though the handler only calls
+  // .check(): the value parameterizes the selector's {0}, so it is what picks
+  // WHICH radio in the group. A blank InputValue is a blind click that re-asserts
+  // whatever the recording happened to select — it can never be right for every
+  // iteration, and it silently overrode a data-driven choice made earlier in the
+  // run. Give it a ${data.*} token (blank/N/A then skips the step per iteration).
+  spec('check', 'input', ['ObjectName', 'InputValue'], true),
+  spec('uncheck', 'input', ['ObjectName', 'InputValue'], true),
   spec('upload', 'input', ['ObjectName', 'InputValue'], true, { inputIsPath: true }),
   spec('hover', 'input', ['ObjectName'], true),
   spec('press', 'input', ['ObjectName', 'InputValue'], true),

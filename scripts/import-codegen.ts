@@ -631,12 +631,15 @@ function parseCodegen(lines: string[]): {
   /** "<file>|<Column>" -> the value actually recorded, used to seed testdata so the first run is runnable. */
   dataValues: Map<string, string>;
   sawLogin: boolean;
+  /** Radios recorded without a label: no data-driven step could be built (see below). */
+  blindChoiceWarnings: string[];
 } {
   const selectors: LocatorRef[] = [];
   const seenSelectors = new Set<string>();
   const steps: StepRow[] = [];
   const dataColumns = new Map<string, Set<string>>();
   const dataValues = new Map<string, string>();
+  const blindChoiceWarnings: string[] = [];
   const events = lines.map((line, lineNo) => parseCodegenEvent(line, lineNo)).filter((event): event is ParsedEvent => event !== null);
 
   let stepId = 10;
@@ -1156,26 +1159,20 @@ function parseCodegen(lines: string[]): {
     });
 
     if (targetAction === 'check') {
-      emitStep(
-        {
-          StepID: stepId,
-          StepGroup: stepGroup,
-          Page: pageName,
-          Action: 'check',
-          ObjectName: objectName,
-          InputValue: '',
-          StoreAs: '',
-          AssertType: '',
-          ExpectedValue: '',
-          WaitCondition: '',
-          Timeout: 10000,
-          Optional: 'FALSE',
-          Retry: 0,
-          Screenshot: 'never',
-          SkipIf: '',
-          Description: `check ${columnName}`,
-        },
-        { page: pageName, stepGroup, action: 'check', objectName, selectorType: event.selectorType, selectorValue: event.selectorValue, roleName: event.roleName },
+      // A radio reached here with NO label context, so there is no column to bind
+      // it to. Emitting `check <literal radio>` with a blank InputValue is exactly
+      // the bug that used to slip through: the step is not driven by the testdata,
+      // so it fires on EVERY iteration and blindly re-asserts whatever the
+      // recording clicked — silently overriding the data-driven choice made
+      // earlier in the run. A superset recording toggles these constantly.
+      //
+      // Skip it and TELL the tester, rather than emit a step that cannot be
+      // correct. The labelled interaction with the same control (recorded by
+      // clicking its label) already produces a proper {0}-parameterised,
+      // data-driven step.
+      blindChoiceWarnings.push(
+        `${pageName}: radio "${event.roleName || event.selectorValue}" was recorded without a label, so no data-driven step could be built for it. ` +
+          `If this control matters, add a step with a \${data.*} token (and click its LABEL when recording).`,
       );
       pendingLabel = '';
       continue;
@@ -1308,7 +1305,7 @@ function parseCodegen(lines: string[]): {
     });
   }
 
-  return { selectors, steps, dataColumns, dataValues, sawLogin };
+  return { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings };
 }
 
 function buildFeatureConfig(feature: string, module: string): string {
@@ -1395,7 +1392,7 @@ function main(): number {
   const compareConfigPath = path.join(targetRoot, '06_baseline', 'compare.config.csv');
 
   const lines = readLines(inputFile);
-  const { selectors, steps, dataColumns, dataValues, sawLogin } = parseCodegen(lines);
+  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings } = parseCodegen(lines);
 
   // Reuse the tester's existing testdata columns instead of adding parallel
   // duplicates. The tester owns the testdata; when a recorded field's derived
@@ -1419,7 +1416,24 @@ function main(): number {
     }
     for (const derived of [...cols]) {
       if (derived === 'TC_ID' || derived === 'IterationID') continue;
-      const existing = existingByNorm.get(normalizeColName(derived));
+      const derivedNorm = normalizeColName(derived);
+      let existing = existingByNorm.get(derivedNorm);
+
+      // Codegen TRUNCATES long accessible names, so the recorded field arrives as a
+      // PREFIX of the tester's column: "Sample Size" for "Sample Size (n)",
+      // "Coefficient of Variation of" for "Coefficient of Variation of Data",
+      // "Noninferiority Margin (p0 = u" for "Noninferiority Margin". Exact matching
+      // missed these and seeded a parallel column, so the run silently read the
+      // recorded value instead of the tester's. Fall back to a prefix match, but
+      // only when it is UNAMBIGUOUS — two candidates mean we cannot know which the
+      // tester meant, and guessing wrong is worse than seeding a new column.
+      if (!existing && derivedNorm.length >= 4) {
+        const prefixHits = [...existingByNorm.entries()].filter(
+          ([norm]) => norm !== derivedNorm && (norm.startsWith(derivedNorm) || derivedNorm.startsWith(norm)),
+        );
+        if (prefixHits.length === 1) existing = prefixHits[0]?.[1];
+      }
+
       if (!existing || existing === derived) continue;
       const from = buildDataToken(file, derived);
       const to = buildDataToken(file, existing);
@@ -1565,6 +1579,11 @@ function main(): number {
   for (const r of reuseLog) console.log(`  ${r}`);
   for (const d of writtenData) console.log(`  ${d}`);
   console.log('');
+  if (blindChoiceWarnings.length) {
+    console.log(`SKIPPED ${blindChoiceWarnings.length} radio interaction(s) that could NOT be data-driven:`);
+    for (const w of blindChoiceWarnings) console.log(`  ! ${w}`);
+    console.log('');
+  }
   console.log('NEXT STEPS (the importer cannot infer these):');
   if (sawLogin) console.log('  - Login was recorded and replaced with callReusable flows/login.csv. Confirm flows/login.csv matches your IdP.');
   console.log(`  - Add a master.csv row:  ${parsed.args.tcId ?? '<TC_ID>'},${parsed.args.module},regression,,${parsed.args.feature.replace(/^feature_/, '')},,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD`);

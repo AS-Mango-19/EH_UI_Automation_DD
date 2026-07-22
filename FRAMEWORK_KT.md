@@ -592,6 +592,22 @@ The disabled-and-fixed skip (`select`) and the grid escalation (`fill`) fire **o
 when the plain path fails, so ordinary fields are never affected. All of these are in
 `core/keywords/input.ts`; the blank/`N/A` skip is central in `core/runner/stepRunner.ts`.
 
+> **Every one of these rules assumes the step is driven by the testdata.** A step with a
+> **blank InputValue** has nothing to resolve, so none of the rows above apply: it can't be
+> skipped for an iteration, it can't be verified, it just fires. `validate` therefore
+> **rejects a blank `InputValue` on `fill` / `type` / `select` / `check` / `uncheck`**
+> (`core/keywords/catalog.ts`), and the importer refuses to emit one.
+>
+> `check` needs the value even though the handler only calls `.check()` — the value
+> parameterises the selector's `{0}`, so it is what picks **which** radio in the group.
+> A blank one is a blind click that re-asserts whatever the recording happened to select.
+> This is not theoretical: ROM(PD)'s `check radio_Type_1_Error` (blank) silently undid the
+> `Computed Parameter = Power` that the previous step had set from the testdata, greying out
+> the α just typed and leaving a stale `0.9` Power. The app rejected the design and the
+> simulation returned `"Failed"` — six steps later, with nothing in the log pointing at the
+> cause. To tick a plain checkbox, data-drive it (`${data.project.Include}`); blank/`N/A`
+> then skips it per iteration, which is the behaviour you actually want.
+
 ---
 
 ## 7. Selector resolution
