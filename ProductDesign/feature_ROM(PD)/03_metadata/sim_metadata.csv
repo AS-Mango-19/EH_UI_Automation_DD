@@ -33,8 +33,10 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 32,260,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
 33,270,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
 34,280,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
-35,290,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
-36,300,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
-37,310,ExtractResults,ResultsPage,click,lnk_ResultName,${data.simulation.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
-38,320,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
-39,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+35,285,ExtractResults,ResultsPage,fill,txt_ResultName,Result - ${data.simulation.Result Name},,,,,10000,FALSE,0,always,,Name the simulation result (the #inputId modal after Save & Simulate)
+36,288,ExtractResults,ResultsPage,callCustom,,confirmSimulateModal,,,,,10000,FALSE,0,always,,Confirm the name-your-result modal via a scoped custom handler (the Simulate button resists declarative selectors)
+37,295,ExtractResults,ResultsPage,navigate,,/landingpage/results,,,,domcontentloaded,60000,FALSE,0,always,,Go to the Results list page (fresh DOM; the sim status polls correctly here)
+38,300,Simulate,ResultsPage,waitForSimulation,lbl_sim_RunStatus,,,,Completed,,300000,FALSE,0,always,,"Wait for the SIMULATION row status to change In-progress -> Completed (its own row, not the design result)"
+39,310,ExtractResults,ResultsPage,click,lnk_ResultName,Result - ${data.simulation.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+40,320,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+41,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
