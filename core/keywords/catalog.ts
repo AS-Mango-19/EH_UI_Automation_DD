@@ -67,14 +67,13 @@ const list: KeywordSpec[] = [
   spec('type', 'input', ['ObjectName', 'InputValue'], true),
   spec('clear', 'input', ['ObjectName'], true),
   spec('select', 'input', ['ObjectName', 'InputValue'], true),
-  // check/uncheck REQUIRE an InputValue even though the handler only calls
-  // .check(): the value parameterizes the selector's {0}, so it is what picks
-  // WHICH radio in the group. A blank InputValue is a blind click that re-asserts
-  // whatever the recording happened to select — it can never be right for every
-  // iteration, and it silently overrode a data-driven choice made earlier in the
-  // run. Give it a ${data.*} token (blank/N/A then skips the step per iteration).
-  spec('check', 'input', ['ObjectName', 'InputValue'], true),
-  spec('uncheck', 'input', ['ObjectName', 'InputValue'], true),
+  // check/uncheck take only ObjectName here, but the validator ADDS an InputValue
+  // requirement when the selector is {0}-parameterised (a radio GROUP, where the
+  // value picks which option) — that is the blind-click case. A fixed-selector
+  // checkbox toggle (e.g. "Common Coefficient of Variation") legitimately needs no
+  // value, so the requirement is selector-aware rather than blanket (validator.ts).
+  spec('check', 'input', ['ObjectName'], true),
+  spec('uncheck', 'input', ['ObjectName'], true),
   spec('upload', 'input', ['ObjectName', 'InputValue'], true, { inputIsPath: true }),
   spec('hover', 'input', ['ObjectName'], true),
   spec('press', 'input', ['ObjectName', 'InputValue'], true),

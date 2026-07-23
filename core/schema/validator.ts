@@ -129,6 +129,21 @@ function validateMetadata(
       }
     }
 
+    // check/uncheck on a {0}-parameterised selector (a radio GROUP) needs an
+    // InputValue — the value picks WHICH option. Blank there is the blind-click bug
+    // that silently re-asserts whatever was recorded. A fixed-selector checkbox
+    // toggle has no {0} and needs no value, so this is selector-aware, not blanket.
+    if (step.Action === 'check' || step.Action === 'uncheck') {
+      const objectName = step.ObjectName.split('|')[0]?.trim() ?? '';
+      const sel = f.selectorIndex.get(selectorKey(step.Page, objectName));
+      const parameterised = sel ? /\{0\}/.test(`${sel.RoleName} ${sel.SelectorValue} ${sel.FallbackSelector}`) : false;
+      if (parameterised && step.InputValue.trim() === '') {
+        issues.push(
+          `${where}: "${step.Action} ${objectName}" targets a {0}-parameterised selector (a radio group) but has a blank InputValue — the value picks which option. Give it a \${data.*} token.`,
+        );
+      }
+    }
+
     // Locator resolution for actions that target a UI object.
     if (spec.needsLocator) {
       const objectName = step.ObjectName.split('|')[0]?.trim() ?? '';
