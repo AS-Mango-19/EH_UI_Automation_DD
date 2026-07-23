@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: faafc544262c0ef03b2be021ea1aa0732419cb383bf0f17ff6be0e1a3e1b855c)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 709fdc7aac0ec062bab85ff9bf5eda67190cfb82f4c2ef40dcd4a6cb9ff82aa9)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -14,13 +14,73 @@ export class ProjectsPage {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_NewProject', { dynamicArgs });
   }
 
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Phase(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Phase', { dynamicArgs });
+  }
+
   /** New Project button (login flow landing) */
   btn_New_Project(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_New_Project', { dynamicArgs });
   }
 
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Time_Unit(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Time_Unit', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Create_Project(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_Create_Project', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Inputs(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_Inputs', { dynamicArgs });
+  }
+
   /** loading overlay (login flow landing) */
   div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'div_Spinner', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Study_Objective(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Study_Objective', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Endpoint_Type', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Better_Response', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Password(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_Password', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Project_Name(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Project_Name', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Target_Population(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Target_Population', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Treatment_Arm(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Treatment_Arm', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_Endpoint_Name(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Endpoint_Name', { dynamicArgs });
   }
 }

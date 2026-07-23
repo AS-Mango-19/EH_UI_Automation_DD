@@ -1,2 +1,3 @@
-IterationID,TC_ID,InputSetname,SelectTask,SelectTest
-ITER_01,TC_02,Set1,Design,Simon's Two Stage
+IterationID,TC_ID,collectionName,SelectTask,SelectTest,Name Input Set
+ITER_01,TC_02,Set1,Design,Simon's Two Stage,Input Set 1
+ITER_02,TC_02,Set1,Design,Simon's Two Stage,Input Set 1

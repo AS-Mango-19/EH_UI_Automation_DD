@@ -1,3 +1,3 @@
-TC_ID,IterationID,Run,projectName,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,Endpoint Type,Better Response
-TC_01,ITER_01,TRUE,Project 21,Week,7/20/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value
+TC_ID,IterationID,Run,projectName,Time Unit,Start Date,Study Objective,Phase,populationName 0,treatmentArm 0,Priority,endpointName 0,Endpoint Type,Better Response
 TC_02,ITER_01,TRUE,Project 21,Week,7/20/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value
+TC_02,ITER_02,TRUE,Project 21,Week,7/20/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value
