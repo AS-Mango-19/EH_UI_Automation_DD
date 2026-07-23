@@ -19,7 +19,7 @@ function parseGroupedOptionLabel(input: string): { label: string; category?: str
   if (!match) {
     return { label: trimmed };
   }
-  return { label: match[1].trim(), category: match[2].trim() };
+  return { label: match[1]!.trim(), category: match[2]!.trim() };
 }
 
 /**
