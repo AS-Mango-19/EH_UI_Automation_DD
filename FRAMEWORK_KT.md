@@ -554,10 +554,73 @@ the report tags the sim phase (`+SIM PASS` / `SIM skipped`). `sim_metadata` is
 validated up front too — `Simulation=YES` with a missing/broken `sim_metadata.csv`
 fails `npm run validate` before a browser opens.
 
+#### The sim flow shape, end to end
+
+The `sim_metadata.csv` walks the whole simulation and ends by opening its result —
+exactly like design, but the result opens from the **Results list**, not inline:
+
+1. **Simulate** — the first step clicks the `Simulate` button on the design result.
+2. **Fill the input tabs** — the sim input page is multi-tab (Design / Response /
+   Enrollment / Simulation Setup). Navigate each with a `click` on its tab button,
+   then fill/select its fields. Controls that a controlling option already fixed
+   are `select`ed and skip as *"disabled, already correct"*; greyed **derived**
+   fields are `assertValue` (below).
+3. **Save & Simulate** — `click btn_Save`, then `click btn_Save_Simulate`, then
+   confirm any credit alert. The app navigates to the **Results list** page.
+4. **Wait for Completed** — `waitForSimulation lbl_RunStatus` polls the status cell
+   on the Results list until it reads `Completed` (a simulation is a Monte-Carlo run
+   and takes real time; that is why the status is polled, not assumed).
+5. **Open the result** — `click lnk_ResultName ${data.simulation.Result Name}` opens
+   the simulation result **detail** (the same view design produces).
+6. **Extract + compare** — `callCustom extractAllResultTables` captures every table
+   and narrative panel on the result page, then `compareWithBaseline` writes/checks
+   `sim_baseline_<TC>_<ITER>.csv`.
+
+#### Consolidating a sim recording (the judgment pass)
+
+A `--sim` import is a **flat superset** and needs the same on-screen consolidation
+the design flow does (§13), walking the input tabs one at a time. The recurring
+sim-specific shapes, all seen on ROM(PD):
+
+| On the sim page | Do this |
+| --- | --- |
+| A control the recording only **label-clicked** (Hypothesis, Randomization Method, Test Type) — no data-driven step exists | Add a `select` with `${data.simulation.<Col>}`. If a prior choice fixes it, it skips as *disabled, already correct*; otherwise it sets it. |
+| A **greyed / derived** field with a testdata value (Critical Point Lower = −Upper; a mirrored value) | `assertValue`, `ExpectedValue = ${data.simulation.<Col>}` — never `fill` (disabled fields hard-fail). §6.3. |
+| A **checkbox that reveals or frees** a field ("Common Coefficient of Variation" greys Treatment; "Include" hides the enrollment grid; "Save Subject-Level Data" reveals its runs field) | Add a `check`/`uncheck` step (no InputValue needed — its selector is fixed, not `{0}`-parameterised). Order it **before** the fields it controls. |
+| A field only present under one option combination | Leave the cell `N/A` for the iterations where it is absent — the step skips (§4.5). |
+
+**Status cell / result name are app-specific** — verify `lbl_RunStatus` (its
+`col-id`) and the `Result Name` value against your app, exactly as for design.
+
 > **Importing the sim flow:** `npm run import-codegen -- <Module> <Feature> --tc TC_XX --sim`
 > (§13, §14). It reuses selectors and compare.config, adds no login/navigate, and
 > writes `sim_metadata.csv`. The generated Playwright specs (`npm run pw:test`) run
 > the design flow only; the chained sim runs under `npm run test`.
+
+#### End-to-end walkthrough (design + simulation for one feature)
+
+```bash
+# 1. Record BOTH flows in the app (npm run codegen), saved into the feature's
+#    02_selectors_repo/ as recording.txt (design) and sim_recording.txt (sim,
+#    starting on the design result at the Simulate click).
+
+# 2. Import each flow (design writes metadata.csv; --sim writes sim_metadata.csv,
+#    sharing selectors.csv + compare.config.csv):
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_09
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_09 --sim
+
+# 3. In master.csv set Execute=TRUE and Simulation=YES for the row.
+
+# 4. Consolidate metadata.csv AND sim_metadata.csv against the live pages (§13),
+#    then validate (no browser):
+npm run validate
+
+# 5. Run — design then, if green, the chained simulation, one browser:
+npm run test -- --testcase TC_09
+
+# 6. Screenshot-verify BOTH phases, review the baseline + sim_baseline, run again
+#    to turn BASELINE_CREATED into a real PASS.
+```
 
 ---
 
