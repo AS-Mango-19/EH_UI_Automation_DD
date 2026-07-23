@@ -79,9 +79,17 @@ txt_Probability_of_Dropout,Page,css,#probabilityOfDropout,,,FALSE,textbox from c
 btn_Enrollment,Page,role,button,Enrollment,,FALSE,button from codegen,FALSE
 txt_Enrollment_Rate_per_Week,Page,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
 btn_Simulation_Setup,Page,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
-txt_Number_of_Simulations_Run,Page,xpath,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+txt_Number_of_Simulations_Run,Page,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
 ddl_Random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
 txt_Fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
 txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
 btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
 btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+ddl_sim_Hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> Hypothesis (sim Design tab; shared id with design),FALSE
+ddl_sim_Randomization_Method,ResultsPage,css,#randomizationMethod,,,FALSE,native <select> Randomization Method (sim Design tab; id inferred - confirm in DevTools),FALSE
+ddl_sim_Test_Type,ResultsPage,css,#testtype,,,FALSE,native <select> Test Type (sim Design tab; shared id with design),FALSE
+txt_sim_Critical_Point_Lower,ResultsPage,css,#lowerCriticalPoint,,,FALSE,GREYED/derived Critical Point Lower (id inferred from #upperCriticalPoint - confirm in DevTools),FALSE
+chk_sim_Common_CoV,ResultsPage,css,"[data-testid=""commonCoefficientOfVariation""]",,,FALSE,Common Coefficient of Variation checkbox (uncheck to enable separate Control/Treatment CoV),FALSE
+sw_sim_Include,ResultsPage,role,switch,,,FALSE,Enrollment Include toggle (recording had it already on; a fresh run starts Not Included),FALSE
+chk_sim_Save_Summary_Stats,ResultsPage,css,"[data-testid=""saveSummaryStats""]",,,FALSE,Save Summary Statistics checkbox (Simulation Setup),FALSE
+chk_sim_Save_Subject_Level_Data,ResultsPage,css,"[data-testid=""saveSubjectLevelData""]",,,FALSE,Save Subject-Level Data checkbox - reveals subLevelDataSimRuns,FALSE
