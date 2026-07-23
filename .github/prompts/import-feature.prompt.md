@@ -27,3 +27,10 @@ Steps (detail in the playbook): run `npm run import-codegen -- <Module> feature_
 (standalone-capable) → consolidate the superset metadata (one data-driven step per control,
 controls before dependent fields) → reconcile columns / add computed & label-only field steps →
 `npm run validate` → `npm run test -- --testcase TC_XX` → screenshot-verify each iteration → fix.
+
+**Simulation flow** (optional second flow on the same feature): import with
+`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX --sim` — reads `sim_recording.txt`
+→ `sim_metadata.csv`, tokens bound to `simulation.csv`, no login/navigate (starts at the
+Simulate click), selectors + compare.config shared. Set `Simulation=YES` in master.csv; it then
+chains after a green design run in the same browser and writes `sim_results_`/`sim_baseline_`.
+Consolidate and screenshot-verify `sim_metadata.csv` exactly like the design flow.

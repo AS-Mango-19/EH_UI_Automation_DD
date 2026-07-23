@@ -284,3 +284,23 @@ export function loadFeature(input: FeatureLoadInput): LoadedFeature {
   }
   return value;
 }
+
+/** Convention: the chained simulation flow's steps live here, beside metadata.csv. */
+export const SIM_METADATA_REL = path.join('03_metadata', 'sim_metadata.csv');
+
+/**
+ * A sim VIEW of an already-loaded feature: identical selectors, testdata, compare
+ * config, paths and config — only the steps differ (from sim_metadata.csv). Reusing
+ * the design compare columns is deliberate (the sim results share the same tidy
+ * shape and the user opted to reuse the design rules). Throws on any load issue so
+ * a broken sim aborts before a browser opens, same as loadFeature.
+ */
+export function loadSimSteps(design: LoadedFeature): LoadedFeature {
+  const md = loadMetadata(design.module, design.feature, SIM_METADATA_REL);
+  if (md.issues.length) {
+    throw new FrameworkError(
+      `Feature "${design.feature}" has Simulation=YES but its ${SIM_METADATA_REL} failed to load:\n  - ${md.issues.join('\n  - ')}`,
+    );
+  }
+  return { ...design, steps: md.value, metadataFileRel: SIM_METADATA_REL };
+}

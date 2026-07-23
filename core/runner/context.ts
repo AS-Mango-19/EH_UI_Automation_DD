@@ -75,6 +75,14 @@ export class RunContext {
   baselinePathRel?: string;
   finalStatus: TestStatus = 'PASS';
 
+  /**
+   * Prefixes every captured/baseline/diff filename for the current phase. Empty
+   * for the normal (design) flow -> `results_`, `baseline_`, `diff_`. The chained
+   * simulation phase sets it to `sim_` -> `sim_results_`, `sim_baseline_`,
+   * `sim_diff_`, so the two phases never overwrite each other's artifacts.
+   */
+  resultPrefix = '';
+
   constructor(init: RunContextInit) {
     this.runId = init.runId;
     this.timestamp = init.timestamp;

@@ -35,6 +35,9 @@ export const MasterRowSchema = z
     Browser: browserField.default('chromium'),
     Environment: strWithDefault(''),
     BaselineMode: baselineModeField.default('compare'),
+    // Simulation=YES chains a second flow (03_metadata/sim_metadata.csv) in the
+    // SAME browser after the design comparison, but only when design is green.
+    Simulation: boolField.default(false),
     IterationID: strWithDefault(''),
     TestDataDir: strWithDefault(''),
     TestDataFile: strWithDefault(''),

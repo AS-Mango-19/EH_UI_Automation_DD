@@ -57,6 +57,25 @@ export interface IterationResult {
   failureReason?: string;
   /** True when this run created the project (=> eligible for cleanup). */
   createdProjectId?: string;
+  /**
+   * The chained simulation phase, present only when master Simulation=YES and the
+   * design phase was green. The top-level status/paths above describe the DESIGN
+   * phase; `status` is the COMBINED worst-of the two. This sub-object carries the
+   * sim phase's own artifacts (sim_results_/sim_baseline_/sim_diff_).
+   */
+  sim?: SimPhaseResult;
+}
+
+export interface SimPhaseResult {
+  status: TestStatus;
+  actualResultsPath?: string;
+  baselinePath?: string;
+  diffCsvPath?: string;
+  diffJsonPath?: string;
+  compare?: CompareReport;
+  failureReason?: string;
+  /** Set when the sim phase was skipped rather than run (e.g. simulation.csv Run=FALSE). */
+  skippedReason?: string;
 }
 
 export interface RunSummary {

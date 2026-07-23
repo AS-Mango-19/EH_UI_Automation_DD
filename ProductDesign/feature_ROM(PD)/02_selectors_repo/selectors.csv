@@ -57,3 +57,31 @@ lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run s
 txt_nonInf_Mean_Control,ResultsPage,css,#nonInf_meanControl,,,FALSE,NI Mean Control (id confirmed present in recording.txt),FALSE
 txt_nonInf_NH_Mean_Treatment,ResultsPage,css,#nonInf_nhMeanTreatment,,,FALSE,Mean Treatment (μt0) under Null Hypothesis - COMPUTED by the app from Mean Control x NI Margin,FALSE
 txt_nonInf_AH_Mean_Treatment,ResultsPage,css,#nonInf_ahMeanTreatment,,,FALSE,Mean Treatment (μt1) under Alternative Hypothesis - COMPUTED by the app from Mean Control x Ratio of Means,FALSE
+btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,Page,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,Page,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_id_left_Panel_designs,Page,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_Sample_Size_n,Page,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,Page,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point_Upper,Page,css,#upperCriticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_upper_Critical_Point,Page,css,#upperCriticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_Noninferiority_Margin_0,Page,css,#nonInf_margin,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point,Page,css,#criticalPoint,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,Page,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_Coefficient_of_Variation_of,Page,css,#coefficientOfVariation,,,FALSE,textbox from codegen,FALSE
+btn_Response,Page,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Mean_Control_c,Page,css,#meanControl,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Treatment_t,Page,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
+txt_Coefficient_of_Variation_of_Data_Control,Page,css,#cvControl,,,FALSE,textbox from codegen,FALSE
+txt_Coefficient_of_Variation_of_Data_Treatment,Page,css,#cvTreatment,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,Page,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,Page,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+btn_Enrollment,Page,role,button,Enrollment,,FALSE,button from codegen,FALSE
+txt_Enrollment_Rate_per_Week,Page,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,Page,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,Page,xpath,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE

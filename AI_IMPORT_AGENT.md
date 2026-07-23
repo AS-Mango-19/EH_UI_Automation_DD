@@ -113,6 +113,23 @@ It auto-discovers the recording, captures selectors, generates steps + `${data.*
 reuses matching testdata columns, and seeds skeletons. **The tester can run this alone** — the
 agent's job is steps 2-6.
 
+> **Two flows, one feature.** A feature can have a **design** flow and a chained **simulation**
+> flow. They are imported and consolidated the SAME way; only the inputs and the command flag
+> differ:
+>
+> | | Design flow | Simulation flow |
+> |---|---|---|
+> | recording | `02_selectors_repo/recording.txt` | `02_selectors_repo/sim_recording.txt` |
+> | testdata | `inputset.csv` / `project.csv` / `design.csv` | `simulation.csv` |
+> | metadata out | `03_metadata/metadata.csv` | `03_metadata/sim_metadata.csv` |
+> | command | `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX` | `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX --sim` |
+> | selectors / compare.config | `selectors.csv` / `compare.config.csv` | **shared** — merged into the same files |
+> | login/navigate | synthesised | **none** — sim starts on the results page at the `Simulate` click |
+>
+> Turn it on with `Simulation=YES` in the master row. At run time, **after a GREEN design
+> comparison**, the same browser stays open, clicks Simulate, runs the sim steps, and captures
+> `sim_results_<TC>_<ITER>.csv` / `sim_baseline_<TC>_<ITER>.csv`. A red design skips sim.
+
 ### 2 — Consolidate a superset recording *(judgment)*
 A superset recording toggles controls, so the raw metadata has **duplicated, self-cancelling**
 steps. Turn it into the clean data-driven form:

@@ -9,7 +9,7 @@ import type { Browser } from 'playwright';
 import type { CliFilters } from '../cli/args.js';
 import { loadEnv, type EnvConfig } from '../../config/environments.js';
 import { loadMaster, type MasterEntry } from '../loaders/masterLoader.js';
-import { loadFeature, loadSelectors, type LoadedFeature } from '../loaders/featureLoader.js';
+import { loadFeature, loadSelectors, loadSimSteps, SIM_METADATA_REL, type LoadedFeature } from '../loaders/featureLoader.js';
 import { generatePom } from '../generators/pom.generator.js';
 import { generateSpec } from '../generators/spec.generator.js';
 import { selectEntries, orderByDependsOn } from './select.js';
@@ -28,6 +28,8 @@ import path from 'node:path';
 interface Task {
   entry: MasterEntry;
   feature: LoadedFeature;
+  /** Sim view of the same feature (sim_metadata.csv steps), when Simulation=YES. */
+  simFeature?: LoadedFeature;
   iterationId: string;
   env: EnvConfig;
   browserName: BrowserName;
@@ -107,6 +109,7 @@ export async function testCommand(filters: CliFilters): Promise<number> {
   let anySerial = false;
   const anyDeps = selected.some((e) => e.row.DependsOn.trim() !== '');
 
+  const simByFeature = new Map<string, LoadedFeature | undefined>();
   for (const entry of selected) {
     const module = entry.row.Module;
     const feature = entry.row.Feature;
@@ -124,11 +127,15 @@ export async function testCommand(filters: CliFilters): Promise<number> {
       const sel = loadSelectors(module, feature);
       generatePom(module, feature, sel.value);
       generateSpec(module, feature, metadataFileRelFor(entry), testDataDirRelFor(entry));
+      // A sim view reuses everything but the steps (from sim_metadata.csv). Built
+      // once per feature; only when Simulation=YES on the master row.
+      simByFeature.set(fkey, entry.row.Simulation ? loadSimSteps(loaded) : undefined);
     }
+    const simFeature = simByFeature.get(fkey);
     if (loaded.config.serial) anySerial = true;
     const env = loadEnv(envNameFor(entry, filters));
     for (const iterationId of loaded.testData.iterationsFor(entry.row.TC_ID)) {
-      tasks.push({ entry, feature: loaded, iterationId, env, browserName: entry.row.Browser as BrowserName });
+      tasks.push({ entry, feature: loaded, simFeature, iterationId, env, browserName: entry.row.Browser as BrowserName });
     }
   }
 
@@ -179,6 +186,7 @@ export async function testCommand(filters: CliFilters): Promise<number> {
     return runIteration({
       entry: t.entry,
       feature: t.feature,
+      simFeature: t.simFeature,
       iterationId: t.iterationId,
       env: t.env,
       browser,

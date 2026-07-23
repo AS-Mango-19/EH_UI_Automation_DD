@@ -24,7 +24,7 @@ export interface BaselineMeta {
 
 export function baselineCsvPath(ctx: RunContext): string {
   const dir = ctx.feature.paths.baselineEnvDir(ctx.env.env);
-  return path.join(dir, `baseline_${ctx.tcId}_${ctx.iterationId}.csv`);
+  return path.join(dir, `${ctx.resultPrefix}baseline_${ctx.tcId}_${ctx.iterationId}.csv`);
 }
 
 export function baselineMetaPath(ctx: RunContext): string {

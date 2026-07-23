@@ -25,3 +25,9 @@ Non-negotiables (full detail is in the playbook):
 - **Screenshot-verify every iteration.** Green ≠ correct.
 - The deterministic importer (`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX`)
   is runnable **standalone**; this skill only adds the judgment layer on top of it.
+- **Simulation flow**: same feature, a second recorded flow that chains after a green design run
+  in the same browser. Import it with the `--sim` flag
+  (`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX --sim`): it reads
+  `sim_recording.txt` → `sim_metadata.csv`, binds tokens to `simulation.csv`, adds no
+  login/navigate (starts at the Simulate click), and shares selectors + compare.config. Turn it
+  on with `Simulation=YES` in master.csv. Consolidate `sim_metadata.csv` exactly like design.

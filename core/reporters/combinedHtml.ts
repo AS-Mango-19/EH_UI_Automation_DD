@@ -63,6 +63,20 @@ function it2runId(_it: IterationResult): string {
   return CURRENT_RUN_ID;
 }
 
+/** A small "+SIM" chip on the status cell when a simulation phase ran or was skipped. */
+function simTag(it: RunSummary['iterations'][number]): string {
+  if (!it.sim) return '';
+  if (it.sim.skippedReason) return ` <span class="badge" style="background:#8250df" title="${escapeHtml(it.sim.skippedReason)}">SIM skipped</span>`;
+  return ` <span class="badge" style="background:${STATUS_COLORS[it.sim.status] ?? '#6e7781'}" title="simulation phase">+SIM ${escapeHtml(it.sim.status)}</span>`;
+}
+
+/** Sim compare summary appended to the detail cell. */
+function simDetail(it: RunSummary['iterations'][number]): string {
+  if (!it.sim || it.sim.skippedReason) return '';
+  const txt = it.sim.failureReason ?? it.sim.compare?.summary ?? '';
+  return txt ? `<br><small style="color:#8250df">sim: ${escapeHtml(txt)}</small>` : '';
+}
+
 function matrix(summary: RunSummary): string {
   const rows = summary.iterations
     .map(
@@ -70,9 +84,9 @@ function matrix(summary: RunSummary): string {
       <td>${escapeHtml(it.feature)}</td>
       <td>${escapeHtml(it.tcId)}</td>
       <td>${escapeHtml(it.iterationId)}</td>
-      <td>${badge(it.status)}</td>
+      <td>${badge(it.status)}${simTag(it)}</td>
       <td>${fmtDuration(it.durationMs)}</td>
-      <td>${escapeHtml(it.failureReason ?? it.compare?.summary ?? '')}</td>
+      <td>${escapeHtml(it.failureReason ?? it.compare?.summary ?? '')}${simDetail(it)}</td>
       <td><a href="${escapeHtml(featureReportLink(it))}">report</a></td>
     </tr>`,
     )

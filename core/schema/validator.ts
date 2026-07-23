@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadMaster } from '../loaders/masterLoader.js';
-import { loadFeatureAll, selectorKey } from '../loaders/featureLoader.js';
+import { loadFeatureAll, selectorKey, SIM_METADATA_REL } from '../loaders/featureLoader.js';
 import { featureDir, abs } from '../utils/paths.js';
 import { getKeywordSpec } from '../keywords/catalog.js';
 import { FRAMEWORK_CONFIG } from '../../config/framework.config.js';
@@ -79,6 +79,26 @@ export function validateAll(opts: { master?: string } = {}): ValidationReport {
     validateSelectors(f, warnings);
     validateCompareConfig(f, issues, warnings);
     validateColumnMap(f, warnings);
+
+    // Simulation=YES chains sim_metadata.csv in the same browser after a green
+    // design run. Validate its steps too, so a broken sim aborts before a browser
+    // opens — same guarantee as the design flow. It shares selectors + testdata,
+    // so a sim view (same feature, sim steps) runs the same metadata checks.
+    if (row.Simulation) {
+      const simFile = path.join(dir, SIM_METADATA_REL);
+      if (!fs.existsSync(simFile)) {
+        issues.push(
+          `[${feature}] master.csv line ${line}: Simulation=YES but ${SIM_METADATA_REL} is missing. Import it with:  npm run import-codegen -- ${module} ${feature} --tc ${row.TC_ID} --sim`,
+        );
+      } else {
+        const simLoaded = loadFeatureAll({ module, feature, metadataFileRel: SIM_METADATA_REL, testDataDirRel });
+        for (const i of simLoaded.issues) issues.push(`[${feature}] sim: ${i}`);
+        if (simLoaded.value) {
+          validateMetadata(simLoaded.value, issues, warnings);
+          validateSelectors(simLoaded.value, warnings);
+        }
+      }
+    }
   }
 
   return { issues, warnings, featuresValidated, testCases: master.entries.length };

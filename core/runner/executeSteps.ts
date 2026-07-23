@@ -36,21 +36,32 @@ export interface ExecuteOutcome {
   reason?: string;
 }
 
-export async function executeSteps(
+/**
+ * Run a feature's MAIN steps (no cleanup) and map the outcome. Split out from
+ * executeSteps so the iteration can run several phases on the same page — design,
+ * then the chained simulation — before cleanup fires exactly once at the end.
+ *
+ * Phase-scoped: soft-assertion failures are attributed to THIS phase only (those
+ * added since it started), and finalStatus is reset so a later phase starts clean.
+ */
+export async function executeMain(
   ctx: RunContext,
   feature: LoadedFeature,
   opts: { dropLogin: boolean },
 ): Promise<ExecuteOutcome> {
-  const { main, cleanup } = partitionSteps(feature.steps, opts.dropLogin);
+  const { main } = partitionSteps(feature.steps, opts.dropLogin);
+  const softBefore = ctx.soft.length;
+  ctx.finalStatus = 'PASS';
   let status: TestStatus = 'PASS';
   let reason: string | undefined;
 
   try {
     await runSteps(ctx, main, { source: `${ctx.tcId}/${ctx.iterationId}` });
     status = ctx.finalStatus;
-    if (ctx.soft.length > 0 && status === 'PASS') {
+    const softNow = ctx.soft.slice(softBefore);
+    if (softNow.length > 0 && status === 'PASS') {
       status = 'FAIL';
-      reason = `${ctx.soft.length} soft assertion(s) failed: ${ctx.soft.map((s) => s.message).join('; ')}`;
+      reason = `${softNow.length} soft assertion(s) failed: ${softNow.map((s) => s.message).join('; ')}`;
     }
   } catch (err) {
     const mapped = mapErrorToStatus(err);
@@ -59,13 +70,31 @@ export async function executeSteps(
     logger.error(`Iteration ${ctx.tcId}/${ctx.iterationId} -> ${status}: ${mask(mapped.reason)}`);
   }
 
+  return { status, reason };
+}
+
+/** Run the Cleanup step group, or the API safety-net delete when there is none. */
+export async function runCleanup(ctx: RunContext, feature: LoadedFeature): Promise<void> {
+  const { cleanup } = partitionSteps(feature.steps, false);
   if (cleanup.length) {
     await runSteps(ctx, cleanup, { continueOnError: true, source: `${ctx.tcId}/${ctx.iterationId}:cleanup` });
   } else if (ctx.createdProjectId && feature.config.cleanup.deleteCreatedProjects) {
     await safetyNetDelete(ctx);
   }
+}
 
-  return { status, reason };
+/**
+ * Single-phase execution (design only) for the generated Playwright specs, which
+ * do not chain a simulation. Preserves the original main-then-cleanup behaviour.
+ */
+export async function executeSteps(
+  ctx: RunContext,
+  feature: LoadedFeature,
+  opts: { dropLogin: boolean },
+): Promise<ExecuteOutcome> {
+  const outcome = await executeMain(ctx, feature, opts);
+  await runCleanup(ctx, feature);
+  return outcome;
 }
 
 async function safetyNetDelete(ctx: RunContext): Promise<void> {

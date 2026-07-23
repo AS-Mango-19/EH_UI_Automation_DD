@@ -22,6 +22,13 @@ type ArgSet = {
   page?: string;
   /** TC_ID to seed testdata rows with, and to print in the master.csv hint. */
   tcId?: string;
+  /**
+   * Simulation flow. Imports sim_recording.txt -> 03_metadata/sim_metadata.csv,
+   * tokens bound to simulation.csv, NO login/navigate (the flow starts mid-app on
+   * the results page at the Simulate click), selectors merged into the shared
+   * selectors.csv, and the design compare.config.csv reused.
+   */
+  sim?: boolean;
 };
 
 type ParsedArgs =
@@ -142,9 +149,13 @@ function usage(): void {
     'Options:',
     '  --tc TC_05    TC_ID used to seed testdata rows and the printed master.csv row.',
     '  --page NAME   Starting page name for the first steps.',
+    '  --sim         Import the SIMULATION flow: sim_recording.txt -> 03_metadata/sim_metadata.csv,',
+    '                tokens bound to simulation.csv, no login/navigate (starts on the results page),',
+    '                selectors merged into the shared selectors.csv, design compare.config reused.',
     '',
-    'Example:',
-    '  npm run import-codegen -- ProductDesign ROM(PD) recording.ts --tc TC_05',
+    'Examples:',
+    '  npm run import-codegen -- ProductDesign ROM(PD) --tc TC_05            (design flow)',
+    '  npm run import-codegen -- ProductDesign ROM(PD) --tc TC_05 --sim      (simulation flow)',
   ].join('\n'));
 }
 
@@ -152,10 +163,15 @@ function parseArgs(argv: string[]): ParsedArgs {
   const positionals: string[] = [];
   let page: string | undefined;
   let tcId: string | undefined;
+  let sim = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === undefined) continue;
+    if (arg === '--sim') {
+      sim = true;
+      continue;
+    }
     if (arg === '--page') {
       const nextArg = argv[++i];
       if (nextArg !== undefined) page = nextArg;
@@ -181,7 +197,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   // feature's 02_selectors_repo/ folder (recordings live WITH the feature, not
   // scattered in the repo root).
   if (!module || !feature) return { help: true };
-  return { args: { module, feature, inputFile, page, tcId } };
+  return { args: { module, feature, inputFile, page, tcId, sim } };
 }
 
 function featureFolderName(feature: string): string {
@@ -218,16 +234,24 @@ function readCsvGrid(filePath: string): { header: string[]; rows: Record<string,
  * looks like codegen (`await page.`). Deliberately skips selectors.csv and the
  * locators.json / stray note files that also live in that folder.
  */
-function findRecording(dir: string): string | undefined {
+function findRecording(dir: string, sim = false): string | undefined {
   if (!fs.existsSync(dir)) return undefined;
-  const preferred = ['recording.ts', 'recording.txt', 'codegen.ts', 'codegen.txt'];
+  const preferred = sim
+    ? ['sim_recording.ts', 'sim_recording.txt', 'sim_codegen.ts', 'sim_codegen.txt']
+    : ['recording.ts', 'recording.txt', 'codegen.ts', 'codegen.txt'];
   for (const name of preferred) {
     const p = path.join(dir, name);
+    // Case-insensitive: the file on disk may be "Sim_recording.txt".
+    const hit = fs.readdirSync(dir).find((f) => f.toLowerCase() === name);
+    if (hit) return path.join(dir, hit);
     if (fs.existsSync(p)) return p;
   }
   const candidates = fs
     .readdirSync(dir)
     .filter((f) => /\.(ts|txt)$/i.test(f) && f.toLowerCase() !== 'selectors.csv')
+    // In sim mode take only sim-named recordings; in design mode SKIP them, so a
+    // sim recording sitting in the same folder never gets imported as the design.
+    .filter((f) => (sim ? /^sim[_-]/i.test(f) : !/^sim[_-]/i.test(f)))
     .map((f) => path.join(dir, f))
     .filter((p) => {
       try {
@@ -315,9 +339,15 @@ function readSelectorRows(filePath: string): LocatorRef[] {
 }
 
 function mergeSelectorRows(existingRows: LocatorRef[], generatedRows: LocatorRef[]): LocatorRef[] {
+  // Key by PAGE + objectName, the same composite identity the loader uses. Keying
+  // by objectName alone collapsed selectors that share a name across pages
+  // (txt_Follow_up_Time_Week exists on both ProjectPage and ResultsPage) — a sim
+  // import would then overwrite one page's row and the design step lost its
+  // selector. A new row for the same (page,object) still updates in place.
   const merged = new Map<string, LocatorRef>();
-  for (const row of existingRows) merged.set(row.objectName, row);
-  for (const row of generatedRows) merged.set(row.objectName, row);
+  const key = (r: LocatorRef): string => `${r.page}::${r.objectName}`;
+  for (const row of existingRows) merged.set(key(row), row);
+  for (const row of generatedRows) merged.set(key(row), row);
   return [...merged.values()];
 }
 
@@ -624,7 +654,7 @@ function stepRowToCsv(row: StepRow): string {
   return keys.map((k) => csvEscape(String(row[k] ?? ''))).join(',');
 }
 
-function parseCodegen(lines: string[]): {
+function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   selectors: LocatorRef[];
   steps: StepRow[];
   dataColumns: Map<string, Set<string>>;
@@ -652,15 +682,20 @@ function parseCodegen(lines: string[]): {
   let emittedReadiness = false;
   let seenIdp = false;
   let sawResultLink = false;
-  // The result name lives with the design data (the recording's result flow is on
-  // the design/results page); the tail's click token references this file.
-  const resultDataFile = 'design';
+  // The simulation flow's data all lives in simulation.csv; the design flow splits
+  // across inputset/project/design. This is the file the tail's result-name token
+  // and every field token bind to.
+  const sim = opts.sim === true;
+  const resultDataFile = sim ? 'simulation' : 'design';
 
   // Login is decided up front so the callReusable step lands FIRST, before any
   // navigate. flows/login.csv does its own goto, so a recorded pre-login landing
   // navigate is redundant and is skipped below.
+  //
+  // The SIM flow never logs in: it starts on the results page, already
+  // authenticated by the design phase, so login synthesis is forced off.
   const isIdpUrl = (url: string): boolean => /okta|login|signin|sign-in|auth0|microsoftonline/i.test(url);
-  const sawLogin = events.some((e) => e.kind === 'goto' && isIdpUrl(e.args));
+  const sawLogin = !sim && events.some((e) => e.kind === 'goto' && isIdpUrl(e.args));
 
   const registerDataColumn = (file: string, col: string): void => {
     const set = dataColumns.get(file) ?? new Set<string>();
@@ -756,6 +791,11 @@ function parseCodegen(lines: string[]): {
 
     if (event.kind === 'goto') {
       const url = event.args;
+      // Sim flow starts mid-app on the results page: every recorded navigation
+      // (the leading okta goto included) is dropped, and login mode is never
+      // entered — otherwise the leading IDP goto would flag inLogin and swallow
+      // every sim step that follows.
+      if (sim) continue;
       if (isIdpUrl(url)) {
         seenIdp = true;
         inLogin = true;
@@ -838,7 +878,9 @@ function parseCodegen(lines: string[]): {
     } else if (activeFlow === 'ExtractResults') {
       pageName = 'ResultsPage';
     }
-    const dataFile = dataFileFor(pageName, stepGroup);
+    // Sim: every field binds to simulation.csv (its one testdata file). Design:
+    // split across inputset/project/design by page/group.
+    const dataFile = sim ? 'simulation' : dataFileFor(pageName, stepGroup);
     const isResultName = isResultNameField(event);
     const columnName = isResultName ? RESULT_NAME_COLUMN : deriveColumnName(event, pendingLabel, event.ref);
     const targetAction = event.action || 'click';
@@ -1212,7 +1254,7 @@ function parseCodegen(lines: string[]): {
   // LOOKED at the numbers. Capture + compare is the entire point of the test,
   // so synthesise the tail — but only when the recording actually shows a
   // compute/result, never speculatively.
-  if (sawResultLink || steps.some((s) => /compute|simulate/i.test(String(s.Description ?? '')))) {
+  if (sim || sawResultLink || steps.some((s) => /compute|simulate/i.test(String(s.Description ?? '')))) {
     addSelector({
       page: 'ResultsPage',
       objectName: 'lbl_RunStatus',
@@ -1369,20 +1411,21 @@ function main(): number {
       return 1;
     }
   } else {
-    const found = findRecording(selectorsDir);
+    const found = findRecording(selectorsDir, parsed.args.sim);
     if (!found) {
+      const want = parsed.args.sim ? 'sim_recording.ts' : 'recording.ts';
       console.error(
         [
-          `No recording given and none found in ${path.relative(process.cwd(), selectorsDir)}/.`,
+          `No ${parsed.args.sim ? 'SIM ' : ''}recording given and none found in ${path.relative(process.cwd(), selectorsDir)}/.`,
           `Record one with:  npm run codegen`,
-          `then save it as   ${path.relative(process.cwd(), path.join(selectorsDir, 'recording.ts'))}`,
-          `or pass an explicit path:  npm run import-codegen -- ${parsed.args.module} ${parsed.args.feature} <recording.ts>`,
+          `then save it as   ${path.relative(process.cwd(), path.join(selectorsDir, want))}`,
+          `or pass an explicit path:  npm run import-codegen -- ${parsed.args.module} ${parsed.args.feature} <${want}>${parsed.args.sim ? ' --sim' : ''}`,
         ].join('\n'),
       );
       return 1;
     }
     inputFile = found;
-    console.log(`Using recording: ${path.relative(process.cwd(), inputFile)}`);
+    console.log(`Using ${parsed.args.sim ? 'SIM ' : ''}recording: ${path.relative(process.cwd(), inputFile)}`);
   }
   // Scaffold on demand: the tester should only need testdata + a recording, so
   // a missing feature folder is created rather than being a hard stop.
@@ -1392,7 +1435,10 @@ function main(): number {
   const compareConfigPath = path.join(targetRoot, '06_baseline', 'compare.config.csv');
 
   const lines = readLines(inputFile);
-  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings } = parseCodegen(lines);
+  const isSim = parsed.args.sim === true;
+  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings } = parseCodegen(lines, { sim: isSim });
+  // Sim testdata lives in one file (simulation.csv); design splits across three.
+  const dataFilesForReuse = isSim ? ['simulation'] : ['inputset', 'project', 'design'];
 
   // Reuse the tester's existing testdata columns instead of adding parallel
   // duplicates. The tester owns the testdata; when a recorded field's derived
@@ -1405,7 +1451,7 @@ function main(): number {
   // duplicate from a prior import.
   const reuseLog: string[] = [];
   const normalizeColName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-  for (const file of ['inputset', 'project', 'design']) {
+  for (const file of dataFilesForReuse) {
     const cols = dataColumns.get(file);
     if (!cols) continue;
     const { header } = readCsvGrid(path.join(targetRoot, '01_testdata', `${file}.csv`));
@@ -1499,7 +1545,8 @@ function main(): number {
   }
 
   const selectorPath = path.join(targetRoot, '02_selectors_repo', 'selectors.csv');
-  const metadataPath = path.join(targetRoot, '03_metadata', 'metadata.csv');
+  // Sim steps land in sim_metadata.csv, beside the design metadata.csv.
+  const metadataPath = path.join(targetRoot, '03_metadata', isSim ? 'sim_metadata.csv' : 'metadata.csv');
   const featureConfigPath = path.join(targetRoot, '00_config', 'feature.config.json');
 
   const existingSelectors = readSelectorRows(selectorPath);
@@ -1509,7 +1556,11 @@ function main(): number {
 
   fs.writeFileSync(selectorPath, selectorCsv, 'utf8');
   fs.writeFileSync(metadataPath, metadataCsv, 'utf8');
-  fs.writeFileSync(featureConfigPath, buildFeatureConfig(parsed.args.feature.replace(/^feature_/, ''), parsed.args.module), 'utf8');
+  // The sim import shares the design feature.config.json — never clobber it (that
+  // would reset serial/reuseAuthState the design import already tuned).
+  if (!isSim) {
+    fs.writeFileSync(featureConfigPath, buildFeatureConfig(parsed.args.feature.replace(/^feature_/, ''), parsed.args.module), 'utf8');
+  }
 
   // Testdata columns are MERGED with the metadata, never left to drift.
   //
@@ -1522,7 +1573,7 @@ function main(): number {
   // Existing columns/values always win; nothing the tester typed is overwritten.
   const tcId = parsed.args.tcId ?? 'TC_01';
   const writtenData: string[] = [];
-  for (const file of ['inputset', 'project', 'design']) {
+  for (const file of dataFilesForReuse) {
     const needed = [...(dataColumns.get(file) ?? new Set<string>())].filter((c) => c && c !== 'TC_ID' && c !== 'IterationID');
     const dataPath = path.join(targetRoot, '01_testdata', `${file}.csv`);
     const { header: existingHeader, rows: existingRows } = readCsvGrid(dataPath);
@@ -1573,9 +1624,10 @@ function main(): number {
   }
 
   const rel = path.join(parsed.args.module, featureName);
-  console.log(`Imported codegen -> ${rel}`);
-  console.log(`  ${steps.length} step(s) -> 03_metadata/metadata.csv`);
-  console.log(`  ${mergedSelectors.length} selector(s) -> 02_selectors_repo/selectors.csv`);
+  const metadataRel = isSim ? '03_metadata/sim_metadata.csv' : '03_metadata/metadata.csv';
+  console.log(`Imported ${isSim ? 'SIM ' : ''}codegen -> ${rel}`);
+  console.log(`  ${steps.length} step(s) -> ${metadataRel}`);
+  console.log(`  ${mergedSelectors.length} selector(s) -> 02_selectors_repo/selectors.csv (shared)`);
   for (const r of reuseLog) console.log(`  ${r}`);
   for (const d of writtenData) console.log(`  ${d}`);
   console.log('');
@@ -1585,11 +1637,21 @@ function main(): number {
     console.log('');
   }
   console.log('NEXT STEPS (the importer cannot infer these):');
+  if (isSim) {
+    console.log('  - The sim flow starts on the results page (no login/navigate). Its FIRST step should be the Simulate click — confirm it is.');
+    console.log('  - Turn Simulation ON for this test case in master.csv: set the Simulation column to YES.');
+    console.log('    Sim then chains automatically after a GREEN design run — same browser, same iteration.');
+    console.log('  - Review 01_testdata/simulation.csv: values are seeded from the sim recording; N/A a field that is hidden for an iteration.');
+    console.log('  - sim_metadata is a SUPERSET recording — consolidate it (one data-driven step per control, controls before dependents) exactly like design.');
+    console.log(`  - Then:  npm run validate   &&   npm run test -- --testcase ${parsed.args.tcId ?? '<TC_ID>'}`);
+    return 0;
+  }
   if (sawLogin) console.log('  - Login was recorded and replaced with callReusable flows/login.csv. Confirm flows/login.csv matches your IdP.');
   console.log(`  - Add a master.csv row:  ${parsed.args.tcId ?? '<TC_ID>'},${parsed.args.module},regression,,${parsed.args.feature.replace(/^feature_/, '')},,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD`);
   console.log('  - Review 01_testdata/*.csv: seeded values come from the recording; make names unique with ${runId} if the app rejects duplicates.');
   console.log('  - Date pickers cannot be filled — the import clicks the recorded day cell, which is pinned to the recorded month. Data-drive it if the date must move.');
   console.log('  - If a result tail was emitted, export extractAllResultTables from custom/<Feature>/customSteps.ts and verify lbl_RunStatus col-id.');
+  console.log('  - Has a Simulation flow? Record it from the results page, save as sim_recording.txt, then:  npm run import-codegen -- ' + parsed.args.module + ' ' + parsed.args.feature + ' --tc ' + (parsed.args.tcId ?? '<TC_ID>') + ' --sim');
   console.log(`  - Then:  npm run validate   &&   npm run test -- --testcase ${parsed.args.tcId ?? '<TC_ID>'}`);
   return 0;
 }

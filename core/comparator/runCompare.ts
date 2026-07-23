@@ -13,7 +13,7 @@ import path from 'node:path';
 import type { RunContext } from '../runner/context.js';
 import type { CompareReport } from './types.js';
 import { compareRows } from './comparator.js';
-import { baselineExists, readBaseline, writeBaseline } from './baseline.js';
+import { baselineExists, readBaseline, writeBaseline, baselineCsvPath } from './baseline.js';
 import { writeCsv } from '../csv/writer.js';
 import { ensureDir } from '../utils/paths.js';
 import { logger } from '../utils/logger.js';
@@ -91,7 +91,8 @@ export function runComparison(ctx: RunContext): ComparisonResult {
 }
 
 function baselinePathOf(ctx: RunContext): string {
-  return path.join(ctx.feature.paths.baselineEnvDir(ctx.env.env), `baseline_${ctx.tcId}_${ctx.iterationId}.csv`);
+  // Single source of truth for the name — honours ctx.resultPrefix (sim_ etc.).
+  return baselineCsvPath(ctx);
 }
 
 function synthBaselineReport(ctx: RunContext, rowCount: number): CompareReport {
@@ -110,7 +111,7 @@ function synthBaselineReport(ctx: RunContext, rowCount: number): CompareReport {
 
 function writeDiffs(ctx: RunContext, report: CompareReport): { diffCsvPath: string; diffJsonPath: string } {
   ensureDir(ctx.feature.paths.diffs);
-  const base = `diff_${ctx.tcId}_${ctx.iterationId}`;
+  const base = `${ctx.resultPrefix}diff_${ctx.tcId}_${ctx.iterationId}`;
   const diffCsvPath = path.join(ctx.feature.paths.diffs, `${base}.csv`);
   const diffJsonPath = path.join(ctx.feature.paths.diffs, `${base}.json`);
 

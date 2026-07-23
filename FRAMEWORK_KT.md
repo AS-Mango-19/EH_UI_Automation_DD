@@ -511,6 +511,54 @@ Every feature uses the same shape: `TableName`/`RowLabel`/`ColumnName` are keys,
   failure there is *Fatal*: the run dies with **no report**. That is why it uses
   `domcontentloaded` and not `networkidle`.
 
+### 5.1 The chained simulation flow (`Simulation=YES`)
+
+A feature can run a **second flow** — the simulation — in the **same browser**, on
+the **same page**, right after the design comparison. It's how you drive
+*design → Simulate → simulation results* as one iteration.
+
+**Turn it on:** set `Simulation` to `YES` on the master row. Off/blank ⇒ the design
+flow is byte-for-byte unchanged; nothing below runs.
+
+**What runs, per iteration:**
+
+1. The design flow executes as normal and ends in `compareWithBaseline`.
+2. **Only if the design phase is GREEN** (`PASS` or `BASELINE_CREATED`) — a red
+   design **skips** sim — the browser stays open and the sim flow runs:
+   `03_metadata/sim_metadata.csv`, on the same `page`, tokens bound to
+   `simulation.csv`. Its first step is the recorded **Simulate** click.
+3. The sim flow ends in its own `extractAllResultTables` + `compareWithBaseline`,
+   written under a `sim_` prefix.
+4. **Cleanup is deferred** to after sim (the design phase created the project;
+   deleting it before sim would break the flow).
+
+**The two phases never collide** — a `ctx.resultPrefix` flips to `sim_` for the
+second phase:
+
+| | Design | Simulation |
+| --- | --- | --- |
+| captured | `07_actual_results/results_<TC>_<ITER>.csv` | `07_actual_results/sim_results_<TC>_<ITER>.csv` |
+| baseline | `06_baseline/<env>/baseline_<TC>_<ITER>.csv` | `06_baseline/<env>/sim_baseline_<TC>_<ITER>.csv` |
+| diff | `08_diffs/diff_<TC>_<ITER>.*` | `08_diffs/sim_diff_<TC>_<ITER>.*` |
+| metadata | `metadata.csv` | `sim_metadata.csv` |
+| testdata | inputset/project/design | `simulation.csv` |
+| compare rules | `compare.config.csv` | **the same** `compare.config.csv` (reused) |
+
+**Per-iteration control.** `simulation.csv` has its own `Run` column (same veto as
+§4.5): `Run=FALSE` on a row skips *only the sim phase* for that iteration; the
+design phase still runs. A missing `simulation.csv` row for an iteration skips sim
+there too.
+
+**Status.** The iteration's reported status is the **worst of** design and sim, and
+the report tags the sim phase (`+SIM PASS` / `SIM skipped`). `sim_metadata` is
+validated up front too — `Simulation=YES` with a missing/broken `sim_metadata.csv`
+fails `npm run validate` before a browser opens.
+
+> **Importing the sim flow:** `npm run import-codegen -- <Module> <Feature> --tc TC_XX --sim`
+> (§13, §14). It reuses selectors and compare.config, adds no login/navigate, and
+> writes `sim_metadata.csv`. The generated Playwright specs (`npm run pw:test`) run
+> the design flow only; the chained sim runs under `npm run test`.
+
 ---
 
 ## 6. The keyword catalog
@@ -1219,10 +1267,18 @@ npm run test -- --testcase TC_04 --update-baseline   # re-approve the benchmark
 **Path A — manual importer** (deterministic, runnable on its own):
 ```bash
 npm run codegen                                              # record; save into the feature's 02_selectors_repo/ as recording.txt
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05   # recording auto-discovered -> feature
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05          # design flow; recording auto-discovered
+npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05 --sim    # SIM flow; reads sim_recording.txt -> sim_metadata.csv
 npm run scaffold-feature -- <Module> <Feature>               # empty tree (import does this too)
 npm run xlsx-to-csv -- <file.xlsx>                           # Excel -> CSV
 ```
+
+> **Design vs simulation import** (§5.1). The `--sim` flag reads
+> `02_selectors_repo/sim_recording.txt` → `03_metadata/sim_metadata.csv`, binds
+> tokens to `simulation.csv`, adds **no** login/navigate (the flow starts on the
+> results page at the Simulate click), and **shares** `selectors.csv` +
+> `compare.config.csv`. Then set `Simulation=YES` in master.csv and the sim chains
+> after a green design run — `npm run test -- --testcase TC_05` runs **both**.
 
 **Path B — the AI agent** (importer + judgment + screenshot verification, §13.9):
 ```text

@@ -435,7 +435,8 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
 
   const columns = ['TableName', 'RowLabel', 'ColumnName', 'Value', 'RunID', 'ProjectID'];
   ensureDir(ctx.feature.paths.actualResults);
-  const outputPath = path.join(ctx.feature.paths.actualResults, `results_${ctx.tcId}_${ctx.iterationId}.csv`);
+  const prefix = (ctx as { resultPrefix?: string }).resultPrefix ?? '';
+  const outputPath = path.join(ctx.feature.paths.actualResults, `${prefix}results_${ctx.tcId}_${ctx.iterationId}.csv`);
   writeCsv(outputPath, rows, columns);
 
   const tables = new Set(rows.map((r) => r['TableName']));
