@@ -51,7 +51,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let template: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+    const arg = argv[i]!;
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === '--template' || arg === '-t') {
       template = argv[++i];
