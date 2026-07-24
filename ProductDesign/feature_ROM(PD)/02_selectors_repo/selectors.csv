@@ -93,5 +93,7 @@ chk_sim_Common_CoV,ResultsPage,css,"[data-testid=""commonCoefficientOfVariation"
 sw_sim_Include,ResultsPage,role,switch,,,FALSE,Enrollment Include toggle (recording had it already on; a fresh run starts Not Included),FALSE
 chk_sim_Save_Summary_Stats,ResultsPage,css,"[data-testid=""saveSummaryStats""]",,,FALSE,Save Summary Statistics checkbox (Simulation Setup),FALSE
 chk_sim_Save_Subject_Level_Data,ResultsPage,css,"[data-testid=""saveSubjectLevelData""]",,,FALSE,Save Subject-Level Data checkbox - reveals subLevelDataSimRuns,FALSE
-btn_sim_Confirm_Simulate,ResultsPage,xpath,"(//*[contains(text(),""Name your result"")]/following::button)[1]",,,FALSE,"Modal Simulate confirm: first button after the ""Name your result before simulating"" prompt (scopes to the modal portal)",FALSE
+btn_sim_Confirm_Simulate,ResultsPage,css,.modal.show #credit-alert-primary,,,FALSE,Simulate confirm in the shown name-your-result modal (#credit-alert-primary; scoped to .modal.show),FALSE
 lbl_sim_RunStatus,ResultsPage,xpath,"//div[@role='row'][.//*[contains(normalize-space(.),'Simulation')]]//div[@col-id='simStatus']",,,FALSE,Status cell of the SIMULATION result row (scoped so it never matches the design row already Completed),FALSE
+txt_sim_ResultName,ResultsPage,css,.modal.show #inputId,,,FALSE,Result-name field in the shown Simulate modal,FALSE
+lnk_sim_ResultName,ResultsPage,xpath,"(//div[@role='row'][.//*[contains(normalize-space(.),'Simulation')]]//a)[1]",,,FALSE,First link in the Simulation result row = the result name (opens the sim result),FALSE

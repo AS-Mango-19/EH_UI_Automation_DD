@@ -239,49 +239,24 @@ export const selectInputSetTaskAndTest: KeywordHandler = async (page, ctx, step)
  * metadata steps 422-434. Keep app interactions in metadata.csv. */
 
 /**
- * Confirm the "Name your result before simulating" modal.
+ * Confirm the "Name your result before simulating" modal (Save & Simulate).
  *
- * After Save & Simulate the app opens a modal (rendered in a React portal at the
- * DOM end) whose "Simulate" button shares role+name with the design page's
- * top-right "Simulate" button. A plain role/text/id selector kept hitting the
- * wrong one (or a hidden stale credit-alert button) and left the modal open. So
- * scope to the modal by its unique prompt text, then click the Simulate button
- * inside it — logging what was found so a future change is easy to diagnose.
+ * The button is `#credit-alert-primary` inside `<div class="modal … show"
+ * id="credit-alert" aria-hidden="true">`. Two things defeated a plain click:
+ *  - the design phase leaves an earlier `#credit-alert-primary` in the DOM, so a
+ *    `.first()` match hit the wrong (stale) one — we take the LAST shown modal;
+ *  - a synthetic pointer click can be swallowed by the `.modal-backdrop`, so we
+ *    fire a native DOM click that triggers the React onClick directly.
+ * This actually starts the run, which then navigates to the Results list.
  */
 export const confirmSimulateModal: KeywordHandler = async (page, _ctx, step) => {
-  // Log the structure of every exact-"Simulate" element so the real control is
-  // visible in the run log (the modal has BOTH a title "Simulate" and the button).
-  const all = page.getByText('Simulate', { exact: true });
-  const total = await all.count().catch(() => 0);
-  for (let i = 0; i < total; i++) {
-    const info = await all
-      .nth(i)
-      .evaluate((el) => {
-        const c = el.closest('button,[role="button"],a,[type="submit"],[type="button"]');
-        const t = (c ?? el) as HTMLElement;
-        return `<${t.tagName.toLowerCase()}${t.getAttribute('role') ? ` role=${t.getAttribute('role')}` : ''}${
-          (t as HTMLButtonElement).disabled ? ' DISABLED' : ''
-        }> clickableAncestor=${c ? 'yes' : 'no'}`;
-      })
-      .catch(() => '(unreadable)');
-    logger.info(`confirmSimulateModal: "Simulate" #${i} ${info}`);
-  }
-  // Click only a genuinely CLICKABLE "Simulate" (excludes the modal title heading).
-  const clickable = page
-    .locator('button, [role="button"], a, [type="submit"], [type="button"]')
-    .filter({ hasText: /^\s*Simulate\s*$/ });
-  const n = await clickable.count().catch(() => 0);
-  logger.info(`confirmSimulateModal: ${n} clickable "Simulate" element(s).`);
-  if (n > 0) {
-    await clickable.last().click({ timeout: step.timeout });
-    return;
-  }
-  // Fallback: click the last exact-text match directly (a styled div with onClick).
-  if (total > 0) {
-    await all.last().click({ timeout: step.timeout });
-    return;
-  }
-  throw new Error('confirmSimulateModal: no "Simulate" control found.');
+  const btns = page.locator('.modal.show #credit-alert-primary');
+  const n = await btns.count().catch(() => 0);
+  logger.info(`confirmSimulateModal: ${n} shown-modal Simulate button(s); clicking the last.`);
+  if (n === 0) throw new Error('confirmSimulateModal: no #credit-alert-primary in a shown modal.');
+  const btn = btns.last();
+  await btn.waitFor({ state: 'attached', timeout: step.timeout }).catch(() => undefined);
+  await btn.evaluate((el: HTMLElement) => el.click());
 };
 
 /* ------------------------------------------------------------------ *

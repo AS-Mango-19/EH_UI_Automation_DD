@@ -592,6 +592,33 @@ sim-specific shapes, all seen on ROM(PD):
 **Status cell / result name are app-specific** — verify `lbl_RunStatus` (its
 `col-id`) and the `Result Name` value against your app, exactly as for design.
 
+#### The Save & Simulate result flow (learned the hard way on ROM(PD))
+
+After **Save & Simulate** the app opens a *"Name your result before simulating"*
+modal, runs the simulation, and lands on the **Results list** where a new row
+(Run Type **"Simulation"**) goes *In-progress → Completed*. Four things that are
+not obvious and cost real debugging:
+
+- **Do NOT fill the result-name field.** The modal pre-fills a valid name, and a
+  programmatic `fill` corrupts the controlled-input's React state so the confirm
+  button silently does nothing. Leave it — the app auto-names the result
+  (`Result - <input set>`). If you must set a name, `type` it key-by-key.
+- **The confirm button is inside an `aria-hidden` modal**, so `getByRole('button')`
+  can't see it and a synthetic click can be swallowed by the backdrop. ROM(PD)
+  uses a tiny custom step (`confirmSimulateModal`) that fires a **native DOM click**
+  on the last `.modal.show #credit-alert-primary`.
+- **No explicit navigate.** Confirming the modal navigates to the Results list on
+  its own — an added `navigate` step races it and loses the run.
+- **Scope the wait AND the open to the Simulation row.** `waitForSimulation` must
+  poll the *simulation* row's status (an xpath scoped to the row whose Run Type is
+  "Simulation"), not the design result that is already "Completed"; open the result
+  via that same row's name link. Otherwise you match the design result and try to
+  open a sim result that does not exist yet.
+
+Proven on ROM(PD) TC_04 ITER_01: design PASS (79 cells) → sim runs → **9 tables /
+77 cells** (Simulation Summary, Simulation Boundaries, Overall Simulation Results,
+Enrollment, Plan) → `sim_baseline` written, and a second run compares **PASS 77/77**.
+
 > **Importing the sim flow:** `npm run import-codegen -- <Module> <Feature> --tc TC_XX --sim`
 > (§13, §14). It reuses selectors and compare.config, adds no login/navigate, and
 > writes `sim_metadata.csv`. The generated Playwright specs (`npm run pw:test`) run
