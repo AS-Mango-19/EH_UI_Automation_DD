@@ -7,10 +7,16 @@ import { parseArgs } from './args.js';
 import { validateAll } from '../schema/validator.js';
 import { logger } from '../utils/logger.js';
 
-function printValidation(): number {
-  const report = validateAll();
+function printValidation(opts: { feature?: string; testcase?: string } = {}): number {
+  const report = validateAll(opts);
   for (const w of report.warnings) logger.warn(w);
   if (report.issues.length === 0) {
+    // A scope filter that matched no master row is a mistyped name, not a pass.
+    if ((opts.feature || opts.testcase) && report.featuresValidated === 0) {
+      const scope = opts.feature ? `--feature "${opts.feature}"` : `--testcase "${opts.testcase}"`;
+      logger.error(`[FAIL] No feature matched ${scope}. Check the name against master.csv (Feature column).`);
+      return 1;
+    }
     logger.info(
       `[PASS] Validation passed: ${report.testCases} test case(s), ${report.featuresValidated} feature(s), ${report.warnings.length} warning(s).`,
     );
@@ -28,6 +34,7 @@ function printHelp(): void {
       '',
       'Commands:',
       '  validate                 Schema-check every CSV. Opens no browser.',
+      '                           Scope to one feature: validate --feature <Feature>.',
       '  generate                 Generate POM + spec files only.',
       '  test                     Run selected test cases.',
       '  cleanup:orphans          Delete projects left by crashed runs.',
@@ -57,7 +64,8 @@ async function main(): Promise<number> {
 
   switch (command) {
     case 'validate':
-      return printValidation();
+      // --feature / --testcase scope validation to one feature or case; omit for all.
+      return printValidation({ feature: filters.feature, testcase: filters.testcase });
     case 'generate': {
       const { generateCommand } = await import('../runner/orchestrator.js');
       return generateCommand(filters);

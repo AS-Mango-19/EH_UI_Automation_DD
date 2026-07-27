@@ -375,6 +375,24 @@ function dataFileFor(pageName: string, stepGroup: string): string {
   return 'inputset';
 }
 
+/**
+ * Map a page to its design-flow testdata file, for steps SYNTHESISED outside the
+ * main dispatch (the clicked-but-not-filled placeholder) where no step group is
+ * available. ResultsPage/DesignPage design params live in design.csv.
+ */
+function dataFileForPage(page: string): string {
+  if (page === 'ProjectPage') return 'project';
+  if (page === 'InputSetPage') return 'inputset';
+  return 'design';
+}
+
+/** Best-effort StepGroup for a synthesised step, keyed off the page. */
+function stepGroupForPage(page: string): string {
+  if (page === 'ProjectPage') return 'ConfigureDesign';
+  if (page === 'InputSetPage') return 'CreateInputSet';
+  return 'ExtractResults';
+}
+
 function nextPageForAction(ref: string, action: string, currentPage: string): string {
   if (/New Project/i.test(ref)) return 'ProjectPage';
   if (/New Input Set/i.test(ref)) return 'InputSetPage';
@@ -519,7 +537,7 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
   // by substring, so a recorded exact match is the only evidence that the name is
   // ambiguous (e.g. "Save" would otherwise also match "Save & Compute"). It maps
   // straight onto the selectors.csv `Exact` column.
-  const roleCall = /getByRole\((['"])(.*?)\1,\s*\{\s*name:\s*(['"])(.*?)\3(\s*,\s*exact:\s*true)?\s*\}\)(?:\.(click|fill|check|selectOption))?\((.*?)\);?$/.exec(trimmed);
+  const roleCall = /getByRole\((['"])(.*?)\1,\s*\{\s*name:\s*(['"])(.*?)\3(\s*,\s*exact:\s*true)?\s*\}\)(?:\.(click|fill|check|uncheck|selectOption))?\((.*?)\);?$/.exec(trimmed);
   if (roleCall) {
     return {
       lineNo,
@@ -539,7 +557,7 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
   // The `(\s*,\s*\{[^}]*\})?` tail is REQUIRED, not cosmetic: codegen routinely
   // emits `getByLabel('X', { exact: true })`, and without it the line matches
   // nothing and the step is silently dropped from the import.
-  const labelCall = /getByLabel\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(click|fill|check|selectOption))?\((.*?)\);?$/.exec(trimmed);
+  const labelCall = /getByLabel\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(click|fill|check|uncheck|selectOption))?\((.*?)\);?$/.exec(trimmed);
   if (labelCall) {
     return {
       lineNo,
@@ -561,7 +579,7 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
   // (e.g. "Power" is both a radio and a field label). Without this the whole label
   // click is dropped and the following field is named after its id (`power`)
   // instead of the label ("Power").
-  const textCall = /getByText\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(?:nth\(\d+\)|first\(\)|last\(\)))*(?:\.(click|fill|check|selectOption))?\((.*?)\);?$/.exec(trimmed);
+  const textCall = /getByText\((['"])(.*?)\1(\s*,\s*\{[^}]*\})?\)(?:\.(?:nth\(\d+\)|first\(\)|last\(\)))*(?:\.(click|fill|check|uncheck|selectOption))?\((.*?)\);?$/.exec(trimmed);
   if (textCall) {
     return {
       lineNo,
@@ -578,7 +596,7 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
     };
   }
 
-  const locatorCall = /locator\((['"])(.*?)\1\)(?:\.(click|fill|check|selectOption|select\w*))?\((.*?)\);?$/.exec(trimmed);
+  const locatorCall = /locator\((['"])(.*?)\1\)(?:\.(click|fill|check|uncheck|selectOption|select\w*))?\((.*?)\);?$/.exec(trimmed);
   if (locatorCall) {
     const selectorValue = locatorCall[2] ?? '';
     return {
@@ -757,6 +775,59 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     });
   };
 
+  /**
+   * A label the tester CLICKED but never filled — a computed/greyed output (e.g.
+   * "Rate for Treatment", whose value the app derives) or a field left at its
+   * default (e.g. "Priority"). The old importer dropped these silently. Instead,
+   * emit a placeholder `assertValue` bound to a data column so the field is never
+   * lost: the tester sets the expected value (or the reuse pass binds it to an
+   * existing testdata column) and, if needed, switches the action or the selector.
+   *
+   * Optional=TRUE and a label-based selector keep it inert until the tester
+   * completes it — a wrong guess warns instead of failing the run. Deliberately
+   * only fires for a label with NO recorded locator (a bare getByText click); a
+   * field clicked via its #id already produces a click step.
+   */
+  const emitClickedNotFilled = (rawLabel: string): void => {
+    const label = rawLabel.replace(/\s+/g, ' ').trim();
+    const column = labelToColumnName(label);
+    if (!column) return;
+    const page = currentPage;
+    const file = sim ? 'simulation' : dataFileForPage(page);
+    const objectName = objectNameFromRef(label || column, 'unknown');
+    addSelector({
+      page,
+      objectName,
+      selectorType: 'label',
+      selectorValue: label,
+      roleName: '',
+      fieldType: 'unknown',
+      fallbackSelector: '',
+      dynamic: false,
+      description: 'clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field)',
+      exact: false,
+    });
+    registerDataColumn(file, column);
+    addStep({
+      StepID: stepId,
+      StepGroup: stepGroupForPage(page),
+      Page: page,
+      Action: 'assertValue',
+      ObjectName: objectName,
+      InputValue: '',
+      StoreAs: '',
+      AssertType: '',
+      ExpectedValue: buildDataToken(file, column),
+      WaitCondition: '',
+      Timeout: 10000,
+      Optional: 'TRUE',
+      Retry: 0,
+      Screenshot: 'always',
+      SkipIf: '',
+      Description: `clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in ${file}.csv; fix the selector and flip Optional=FALSE to enforce, or change the action`,
+    });
+  };
+
   // Login first, before any navigate. The recorded identity-provider steps are
   // deliberately NOT imported: login is shared infrastructure, so it collapses
   // to one callReusable pointing at flows/login.csv.
@@ -849,11 +920,19 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     // option choice is the whole dropdown interaction — treating it as noise
     // silently deletes the step.
     if (isNoiseContextEvent(event) && !(nextEvent && isOptionChoice(nextEvent))) {
+      const newLabel = event.ref.replace(/\s+/g, ' ').trim();
+      // pendingLabel is set ONLY here and cleared the moment a fill/select/option/
+      // check consumes it. So if it is STILL set when the next label arrives,
+      // nothing consumed the previous one — the tester clicked a field and never
+      // filled it. Rescue it as a placeholder instead of dropping it silently.
+      if (pendingLabel && pendingLabel !== newLabel) {
+        emitClickedNotFilled(pendingLabel);
+      }
       // Keep the RAW label ("Phase (Optional)"), not the column-normalised form
       // ("Phase"). A `select` scoped to this label must match the on-screen text
       // exactly; consumers that want the column name (deriveColumnName, the
       // dropdown collapse) strip the suffix themselves.
-      pendingLabel = event.ref.replace(/\s+/g, ' ').trim();
+      pendingLabel = newLabel;
       continue;
     }
 
@@ -1184,6 +1263,62 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
       );
       pendingLabel = '';
       currentPage = nextPageForAction(ref, event.roleType === 'radio' ? 'check' : 'click', currentPage);
+      continue;
+    }
+
+    // ---- Checkbox toggle: emit data-driven check + uncheck (do NOT drop) ----
+    //
+    // Unlike a blind radio (which re-asserts a choice and so is dropped), a
+    // checkbox is a genuine per-iteration toggle — e.g. "Variable" swaps which
+    // follow-up field is active. There is no single "set checkbox to <bool>"
+    // keyword, so emit BOTH a check and an uncheck, each gated by SkipIf on a
+    // column named after the checkbox: testdata cell "check" runs the check and
+    // skips the uncheck; "uncheck" does the reverse; anything else skips both
+    // (left at the app default). The recorded action seeds the column so a first
+    // run has a defined direction. Binds to the checkbox's OWN accessible name,
+    // never a stray pendingLabel.
+    if ((targetAction === 'check' || targetAction === 'uncheck') && event.roleType === 'checkbox') {
+      const cbColumn = labelToColumnName(event.roleName || event.selectorValue || columnName);
+      const cbObject = objectNameFromRef(event.roleName || cbColumn || event.selectorValue, 'checkbox');
+      addSelector({
+        page: pageName,
+        objectName: cbObject,
+        selectorType: 'role',
+        selectorValue: 'checkbox',
+        roleName: event.roleName,
+        fieldType: 'checkbox',
+        fallbackSelector: '',
+        dynamic: false,
+        description: 'checkbox from codegen',
+        exact: event.exact,
+      });
+      registerDataValue(dataFile, cbColumn, event.action === 'uncheck' ? 'uncheck' : 'check');
+      const cbToken = buildDataToken(dataFile, cbColumn);
+      for (const act of ['check', 'uncheck']) {
+        emitStep(
+          {
+            StepID: stepId,
+            StepGroup: stepGroup,
+            Page: pageName,
+            Action: act,
+            ObjectName: cbObject,
+            InputValue: '',
+            StoreAs: '',
+            AssertType: '',
+            ExpectedValue: '',
+            WaitCondition: '',
+            Timeout: 10000,
+            Optional: 'FALSE',
+            Retry: 0,
+            Screenshot: 'always',
+            SkipIf: `${cbToken}!=${act}`,
+            Description: `${act} ${cbColumn} when testdata ${cbColumn}=${act} (SkipIf gates it per iteration)`,
+          },
+          { page: pageName, stepGroup, action: act, objectName: cbObject, selectorType: 'role', selectorValue: 'checkbox', roleName: event.roleName },
+        );
+      }
+      pendingLabel = '';
+      currentPage = nextPageForAction(ref, 'check', currentPage);
       continue;
     }
 

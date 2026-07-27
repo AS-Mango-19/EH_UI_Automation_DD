@@ -39,17 +39,32 @@ function testDataDirRelFor(row: MasterRow): string {
   return FRAMEWORK_CONFIG.defaultTestDataDir;
 }
 
-export function validateAll(opts: { master?: string } = {}): ValidationReport {
+/** Match a master Feature against a --feature value, tolerant of case and a leading feature_ prefix. */
+function featureFilterMatches(rowFeature: string, want: string): boolean {
+  const norm = (s: string): string => s.trim().toLowerCase().replace(/^feature_/, '');
+  return norm(rowFeature) === norm(want);
+}
+
+export function validateAll(opts: { master?: string; feature?: string; testcase?: string } = {}): ValidationReport {
   const issues: string[] = [];
   const warnings: string[] = [];
   const seenCombos = new Set<string>();
   let featuresValidated = 0;
+  let testCasesValidated = 0;
 
   const master = loadMaster(opts.master);
   issues.push(...master.issues);
 
   for (const { row, line } of master.entries) {
     const { Module: module, Feature: feature } = row;
+
+    // Optional scope: validate only the named feature and/or test case. A master
+    // row that matches neither is skipped entirely (not counted), so a filter that
+    // matches nothing yields featuresValidated === 0 — the CLI treats that as an
+    // error rather than a spurious pass.
+    if (opts.feature && !featureFilterMatches(feature, opts.feature)) continue;
+    if (opts.testcase && row.TC_ID.trim() !== opts.testcase.trim()) continue;
+    testCasesValidated++;
 
     // Feature folder must exist (folder name === master.Feature).
     const dir = featureDir(module, feature);
@@ -101,7 +116,7 @@ export function validateAll(opts: { master?: string } = {}): ValidationReport {
     }
   }
 
-  return { issues, warnings, featuresValidated, testCases: master.entries.length };
+  return { issues, warnings, featuresValidated, testCases: testCasesValidated };
 }
 
 function validateMetadata(
@@ -172,8 +187,10 @@ function validateMetadata(
     // SkipIf syntax.
     if (step.SkipIf.trim()) validateSkipIf(step.SkipIf.trim(), where, issues);
 
-    // ${data.<file>.<col>} references must exist.
-    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName]) {
+    // ${data.<file>.<col>} references must exist. SkipIf is scanned too: a
+    // data-driven gate (e.g. ${data.project.Variable}!=check) names a real column,
+    // and a ${master.*}/${env.*} token in SkipIf is ignored by the data-only regex.
+    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName, step.SkipIf]) {
       for (const token of extractTokens(cell)) {
         const m = /^data\.([^.]+)\.(.+)$/.exec(token);
         if (!m) continue;
@@ -197,7 +214,9 @@ function validateMetadata(
  * referenced by any metadata token. A warning (not an error) because a column can
  * be legitimately unused. Columns consumed by a callCustom step (which resolves
  * them at runtime, leaving no metadata token) are suppressed by matching the
- * column name against the feature's / shared custom-step source.
+ * column name against the feature's / shared custom-step source. SkipIf tokens
+ * count as a use too: a column that only drives a data-driven gate (e.g.
+ * ${data.project.Variable}!=check on a check/uncheck step) IS applied at runtime.
  */
 function validateTestDataCoverage(
   f: NonNullable<ReturnType<typeof loadFeatureAll>['value']>,
@@ -205,7 +224,7 @@ function validateTestDataCoverage(
 ): void {
   const referenced = new Map<string, Set<string>>();
   for (const step of f.steps) {
-    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName]) {
+    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName, step.SkipIf]) {
       for (const token of extractTokens(cell)) {
         const m = /^data\.([^.]+)\.(.+)$/.exec(token);
         if (!m) continue;
@@ -255,7 +274,7 @@ function validateIterationCompleteness(
 ): void {
   const referencedFiles = new Set<string>();
   for (const step of f.steps) {
-    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName]) {
+    for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName, step.SkipIf]) {
       for (const token of extractTokens(cell)) {
         const m = /^data\.([^.]+)\./.exec(token);
         if (m && m[1]) referencedFiles.add(m[1]);

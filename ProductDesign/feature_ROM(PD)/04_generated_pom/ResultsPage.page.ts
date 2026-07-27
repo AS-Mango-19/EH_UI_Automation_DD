@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c3d31c67533606984f30a42f6d81196ecf9f58948f557425ed2fa088ecb32281)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f8041e6cee94a08bb5d38aae7f8c253344ac2fa49810a6bbf505006074ccc0f0)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -172,5 +172,65 @@ export class ResultsPage {
   /** Mean Treatment (μt1) under Alternative Hypothesis - COMPUTED by the app from Mean Control x Ratio of Means */
   txt_nonInf_AH_Mean_Treatment(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_nonInf_AH_Mean_Treatment', { dynamicArgs });
+  }
+
+  /** native <select> Hypothesis (sim Design tab; shared id with design) */
+  ddl_sim_Hypothesis(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_sim_Hypothesis', { dynamicArgs });
+  }
+
+  /** native <select> Randomization Method (sim Design tab; id inferred - confirm in DevTools) */
+  ddl_sim_Randomization_Method(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_sim_Randomization_Method', { dynamicArgs });
+  }
+
+  /** native <select> Test Type (sim Design tab; shared id with design) */
+  ddl_sim_Test_Type(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_sim_Test_Type', { dynamicArgs });
+  }
+
+  /** GREYED/derived Critical Point Lower (id inferred from #upperCriticalPoint - confirm in DevTools) */
+  txt_sim_Critical_Point_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_sim_Critical_Point_Lower', { dynamicArgs });
+  }
+
+  /** Common Coefficient of Variation checkbox (uncheck to enable separate Control/Treatment CoV) */
+  chk_sim_Common_CoV(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_sim_Common_CoV', { dynamicArgs });
+  }
+
+  /** Enrollment Include toggle (recording had it already on; a fresh run starts Not Included) */
+  sw_sim_Include(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'sw_sim_Include', { dynamicArgs });
+  }
+
+  /** Save Summary Statistics checkbox (Simulation Setup) */
+  chk_sim_Save_Summary_Stats(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_sim_Save_Summary_Stats', { dynamicArgs });
+  }
+
+  /** Save Subject-Level Data checkbox - reveals subLevelDataSimRuns */
+  chk_sim_Save_Subject_Level_Data(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_sim_Save_Subject_Level_Data', { dynamicArgs });
+  }
+
+  /** Simulate confirm in the shown name-your-result modal (#credit-alert-primary; scoped to .modal.show) */
+  btn_sim_Confirm_Simulate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_sim_Confirm_Simulate', { dynamicArgs });
+  }
+
+  /** Status cell of the SIMULATION result row (scoped so it never matches the design row already Completed) */
+  lbl_sim_RunStatus(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'lbl_sim_RunStatus', { dynamicArgs });
+  }
+
+  /** Result-name field in the shown Simulate modal */
+  txt_sim_ResultName(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_sim_ResultName', { dynamicArgs });
+  }
+
+  /** First link in the Simulation result row = the result name (opens the sim result) */
+  lnk_sim_ResultName(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'lnk_sim_ResultName', { dynamicArgs });
   }
 }

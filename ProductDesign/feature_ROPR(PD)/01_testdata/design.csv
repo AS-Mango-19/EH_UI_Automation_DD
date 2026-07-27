@@ -1,0 +1,4 @@
+TC_ID,IterationID,Allocation Ratio,Computed Parameter,Sample Size,Power,Test Type,Type 1 Error,Rate for Control,Rate for Treatment,Ratio of Rates,Follow-Up Control,Follow-Up Treatment,Select Test,Result Name
+TC_07,ITER_01,1.25,Power,155,Computed,2-Sided,0.0558,0.123,0.3075,2.5,2.5,1.8,Ratio of Poisson Rates,Result - Input Set11
+TC_07,ITER_02,1.5,Type 1 Error,200,0.85,1-Sided,Computed,0.211,0.6752,3.2,2.2,2.2,Ratio of Poisson Rates,Result - Input Set11
+TC_07,ITER_03,2.2,Sample Size (n),Computed,0.922,2-Sided,0.0654,0.188,0.54144,2.88,2.88,2,Ratio of Poisson Rates,Result - Input Set11
