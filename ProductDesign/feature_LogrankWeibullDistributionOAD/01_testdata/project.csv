@@ -1,0 +1,4 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,MM dd yyyy,Study Objective,Phase,Target Population,Treatment Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Start Date
+TC_06,ITER_01,TRUE,AutoProj_LogrankWeibullDistribution,Week,7/22/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPT,Time to Event,Longer Duration,7/20/2026
+TC_06,ITER_02,TRUE,AutoProj_LogrankWeibullDistribution,Week,7/22/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPT,Time to Event,Longer Duration,7/20/2026
+TC_06,ITER_03,TRUE,AutoProj_LogrankWeibullDistribution,Week,7/22/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPT,Time to Event,Longer Duration,7/20/2026
