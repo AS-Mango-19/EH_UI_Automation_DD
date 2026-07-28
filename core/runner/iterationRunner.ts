@@ -99,10 +99,19 @@ export async function runIteration(input: IterationInput): Promise<IterationResu
   // routing, selectors and waits belong in metadata.csv / selectors.csv (§14).
   //
   // domcontentloaded, NOT networkidle: an SPA with continuous telemetry beacons
-  // may never go network-idle, and this goto is OUTSIDE executeSteps' try/catch —
-  // a timeout here is a Fatal that kills the run and writes no report. The first
-  // metadata step does its own navigate with its own readiness wait anyway.
-  await page.goto(env.baseUrl, { waitUntil: 'domcontentloaded' });
+  // may never go network-idle. This first navigation also bounces through the IdP
+  // on a cold start, so it routinely exceeds Playwright's 30s default — give it a
+  // generous budget. And if it STILL lags, warn and continue instead of dying: the
+  // login flow does its own goto to the IdP and the first metadata step navigates
+  // with its own readiness wait, so a slow root load here is recoverable, not
+  // run-ending (it previously killed the run with no report).
+  await page
+    .goto(env.baseUrl, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+    .catch((e: unknown) => {
+      logger.warn(
+        `Initial navigation to ${env.baseUrl} did not settle in 120s (${(e as Error).message}). Continuing — login/first navigate will drive the flow.`,
+      );
+    });
   const apiRequest = await createApiContext(env, storageState);
   await startTracing(context);
 
