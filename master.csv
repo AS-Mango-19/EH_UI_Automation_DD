@@ -5,4 +5,5 @@ TC_03,ProductDesign,regression,Two Arm Superiority,Difference_of_Means,,chromium
 TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 TC_05,ProductDesign,regression,One Arm Exploratory / Confirmatory,MeanofPairedRatios,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
 TC_06,ProductDesign,regression,One Arm Exploratory / Confirmatory,LogrankWeibullDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
-TC_08,ProductDesign,regression,One Arm Exploratory / Confirmatory,ParametricWeibullDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_08,ProductDesign,regression,One Arm Exploratory / Confirmatory,ParametricWeibullDistributionOAD,,firefox,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_09,ProductDesign,regression,One Arm Exploratory / Confirmatory,LogrankExponentialDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD

@@ -1,8 +1,8 @@
-StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
-10,Login,-,navigate,,/,,,,,30000,FALSE,0,never,,Go to app route and follow redirect to login
-20,Login,LoginPage,fill,txt_Username,${env.APP_USERNAME},,,,visible,15000,FALSE,0,never,,Enter username
-30,Login,LoginPage,click,btn_Next,,,,,visible,15000,FALSE,1,never,,Continue to password step
-40,Login,LoginPage,fill,txt_Password,${env.APP_PASSWORD},,,,,15000,FALSE,0,never,,Enter password (value masked in logs)
-50,Login,LoginPage,click,btn_Login,,,,,,15000,FALSE,1,onFailure,,Submit login
-70,Login,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,never,,Wait for the landing page to load. This POLLS instead of sleeping: it rides out the Okta redirect and the app cold-start and continues the moment the page is there. Replaced a fixed sleep(60000) that always burned the full minute while these checks then passed in 0.0s
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,,
+10,Login,-,navigate,,/,,,,,60000,FALSE,0,never,,Go to app route and follow redirect to login,,
+20,Login,LoginPage,fill,txt_Username,${env.APP_USERNAME},,,,visible,60000,FALSE,0,never,,Enter username,,
+30,Login,LoginPage,click,btn_Next,,,,,visible,60000,FALSE,1,never,,Continue to password step,,
+40,Login,LoginPage,fill,txt_Password,${env.APP_PASSWORD},,,,,60000,FALSE,0,never,,Enter password (value masked in logs),,
+50,Login,LoginPage,click,btn_Login,,,,,,60000,FALSE,1,onFailure,,Submit login,,
+70,Login,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,never,,Wait for the landing page to load. This POLLS instead of sleeping: it rides out the Okta redirect and the app cold-start and continues the moment the page is there. Replaced a fixed sleep(60000) that always burned the full minute while these checks then passed in 0.0s,,
 80,Login,ProjectsPage,waitForSelector,div_Spinner,,,,,hidden,220000,FALSE,0,never,,Wait for the loading spinner to clear - visible does not mean hydrated. Login ENDS here on the loaded projects page; opening a New Project is the test's job, not login's, so this flow stays reusable by features that do not create a project
