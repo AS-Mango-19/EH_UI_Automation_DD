@@ -37,6 +37,7 @@ txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
 txt_Rate_for_Control_c,ResultsPage,css,#rateForControl,,,FALSE,textbox from codegen,FALSE
 txt_Ratio_of_Rates_1_t_c,ResultsPage,css,#ratioOfRates,,,FALSE,textbox from codegen,FALSE
 obj_Rate_for_Treatment_t,ResultsPage,label,Rate for Treatment (λt),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Rate_for_Treatment,ResultsPage,css,#rateForTreatment,,,FALSE,computed Rate for Treatment lambda_t (greyed output; assert only). css id selector requires the leading #,FALSE
 txt_Follow_Up_Control_Dc_Week,ResultsPage,css,#followupControl,,,FALSE,textbox from codegen,FALSE
 txt_Follow_Up_Treatment_Dt,ResultsPage,css,#followupTreatment,,,FALSE,textbox from codegen,FALSE
 btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
