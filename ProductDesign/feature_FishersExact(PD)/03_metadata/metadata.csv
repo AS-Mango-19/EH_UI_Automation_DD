@@ -1,0 +1,53 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+3,30,OpenProject,ProjectsPage,navigate,,/,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+4,40,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+5,50,ConfigureDesign,ProjectsPage,click,btn_Password,,,,,,10000,FALSE,0,never,,click Password
+6,60,ConfigureDesign,ProjectsPage,fill,txt_Project_Name,${data.project.Project Name}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill Project Name (made unique per run with runId)
+7,70,ConfigureDesign,ProjectsPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+8,80,ConfigureDesign,ProjectsPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
+9,90,ConfigureDesign,ProjectsPage,select,ddl_Study_Objective,${data.project.Study Objective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,100,ConfigureDesign,ProjectsPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+11,110,ConfigureDesign,ProjectsPage,fill,txt_Target_Population,${data.project.Target Population},,,,,10000,FALSE,0,never,,fill Target Population
+12,120,ConfigureDesign,ProjectsPage,fill,txt_Control_Arm,${data.project.Control Arm},,,,,10000,FALSE,0,never,,fill Control Arm
+13,130,ConfigureDesign,ProjectsPage,fill,txt_Treatment_Arm,${data.project.Treatment Arm},,,,,10000,FALSE,0,never,,fill Treatment Arm
+14,140,ExtractResults,ProjectsPage,assertValue,obj_Priority,,,,${data.project.Priority},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+15,150,ConfigureDesign,ProjectsPage,fill,txt_Endpoint_Name,${data.project.Endpoint Name},,,,,10000,FALSE,0,never,,fill Endpoint Name
+16,160,ConfigureDesign,ProjectsPage,select,ddl_Endpoint_Type,${data.project.Endpoint Type},,,,,15000,FALSE,0,always,,Select Endpoint Type. select opens the menu and commits the option itself - works for native and custom dropdowns
+17,170,ConfigureDesign,ProjectsPage,select,ddl_Better_Response,${data.project.Better Response},,,,,15000,FALSE,0,always,,Select Better Response. select opens the menu and commits the option itself - works for native and custom dropdowns
+18,180,ConfigureDesign,ProjectsPage,fill,txt_follow_Up_Time_0,${data.project.Follow-up Time},,,,,10000,FALSE,0,never,,fill followUpTime 0
+19,190,ConfigureDesign,ProjectsPage,click,btn_Follow_up_Time_Year,,,,,,10000,FALSE,0,never,,click Follow-up Time
+20,200,ConfigureDesign,ProjectsPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+21,210,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+22,220,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.Name Input Set},,,,,10000,FALSE,0,never,,fill Name Input Set
+23,230,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
+24,240,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Select react select input container. select opens the menu and commits the option itself - works for native and custom dropdowns
+25,250,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+26,260,ConfigureDesign,DesignPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+27,270,Simulate,DesignPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
+29,290,ConfigureDesign,ResultsPage,fill,txt_Sample_Size_n,${data.design.Sample Size},,,,,10000,FALSE,0,never,,fill Sample Size
+30,300,ConfigureDesign,ResultsPage,fill,txt_Power,${data.design.power},,,,,10000,FALSE,0,never,,fill Power
+31,310,ExtractResults,ResultsPage,assertValue,obj_Test_Type,,,,${data.design.Test Type},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+32,320,ConfigureDesign,ResultsPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,fill Type 1 Error
+33,330,ConfigureDesign,ResultsPage,fill,txt_Proportion_Control_c,${data.design.Proportion Control},,,,,10000,FALSE,0,never,,fill Proportion Control
+34,340,ConfigureDesign,ResultsPage,fill,txt_Follow_up_Time_Year,${data.project.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+35,350,ConfigureDesign,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+36,360,ConfigureDesign,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
+37,370,ConfigureDesign,ResultsPage,fill,txt_Odds_Ratio_of_Proportions,${data.design.Odds Ratio of Proportions},,,,,10000,FALSE,0,never,,fill Odds Ratio of Proportions
+38,380,ConfigureDesign,ResultsPage,select,ddl_Proportion_Treatment_t,${data.design.Proportion Treatment},,,,,10000,FALSE,0,always,,Select Proportion Treatment. Native <select> - select matches by visible label first
+39,390,ConfigureDesign,ResultsPage,fill,txt_Proportion_Treatment_t,${data.design.Proportion Treatment},,,,,10000,FALSE,0,never,,fill Proportion Treatment
+40,400,ConfigureDesign,ResultsPage,select,ddl_input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select inputMethod. Native <select> - select matches by visible label first
+41,410,ConfigureDesign,ResultsPage,fill,txt_Difference_of_Proportions,${data.design.Difference of Proportions},,,,,10000,FALSE,0,never,,fill Difference of Proportions
+42,420,ConfigureDesign,ResultsPage,fill,txt_Ratio_of_Proportions_t,${data.design.Ratio of Proportions},,,,,10000,FALSE,0,never,,fill Ratio of Proportions (ρ = πt
+43,430,ConfigureDesign,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+44,440,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.Include}!=check,check Include when testdata Include=check (SkipIf gates it per iteration)
+45,450,ConfigureDesign,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.Include}!=uncheck,uncheck Include when testdata Include=uncheck (SkipIf gates it per iteration)
+46,460,ConfigureDesign,ResultsPage,fill,txt_Enrollment_Rate_per_Year,${data.design.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
+47,470,ConfigureDesign,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+48,480,Simulate,DesignPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+49,490,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+50,500,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
+51,510,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+52,520,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+53,530,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+54,540,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
