@@ -1,0 +1,4 @@
+TC_ID,IterationID,Allocation Ratio,Computed Parameter,Sample Size,Power,Test Type,Type 1 Error,Rate for Control,Rate for Treatment,Ratio of Rates,Follow-Up Time,Shape Control,Shape Treatment,Result Name,Select Test
+TC_11,ITER_01,1.25,Power,155,Computed,2-Sided,0.0558,0.123,Computed,0.8,2,1,1.2,Result - Input Set11,Ratio of Negative Binomial
+TC_11,ITER_02,1.5,Type 1 Error,200,0.85,1-Sided,Computed,0.211,Computed,3.2,2.45,1.5,1,Result - Input Set11,Ratio of Negative Binomial
+TC_11,ITER_03,2.2,Sample Size (n),Computed,0.922,2-Sided,0.0654,0.188,Computed,2.88,2.025,1.2,1.2,Result - Input Set11,Ratio of Negative Binomial
