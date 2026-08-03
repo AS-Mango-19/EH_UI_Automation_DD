@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 487e5ce44eb3f0905843a66770178ba5f176ce32f6f580bed9dc376b3f277b0a)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 7dd5d86dd0e959518cd9f18eb1403882d010a1f45ac67933c4f132de4d01e7c5)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -979,6 +979,11 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Alpha_Spent', { dynamicArgs });
   }
 
+  /** Interpolated spend-func: IA3 cumulative alpha (added for multi-interim boundaries) */
+  txt_boundary_2_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_cum_Alpha_Spent', { dynamicArgs });
+  }
+
   /** textbox from codegen */
   txt_boundary_1_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Beta_Spent', { dynamicArgs });
@@ -1074,12 +1079,12 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_input_Method_Table_3_cum_Perc_Survival_Control', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both */
   txt_Ratio_of_Survivals_at_Period_1_Null(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Survivals_at_Period_1_Null', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both */
   txt_Ratio_of_Survivals_at_Period_1_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Survivals_at_Period_1_Alternative', { dynamicArgs });
   }

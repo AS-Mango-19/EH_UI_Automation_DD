@@ -220,6 +220,7 @@ txt_boundary_1_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.1.analysisS
 chk_boundary_0_efficacy_Check,ResultsPage,css,"[id=""boundary.0.efficacyCheck""]",,,FALSE,checkbox from codegen,FALSE
 chk_boundary_1_futility_Check,ResultsPage,css,"[id=""boundary.1.futilityCheck""]",,,FALSE,checkbox from codegen,FALSE
 txt_boundary_1_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.1.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.2.cumAlphaSpent""]",,,FALSE,"Interpolated spend-func: IA3 cumulative alpha (added for multi-interim boundaries)",FALSE
 txt_boundary_1_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.1.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_0_efficacy_PValue,ResultsPage,css,"[id=""boundary.0.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_1_efficacy_PValue,ResultsPage,css,"[id=""boundary.1.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
@@ -246,8 +247,8 @@ obj_Cumulative_Survival_Treatment_Null_st0,DesignPage,label,Cumulative % Surviva
 btn_Cumulative_Survival_Treatment_Alternative_st,ResultsPage,role,button,Add Period,,FALSE,button from codegen,FALSE
 txt_input_Method_Table_3_by_Time,ResultsPage,css,"input[name=""inputMethodTable.3.byTime""]",,,FALSE,textbox from codegen,FALSE
 txt_input_Method_Table_3_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.3.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
-txt_Ratio_of_Survivals_at_Period_1_Null,ResultsPage,css,#ratioOfPercSurv_Null_SP,,,FALSE,textbox from codegen,FALSE
-txt_Ratio_of_Survivals_at_Period_1_Alternative,ResultsPage,css,#ratioOfPercSurv_Alt_SP,,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Survivals_at_Period_1_Null,ResultsPage,css,"[id^=""ratioOfPercSurv_Null_""]",,,FALSE,"id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both",FALSE
+txt_Ratio_of_Survivals_at_Period_1_Alternative,ResultsPage,css,"[id^=""ratioOfPercSurv_Alt_""]",,,FALSE,"id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both",FALSE
 obj_Ratio_of_Medians_Null,DesignPage,label,Ratio of Medians (Null),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
 ddl_Ratio_of_Medians_Alternative,ResultsPage,css,#hazardRatioInputMethod,,,FALSE,native <select> from codegen,FALSE
 ddl_hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
