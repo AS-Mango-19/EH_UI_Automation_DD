@@ -2,7 +2,7 @@
  * Feature-local escape hatches for ROM(PD).
  */
 import { DateTime } from 'luxon';
-import type { Locator } from 'playwright';
+import type { Locator, Page } from 'playwright';
 import type { KeywordHandler } from '../../core/keywords/types.js';
 import { logger } from '../../core/utils/logger.js';
 import { targetLocator } from '../../core/keywords/util.js';
@@ -61,6 +61,29 @@ async function clickFirstAvailable(candidates: Array<() => Promise<void>>): Prom
   throw new Error('selectStartDate: calendar option not exposed for any known label variant');
 }
 
+/**
+ * The picker opens on the CURRENT month; a target in another month (e.g. LAST
+ * month) is not rendered until we page there. react-datepicker shows the visible
+ * month in .react-datepicker__current-month ("August 2026") with Prev/Next nav
+ * buttons. Safe for other widgets: bails if the header isn't a readable month.
+ */
+async function navigateCalendarToMonth(page: Page, target: DateTime, timeout: number): Promise<void> {
+  const goal = target.startOf('month');
+  const header = page.locator('.react-datepicker__current-month').first();
+  const prev = page.locator('button[aria-label="Previous Month"], .react-datepicker__navigation--previous').first();
+  const next = page.locator('button[aria-label="Next Month"], .react-datepicker__navigation--next').first();
+  for (let i = 0; i < 60; i++) {
+    const shownTxt = ((await header.textContent().catch(() => '')) ?? '').replace(/\s+/g, ' ').trim();
+    const shown = DateTime.fromFormat(shownTxt, 'MMMM yyyy');
+    if (!shown.isValid) return; // not a react-datepicker header — let the day-click try as-is
+    if (shown.hasSame(goal, 'month') && shown.hasSame(goal, 'year')) return;
+    const btn = shown.toMillis() > goal.toMillis() ? prev : next;
+    if (!(await btn.count().catch(() => 0))) return; // no nav control — bail to the day-click
+    await btn.click({ timeout }).catch(() => undefined);
+    await page.waitForTimeout(120);
+  }
+}
+
 export const selectStartDate: KeywordHandler = async (page, ctx, step) => {
   const resolved = ctx.resolve('${data.project.Start Date}', { stepId: step.stepId, column: 'InputValue' });
   const date = parseStartDate(resolved);
@@ -71,6 +94,7 @@ export const selectStartDate: KeywordHandler = async (page, ctx, step) => {
   logger.info(`selectStartDate -> ${resolved} (${optionLabels[0]})`);
 
   await textbox.click({ timeout: step.timeout });
+  await navigateCalendarToMonth(page, date, step.timeout);
   await clickFirstAvailable([
     ...optionLabels.map((label) => () => page.getByRole('option', { name: label, exact: true }).click({ timeout: step.timeout })),
     ...optionLabels.map((label) => () => page.getByRole('button', { name: label, exact: true }).click({ timeout: step.timeout })),

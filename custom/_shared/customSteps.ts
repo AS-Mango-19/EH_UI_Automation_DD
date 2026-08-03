@@ -99,8 +99,33 @@ function resolveDateValue(ctx: Parameters<KeywordHandler>[1], stepId: number | s
 }
 
 /**
+ * The picker opens on the CURRENT month, so a target in another month (e.g. LAST
+ * month) is simply not rendered and the day-cell search fails. This pages the
+ * react-datepicker Prev/Next until the visible month matches the target. Safe for
+ * non-react-datepicker widgets: if the ".react-datepicker__current-month" header
+ * isn't readable it returns immediately and the day-click runs as before.
+ */
+async function navigateCalendarToMonth(page: Page, target: DateTime, timeout: number): Promise<void> {
+  const goal = target.startOf('month');
+  const header = page.locator('.react-datepicker__current-month').first();
+  const prev = page.locator('button[aria-label="Previous Month"], .react-datepicker__navigation--previous').first();
+  const next = page.locator('button[aria-label="Next Month"], .react-datepicker__navigation--next').first();
+  for (let i = 0; i < 60; i++) {
+    const shownTxt = squash((await header.textContent().catch(() => '')) ?? '');
+    const shown = DateTime.fromFormat(shownTxt, 'MMMM yyyy');
+    if (!shown.isValid) return; // not a react-datepicker header — let the day-click try as-is
+    if (shown.hasSame(goal, 'month') && shown.hasSame(goal, 'year')) return;
+    const btn = shown.toMillis() > goal.toMillis() ? prev : next;
+    if (!(await btn.count().catch(() => 0))) return; // no nav control — bail to the day-click
+    await btn.click({ timeout }).catch(() => undefined);
+    await page.waitForTimeout(120);
+  }
+}
+
+/**
  * Pick a date in a calendar-style date picker (the field cannot be typed).
- * Opens the MM/dd/yyyy field, clicks the matching day cell, confirms with Select.
+ * Opens the MM/dd/yyyy field, pages to the target month, clicks the matching day
+ * cell, confirms with Select.
  */
 export const selectStartDate: KeywordHandler = async (page, ctx, step) => {
   const raw = resolveDateValue(ctx, step.stepId);
@@ -109,6 +134,7 @@ export const selectStartDate: KeywordHandler = async (page, ctx, step) => {
   logger.info(`selectStartDate -> ${raw} (${optionLabels[0]})`);
 
   await page.getByRole('textbox', { name: 'MM/dd/yyyy' }).click({ timeout: step.timeout });
+  await navigateCalendarToMonth(page, date, step.timeout);
   await clickFirstAvailable([
     ...optionLabels.map((label) => () => page.getByRole('option', { name: label, exact: true }).click({ timeout: step.timeout })),
     ...optionLabels.map((label) => () => page.getByRole('button', { name: label, exact: true }).click({ timeout: step.timeout })),
