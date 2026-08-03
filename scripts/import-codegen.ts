@@ -41,7 +41,7 @@ type ControlKind = 'button' | 'textbox' | 'radio button' | 'checkbox' | 'dropdow
 
 type ParsedEvent = {
   lineNo: number;
-  kind: 'goto' | 'role' | 'label' | 'text' | 'locator';
+  kind: 'goto' | 'role' | 'label' | 'text' | 'testid' | 'locator';
   selectorType: string;
   selectorValue: string;
   roleType: string;
@@ -368,6 +368,26 @@ function normalizeFallbackRef(value: string): string {
     .trim();
 }
 
+/**
+ * Pull a clean field id out of a css selector so an indexed/dotted table cell keeps
+ * its EXACT id as the testdata column (our convention: column === DOM id). Handles:
+ *   #foo                    -> foo
+ *   [id="foo.bar.baz"]      -> foo.bar.baz
+ *   input[name="foo.bar"]   -> foo.bar
+ *   [name="foo.bar"]        -> foo.bar
+ * Returns undefined for non-id/name selectors (role/label/text keep their readable
+ * column). Callers only override the column when the id is DOTTED — so a plain
+ * #projectName still gets its "Project Name" label column, while
+ * [id="boundary.0.analysisSpacingInfo"] becomes that exact dotted column.
+ */
+function extractFieldId(selectorValue: string): string | undefined {
+  const hash = /^#([A-Za-z_][\w:-]*)$/.exec(selectorValue.trim());
+  if (hash) return hash[1];
+  const attr = /\[\s*(?:id|name)\s*=\s*["']([^"']+)["']\s*\]/.exec(selectorValue);
+  if (attr) return attr[1];
+  return undefined;
+}
+
 function dataFileFor(pageName: string, stepGroup: string): string {
   if (pageName === 'ProjectPage' || stepGroup === 'CreateProject' || stepGroup === 'OpenProject') return 'project';
   if (pageName === 'DesignPage' || stepGroup === 'ConfigureDesign' || stepGroup === 'Simulate' || stepGroup === 'ExtractResults') return 'design';
@@ -596,13 +616,37 @@ function parseCodegenEvent(line: string, lineNo: number): ParsedEvent | null {
     };
   }
 
+  // getByTestId('x') — a data-testid locator. Some controls (checkbox toggles such
+  // as Variable / includeAssurance) are ONLY reachable this way; without this rule
+  // the line matches nothing (parseCodegenEvent returns null) and the control is
+  // silently dropped from the import. The resolver already supports `testid`.
+  const testIdCall = /getByTestId\((['"])(.*?)\1\)(?:\.(click|fill|check|uncheck|selectOption))?\((.*?)\);?$/.exec(trimmed);
+  if (testIdCall) {
+    return {
+      lineNo,
+      kind: 'testid',
+      selectorType: 'testid',
+      selectorValue: unescapeJsString(testIdCall[2] ?? ''),
+      roleType: '',
+      roleName: '',
+      action: testIdCall[3] ?? 'click',
+      args: testIdCall[4] ?? '',
+      ref: unescapeJsString(testIdCall[2] ?? ''),
+      raw: trimmed,
+      exact: false,
+    };
+  }
+
   const locatorCall = /locator\((['"])(.*?)\1\)(?:\.(click|fill|check|uncheck|selectOption|select\w*))?\((.*?)\);?$/.exec(trimmed);
   if (locatorCall) {
     const selectorValue = locatorCall[2] ?? '';
     return {
       lineNo,
       kind: 'locator',
-      selectorType: selectorValue.startsWith('#') || selectorValue.startsWith('.') || selectorValue.startsWith('[') ? 'css' : 'xpath',
+      // css unless it is an explicit XPath (//… or xpath=…). The old test only
+      // accepted #/./[ as css, so `input[name="x"]`, `div > span`, etc. were
+      // mislabelled xpath and then broke at runtime (`xpath=input[name=…]`).
+      selectorType: selectorValue.startsWith('//') || selectorValue.startsWith('xpath=') ? 'xpath' : 'css',
       selectorValue,
       roleType: '',
       roleName: '',
@@ -681,6 +725,8 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   sawLogin: boolean;
   /** Radios recorded without a label: no data-driven step could be built (see below). */
   blindChoiceWarnings: string[];
+  /** "<file>|<Column>" ids minted by the collision split — exact-reuse only, never prefix-collapsed. */
+  splitColumns: Set<string>;
 } {
   const selectors: LocatorRef[] = [];
   const seenSelectors = new Set<string>();
@@ -961,11 +1007,25 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     // split across inputset/project/design by page/group.
     const dataFile = sim ? 'simulation' : dataFileFor(pageName, stepGroup);
     const isResultName = isResultNameField(event);
-    const columnName = isResultName ? RESULT_NAME_COLUMN : deriveColumnName(event, pendingLabel, event.ref);
+    // A DOTTED id (indexed table cell like inputMethodTable.0.hazardRateControl or
+    // boundary.0.analysisSpacingInfo) becomes its exact id column — the shared column
+    // header would collide across rows, and it keeps codegen's [id=]/[name=] cells
+    // aligned with the hand-authored testdata standard. Non-dotted ids keep their
+    // readable label column.
+    const fieldId = extractFieldId(event.selectorValue);
+    const columnName = isResultName
+      ? RESULT_NAME_COLUMN
+      : fieldId && fieldId.includes('.')
+        ? fieldId
+        : deriveColumnName(event, pendingLabel, event.ref);
     const targetAction = event.action || 'click';
     const ref = pendingLabel || event.ref || event.selectorValue;
     const fieldType = isResultName ? 'textbox' : inferControlKind(ref, event.selectorType, event.roleName, event.roleType);
-    const objectName = isResultName ? 'txt_ResultName' : objectNameFromRef(ref || event.roleName || event.selectorValue, fieldType);
+    const objectName = isResultName
+      ? 'txt_ResultName'
+      : fieldId && fieldId.includes('.')
+        ? objectNameFromRef(fieldId, fieldType)
+        : objectNameFromRef(ref || event.roleName || event.selectorValue, fieldType);
     const isOpener = isDropdownOpener(event);
     const isChoice = isChoiceEvent(event) || (event.kind === 'role' && event.roleType === 'radio' && event.action === 'check');
     const keepLabelForChoice = isOpener && (nextEvent ? isChoiceEvent(nextEvent) || (nextEvent.kind === 'role' && nextEvent.roleType === 'radio' && nextEvent.action === 'check') : false);
@@ -1277,15 +1337,23 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     // (left at the app default). The recorded action seeds the column so a first
     // run has a defined direction. Binds to the checkbox's OWN accessible name,
     // never a stray pendingLabel.
-    if ((targetAction === 'check' || targetAction === 'uncheck') && event.roleType === 'checkbox') {
-      const cbColumn = labelToColumnName(event.roleName || event.selectorValue || columnName);
-      const cbObject = objectNameFromRef(event.roleName || cbColumn || event.selectorValue, 'checkbox');
+    if ((targetAction === 'check' || targetAction === 'uncheck') && event.roleType !== 'radio') {
+      // A .check()/.uncheck() that is NOT a radio: a genuine checkbox toggle located
+      // by role, data-testid, OR a css locator. (Radios re-assert a choice and are
+      // dropped as blind below.) The selector mirrors HOW codegen found it, so a
+      // testid checkbox — Variable / includeAssurance — is no longer lost.
+      const cbName = fieldId ?? (event.roleName || event.selectorValue || columnName);
+      const cbColumn = labelToColumnName(cbName);
+      const cbObject = objectNameFromRef(cbName, 'checkbox');
+      const cbSelType = event.selectorType === 'role' ? 'role' : event.selectorType;
+      const cbSelVal = event.selectorType === 'role' ? 'checkbox' : event.selectorValue;
+      const cbSelRole = event.selectorType === 'role' ? event.roleName : '';
       addSelector({
         page: pageName,
         objectName: cbObject,
-        selectorType: 'role',
-        selectorValue: 'checkbox',
-        roleName: event.roleName,
+        selectorType: cbSelType,
+        selectorValue: cbSelVal,
+        roleName: cbSelRole,
         fieldType: 'checkbox',
         fallbackSelector: '',
         dynamic: false,
@@ -1314,7 +1382,7 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
             SkipIf: `${cbToken}!=${act}`,
             Description: `${act} ${cbColumn} when testdata ${cbColumn}=${act} (SkipIf gates it per iteration)`,
           },
-          { page: pageName, stepGroup, action: act, objectName: cbObject, selectorType: 'role', selectorValue: 'checkbox', roleName: event.roleName },
+          { page: pageName, stepGroup, action: act, objectName: cbObject, selectorType: cbSelType, selectorValue: cbSelVal, roleName: cbSelRole },
         );
       }
       pendingLabel = '';
@@ -1482,7 +1550,81 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     });
   }
 
-  return { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings };
+  // ---- Null/Alternative (and similar) column-collision split ----
+  //
+  // A field's testdata column is derived from its LABEL. Some forms show the SAME
+  // label under a "Null" and an "Alternative" section — "Hazard Ratio (Null)" and
+  // "Hazard Ratio (Alternative)", "Ratio of Medians (Null/Alternative)", "Log Hazard
+  // Ratio (Null/Alternative)". Stripping the parenthetical collapses both to one
+  // column ("Hazard Ratio"), so two DISTINCT fields (#hazardRatio_Null_SS vs
+  // #hazardRatio_Alt_SS) end up bound to the SAME token and always fill the same
+  // value — the alternative-hypothesis input silently mirrors the null one.
+  //
+  // Give each colliding field its own column, keyed by its DOM id, which is unique
+  // AND matches the app's real field id (so it lines up with an exported testdata
+  // header like hazardRatio_Null_SS). Only fires when two or more DIFFERENT objects
+  // share a column; a single object filled twice (a superset re-touch) is collapsed
+  // later by the dedup pass and never reaches here as a collision. A field with no
+  // usable id keeps its label column but gets a unique suffix from its object name,
+  // so distinct fields are never merged. The id-columns it mints are recorded in
+  // splitColumns so the reuse pass below won't prefix-collapse them back onto the
+  // shorter label they replaced (e.g. hazardRatio_Null_SS -> "Hazard Ratio").
+  const splitColumns = new Set<string>();
+  {
+    const selectorValueByKey = new Map<string, string>();
+    for (const s of selectors) selectorValueByKey.set(`${s.page}|${s.objectName}`, s.selectorValue);
+    const tokenRe = /\$\{data\.([^.}]+)\.([^}]+)\}/;
+    // Group data-driven steps by (file, column). Duplicates (the superset re-touches
+    // a field before the later dedup pass collapses them) are grouped by object so a
+    // repeat never looks like a second distinct field.
+    type ObjInfo = { id: string | undefined; isFill: boolean; steps: StepRow[] };
+    const groups = new Map<string, { file: string; col: string; byObject: Map<string, ObjInfo> }>();
+    for (const s of steps) {
+      const m = tokenRe.exec(String(s.InputValue ?? ''));
+      if (!m) continue;
+      const [, file, col] = m;
+      const key = `${file}|${col}`;
+      const grp = groups.get(key) ?? { file: file ?? '', col: col ?? '', byObject: new Map<string, ObjInfo>() };
+      const obj = String(s.ObjectName ?? '');
+      const info =
+        grp.byObject.get(obj) ??
+        ({ id: extractFieldId(selectorValueByKey.get(`${String(s.Page ?? '')}|${obj}`) ?? ''), isFill: true, steps: [] } as ObjInfo);
+      if (String(s.Action) !== 'fill') info.isFill = false;
+      info.steps.push(s);
+      grp.byObject.set(obj, info);
+      groups.set(key, grp);
+    }
+    for (const { file, col, byObject } of groups.values()) {
+      if (byObject.size < 2) continue; // one field (with repeats) — nothing to disambiguate
+      const entries = [...byObject.values()];
+      const ids = entries.map((e) => e.id);
+      // Split ONLY a genuine set of distinct FILL fields that collapsed onto one
+      // label column (Null/Alternative, NI/SP numeric inputs): every object must be a
+      // fill with its own DOM id. This deliberately skips (a) a fill that shares its
+      // column with a result LINK by design, and (b) redundant SELECT pairs that are
+      // the same dropdown recorded two ways. Re-key each to its DOM id, which is
+      // unique and matches the app's real field id / an exported testdata header.
+      if (!entries.every((e) => e.isFill)) continue;
+      if (!ids.every((id): id is string => !!id) || new Set(ids).size !== ids.length || ids.includes(col)) continue;
+      for (const e of entries) {
+        const newCol = e.id!;
+        const oldToken = `\${data.${file}.${col}}`;
+        const newToken = `\${data.${file}.${newCol}}`;
+        for (const st of e.steps) st.InputValue = String(st.InputValue).split(oldToken).join(newToken);
+        registerDataColumn(file, newCol);
+        splitColumns.add(`${file}|${newCol}`);
+        // Carry the one seeded value to the first field that claims a column; the rest
+        // seed blank (their per-field recorded value was dropped at dedup) — blank is a
+        // skip, never a wrong fill, and the tester supplies the real value.
+        const seeded = dataValues.get(`${file}|${col}`);
+        if (seeded && !dataValues.has(`${file}|${newCol}`)) dataValues.set(`${file}|${newCol}`, seeded);
+      }
+      dataColumns.get(file)?.delete(col);
+      dataValues.delete(`${file}|${col}`);
+    }
+  }
+
+  return { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns };
 }
 
 function buildFeatureConfig(feature: string, module: string): string {
@@ -1571,7 +1713,7 @@ function main(): number {
 
   const lines = readLines(inputFile);
   const isSim = parsed.args.sim === true;
-  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings } = parseCodegen(lines, { sim: isSim });
+  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns } = parseCodegen(lines, { sim: isSim });
   // Sim testdata lives in one file (simulation.csv); design splits across three.
   const dataFilesForReuse = isSim ? ['simulation'] : ['inputset', 'project', 'design'];
 
@@ -1608,9 +1750,21 @@ function main(): number {
       // recorded value instead of the tester's. Fall back to a prefix match, but
       // only when it is UNAMBIGUOUS — two candidates mean we cannot know which the
       // tester meant, and guessing wrong is worse than seeding a new column.
-      if (!existing && derivedNorm.length >= 4) {
+      //
+      // Dotted table-cell ids (e.g. "enrollmentTable.0.avgSubjectsEnrolled") are the
+      // ONE exception: codegen never truncates them, so they must reuse only on an
+      // EXACT normalized match (which a testdata header authored as the same dotted
+      // id satisfies). Excluding dotted names from BOTH sides of the prefix match
+      // stops a short human column ("Enrollment") from being wrongly bound to a table
+      // cell just because it is a string prefix of the id — and vice versa. A dotted
+      // id with no exact match simply seeds its own column, as the table-cell
+      // convention intends. A column minted by the Null/Alternative split is the same
+      // case: it IS the app's DOM id (hazardRatio_Null_SS), so exact-match only — a
+      // prefix hit would re-collapse it onto the shorter label it just replaced.
+      if (!existing && derivedNorm.length >= 4 && !derived.includes('.') && !splitColumns.has(`${file}|${derived}`)) {
         const prefixHits = [...existingByNorm.entries()].filter(
-          ([norm]) => norm !== derivedNorm && (norm.startsWith(derivedNorm) || derivedNorm.startsWith(norm)),
+          ([norm, col]) =>
+            norm !== derivedNorm && !col.includes('.') && (norm.startsWith(derivedNorm) || derivedNorm.startsWith(norm)),
         );
         if (prefixHits.length === 1) existing = prefixHits[0]?.[1];
       }
@@ -1691,6 +1845,30 @@ function main(): number {
 
   fs.writeFileSync(selectorPath, selectorCsv, 'utf8');
   fs.writeFileSync(metadataPath, metadataCsv, 'utf8');
+
+  // Additive guard (prints only — never edits a generated file): an UNGATED
+  // Add-Period / Add-Interim click adds a blank, unfilled row that invalidates the
+  // design so it will not compute. Flag every click whose selector is a
+  // role=button "Add Period"/"Add Interim" yet carries no SkipIf, so the agent gates
+  // it on the new period's data column. The recording can also MIS-NAME such a
+  // button (captured role="Add Period", named after a nearby label) — hence we key
+  // off the selector's role, not the ObjectName. See AI_IMPORT_AGENT.md §7 / KT Trap 23.
+  const selectorByName = new Map(mergedSelectors.map((s) => [s.objectName, s]));
+  const ungatedAddClicks = steps.filter((st) => {
+    if (String(st.Action) !== 'click' || String(st.SkipIf ?? '').trim()) return false;
+    const sel = selectorByName.get(String(st.ObjectName));
+    return !!sel && sel.selectorType === 'role' && /^add\s+(period|interim)$/i.test((sel.roleName ?? '').trim());
+  });
+  if (ungatedAddClicks.length) {
+    console.log(
+      `  WARNING: ${ungatedAddClicks.length} ungated Add-Period/Add-Interim click(s). Gate each with ` +
+        `SkipIf on the new period's data column, or it adds a blank row (AI_IMPORT_AGENT.md §7):`,
+    );
+    for (const st of ungatedAddClicks) {
+      const sel = selectorByName.get(String(st.ObjectName));
+      console.log(`    StepID ${st.StepID}  ObjectName "${st.ObjectName}"  (selector: role=button "${sel?.roleName ?? ''}")`);
+    }
+  }
   // The sim import shares the design feature.config.json — never clobber it (that
   // would reset serial/reuseAuthState the design import already tuned).
   if (!isSim) {

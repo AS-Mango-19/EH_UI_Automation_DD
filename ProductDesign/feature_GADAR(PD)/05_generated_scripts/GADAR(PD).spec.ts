@@ -1,9 +1,9 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: f4a7d2b12d62de56fa92fc1af3ae6df29738f3ad0b3fe535b3358877b798bd19)
+// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: 76917ae83aeca34898ad31a012482a3a8f9783a20f287df779e24250df928fdf)
 import { runGeneratedSpec } from '../../../core/runner/specRuntime.js';
 
 runGeneratedSpec({
   module: "ProductDesign",
-  feature: "ROM(PD)",
+  feature: "GADAR(PD)",
   metadataFileRel: "03_metadata/metadata.csv",
   testDataDirRel: "01_testdata",
 });

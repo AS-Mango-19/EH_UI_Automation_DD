@@ -101,6 +101,14 @@ unambiguous headings — and the importer's column reuse deliberately refuses to
 ambiguous names rather than bind your step to the wrong field. The heading never has to match
 the id or the label; it only has to match the metadata token exactly.
 
+**Editable fills are now split for you.** When two *editable* fields share a label but have
+distinct DOM ids — `Hazard Ratio (Null)` `#hazardRatio_Null_SS` vs `Hazard Ratio (Alternative)`
+`#hazardRatio_Alt_SS` — the importer emits **one column per id automatically**
+(`${data.design.hazardRatio_Null_SS}` / `…_Alt_SS`), so the alternative input never mirrors the
+null one. The hand-naming rule above is only for the **greyed** `assertValue` fields the importer
+can't record. (Split fires only for distinct id-bearing *fills*; a fill sharing its column with a
+result *link*, and a dropdown recorded two ways, are left alone.)
+
 ---
 
 ## Workflow
@@ -132,10 +140,13 @@ agent's job is steps 2-6.
 
 ### 2 — Consolidate a superset recording *(judgment)*
 A superset recording toggles controls, so the raw metadata has **duplicated, self-cancelling**
-steps. Turn it into the clean data-driven form:
-- **One data-driven step per control** — `select ddl_X ${data.design.X}`. Delete the repeated
-  `select`/`check` on the same object; the recorded value doesn't matter (the token reads the
-  testdata).
+steps. The importer already **collapses exact same-object repeats** of `select`/`check`/`fill`
+(it logs `Collapsed N duplicate … step(s)`); your job is the judgment it can't make — ordering and
+genuinely-distinct fields. Turn it into the clean data-driven form:
+- **One data-driven step per control** — `select ddl_X ${data.design.X}`. The importer drops an
+  exact repeat on the same object automatically; delete any that remain (e.g. the *same* dropdown
+  recorded via two different selectors). The recorded value doesn't matter — the token reads the
+  testdata.
 - **One `fill` per field.**
 - **Order = controls before their dependent fields**, e.g.
   `Hypothesis → Test Type → Computed Parameter → Input Method → (the fills) → Test Statistic`.
@@ -182,7 +193,20 @@ steps. Turn it into the clean data-driven form:
   That warning is the prompt to add the `assertValue` step (or drop the column). It is how a
   derived field gets noticed without anyone remembering to look for it.
 - **Mutually-exclusive variants** (`#ratioOfMeans_NI` vs `#ratioOfMeans_SP`) → separate
-  columns + separate steps; each iteration `N/A`s the variant it doesn't use.
+  columns + separate steps; each iteration `N/A`s the variant it doesn't use. The importer now
+  produces the separate **id-named columns** for distinct editable fills automatically (see
+  "Two fields that share a visible label" above); you still add the per-iteration `N/A` gating,
+  and any `SkipIf` needed.
+- **Indexed table cells + multi-period values.** Table inputs (interim spacing, piecewise
+  hazard rates, dropout periods) use **dotted 0-based ids** — `inputMethodTable.0.hazardRateControl`,
+  `boundary.1.analysisSpacingInfo`. Record the cell by its real `[id="…"]` / `[name="…"]` / `#id`
+  and the importer takes that dotted id **verbatim** as the column (no more `id inputMethodTable 0 …`
+  mangling). An export cell that packs every period comma-separated (`"0.9, 1.2, 1.5"`) is split one
+  value per indexed column (`…0.…` / `…1.…` / `…2.…`); unused periods are left blank/`N/A`. Full rules:
+  FRAMEWORK_KT.md §4.5 "Indexed table cells and multi-period values".
+- **Checkbox toggles** (`getByTestId('variable')`, a role/id checkbox) import as a data-driven
+  `check` **and** `uncheck` pair, each `SkipIf`-gated on the column value (`…!=check` / `…!=uncheck`),
+  so one testdata cell drives the box on or off per iteration.
 
 ### 4 — Validate (no browser)
 ```bash
@@ -214,6 +238,30 @@ npm run test -- --testcase TC_XX
 | a field's value is ignored (app computes it) | set that cell to `Computed` |
 | "Forced Log Out" / login bounce | parallel logins — ensure `serial: true` (importer default) |
 | duplicate testdata columns | reconcile to the human-named column (step 3) |
+| `select … has no option matching "V"` | the error now **prints every real option** (`value=text`); map your testdata value to one — or the value belongs in a *different* field (a `select` recorded onto a text input; delete the bogus select) |
+| `field "X" is disabled but testdata requires a value` | X's **controlling `select` isn't active** — either it never ran, or a later `fill` **reset** it. Order that select **after** the table X depends on and **immediately before** X. Execution is by **StepID**, not row order (§7 below) |
+| a `check`/`uncheck` step **times out** | the checkbox isn't rendered for this combination (e.g. the efficacy/futility checkboxes exist only when a **futility boundary** does) → set the cell to **`N/A`** |
+| a **blank period/interim row** appears and the design won't compute | an **ungated** Add-Period / Add-Interim click. Gate every one with `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. Watch for a **mis-named** button whose *selector* is really `role=button "Add Period"` (§7) |
+| navigating shows an **"Unsaved Changes"** dialog | the design has unsaved edits — **Save it first; never add a "Leave" click** (Leave *discards* the design and masks a real validation error) |
+
+### 7 — Scenario-conditional wiring, dialogs & recovering a real `#id` *(judgment — the GADAR cases)*
+
+A second iteration with a **different option combination** touches fields the first never did. Each blocker is one of these patterns — none needs a code change, only correct ordering, gating, or an `N/A`.
+
+- **Execution order is by `StepID`, not row/`Seq` order.** The loader sorts steps by `StepID` before running (`core/loaders/featureLoader.ts`). To move a step earlier, **change its StepID** — reordering rows or editing `Seq` does nothing. A controlling `select` must have a **lower StepID** than the fields it reveals.
+- **A controlling select can be *reset* when you fill a dependent table.** The effect sub-method (`#hazardRatioInputMethod`) reverts to "None" — greying its effect field — *after* the input-method table is filled. Place that select **after** the table fills and **immediately before** the effect field (by StepID). Symptom: `… is disabled but testdata requires a value`.
+- **A section's Input-Method dropdown must be set before its sub-fields exist.** Piecewise Dropout and Assurance each have their own `select` (e.g. `#piecewiseInputMethod` → `"Hazard Rate"`); until it is set the section renders nothing and the fills report `not found`. Add the `select`, gated on the section's data.
+- **Fields that only render alongside a companion option are `N/A` when it's absent.** The per-analysis efficacy/futility checkboxes exist only when a **futility boundary** is configured; with `Futility = None` the interim table has no checkboxes, so `boundary.*.efficacyCheck` must be `N/A` (a `check` on an absent box just times out).
+- **Gate every Add-Period / Add-Interim click.** An ungated one adds a blank, unfilled row and the design won't compute. Gate on the new period's key column: `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. The recording can also **mis-name** the button — it captured `role=button "Add Period"` but named it after a nearby label — so check the **selector**, not the ObjectName.
+- **Duplicate ids → disambiguate positionally.** Every "Add Period" button shares `id="addButton"`; `.first()` grabs the wrong one. Use a Playwright CSS `:nth-match(button:has-text("Add Period"), 2)` for the 2nd (dropout-table) one.
+- **Dialogs are steps too.** *Unsaved Changes* on navigation → **Save first**, never "Leave". *Compute* (a credit dialog) → fill the **Result Name** (`#inputId`), then confirm its primary button (`#credit-alert-primary`) to start the sim — the result link is `getByRole('link', {name:<Result Name>})`, so the `Result Name` column must hold a value. Dialog buttons are frequently **not** semantic `role=button` — target them by `text` or a stable `#id`.
+
+**Recovering a field's real `#id` from the trace** (when a valued cell reports `not found` and DevTools isn't handy). Every run writes `artifacts/<runId>/<TC>_<ITER>/trace.zip`, whose DOM snapshots carry the true ids:
+```bash
+unzip -o trace.zip -d /tmp/tr
+grep -rohE '\["SELECT",\{[^}]*"id":"[^"]+"' /tmp/tr | grep -oE '"id":"[^"]+"' | sort -u
+```
+Swap `SELECT` for `INPUT` / `BUTTON` for other controls. This is how `#piecewiseInputMethod`, `#shapeParamDelta`, and `ratioOfPercSurv_Alt_SP` were found with no live browser. The hardened `select` also **prints the option list** on a mismatch — read it before guessing.
 
 ---
 

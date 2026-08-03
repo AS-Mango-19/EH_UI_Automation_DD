@@ -143,8 +143,18 @@ export const click: KeywordHandler = async (_page, ctx, step) => {
   const labelFallback = selector?.SelectorType === 'label'
     ? ctx.root().getByText(selector.SelectorValue, { exact: true }).first()
     : null;
+  // An OPTIONAL click on an absent target is a no-op, not a failure — e.g. dismissing
+  // a toast/banner that may or may not be showing. Probe with NO wait and skip if gone.
+  if (step.raw.Optional && !labelFallback && locCount === 0) {
+    logger.warn(`OPTIONAL click ${step.objectName}: target not present — skipping (warning only).`);
+    return;
+  }
   const target = locCount > 0 ? loc : labelFallback ?? loc;
-  if (step.objectName === 'btn_New_Project') {
+  // Some buttons are permanently overlapped by a fixed toast/banner (e.g. GADAR's
+  // "Please click Calculate" info bar sits on top of the Calculate button). A normal
+  // or even force click lands on the banner, so the button's handler never fires — a
+  // direct DOM .click() dispatches straight to the element and actually triggers it.
+  if (step.objectName === 'btn_New_Project' || step.objectName === 'btn_Calculate') {
     try {
       await target.evaluate((element) => (element as HTMLElement).click());
       return;
@@ -228,6 +238,10 @@ export const fill: KeywordHandler = async (_page, ctx, step) => {
       throw new FrameworkError(`fill: field "${step.objectName}" did not accept the value — expected "${mask(want)}", field shows "${mask(got)}"`, { stepId: step.stepId });
     }
   }
+  // Tab out of the field to fire its blur/change handler. Some controls only commit
+  // (and only enable dependent buttons — e.g. the Enrollment "Calculate", disabled
+  // until you tab out of the committed value) on blur, not on programmatic fill().
+  await loc.press('Tab').catch(() => undefined);
 };
 
 export const type: KeywordHandler = async (_page, ctx, step) => {
@@ -358,24 +372,35 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
     }
   }
 
+  // Native <select>: read its real options and select by the matching option's VALUE.
+  // Playwright's selectOption(string) matches value|label, but some React-controlled
+  // selects reject a bare label/value match at automation speed; resolving the option
+  // ourselves (value, then exact text, then substring) and committing by value is
+  // reliable. Typing into a <select> never selects anything, so on no-match we fail
+  // loudly WITH the option list instead of silently pretending to type.
+  const want = step.input.trim();
+  const opts: Array<{ value: string; text: string }> = await loc
+    .first()
+    .evaluate((el) => Array.from((el as HTMLSelectElement).options).map((o) => ({ value: o.value, text: (o.text || '').trim() })))
+    .catch(() => []);
+  const norm = (s: string): string => s.trim().toLowerCase();
+  const hit =
+    opts.find((o) => o.value === want) ||
+    opts.find((o) => norm(o.text) === norm(want)) ||
+    opts.find((o) => norm(o.text).includes(norm(want)) && norm(want).length >= 2);
+  if (hit) {
+    await loc.selectOption({ value: hit.value }, { timeout: step.timeout });
+    return;
+  }
+  // No option matched our own scan — try Playwright's matcher once more, then fail clearly.
   try {
-    await loc.selectOption({ label: step.input }, { timeout: step.timeout });
+    await loc.selectOption(want, { timeout: step.timeout });
+    return;
   } catch {
-    logger.warn(`select: label "${step.input}" not matched on ${step.objectName}; retrying by value.`);
-    try {
-      await loc.selectOption(step.input, { timeout: step.timeout });
-    } catch {
-      logger.warn(`select: treating ${step.objectName} as a custom combobox and typing option "${step.input}".`);
-      try {
-        await loc.click({ timeout: step.timeout });
-        await _page.keyboard.type(step.input, { delay: 25 });
-        await _page.keyboard.press('Enter');
-      } catch {
-        logger.warn(`select: typing into ${step.objectName} failed; retrying option click for "${step.input}".`);
-        await loc.click({ timeout: step.timeout });
-        await ctx.root().getByRole('option', { name: step.input }).first().click({ timeout: step.timeout });
-      }
-    }
+    throw new FrameworkError(
+      `select: native <select> "${step.objectName}" has no option matching "${mask(want)}". Options: [${opts.map((o) => `${o.value}=${o.text}`).join(' | ')}]`,
+      { stepId: step.stepId },
+    );
   }
 };
 

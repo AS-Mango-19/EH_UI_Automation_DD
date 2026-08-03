@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: d2e707d1d8d58df793f21b798fb400a598c5160373218e81982a7e5ff92a9548)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 487e5ce44eb3f0905843a66770178ba5f176ce32f6f580bed9dc376b3f277b0a)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -44,6 +44,11 @@ export class ProjectPage {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Treatment_Arm', { dynamicArgs });
   }
 
+  /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) */
+  obj_Priority(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'obj_Priority', { dynamicArgs });
+  }
+
   /** textbox from codegen */
   txt_Endpoint_Name(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Endpoint_Name', { dynamicArgs });
@@ -54,9 +59,19 @@ export class ProjectPage {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Endpoint_Type', { dynamicArgs });
   }
 
+  /** textbox from codegen */
+  txt_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Better_Response', { dynamicArgs });
+  }
+
   /** dropdown (opener+option collapsed into one select step) */
-  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
+  ddl_Longer_Duration(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Longer_Duration', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_Variable(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'chk_Variable', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -72,5 +87,10 @@ export class ProjectPage {
   /** button from codegen */
   btn_Inputs(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Inputs', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
   }
 }
