@@ -70,7 +70,7 @@ export function loadEnv(envName: string): EnvConfig {
     password,
     headless: get('HEADLESS', 'true').toLowerCase() !== 'false',
     workers: Number(get('WORKERS', '4')) || 4,
-    defaultTimeoutMs: Number(get('DEFAULT_TIMEOUT_MS', '30000')) || 30000,
+    defaultTimeoutMs: Number(get('DEFAULT_TIMEOUT_MS', '60000')) || 60000,
     raw,
   };
   cache.set(key, config);

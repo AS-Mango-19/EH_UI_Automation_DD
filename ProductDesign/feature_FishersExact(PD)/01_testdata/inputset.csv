@@ -1,0 +1,5 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
+TC_10,ITER_01,Set 1,Design,Fisher's Exact,Set 1 C
+TC_10,ITER_02,Set 1,Design,Fisher's Exact,Set 1 C
+TC_10,ITER_03,Set 1,Design,Fisher's Exact,Set 1 C
+TC_10,ITER_04,Set 1,Design,Fisher's Exact,Set 1 C

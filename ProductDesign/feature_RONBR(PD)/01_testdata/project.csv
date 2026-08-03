@@ -1,0 +1,4 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,Treatment Arm,Control Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Variable,followUpTime,Min. Follow-up Time
+TC_11,ITER_01,TRUE,AutoProj_RONBR,Year,7/30/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Count,Less Events,check,N/A,12.5
+TC_11,ITER_02,TRUE,AutoProj_RONBR,Day,7/30/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Count,More Events,uncheck,5.5,N/A
+TC_11,ITER_03,TRUE,AutoProj_RONBR,Week,7/30/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Count,More Events,uncheck,4.5,N/A

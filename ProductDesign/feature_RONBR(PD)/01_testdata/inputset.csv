@@ -1,0 +1,4 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_11,ITER_01,Set1,Design,Ratio of Negative Binomial Rates (Parallel Design)
+TC_11,ITER_02,Set1,Design,Ratio of Negative Binomial Rates (Parallel Design)
+TC_11,ITER_03,Set1,Design,Ratio of Negative Binomial Rates (Parallel Design)

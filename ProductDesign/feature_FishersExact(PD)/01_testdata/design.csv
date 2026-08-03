@@ -1,0 +1,5 @@
+TC_ID,IterationID,Allocation Ratio,Computed Parameter,Sample Size,power,Test Type,Type 1 Error,Proportion Control,Follow-up Time,Probability of Dropout,inputMethod,Proportion Treatment,Odds Ratio of Proportions,Difference of Proportions,Ratio of Proportions,Include,Enrollment Rate,Result Name
+TC_10,ITER_01,1,Sample Size,Computed,0.87,2-Sided,0.0456,0.06,1,0,User Specified,0.04,N/A,N/A,N/A,check,8,Result - Set 1
+TC_10,ITER_02,2,Power,102,Computed,2-Sided,Computed,0.08,1,0.85,Odds Ratio,Computed,0.04,N/A,N/A,check,9,Result - Set 1
+TC_10,ITER_03,2.55,Power,110,Computed,2-Sided,0.035,0.05,2,0.55,Difference,N/A,N/A,0.4,N/A,check,10,Result - Set 1
+TC_10,ITER_04,1,Sample Size,Computed,0.87,2-Sided,0.035,0.05,2,0,Ratio,N/A,N/A,N/A,0.04,check,8,Result - Set 1
