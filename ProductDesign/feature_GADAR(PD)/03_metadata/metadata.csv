@@ -1,0 +1,323 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,click New Project
+5,50,ConfigureDesign,ProjectPage,fill,txt_Project_Name,${data.project.Project Name}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill Project Name (made unique per run with runId)
+6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
+8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.Study Objective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,fill Target Population
+11,110,ConfigureDesign,ProjectPage,fill,txt_Control_Arm,${data.project.Control Arm},,,,,10000,FALSE,0,never,,fill Control Arm
+12,120,ConfigureDesign,ProjectPage,fill,txt_Treatment_Arm,${data.project.Treatment Arm},,,,,10000,FALSE,0,never,,fill Treatment Arm
+13,130,ConfigureDesign,ProjectPage,assertValue,obj_Priority,,,,${data.project.Priority},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in project.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+14,140,ConfigureDesign,ProjectPage,fill,txt_Endpoint_Name,${data.project.Endpoint Name},,,,,10000,FALSE,0,never,,fill Endpoint Name
+15,150,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.Endpoint Type},,,,,15000,FALSE,0,always,,Select Endpoint Type. select opens the menu and commits the option itself - works for native and custom dropdowns
+16,160,ConfigureDesign,ProjectPage,select,ddl_Better_Response,${data.project.Better Response},,,,,15000,FALSE,0,always,,Select Better Response. select opens the menu and commits the option itself - works for native and custom dropdowns
+17,170,ConfigureDesign,ProjectPage,check,chk_Variable,,,,,,10000,FALSE,0,always,${data.project.Variable}!=check,check Variable when testdata Variable=check (SkipIf gates it per iteration)
+18,180,ConfigureDesign,ProjectPage,uncheck,chk_Variable,,,,,,10000,FALSE,0,always,${data.project.Variable}!=uncheck,uncheck Variable when testdata Variable=uncheck (SkipIf gates it per iteration)
+19,190,ConfigureDesign,ProjectPage,fill,txt_Follow_up_Time_Week,${data.project.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
+20,200,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+21,210,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+22,220,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+23,230,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
+24,240,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,click Design Compute or simulate a
+25,250,ExtractResults,ResultsPage,select,ddl_react_select_input_container,${data.design.react select input container},,,,,15000,FALSE,0,always,,Select react select input container. select opens the menu and commits the option itself - works for native and custom dropdowns
+26,260,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+27,270,ExtractResults,ResultsPage,select,ddl_Hypothesis,${data.design.Hypothesis},,,,,10000,FALSE,0,always,,Select Hypothesis. Native <select> - select matches by visible label first
+28,290,ExtractResults,DesignPage,assertValue,obj_Test_Type,,,,${data.design.Test Type},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+29,300,ExtractResults,ResultsPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,fill Type 1 Error
+30,310,ExtractResults,ResultsPage,select,ddl_testtype,${data.design.Test Type},,,,,10000,FALSE,0,always,,Select testtype. Native <select> - select matches by visible label first
+31,320,ExtractResults,ResultsPage,fill,txt_upper_Type1Error,${data.design.Upper Type 1 Error},,,,,10000,FALSE,0,never,,fill upperType1Error
+32,330,ExtractResults,ResultsPage,fill,txt_lower_Type1Error,${data.design.Lower Type 1 Error},,,,,10000,FALSE,0,never,,fill lowerType1Error
+33,340,ExtractResults,DesignPage,assertValue,obj_Number_of_Events,,,,${data.design.Number of Events},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+34,350,ExtractResults,ResultsPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+35,360,ExtractResults,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
+36,370,ExtractResults,ResultsPage,select,ddl_input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select inputMethod. Native <select> - select matches by visible label first
+37,380,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+38,390,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_hazard_Rate_Control,${data.design.inputMethodTable.0.hazardRateControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.hazardRateControl
+39,400,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_hazard_Rate_Trmt_Null_SS,${data.design.inputMethodTable.0.hazardRateTrmt_Null_SS},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.hazardRateTrmt_Null_SS
+40,410,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_hazard_Rate_Trmt_Alt_SPSS,${data.design.inputMethodTable.0.hazardRateTrmt_Alt_SPSS},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.hazardRateTrmt_Alt_SPSS
+41,420,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.1.hazardRateControl}==N/A,click Add Period
+42,430,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.2.hazardRateControl}==N/A,click Add Period
+43,440,ExtractResults,ResultsPage,fill,txt_input_Method_Table_2_starting_At_Time,${data.design.inputMethodTable.2.startingAtTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.2.startingAtTime
+44,450,ExtractResults,ResultsPage,fill,txt_input_Method_Table_1_starting_At_Time,${data.design.inputMethodTable.1.startingAtTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.1.startingAtTime
+45,460,ExtractResults,ResultsPage,fill,txt_input_Method_Table_1_hazard_Rate_Control,${data.design.inputMethodTable.1.hazardRateControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.1.hazardRateControl
+46,470,ExtractResults,ResultsPage,fill,txt_input_Method_Table_2_hazard_Rate_Control,${data.design.inputMethodTable.2.hazardRateControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.2.hazardRateControl
+47,480,ExtractResults,DesignPage,assertValue,obj_Input_Method,,,,${data.design.Input Method},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+48,490,ExtractResults,ResultsPage,fill,txt_Hazard_Ratio_Null,${data.design.hazardRatio_Null_SS},,,,,10000,FALSE,0,never,,fill Hazard Ratio
+49,500,ExtractResults,ResultsPage,fill,txt_Hazard_Ratio_Alternative,${data.design.hazardRatio_Alt_SS},,,,,10000,FALSE,0,never,,fill Hazard Ratio
+50,510,ExtractResults,DesignPage,assertValue,obj_Log_Hazard_Ratio_Null,,,,${data.design.Log Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+51,520,ExtractResults,ResultsPage,select,ddl_Log_Hazard_Ratio_Alternative,${data.design.Log Hazard Ratio},,,,,10000,FALSE,0,always,,Select Log Hazard Ratio. Native <select> - select matches by visible label first
+52,530,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+53,540,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+54,550,ExtractResults,ResultsPage,fill,txt_Log_Hazard_Ratio_Null,${data.design.Log Hazard Ratio},,,,,10000,FALSE,0,never,,fill Log Hazard Ratio
+55,560,ExtractResults,ResultsPage,fill,txt_Log_Hazard_Ratio_Alternative,${data.design.Log Hazard Ratio},,,,,10000,FALSE,0,never,,fill Log Hazard Ratio
+56,570,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_by_Time,${data.design.inputMethodTable.0.byTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.byTime
+57,580,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_cum_Perc_Survival_Control,${data.design.inputMethodTable.0.cumPercSurvivalControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.cumPercSurvivalControl
+58,590,ExtractResults,DesignPage,assertValue,obj_Cumulative_Survival_Treatment_Null_st0,,,,${data.design.Cumulative % Survival (Treatment: Null)},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+59,600,ExtractResults,ResultsPage,click,btn_Cumulative_Survival_Treatment_Alternative_st,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.1.cumPercSurvivalControl}==N/A,click Cumulative % Survival
+60,610,ExtractResults,ResultsPage,fill,txt_input_Method_Table_3_by_Time,${data.design.inputMethodTable.3.byTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.3.byTime
+61,620,ExtractResults,ResultsPage,fill,txt_input_Method_Table_3_cum_Perc_Survival_Control,${data.design.inputMethodTable.3.cumPercSurvivalControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.3.cumPercSurvivalControl
+62,630,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+63,640,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+64,645,ExtractResults,ResultsPage,select,ddl_hazard_Ratio_Input_Method,${data.design.hazardRatioInputMethod},,,,,10000,FALSE,0,always,,Select hazardRatioInputMethod. Native <select> - select matches by visible label first
+65,650,ExtractResults,ResultsPage,fill,txt_Ratio_of_Survivals_at_Period_1_Null,${data.design.Ratio of % Survivals Null},,,,,10000,FALSE,0,never,,fill Ratio of % Survivals at Period # 1
+66,660,ExtractResults,ResultsPage,fill,txt_Ratio_of_Survivals_at_Period_1_Alternative,${data.design.Ratio of % Survivals at Period # 1},,,,,10000,FALSE,0,never,,fill Ratio of % Survivals at Period # 1
+67,670,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+68,680,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_median_Survival_Time_Control,${data.design.inputMethodTable.0.medianSurvivalTimeControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.medianSurvivalTimeControl
+69,690,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_median_Survival_Time_Trmt_Null_SS,${data.design.inputMethodTable.0.medianSurvivalTimeTrmt_Null_SS},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.medianSurvivalTimeTrmt_Null_SS
+70,700,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_median_Survival_Time_Trmt_Alt_SPSS,${data.design.inputMethodTable.0.medianSurvivalTimeTrmt_Alt_SPSS},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.medianSurvivalTimeTrmt_Alt_SPSS
+71,710,ExtractResults,DesignPage,assertValue,obj_Input_Method,,,,${data.design.Input Method},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+72,720,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+73,730,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+74,740,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Medians_Null,,,,${data.design.Ratio of Medians},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+75,750,ExtractResults,ResultsPage,select,ddl_Ratio_of_Medians_Alternative,${data.design.Ratio of Medians},,,,,10000,FALSE,0,always,,Select Ratio of Medians. Native <select> - select matches by visible label first
+76,760,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Medians_Null,,,,${data.design.Ratio of Medians},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+77,770,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+78,780,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+79,790,ExtractResults,ResultsPage,fill,txt_Ratio_of_Medians_Null,${data.design.Ratio of Medians},,,,,10000,FALSE,0,never,,fill Ratio of Medians
+80,800,ExtractResults,ResultsPage,fill,txt_Ratio_of_Medians_Alternative,${data.design.Ratio of Medians},,,,,10000,FALSE,0,never,,fill Ratio of Medians
+81,810,ExtractResults,ResultsPage,select,ddl_hypothesis,${data.design.Hypothesis},,,,,10000,FALSE,0,always,,Select hypothesis. Native <select> - select matches by visible label first
+82,820,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+83,830,ExtractResults,DesignPage,assertValue,obj_Input_Method,,,,${data.design.Input Method},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+84,840,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+85,850,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+86,870,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Alt_SPSS,${data.design.inputMethodTable.0.cumPercSurvivalTrmt_Alt_SPSS},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.cumPercSurvivalTrmt_Alt_SPSS
+87,880,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.1.cumPercSurvivalControl}==N/A,click Add Period
+88,890,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.2.cumPercSurvivalControl}==N/A,click Add Period
+89,900,ExtractResults,ResultsPage,fill,txt_input_Method_Table_1_by_Time,${data.design.inputMethodTable.1.byTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.1.byTime
+90,910,ExtractResults,ResultsPage,fill,txt_input_Method_Table_1_cum_Perc_Survival_Control,${data.design.inputMethodTable.1.cumPercSurvivalControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.1.cumPercSurvivalControl
+91,920,ExtractResults,ResultsPage,fill,txt_input_Method_Table_2_by_Time,${data.design.inputMethodTable.2.byTime},,,,,10000,FALSE,0,never,,fill inputMethodTable.2.byTime
+92,930,ExtractResults,ResultsPage,fill,txt_input_Method_Table_2_cum_Perc_Survival_Control,${data.design.inputMethodTable.2.cumPercSurvivalControl},,,,,10000,FALSE,0,never,,fill inputMethodTable.2.cumPercSurvivalControl
+93,940,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+94,970,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+95,980,ExtractResults,DesignPage,assertValue,obj_Median_Survival_Time_Treatment_Alternative_mt_Week,,,,${data.design.Median Survival Time (Treatment: Alternative) (mt)},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+96,990,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+97,1000,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Medians_Alternative,,,,${data.design.Ratio of Medians},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+98,1010,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+99,1020,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+100,1030,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_hazard_Rate_Trmt_Null_NI,${data.design.inputMethodTable.0.hazardRateTrmt_Null_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.hazardRateTrmt_Null_NI
+101,1040,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_hazard_Rate_Trmt_Alt_NI,${data.design.inputMethodTable.0.hazardRateTrmt_Alt_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.hazardRateTrmt_Alt_NI
+102,1050,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+103,1060,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+104,1070,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.1.startingAtTime}==N/A,click Add Period
+105,1080,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.2.startingAtTime}==N/A,click Add Period
+106,1090,ExtractResults,DesignPage,assertValue,obj_Starting_At_Time_Week,,,,${data.design.Starting At Time},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+107,1100,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_median_Survival_Time_Trmt_Null_NI,${data.design.inputMethodTable.0.medianSurvivalTimeTrmt_Null_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.medianSurvivalTimeTrmt_Null_NI
+108,1110,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_median_Survival_Time_Trmt_Alt_NI,${data.design.inputMethodTable.0.medianSurvivalTimeTrmt_Alt_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.medianSurvivalTimeTrmt_Alt_NI
+109,1120,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Medians_Null,,,,${data.design.Ratio of Medians},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+110,1130,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+111,1140,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+112,1150,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Medians_Null,,,,${data.design.Ratio of Medians},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+113,1160,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+114,1170,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+115,1180,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Null_NI,${data.design.inputMethodTable.0.cumPercSurvivalTrmt_Null_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.cumPercSurvivalTrmt_Null_NI
+116,1190,ExtractResults,ResultsPage,fill,txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Alt_NI,${data.design.inputMethodTable.0.cumPercSurvivalTrmt_Alt_NI},,,,,10000,FALSE,0,never,,fill inputMethodTable.0.cumPercSurvivalTrmt_Alt_NI
+117,1200,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.inputMethodTable.1.cumPercSurvivalControl}==N/A,click Add Period
+118,1210,ExtractResults,DesignPage,assertValue,obj_Input_Method,,,,${data.design.Input Method},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+119,1220,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Survivals_at_Period_1_Null,,,,${data.design.Ratio of % Survivals at Period # 1},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+120,1230,ExtractResults,DesignPage,assertValue,obj_Ratio_of_Survivals_at_Period_1_Alternative,,,,${data.design.Ratio of % Survivals at Period # 1},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+121,1240,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Null,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+122,1250,ExtractResults,DesignPage,assertValue,obj_Hazard_Ratio_Alternative,,,,${data.design.Hazard Ratio},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+123,1260,ExtractResults,ResultsPage,select,ddl_Variance_of_Log_Hazard_Ratio,${data.design.Variance of Log Hazard Ratio},,,,,10000,FALSE,0,always,,Select Variance of Log Hazard Ratio. Native <select> - select matches by visible label first
+124,1270,ExtractResults,ResultsPage,check,chk_variable,,,,,,10000,FALSE,0,always,${data.design.variable}!=check,check variable when testdata variable=check (SkipIf gates it per iteration)
+125,1280,ExtractResults,ResultsPage,uncheck,chk_variable,,,,,,10000,FALSE,0,always,${data.design.variable}!=uncheck,uncheck variable when testdata variable=uncheck (SkipIf gates it per iteration)
+126,1290,ExtractResults,ResultsPage,uncheck,chk_variable,,,,,,10000,FALSE,0,always,${data.design.variable}!=uncheck,uncheck variable when testdata variable=uncheck (SkipIf gates it per iteration)
+127,1300,ExtractResults,ResultsPage,fill,txt_Follow_up_Time_Week,${data.design.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+128,1310,ExtractResults,ResultsPage,select,ddl_dropout_Input_Method,Hazard Rate,,,,,10000,FALSE,0,onFailure,${data.design.dropoutTable.0.dropoutHazardRateControl}==N/A,set dropout input method so hazard-rate dropout fields render
+129,1320,ExtractResults,ResultsPage,fill,txt_dropout_Table_0_dropout_Hazard_Rate_Control,${data.design.dropoutTable.0.dropoutHazardRateControl},,,,,10000,FALSE,0,never,,fill dropoutTable.0.dropoutHazardRateControl
+130,1330,ExtractResults,ResultsPage,fill,txt_dropout_Table_0_dropout_Hazard_Rate_Treatment,${data.design.dropoutTable.0.dropoutHazardRateTreatment},,,,,10000,FALSE,0,never,,fill dropoutTable.0.dropoutHazardRateTreatment
+131,1335,ExtractResults,ResultsPage,click,btn_Dropout_Add_Period,,,,,,10000,FALSE,0,onFailure,${data.design.dropoutTable.1.dropoutHazardRateControl}==N/A,add dropout period 2 row before filling it
+132,1340,ExtractResults,ResultsPage,fill,txt_dropout_Table_1_dropout_Starting_At_Time,${data.design.dropoutTable.1.dropoutStartingAtTime},,,,,10000,FALSE,0,never,,fill dropoutTable.1.dropoutStartingAtTime
+133,1350,ExtractResults,ResultsPage,fill,txt_dropout_Table_1_dropout_Hazard_Rate_Control,${data.design.dropoutTable.1.dropoutHazardRateControl},,,,,10000,FALSE,0,never,,fill dropoutTable.1.dropoutHazardRateControl
+134,1360,ExtractResults,ResultsPage,fill,txt_dropout_Table_1_dropout_Hazard_Rate_Treatment,${data.design.dropoutTable.1.dropoutHazardRateTreatment},,,,,10000,FALSE,0,never,,fill dropoutTable.1.dropoutHazardRateTreatment
+135,1370,ExtractResults,ResultsPage,check,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=check,check includeAssurance when testdata includeAssurance=check (SkipIf gates it per iteration)
+136,1380,ExtractResults,ResultsPage,uncheck,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=uncheck,uncheck includeAssurance when testdata includeAssurance=uncheck (SkipIf gates it per iteration)
+137,1390,ExtractResults,ResultsPage,select,ddl_Prior_Distribution_for,${data.design.priorDistributionFor},,,,,10000,FALSE,0,always,,Select Prior Distribution for. Native <select> - select matches by visible label first
+138,1400,ExtractResults,ResultsPage,select,ddl_Distribution,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Select Distribution. Native <select> - select matches by visible label first
+139,1410,ExtractResults,ResultsPage,fill,txt_Min_HR,${data.design.minHR},,,,,10000,FALSE,0,never,,fill Min. HR
+140,1420,ExtractResults,ResultsPage,fill,txt_Max_HR,${data.design.maxHR},,,,,10000,FALSE,0,never,,fill Max. HR
+141,1430,ExtractResults,ResultsPage,select,ddl_distribution_Method,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Select distributionMethod. Native <select> - select matches by visible label first
+142,1440,ExtractResults,ResultsPage,select,ddl_assurance_Input_Method,${data.design.assuranceInputMethod},,,,,10000,FALSE,0,always,,Select assuranceInputMethod. Native <select> - select matches by visible label first
+143,1450,ExtractResults,ResultsPage,select,ddl_perc_HR1st_Operator,${data.design.percHR1stOperator},,,,,10000,FALSE,0,always,,Select percHR1stOperator. Native <select> - select matches by visible label first
+144,1460,ExtractResults,ResultsPage,fill,txt_perc_HR1st_Percentile_Val,${data.design.percHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percHR1stPercentileVal
+145,1470,ExtractResults,ResultsPage,fill,txt_perc_HR1st_Percentile_Prob,${data.design.percHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percHR1stPercentileProb
+146,1480,ExtractResults,ResultsPage,select,ddl_perc_HR2nd_Operator,${data.design.percHR2ndOperator},,,,,10000,FALSE,0,always,,Select percHR2ndOperator. Native <select> - select matches by visible label first
+147,1490,ExtractResults,ResultsPage,fill,txt_perc_HR2nd_Percentile_Val,${data.design.percHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percHR2ndPercentileVal
+148,1500,ExtractResults,ResultsPage,fill,txt_perc_HR2nd_Percentile_Prob,${data.design.percHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percHR2ndPercentileProb
+149,1510,ExtractResults,ResultsPage,fill,txt_E_HR,${data.design.E},,,,,10000,FALSE,0,never,,fill E
+150,1520,ExtractResults,ResultsPage,fill,txt_SD_HR,${data.design.SD},,,,,10000,FALSE,0,never,,fill SD
+151,1530,ExtractResults,ResultsPage,select,ddl_prior_Distribution_For,${data.design.priorDistributionFor},,,,,10000,FALSE,0,always,,Select priorDistributionFor. Native <select> - select matches by visible label first
+152,1540,ExtractResults,ResultsPage,fill,txt_min_Delta,${data.design.minDelta},,,,,10000,FALSE,0,never,,fill minDelta
+153,1550,ExtractResults,ResultsPage,fill,txt_max_Delta,${data.design.maxDelta},,,,,10000,FALSE,0,never,,fill maxDelta
+154,1570,ExtractResults,ResultsPage,select,ddl_perc_Delta1st_Operator,${data.design.percDelta1stOperator},,,,,10000,FALSE,0,always,,Select percDelta1stOperator. Native <select> - select matches by visible label first
+155,1580,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Val,${data.design.percDelta1stPercentileVal},,,,,10000,FALSE,0,never,,fill percDelta1stPercentileVal
+156,1590,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Prob,${data.design.percDelta1stPercentileProb},,,,,10000,FALSE,0,never,,fill percDelta1stPercentileProb
+157,1600,ExtractResults,ResultsPage,select,ddl_perc_Delta2nd_Operator,${data.design.percDelta2ndOperator},,,,,10000,FALSE,0,always,,Select percDelta2ndOperator. Native <select> - select matches by visible label first
+158,1610,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Val,${data.design.percDelta2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percDelta2ndPercentileVal
+159,1620,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Prob,${data.design.percDelta2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percDelta2ndPercentileProb
+160,1630,ExtractResults,ResultsPage,fill,txt_e_Delta,${data.design.eDelta},,,,,10000,FALSE,0,never,,fill eDelta
+161,1640,ExtractResults,ResultsPage,fill,txt_sd_Delta,${data.design.sdDelta},,,,,10000,FALSE,0,never,,fill sdDelta
+162,1650,ExtractResults,ResultsPage,select,ddl_perc_SCHR1st_Operator,${data.design.percSCHR1stOperator},,,,,10000,FALSE,0,always,,Select percSCHR1stOperator. Native <select> - select matches by visible label first
+163,1660,ExtractResults,ResultsPage,fill,txt_perc_SCHR1st_Percentile_Val,${data.design.percSCHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percSCHR1stPercentileVal
+164,1670,ExtractResults,ResultsPage,fill,txt_perc_SCHR1st_Percentile_Prob,${data.design.percSCHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percSCHR1stPercentileProb
+165,1680,ExtractResults,ResultsPage,select,ddl_perc_SCHR2nd_Operator,${data.design.percSCHR2ndOperator},,,,,10000,FALSE,0,always,,Select percSCHR2ndOperator. Native <select> - select matches by visible label first
+166,1690,ExtractResults,ResultsPage,fill,txt_perc_SCHR2nd_Percentile_Val,${data.design.percSCHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percSCHR2ndPercentileVal
+167,1700,ExtractResults,ResultsPage,fill,txt_perc_SCHR2nd_Percentile_Prob,${data.design.percSCHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percSCHR2ndPercentileProb
+168,1710,ExtractResults,ResultsPage,select,ddl_perc_SC1st_Operator,${data.design.percSC1stOperator},,,,,10000,FALSE,0,always,,Select percSC1stOperator. Native <select> - select matches by visible label first
+169,1720,ExtractResults,ResultsPage,fill,txt_perc_SC1st_Percentile_Val,${data.design.percSC1stPercentileVal},,,,,10000,FALSE,0,never,,fill percSC1stPercentileVal
+170,1730,ExtractResults,ResultsPage,fill,txt_perc_SC1st_Percentile_Prob,${data.design.percSC1stPercentileProb},,,,,10000,FALSE,0,never,,fill percSC1stPercentileProb
+171,1740,ExtractResults,ResultsPage,select,ddl_perc_SC2nd_Operator,${data.design.percSC2ndOperator},,,,,10000,FALSE,0,always,,Select percSC2ndOperator. Native <select> - select matches by visible label first
+172,1750,ExtractResults,ResultsPage,fill,txt_perc_SC2nd_Percentile_Val,${data.design.percSC2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percSC2ndPercentileVal
+173,1760,ExtractResults,ResultsPage,fill,txt_perc_SC2nd_Percentile_Prob,${data.design.percSC2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percSC2ndPercentileProb
+174,1770,ExtractResults,ResultsPage,fill,txt_sc_a,${data.design.sc a},,,,,10000,FALSE,0,never,,fill sc a
+175,1780,ExtractResults,ResultsPage,fill,txt_sc_b,${data.design.sc b},,,,,10000,FALSE,0,never,,fill sc b
+176,1790,ExtractResults,ResultsPage,fill,txt_st_a,${data.design.st a},,,,,10000,FALSE,0,never,,fill st a
+177,1800,ExtractResults,ResultsPage,fill,txt_st_b,${data.design.st b},,,,,10000,FALSE,0,never,,fill st b
+178,1810,ExtractResults,ResultsPage,select,ddl_perc_ST1st_Operator,${data.design.percST1stOperator},,,,,10000,FALSE,0,always,,Select percST1stOperator. Native <select> - select matches by visible label first
+179,1820,ExtractResults,ResultsPage,fill,txt_perc_ST1st_Percentile_Val,${data.design.percST1stPercentileVal},,,,,10000,FALSE,0,never,,fill percST1stPercentileVal
+180,1830,ExtractResults,ResultsPage,fill,txt_perc_ST1st_Percentile_Prob,${data.design.percST1stPercentileProb},,,,,10000,FALSE,0,never,,fill percST1stPercentileProb
+181,1840,ExtractResults,ResultsPage,select,ddl_perc_ST2nd_Operator,${data.design.percST2ndOperator},,,,,10000,FALSE,0,always,,Select percST2ndOperator. Native <select> - select matches by visible label first
+182,1850,ExtractResults,ResultsPage,fill,txt_perc_ST2nd_Percentile_Val,${data.design.percST2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percST2ndPercentileVal
+183,1860,ExtractResults,ResultsPage,fill,txt_perc_ST2nd_Percentile_Prob,${data.design.percST2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percST2ndPercentileProb
+184,1870,ExtractResults,ResultsPage,select,ddl_perc_STHR1st_Operator,${data.design.percSTHR1stOperator},,,,,10000,FALSE,0,always,,Select percSTHR1stOperator. Native <select> - select matches by visible label first
+185,1880,ExtractResults,ResultsPage,fill,txt_perc_STHR1st_Percentile_Val,${data.design.percSTHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percSTHR1stPercentileVal
+186,1890,ExtractResults,ResultsPage,fill,txt_perc_STHR1st_Percentile_Prob,${data.design.percSTHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percSTHR1stPercentileProb
+187,1900,ExtractResults,ResultsPage,select,ddl_perc_STHR2nd_Operator,${data.design.percSTHR2ndOperator},,,,,10000,FALSE,0,always,,Select percSTHR2ndOperator. Native <select> - select matches by visible label first
+188,1910,ExtractResults,ResultsPage,fill,txt_perc_STHR2nd_Percentile_Val,${data.design.percSTHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percSTHR2ndPercentileVal
+189,1920,ExtractResults,ResultsPage,fill,txt_perc_STHR2nd_Percentile_Prob,${data.design.percSTHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percSTHR2ndPercentileProb
+190,1930,ExtractResults,ResultsPage,fill,txt_min_HR,${data.design.minHR},,,,,10000,FALSE,0,never,,fill minHR
+191,1940,ExtractResults,ResultsPage,fill,txt_max_HR,${data.design.maxHR},,,,,10000,FALSE,0,never,,fill maxHR
+192,1950,ExtractResults,ResultsPage,fill,txt_input_name_e_HR,${data.design.input name eHR},,,,,10000,FALSE,0,never,,fill input name eHR
+193,1960,ExtractResults,ResultsPage,fill,txt_input_name_sd_HR,${data.design.input name sdHR},,,,,10000,FALSE,0,never,,fill input name sdHR
+194,1970,ExtractResults,ResultsPage,fill,txt_min_Lambda_C,${data.design.minLambdaC},,,,,10000,FALSE,0,never,,fill minLambdaC
+195,1980,ExtractResults,ResultsPage,fill,txt_max_Lambda_C,${data.design.maxLambdaC},,,,,10000,FALSE,0,never,,fill maxLambdaC
+196,1990,ExtractResults,ResultsPage,select,ddl_perc_Lambda_C1st_Operator,${data.design.percLambdaC1stOperator},,,,,10000,FALSE,0,always,,Select percLambdaC1stOperator. Native <select> - select matches by visible label first
+197,2000,ExtractResults,ResultsPage,fill,txt_perc_Lambda_C1st_Percentile_Val,${data.design.percLambdaC1stPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaC1stPercentileVal
+198,2010,ExtractResults,ResultsPage,fill,txt_perc_Lambda_C1st_Percentile_Prob,${data.design.percLambdaC1stPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaC1stPercentileProb
+199,2020,ExtractResults,ResultsPage,select,ddl_perc_Lambda_C2nd_Operator,${data.design.percLambdaC2ndOperator},,,,,10000,FALSE,0,always,,Select percLambdaC2ndOperator. Native <select> - select matches by visible label first
+200,2030,ExtractResults,ResultsPage,fill,txt_perc_Lambda_C2nd_Percentile_Val,${data.design.percLambdaC2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaC2ndPercentileVal
+201,2040,ExtractResults,ResultsPage,fill,txt_perc_Lambda_C2nd_Percentile_Prob,${data.design.percLambdaC2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaC2ndPercentileProb
+202,2050,ExtractResults,ResultsPage,fill,txt_lambda_c_a,${data.design.lambda c a},,,,,10000,FALSE,0,never,,fill lambda c a
+203,2060,ExtractResults,ResultsPage,fill,txt_lambda_c_b,${data.design.lambda c b},,,,,10000,FALSE,0,never,,fill lambda c b
+204,2070,ExtractResults,ResultsPage,select,ddl_perc_Lambda_CHR1st_Operator,${data.design.percLambdaCHR1stOperator},,,,,10000,FALSE,0,always,,Select percLambdaCHR1stOperator. Native <select> - select matches by visible label first
+205,2080,ExtractResults,ResultsPage,fill,txt_perc_Lambda_CHR1st_Percentile_Val,${data.design.percLambdaCHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaCHR1stPercentileVal
+206,2090,ExtractResults,ResultsPage,fill,txt_perc_Lambda_CHR1st_Percentile_Prob,${data.design.percLambdaCHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaCHR1stPercentileProb
+207,2100,ExtractResults,ResultsPage,select,ddl_perc_Lambda_CHR2nd_Operator,${data.design.percLambdaCHR2ndOperator},,,,,10000,FALSE,0,always,,Select percLambdaCHR2ndOperator. Native <select> - select matches by visible label first
+208,2110,ExtractResults,ResultsPage,fill,txt_perc_Lambda_CHR2nd_Percentile_Val,${data.design.percLambdaCHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaCHR2ndPercentileVal
+209,2120,ExtractResults,ResultsPage,fill,txt_perc_Lambda_CHR2nd_Percentile_Prob,${data.design.percLambdaCHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaCHR2ndPercentileProb
+210,2130,ExtractResults,ResultsPage,select,ddl_perc_Lambda_T1st_Operator,${data.design.percLambdaT1stOperator},,,,,10000,FALSE,0,always,,Select percLambdaT1stOperator. Native <select> - select matches by visible label first
+211,2140,ExtractResults,ResultsPage,fill,txt_perc_Lambda_T1st_Percentile_Val,${data.design.percLambdaT1stPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaT1stPercentileVal
+212,2150,ExtractResults,ResultsPage,fill,txt_perc_Lambda_T1st_Percentile_Prob,${data.design.percLambdaT1stPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaT1stPercentileProb
+213,2160,ExtractResults,ResultsPage,select,ddl_perc_Lambda_T2nd_Operator,${data.design.percLambdaT2ndOperator},,,,,10000,FALSE,0,always,,Select percLambdaT2ndOperator. Native <select> - select matches by visible label first
+214,2170,ExtractResults,ResultsPage,fill,txt_perc_Lambda_T2nd_Percentile_Val,${data.design.percLambdaT2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaT2ndPercentileVal
+215,2180,ExtractResults,ResultsPage,fill,txt_perc_Lambda_T2nd_Percentile_Prob,${data.design.percLambdaT2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaT2ndPercentileProb
+216,2190,ExtractResults,ResultsPage,fill,txt_lambda_t_a,${data.design.lambda t a},,,,,10000,FALSE,0,never,,fill lambda t a
+217,2200,ExtractResults,ResultsPage,fill,txt_lambda_t_b,${data.design.lambda t b},,,,,10000,FALSE,0,never,,fill lambda t b
+218,2210,ExtractResults,ResultsPage,select,ddl_perc_Lambda_THR1st_Operator,${data.design.percLambdaTHR1stOperator},,,,,10000,FALSE,0,always,,Select percLambdaTHR1stOperator. Native <select> - select matches by visible label first
+219,2220,ExtractResults,ResultsPage,fill,txt_perc_Lambda_THR1st_Percentile_Val,${data.design.percLambdaTHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaTHR1stPercentileVal
+220,2230,ExtractResults,ResultsPage,fill,txt_perc_Lambda_THR1st_Percentile_Prob,${data.design.percLambdaTHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaTHR1stPercentileProb
+221,2240,ExtractResults,ResultsPage,select,ddl_perc_Lambda_THR2nd_Operator,${data.design.percLambdaTHR2ndOperator},,,,,10000,FALSE,0,always,,Select percLambdaTHR2ndOperator. Native <select> - select matches by visible label first
+222,2250,ExtractResults,ResultsPage,fill,txt_perc_Lambda_THR2nd_Percentile_Val,${data.design.percLambdaTHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percLambdaTHR2ndPercentileVal
+223,2260,ExtractResults,ResultsPage,fill,txt_perc_Lambda_THR2nd_Percentile_Prob,${data.design.percLambdaTHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percLambdaTHR2ndPercentileProb
+224,2270,ExtractResults,ResultsPage,fill,txt_min_Lambda_T,${data.design.minLambdaT},,,,,10000,FALSE,0,never,,fill minLambdaT
+225,2280,ExtractResults,ResultsPage,fill,txt_max_Lambda_T,${data.design.maxLambdaT},,,,,10000,FALSE,0,never,,fill maxLambdaT
+226,2290,ExtractResults,ResultsPage,select,ddl_perc_MC1st_Operator,${data.design.percMC1stOperator},,,,,10000,FALSE,0,always,,Select percMC1stOperator. Native <select> - select matches by visible label first
+227,2300,ExtractResults,ResultsPage,fill,txt_perc_MC1st_Percentile_Val,${data.design.percMC1stPercentileVal},,,,,10000,FALSE,0,never,,fill percMC1stPercentileVal
+228,2310,ExtractResults,ResultsPage,fill,txt_perc_MC1st_Percentile_Prob,${data.design.percMC1stPercentileProb},,,,,10000,FALSE,0,never,,fill percMC1stPercentileProb
+229,2320,ExtractResults,ResultsPage,select,ddl_perc_MC2nd_Operator,${data.design.percMC2ndOperator},,,,,10000,FALSE,0,always,,Select percMC2ndOperator. Native <select> - select matches by visible label first
+230,2330,ExtractResults,ResultsPage,fill,txt_perc_MC2nd_Percentile_Val,${data.design.percMC2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percMC2ndPercentileVal
+231,2340,ExtractResults,ResultsPage,fill,txt_perc_MC2nd_Percentile_Prob,${data.design.percMC2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percMC2ndPercentileProb
+232,2350,ExtractResults,ResultsPage,fill,txt_input_name_e_MC,${data.design.input name eMC},,,,,10000,FALSE,0,never,,fill input name eMC
+233,2360,ExtractResults,ResultsPage,fill,txt_input_name_sd_MC,${data.design.input name sdMC},,,,,10000,FALSE,0,never,,fill input name sdMC
+234,2370,ExtractResults,ResultsPage,select,ddl_perc_MCHR1st_Operator,${data.design.percMCHR1stOperator},,,,,10000,FALSE,0,always,,Select percMCHR1stOperator. Native <select> - select matches by visible label first
+235,2380,ExtractResults,ResultsPage,fill,txt_perc_MCHR1st_Percentile_Val,${data.design.percMCHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percMCHR1stPercentileVal
+236,2390,ExtractResults,ResultsPage,fill,txt_perc_MCHR1st_Percentile_Prob,${data.design.percMCHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percMCHR1stPercentileProb
+237,2400,ExtractResults,ResultsPage,select,ddl_perc_MCHR2nd_Operator,${data.design.percMCHR2ndOperator},,,,,10000,FALSE,0,always,,Select percMCHR2ndOperator. Native <select> - select matches by visible label first
+238,2410,ExtractResults,ResultsPage,fill,txt_perc_MCHR2nd_Percentile_Val,${data.design.percMCHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percMCHR2ndPercentileVal
+239,2420,ExtractResults,ResultsPage,fill,txt_perc_MCHR2nd_Percentile_Prob,${data.design.percMCHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percMCHR2ndPercentileProb
+240,2430,ExtractResults,ResultsPage,select,ddl_perc_MT1st_Operator,${data.design.percMT1stOperator},,,,,10000,FALSE,0,always,,Select percMT1stOperator. Native <select> - select matches by visible label first
+241,2440,ExtractResults,ResultsPage,fill,txt_perc_MT1st_Percentile_Val,${data.design.percMT1stPercentileVal},,,,,10000,FALSE,0,never,,fill percMT1stPercentileVal
+242,2450,ExtractResults,ResultsPage,fill,txt_perc_MT1st_Percentile_Prob,${data.design.percMT1stPercentileProb},,,,,10000,FALSE,0,never,,fill percMT1stPercentileProb
+243,2460,ExtractResults,ResultsPage,select,ddl_perc_MT2nd_Operator,${data.design.percMT2ndOperator},,,,,10000,FALSE,0,always,,Select percMT2ndOperator. Native <select> - select matches by visible label first
+244,2470,ExtractResults,ResultsPage,fill,txt_perc_MT2nd_Percentile_Val,${data.design.percMT2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percMT2ndPercentileVal
+245,2480,ExtractResults,ResultsPage,fill,txt_perc_MT2nd_Percentile_Prob,${data.design.percMT2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percMT2ndPercentileProb
+246,2490,ExtractResults,ResultsPage,fill,txt_input_name_e_MT,${data.design.input name eMT},,,,,10000,FALSE,0,never,,fill input name eMT
+247,2500,ExtractResults,ResultsPage,fill,txt_input_name_sd_MT,${data.design.input name sdMT},,,,,10000,FALSE,0,never,,fill input name sdMT
+248,2510,ExtractResults,ResultsPage,select,ddl_perc_MTHR1st_Operator,${data.design.percMTHR1stOperator},,,,,10000,FALSE,0,always,,Select percMTHR1stOperator. Native <select> - select matches by visible label first
+249,2520,ExtractResults,ResultsPage,fill,txt_perc_MTHR1st_Percentile_Val,${data.design.percMTHR1stPercentileVal},,,,,10000,FALSE,0,never,,fill percMTHR1stPercentileVal
+250,2530,ExtractResults,ResultsPage,fill,txt_perc_MTHR1st_Percentile_Prob,${data.design.percMTHR1stPercentileProb},,,,,10000,FALSE,0,never,,fill percMTHR1stPercentileProb
+251,2540,ExtractResults,ResultsPage,select,ddl_perc_MTHR2nd_Operator,${data.design.percMTHR2ndOperator},,,,,10000,FALSE,0,always,,Select percMTHR2ndOperator. Native <select> - select matches by visible label first
+252,2550,ExtractResults,ResultsPage,fill,txt_perc_MTHR2nd_Percentile_Val,${data.design.percMTHR2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percMTHR2ndPercentileVal
+253,2560,ExtractResults,ResultsPage,fill,txt_perc_MTHR2nd_Percentile_Prob,${data.design.percMTHR2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percMTHR2ndPercentileProb
+254,2570,ExtractResults,ResultsPage,select,ddl_eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,,Select effBoundaryFam. Native <select> - select matches by visible label first
+255,2580,ExtractResults,ResultsPage,select,ddl_eff_Spend_Func,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Select effSpendFunc. Native <select> - select matches by visible label first
+256,2590,ExtractResults,ResultsPage,fill,txt_eff_Param_Gamma,${data.design.effParamGamma},,,,,10000,FALSE,0,never,,fill effParamGamma
+257,2600,ExtractResults,ResultsPage,fill,txt_eff_Param_Rho,${data.design.effParamRho},,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==Wang-Tsiatis,fill effParamRho
+258,2605,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta,${data.design.effParamRho},,,,,10000,FALSE,0,onFailure,${data.design.effBoundaryFam}!=Wang-Tsiatis,Wang-Tsiatis efficacy Delta (value stored in effParamRho column)
+259,2610,ExtractResults,ResultsPage,select,ddl_eff_Param,${data.design.effParam},,,,,10000,FALSE,0,always,,Select effParam. Native <select> - select matches by visible label first
+260,2620,ExtractResults,ResultsPage,select,ddl_fut_Boundary_Fam,${data.design.futBoundaryFam},,,,,10000,FALSE,0,always,,Select futBoundaryFam. Native <select> - select matches by visible label first
+261,2630,ExtractResults,ResultsPage,select,ddl_fut_Spend_Func,${data.design.futSpendFunc},,,,,10000,FALSE,0,always,,Select futSpendFunc. Native <select> - select matches by visible label first
+262,2640,ExtractResults,ResultsPage,fill,txt_fut_Param_Gamma,${data.design.futParamGamma},,,,,10000,FALSE,0,never,,fill futParamGamma
+263,2650,ExtractResults,ResultsPage,fill,txt_fut_Param_Rho,${data.design.futParamRho},,,,,10000,FALSE,0,never,,fill futParamRho
+264,2660,ExtractResults,ResultsPage,select,ddl_fut_Boundary,${data.design.futBoundaryType},,,,,10000,FALSE,0,always,,Select futBoundary. Native <select> - select matches by visible label first
+265,2670,ExtractResults,ResultsPage,select,ddl_fut_Param,${data.design.futParam},,,,,10000,FALSE,0,always,,Select futParam. Native <select> - select matches by visible label first
+266,2680,ExtractResults,ResultsPage,select,ddl_fix,${data.design.fix},,,,,10000,FALSE,0,always,,Select fix. Native <select> - select matches by visible label first
+267,2690,ExtractResults,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.0.analysisSpacingInfo
+268,2710,ExtractResults,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.0.efficacyPValue
+269,2720,ExtractResults,ResultsPage,fill,txt_boundary_1_efficacy_PValue,${data.design.boundary.1.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.1.efficacyPValue
+270,2730,ExtractResults,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.1.analysisSpacingInfo}==N/A,click Add Interim
+271,2740,ExtractResults,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.2.analysisSpacingInfo}==N/A,click Add Interim
+272,2750,ExtractResults,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.2.analysisSpacingInfo
+273,2770,ExtractResults,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.1.analysisSpacingInfo
+274,2800,ExtractResults,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.2.efficacyPValue
+275,2819,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
+276,2820,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+277,2830,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_PValue,${data.design.boundary.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.0.futilityPValue
+278,2840,ExtractResults,ResultsPage,select,ddl_compute_CP,${data.design.computeCP},,,,,10000,FALSE,0,always,,Select computeCP. Native <select> - select matches by visible label first
+279,2850,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Select boundaryScale. Native <select> - select matches by visible label first
+280,2860,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_CP,${data.design.boundary.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundary.0.futilityCP
+281,2870,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_HR,${data.design.boundary.0.futilityHR},,,,,10000,FALSE,0,never,,fill boundary.0.futilityHR
+282,2872,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_HR,${data.design.boundary.1.futilityHR},,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityHR}==N/A,fill futility HR for analysis 2
+283,2874,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_HR,${data.design.boundary.2.futilityHR},,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityHR}==N/A,fill futility HR for analysis 3
+284,2880,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta_One,${data.design.shapeParamDelta},,,,,10000,FALSE,0,never,,fill shapeParamDeltaOne
+285,2890,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta_Two,${data.design.shapeParamDeltaTwo},,,,,10000,FALSE,0,never,,fill shapeParamDeltaTwo
+286,2900,ExtractResults,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.3.analysisSpacingInfo}==N/A,click Add Interim
+287,2910,ExtractResults,ResultsPage,check,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=check,check boundary.1.futilityCheck when testdata boundary.1.futilityCheck=check (SkipIf gates it per iteration)
+288,2920,ExtractResults,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=uncheck,uncheck boundary.1.futilityCheck when testdata boundary.1.futilityCheck=uncheck (SkipIf gates it per iteration)
+289,2940,ExtractResults,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=uncheck,uncheck boundary.1.futilityCheck when testdata boundary.1.futilityCheck=uncheck (SkipIf gates it per iteration)
+290,2950,ExtractResults,ResultsPage,check,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=check,check boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=check (SkipIf gates it per iteration)
+291,2960,ExtractResults,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=uncheck,uncheck boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=uncheck (SkipIf gates it per iteration)
+292,2969,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
+293,2970,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+294,2980,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumAlphaSpent
+295,3000,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumBetaSpent
+296,3020,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.1.cumAlphaSpent
+297,3040,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Beta_Spent,${data.design.boundary.1.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.1.cumBetaSpent
+298,3050,ExtractResults,ResultsPage,click,btn_Hypothesis_Select_Superiority_Super_Superiority_Noninferiority_Power_Test,,,,,,10000,FALSE,0,never,,click HypothesisSelect ...SuperioritySuper SuperiorityNoninferiorityPowerTest
+299,3055,ExtractResults,ResultsPage,click,btn_Save,,,,,,15000,FALSE,0,onFailure,,save the design before leaving Design (avoids the Unsaved-Changes dialog)
+300,3060,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+301,3065,ExtractResults,ResultsPage,waitForSelector,txt_enrollment_Table_0_avg_Subjects_Enrolled,,,,,visible,60000,FALSE,0,never,,wait for the Enrollment page to finish loading after nav
+302,3070,ExtractResults,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
+303,3080,ExtractResults,ResultsPage,select,ddl_input_Parameter,${data.design.inputParameter},,,,,10000,FALSE,0,always,,Select inputParameter. Native <select> - select matches by visible label first
+304,3090,ExtractResults,ResultsPage,fill,txt_committed_Duration,${data.design.committedDuration},,,,,10000,FALSE,0,never,,fill committedDuration
+305,3109,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
+306,3110,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+307,3120,ExtractResults,ResultsPage,fill,txt_committed_Subjects,${data.design.committedSubjects},,,,,10000,FALSE,0,never,,fill committedSubjects
+308,3139,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
+309,3140,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+310,3150,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.enrollmentTable.1.avgSubjectsEnrolled}==N/A,click Add Period
+311,3160,ExtractResults,ResultsPage,fill,txt_enrollment_Table_1_starting_At_Time,${data.design.enrollmentTable.1.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.startingAtTime
+312,3170,ExtractResults,ResultsPage,fill,txt_enrollment_Table_1_avg_Subjects_Enrolled,${data.design.enrollmentTable.1.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.avgSubjectsEnrolled
+313,3189,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
+314,3190,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+315,3200,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+316,3210,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+317,3220,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+318,3230,Simulate,ResultsPage,click,btn_Compute_Dialog,,,,,,15000,FALSE,0,onFailure,,start the simulation by confirming the Compute dialog
+319,3240,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+320,3250,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+321,3260,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+322,3270,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL

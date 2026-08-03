@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c1fc691d6a4a5d75763cef9e1de19a7098303320c6b01ae14a103505df332127)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 487e5ce44eb3f0905843a66770178ba5f176ce32f6f580bed9dc376b3f277b0a)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -59,14 +59,14 @@ export class ProjectPage {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Endpoint_Type', { dynamicArgs });
   }
 
-  /** dropdown (opener+option collapsed into one select step) */
-  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
+  /** textbox from codegen */
+  txt_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Better_Response', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_Min_Follow_up_Time_Week(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Min_Follow_up_Time_Week', { dynamicArgs });
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Longer_Duration(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Longer_Duration', { dynamicArgs });
   }
 
   /** checkbox from codegen */
@@ -87,5 +87,10 @@ export class ProjectPage {
   /** button from codegen */
   btn_Inputs(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Inputs', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
   }
 }

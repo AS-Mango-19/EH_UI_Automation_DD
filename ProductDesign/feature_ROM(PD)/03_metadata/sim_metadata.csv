@@ -1,40 +1,41 @@
 Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
 1,10,Simulate,DesignPage,click,btn_Simulate,,,,,,10000,FALSE,0,never,,click Simulate
-2,20,ConfigureDesign,Page,fill,txt_ResultName,${data.simulation.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
-3,30,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
-4,40,ConfigureDesign,Page,click,txt_id_left_Panel_designs,,,,,,10000,FALSE,0,never,,click id leftPanel designs
+2,20,ConfigureDesign,AppPage,fill,txt_ResultName,${data.simulation.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+3,30,ConfigureDesign,AppPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
+4,40,ConfigureDesign,AppPage,click,txt_id_left_Panel_designs,,,,,,10000,FALSE,0,never,,click id leftPanel designs
 5,44,Simulate,ResultsPage,select,ddl_sim_Hypothesis,${data.simulation.Hypothesis},,,,,10000,FALSE,0,never,,Select Hypothesis FIRST (controls which fields exist)
-6,50,ConfigureDesign,Page,fill,txt_Sample_Size_n,${data.simulation.Sample Size},,,,,10000,FALSE,0,never,,fill Sample Size
-7,60,ConfigureDesign,Page,fill,txt_Allocation_Ratio_nt_nc,${data.simulation.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+6,50,ConfigureDesign,AppPage,fill,txt_Sample_Size_n,${data.simulation.Sample Size},,,,,10000,FALSE,0,never,,fill Sample Size
+7,60,ConfigureDesign,AppPage,fill,txt_Allocation_Ratio_nt_nc,${data.simulation.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
 8,62,Simulate,ResultsPage,select,ddl_sim_Randomization_Method,${data.simulation.Randomization Method},,,,,10000,FALSE,0,never,,Select Randomization Method
 9,64,Simulate,ResultsPage,select,ddl_sim_Test_Type,${data.simulation.Test Type},,,,,10000,FALSE,0,never,,Select Test Type
-10,80,ConfigureDesign,Page,fill,txt_upper_Critical_Point,${data.simulation.Critical Point Upper},,,,,10000,FALSE,0,never,,fill Critical Point Upper (editable)
+10,80,ConfigureDesign,AppPage,fill,txt_upper_Critical_Point,${data.simulation.Critical Point Upper},,,,,10000,FALSE,0,never,,fill Critical Point Upper (editable)
 11,82,Simulate,ResultsPage,assertValue,txt_sim_Critical_Point_Lower,,,,${data.simulation.Critical Point Lower},,10000,FALSE,0,never,,VERIFY greyed/derived Critical Point Lower (= -Upper for a symmetric 2-sided test). N/A skips it.
-12,90,ConfigureDesign,Page,fill,txt_Noninferiority_Margin_0,${data.simulation.Noninferiority Margin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin (ρ0 = µ
-13,100,ConfigureDesign,Page,fill,txt_Critical_Point,${data.simulation.Critical Point},,,,,10000,FALSE,0,never,,fill Critical Point
-14,110,ConfigureDesign,Page,select,ddl_Test_Statistic,${data.simulation.Test Statistic},,,,,10000,FALSE,0,always,,Select Test Statistic. Native <select> - select matches by visible label first
-15,130,ConfigureDesign,Page,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
-16,140,ConfigureDesign,Page,fill,txt_Mean_Control_c,${data.simulation.Mean Control},,,,,10000,FALSE,0,never,,fill Mean Control
-17,150,ConfigureDesign,Page,fill,txt_Mean_Treatment_t,${data.simulation.Mean Treatment},,,,,10000,FALSE,0,never,,fill Mean Treatment
+12,90,ConfigureDesign,AppPage,fill,txt_Noninferiority_Margin_0,${data.simulation.Noninferiority Margin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin (ρ0 = µ
+13,100,ConfigureDesign,AppPage,fill,txt_Critical_Point,${data.simulation.Critical Point},,,,,10000,FALSE,0,never,,fill Critical Point
+14,110,ConfigureDesign,AppPage,select,ddl_Test_Statistic,${data.simulation.Test Statistic},,,,,10000,FALSE,0,always,,Select Test Statistic. Native <select> - select matches by visible label first
+15,130,ConfigureDesign,AppPage,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
+16,140,ConfigureDesign,AppPage,fill,txt_Mean_Control_c,${data.simulation.Mean Control},,,,,10000,FALSE,0,never,,fill Mean Control
+17,150,ConfigureDesign,AppPage,fill,txt_Mean_Treatment_t,${data.simulation.Mean Treatment},,,,,10000,FALSE,0,never,,fill Mean Treatment
 18,155,ConfigureDesign,ResultsPage,uncheck,chk_sim_Common_CoV,,,,,,10000,FALSE,0,never,,Uncheck Common Coefficient of Variation so Control and Treatment CoV are independent
-19,160,ConfigureDesign,Page,fill,txt_Coefficient_of_Variation_of_Data_Control,${data.simulation.Coefficient of Variation of Data Control},,,,,10000,FALSE,0,never,,fill Coefficient of Variation of Data Control
-20,170,ConfigureDesign,Page,fill,txt_Coefficient_of_Variation_of_Data_Treatment,${data.simulation.Coefficient of Variation of Data Treatment},,,,,10000,FALSE,0,never,,fill CoV Data Treatment (editable after unchecking Common CoV)
-21,180,ConfigureDesign,Page,fill,txt_Follow_up_Time_Week,${data.simulation.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
-22,190,ConfigureDesign,Page,fill,txt_Probability_of_Dropout,${data.simulation.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
-23,200,ConfigureDesign,Page,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+19,160,ConfigureDesign,AppPage,fill,txt_Coefficient_of_Variation_of_Data_Control,${data.simulation.Coefficient of Variation of Data Control},,,,,10000,FALSE,0,never,,fill Coefficient of Variation of Data Control
+20,170,ConfigureDesign,AppPage,fill,txt_Coefficient_of_Variation_of_Data_Treatment,${data.simulation.Coefficient of Variation of Data Treatment},,,,,10000,FALSE,0,never,,fill CoV Data Treatment (editable after unchecking Common CoV)
+21,180,ConfigureDesign,AppPage,fill,txt_Follow_up_Time_Week,${data.simulation.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+22,190,ConfigureDesign,AppPage,fill,txt_Probability_of_Dropout,${data.simulation.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+23,200,ConfigureDesign,AppPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
 24,205,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,never,,Turn Enrollment Include ON (reuses the design chk_Include: role=checkbox name=Include)
-25,210,ConfigureDesign,Page,fill,txt_Enrollment_Rate_per_Week,${data.simulation.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
-26,220,ConfigureDesign,Page,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
-27,230,ConfigureDesign,Page,fill,txt_Number_of_Simulations_Run,${data.simulation.Number of Simulations Run},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
-28,240,ConfigureDesign,Page,select,ddl_Random_Number_Seed,${data.simulation.Random Number Seed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
-29,250,ConfigureDesign,Page,fill,txt_Fixed_Seed,${data.simulation.Fixed Seed},,,,,10000,FALSE,0,never,,fill Fixed Seed
+25,210,ConfigureDesign,AppPage,fill,txt_Enrollment_Rate_per_Week,${data.simulation.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
+26,220,ConfigureDesign,AppPage,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
+27,230,ConfigureDesign,AppPage,fill,txt_Number_of_Simulations_Run,${data.simulation.Number of Simulations Run},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
+28,240,ConfigureDesign,AppPage,select,ddl_Random_Number_Seed,${data.simulation.Random Number Seed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
+29,250,ConfigureDesign,AppPage,fill,txt_Fixed_Seed,${data.simulation.Fixed Seed},,,,,10000,FALSE,0,never,,fill Fixed Seed
 30,254,ConfigureDesign,ResultsPage,check,chk_sim_Save_Summary_Stats,,,,,,10000,FALSE,0,never,,Check Save Summary Statistics
 31,256,ConfigureDesign,ResultsPage,check,chk_sim_Save_Subject_Level_Data,,,,,,10000,FALSE,0,never,,Check Save Subject-Level Data (reveals the sub-level sim-runs field)
-32,260,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
-33,270,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+32,260,ConfigureDesign,AppPage,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
+33,270,ConfigureDesign,AppPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
 34,280,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
 35,288,ExtractResults,ResultsPage,callCustom,,confirmSimulateModal,,,,,10000,FALSE,0,always,,Confirm the Simulate modal via native click on the last .modal.show #credit-alert-primary (starts the run)
 36,300,Simulate,ResultsPage,waitForSimulation,lbl_sim_RunStatus,,,,Completed,,300000,FALSE,0,always,,"Wait for the SIMULATION row status to change In-progress -> Completed (its own row, not the design result)"
 37,310,ExtractResults,ResultsPage,click,lnk_sim_ResultName,,,,,visible,180000,FALSE,0,always,,Open the simulation result by its Simulation-row link (app auto-names it)
 38,320,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
-39,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+39,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,"Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+"

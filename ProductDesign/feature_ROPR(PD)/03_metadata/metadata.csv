@@ -34,7 +34,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 33,330,ExtractResults,ResultsPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,click Type 1 Error
 34,340,ExtractResults,ResultsPage,fill,txt_Rate_for_Control_c,${data.design.Rate for Control},,,,,10000,FALSE,0,never,,fill Rate for Control
 35,350,ExtractResults,ResultsPage,fill,txt_Ratio_of_Rates_1_t_c,${data.design.Ratio of Rates},,,,,10000,FALSE,0,never,,fill Ratio of Rates
-36,360,ExtractResults,ResultsPage,assertValue,obj_Rate_for_Treatment_t,,,,${data.design.Rate for Treatment},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+36,360,ExtractResults,ResultsPage,assertValue,txt_Rate_for_Treatment,,,,${data.design.Rate for Treatment},,10000,FALSE,0,always,,Assert computed Rate for Treatment (greyed lambda_t = lambda_c x rho1) via #rateForTreatment
 37,370,ExtractResults,ResultsPage,fill,txt_Follow_Up_Control_Dc_Week,${data.design.Follow-Up Control},,,,,10000,FALSE,0,never,,fill Follow-Up Control
 38,380,ExtractResults,ResultsPage,fill,txt_Follow_Up_Treatment_Dt,${data.design.Follow-Up Treatment},,,,,10000,FALSE,0,never,,fill Follow-Up Treatment (Dt) (
 39,390,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save

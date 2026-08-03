@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 3f8cf335d6700770357b84c1ae641629f8229473718f22b7f4b03433fe88b908)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c1fc691d6a4a5d75763cef9e1de19a7098303320c6b01ae14a103505df332127)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -72,6 +72,11 @@ export class ResultsPage {
   /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) */
   obj_Rate_for_Treatment_t(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'obj_Rate_for_Treatment_t', { dynamicArgs });
+  }
+
+  /** computed Rate for Treatment lambda_t (greyed output; assert only). css id selector requires the leading # */
+  txt_Rate_for_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Rate_for_Treatment', { dynamicArgs });
   }
 
   /** textbox from codegen */

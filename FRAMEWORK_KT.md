@@ -408,7 +408,9 @@ sending `select` hunting for an option named "Computed" (§6.2).
 > Two fields can share a visible label (both of those read *Mean Treatment*). Name
 > such columns after the **DOM id** (`nonInf_nhMeanTreatment`), not the label —
 > a label-derived name collides, and the importer's reuse deliberately refuses to
-> guess between ambiguous names.
+> guess between ambiguous names. For *editable* inputs the importer now splits such
+> collisions for you by DOM id (§ "Null / Alternative paired fields" below); this
+> hand-naming rule is for the **greyed** `assertValue` fields it can't record.
 
 #### Two kinds of greyed field — only one needs you to do anything
 
@@ -455,6 +457,57 @@ still runs for iterations whose row *does* supply a value.
 > mean "not applicable" so intent is explicit. This also means the rule only helps
 > for fields that are **optional** across scenarios; if two scenarios use
 > *different* fields (different ids), that's a different flow — re-record it.
+
+#### Indexed table cells and multi-period values
+
+Some design inputs are **tables** — one row per analysis period (interim spacing,
+piecewise hazard rates, dropout periods). The app names each cell with a **dotted,
+0-based id**: `inputMethodTable.0.hazardRateControl`, `boundary.2.analysisSpacingInfo`,
+`dropoutTable.1.dropoutHazardRateControl`. **UI "Period 1" is index `0`.**
+
+**Testdata heading = the exact dotted id.** Give each cell its own column named after
+that id — one column per (table, period, field):
+
+| Heading | Fills |
+| --- | --- |
+| `inputMethodTable.0.hazardRateControl` | period-1 control hazard rate |
+| `inputMethodTable.1.hazardRateControl` | period-2 control hazard rate |
+| `boundary.0.analysisSpacingInfo` | interim spacing at look 1 |
+| `boundary.1.analysisSpacingInfo` | interim spacing at look 2 |
+
+**Recording:** click the cell by its real locator so codegen emits the id —
+`page.locator('[id="inputMethodTable.0.hazardRateControl"]')` or
+`input[name="boundary.0.cumAlphaSpent"]`. The importer takes a **dotted** `[id=]` /
+`[name=]` / `#id` **verbatim** as the column (it no longer mangles it into
+`id inputMethodTable 0 …`), so the recording and the heading line up with zero
+hand-editing. A non-dotted id still keeps its readable label column (§4.5 above).
+
+**Multi-period values arrive comma-packed — split them per period.** An API/export cell
+often holds every period in one quoted string: `hazardRateControl = "0.9, 1.2, 1.5"` is
+three periods. Spread it across the indexed columns, **0-based, one value each**:
+
+| Export cell | `…Table.0.hazardRateControl` | `…Table.1.…` | `…Table.2.…` |
+| --- | --- | --- | --- |
+| `"0.9, 1.2, 1.5"` | `0.9` | `1.2` | `1.5` |
+| `"0.03466"` (one period) | `0.03466` | blank | blank |
+
+Interim **spacing is period-wise the same way** — `"25, 50, 75"` becomes
+`boundary.0/1/2.analysisSpacingInfo`. A period a scenario doesn't use is left blank /
+`N/A`, so its fill is skipped (§ blank/`N/A` rule above). Record **as many period rows
+as your deepest scenario needs**: the recording captures a fixed number of periods, so a
+scenario with *more* periods than were recorded needs the extra rows re-recorded.
+
+#### Null / Alternative (and NI/SP) paired fields — the split is automatic
+
+Forms that show the **same label** under a Null and an Alternative section —
+`Hazard Ratio (Null)` + `Hazard Ratio (Alternative)`, and likewise `Ratio of Medians`
+and `Log Hazard Ratio` — have **distinct DOM ids** (`#hazardRatio_Null_SS`,
+`#hazardRatio_Alt_SS`). The importer gives each its **own** column keyed by that id —
+`${data.design.hazardRatio_Null_SS}` vs `${data.design.hazardRatio_Alt_SS}` — so the
+alternative input never silently mirrors the null one. Your testdata headers are those
+ids, which also match the app's exported field names. This fires **only** for genuinely
+distinct **fill** fields, each with its own id; a field that shares its column with a
+result *link*, and a dropdown recorded two ways, are deliberately left alone.
 
 ### 4.6 `06_baseline/compare.config.csv` — the compare rules
 
@@ -1453,6 +1506,40 @@ Ordered by how much time they will cost you.
     importer emits no `fill` for it. When that field is an **input** in another
     iteration, add the `fill` step by hand (§6.2 / §13). A re-import wipes manual
     additions — re-add them.
+17. **Steps execute in `StepID` order, not row/`Seq` order.** The loader sorts by
+    `StepID` (`core/loaders/featureLoader.ts`). To reorder a step, change its
+    **StepID** — moving the row or editing `Seq` does nothing. This is the single
+    biggest time-sink when a controlling `select` "won't run early enough": its row
+    was moved, but its StepID wasn't.
+18. **A controlling `select` can be *reset* by a later `fill`.** Filling the
+    input-method table reverts the effect sub-method (`#hazardRatioInputMethod`) to
+    "None", which disables its effect field. Give the select a StepID **after** the
+    table it depends on and **just before** the field it enables. Symptom:
+    `… is disabled but testdata requires a value` on a field you did populate.
+19. **`select` prints its options on a mismatch; `fill` tabs out after every value.**
+    A no-match `select` error now lists every `value=text` — map your testdata value
+    to one (§6.1). `fill` presses **Tab** after a value lands, so controls that only
+    enable on blur (e.g. the enrollment **Calculate** button) activate.
+20. **Recover a real DOM id from `trace.zip`.** `field "X" not found` means the id is
+    wrong. `unzip` the run's `artifacts/<runId>/<TC>_<ITER>/trace.zip` and grep the
+    DOM snapshots for `["SELECT",{…"id":"…"}]` (or `INPUT` / `BUTTON`) — that is the
+    true id, no live browser needed.
+21. **Duplicate ids, and `SkipIf` is single-condition.** Several controls can share
+    one id (`id="addButton"` on *every* "Add Period"); `.first()` grabs the wrong one
+    — disambiguate with a Playwright CSS `:nth-match(button:has-text("Add Period"), 2)`.
+    `SkipIf` is one `lhs (==|!=) rhs` with no AND/OR — gate a not-applicable field
+    (checkbox absent because Futility=None; effect field computed by a different
+    sub-method) by setting its testdata cell to **`N/A`**, not a compound expression.
+22. **Dialogs block the flow.** "Unsaved Changes" on navigation → **Save first,
+    never click "Leave"** (Leave discards the design and hides a real validation
+    error). The **Compute** credit dialog needs its primary button
+    (`#credit-alert-primary`) *and* a **Result Name** (the result link is keyed on
+    it). Dialog buttons are often not semantic `role=button` — target by `text`/`#id`.
+23. **An ungated Add-Period/Add-Interim click adds a blank row.** It makes the design
+    invalid so it won't compute. Gate every period/interim-add on the new period's
+    key column: `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. The recording may
+    **mis-name** the button (captured `role=button "Add Period"`, named after a nearby
+    label) — trust the *selector*, not the ObjectName.
 
 ---
 
@@ -1468,7 +1555,10 @@ Ordered by how much time they will cost you.
 | `BASELINE_CREATED` when you expected PASS | Baseline is not where the env points (§9.4/§10.1). |
 | Compare FAIL | `08_diffs/` — cell-level differences. |
 | "Forced Log Out" / bounced to the login page | Iterations ran in parallel against a one-session app. Set `serial: true` (Trap 15). |
-| `field "X" not found` / `... is disabled but testdata requires a value` | The `fill` value can't land — wrong selector, or the field is greyed (should its value be `Computed`?). §6.2. |
+| `field "X" not found` / `... is disabled but testdata requires a value` | The `fill` value can't land — wrong selector (recover the real id from `trace.zip`, Trap 20), the controlling `select` ran too late / was reset (Traps 17-18), or the field is greyed (should its value be `Computed`?). §6.2. |
+| `select … has no option matching "V"` | The error now lists every real option (`value=text`) — map your value to one, or the value belongs in a different field (§6.1 / Trap 19). |
+| a `check`/`uncheck` step **times out** | The checkbox isn't rendered for this option combination (e.g. efficacy/futility checks exist only with a futility boundary) → set the cell to `N/A` (Trap 21). |
+| a **blank period/interim row** appears / design won't compute | An ungated Add-Period/Add-Interim click (Trap 23) — gate it on the new period's data column. |
 | `No testdata row for TC/ITER` | A keyed testdata file is missing that iteration's row. `validate` now catches this first (§4.5). |
 | Nothing obvious | `artifacts/<runId>/<TC>_<ITER>/` — the screenshots show the actual screen at the failing step. |
 
