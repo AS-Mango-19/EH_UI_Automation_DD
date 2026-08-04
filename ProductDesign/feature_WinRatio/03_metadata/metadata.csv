@@ -1,0 +1,38 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+2,20,ExtractResults,Page,check,obj_Username,,,,,,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+3,30,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+4,40,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+5,50,ConfigureDesign,ProjectsPage,click,btn_Password,,,,,,10000,FALSE,0,never,,click Password
+6,60,ConfigureDesign,ProjectsPage,fill,txt_Project_Name,${data.project.Project Name}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill Project Name (made unique per run with runId)
+7,70,ConfigureDesign,ProjectsPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+8,80,ConfigureDesign,ProjectsPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
+9,90,ConfigureDesign,ProjectsPage,select,ddl_Study_Objective,${data.project.Study Objective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,100,ConfigureDesign,ProjectsPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+11,110,ConfigureDesign,ProjectsPage,fill,txt_Target_Population,${data.project.Target Population},,,,,10000,FALSE,0,never,,fill Target Population
+12,120,ConfigureDesign,ProjectsPage,fill,txt_Treatment_Arm,${data.project.Treatment Arm},,,,,10000,FALSE,0,never,,fill Treatment Arm
+13,130,ConfigureDesign,ProjectsPage,fill,txt_Endpoint_Name,${data.project.Endpoint Name},,,,,10000,FALSE,0,never,,fill Endpoint Name
+14,140,ConfigureDesign,ProjectsPage,select,ddl_Endpoint_Type,${data.project.Endpoint Type},,,,,15000,FALSE,0,always,,Select Endpoint Type. select opens the menu and commits the option itself - works for native and custom dropdowns
+15,150,ConfigureDesign,ProjectsPage,select,ddl_Better_Response,${data.project.Better Response},,,,,15000,FALSE,0,always,,Select Better Response. select opens the menu and commits the option itself - works for native and custom dropdowns
+16,160,ConfigureDesign,ProjectsPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+17,170,ConfigureDesign,ProjectsPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+18,180,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+19,190,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.Name Input Set},,,,,10000,FALSE,0,never,,fill Name Input Set
+20,200,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
+21,210,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
+22,220,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+23,230,Simulate,DesignPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
+24,240,ConfigureDesign,ResultsPage,fill,txt_Power,${data.design.power},,,,,10000,FALSE,0,never,,fill Power
+25,250,ConfigureDesign,ResultsPage,select,ddl_Test_Type,${data.design.Test Type},,,,,10000,FALSE,0,always,,Select Test Type. Native <select> - select matches by visible label first
+26,260,ConfigureDesign,ResultsPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,fill Type 1 Error
+27,270,ConfigureDesign,ResultsPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+28,280,ConfigureDesign,ResultsPage,fill,txt_Win_Ratio_WR,${data.design.Win Ratio},,,,,10000,FALSE,0,never,,fill Win Ratio
+29,290,ConfigureDesign,ResultsPage,fill,txt_Probability_of_Tie_Ptie,${data.design.Probability of Tie},,,,,10000,FALSE,0,never,,fill Probability of Tie
+30,300,ConfigureDesign,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+31,310,Simulate,DesignPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+32,320,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+33,330,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
+34,340,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+35,350,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+36,360,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+37,370,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
