@@ -509,6 +509,15 @@ ids, which also match the app's exported field names. This fires **only** for ge
 distinct **fill** fields, each with its own id; a field that shares its column with a
 result *link*, and a dropdown recorded two ways, are deliberately left alone.
 
+> **Across hypotheses (`_SP` / `_SS` / `_NI`) — see `FIELD_WIRING_PATTERNS.md`.** The DOM id
+> suffix encodes the hypothesis (Superiority / Super-Superiority / Non-inferiority), so the
+> same effect field renders as `hazardRatio_Alt_SP` / `_SS` / `_NI` depending on the row's
+> `Hypothesis`. The adopted convention (built out in GADAR): **one testdata column per DOM id
+> incl. suffix**, **one prefix selector per side** (`[id^="hazardRatio_Alt_"]` — resolves any
+> suffix), and **one value-driven fill step per hypothesis column** (only the row's-hypothesis
+> column is populated, so exactly one fires). That doc also carries the priors and
+> early-stopping (eff/fut) wiring patterns and the `HazardRatioInputSet` legend.
+
 ### 4.6 `06_baseline/compare.config.csv` — the compare rules
 
 | Column | Meaning |
@@ -767,7 +776,7 @@ that records the failure and continues.
 1. Resolves the target — if `SelectorType=label`, walks from the label text to the
    adjacent interactive control (`input, textarea, select, button, [role=combobox], ...`).
 2. Detects a native `<select>` by evaluating `tagName`.
-3. **Native** -> `selectOption({label})`, falling back to value.
+3. **Native** → resolves the option **by `value` attribute first, then exact visible text, then text substring**, and commits with `selectOption({value})` (`core/keywords/input.ts:387-403`). On no match it **fails loudly and prints the option list** (`value=text`) — read it before guessing. So a numeric sub-method code in testdata (e.g. `hazardRatioInputMethod=2`) matches `<option value="2">` **directly** — you do **not** need the label text. See `FIELD_WIRING_PATTERNS.md` for the `HazardRatioInputSet` code legend.
 4. **Custom** -> clicks to open the menu, then commits the option in this order:
    1. **grouped** match — `clickOptionInGroup(label, group)`,
    2. `role=option` exact,

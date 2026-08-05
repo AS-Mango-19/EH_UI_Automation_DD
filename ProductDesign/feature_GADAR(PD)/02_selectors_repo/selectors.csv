@@ -41,18 +41,18 @@ txt_Median_Survival_Time_Control,ResultsPage,css,"[id=""inputMethodTable.0.media
 txt_Median_Survival_Time_Treatment_Null_mt0_Week,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Null_SS""]",,,FALSE,textbox from codegen,FALSE
 txt_Median_Survival_Time_Treatment_Alternative_mt_Week,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Alt_SPSS""]",,,FALSE,textbox from codegen,FALSE
 ddl_Input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
-txt_Hazard_Ratio_Null,ResultsPage,css,#hazardRatio_Null_SS,,,FALSE,textbox from codegen,FALSE
-txt_Hazard_Ratio_Alternative,ResultsPage,css,#hazardRatio_Alt_SS,,,FALSE,textbox from codegen,FALSE
-txt_Ratio_of_Medians_Null,ResultsPage,css,#ratioOfMedians_Null_SS,,,FALSE,textbox from codegen,FALSE
-txt_Ratio_of_Medians_Alternative,ResultsPage,css,#ratioOfMedians_Alt_SS,,,FALSE,textbox from codegen,FALSE
+txt_Hazard_Ratio_Null,ResultsPage,css,"[id^=""hazardRatio_Null_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #hazardRatio_Null_SS)",FALSE
+txt_Hazard_Ratio_Alternative,ResultsPage,css,"[id^=""hazardRatio_Alt_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #hazardRatio_Alt_SS)",FALSE
+txt_Ratio_of_Medians_Null,ResultsPage,css,"[id^=""ratioOfMedians_Null_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #ratioOfMedians_Null_SS)",FALSE
+txt_Ratio_of_Medians_Alternative,ResultsPage,css,"[id^=""ratioOfMedians_Alt_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #ratioOfMedians_Alt_SS)",FALSE
 txt_Hazard_Rate_Control_c,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
 txt_id_input_Method_Table_0_hazard_Rate_Trmt_Null_SS,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateTrmt_Null_SS""]",,,FALSE,textbox from codegen,FALSE
 txt_id_input_Method_Table_0_hazard_Rate_Trmt_Alt_SPSS,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateTrmt_Alt_SPSS""]",,,FALSE,textbox from codegen,FALSE
 btn_Add_Period,ResultsPage,role,button,Add Period,,FALSE,button from codegen,FALSE
 txt_id_input_Method_Table_1_starting_At_Time,ResultsPage,css,"[id=""inputMethodTable.1.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
 txt_id_input_Method_Table_1_hazard_Rate_Control,ResultsPage,css,"[id=""inputMethodTable.1.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
-txt_Log_Hazard_Ratio_Null,ResultsPage,css,#logHazardRatio_Null_SS,,,FALSE,textbox from codegen,FALSE
-txt_Log_Hazard_Ratio_Alternative,ResultsPage,css,#logHazardRatio_Alt_SS,,,FALSE,textbox from codegen,FALSE
+txt_Log_Hazard_Ratio_Null,ResultsPage,css,"[id^=""logHazardRatio_Null_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #logHazardRatio_Null_SS)",FALSE
+txt_Log_Hazard_Ratio_Alternative,ResultsPage,css,"[id^=""logHazardRatio_Alt_""]",,,FALSE,"prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #logHazardRatio_Alt_SS)",FALSE
 txt_input_name_input_Method_Table_0_by_Time,ResultsPage,xpath,"input[name=""inputMethodTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
 txt_id_input_Method_Table_0_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
 txt_Hazard_Rate_Treatment_Null,ResultsPage,role,cell,0.024878,,FALSE,textbox from codegen,FALSE
@@ -149,11 +149,20 @@ txt_perc_STHR1st_Percentile_Prob,ResultsPage,css,#percSTHR1stPercentileProb,,,FA
 ddl_perc_STHR2nd_Operator,ResultsPage,css,#percSTHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
 txt_perc_STHR2nd_Percentile_Val,ResultsPage,css,#percSTHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
 txt_perc_STHR2nd_Percentile_Prob,ResultsPage,css,#percSTHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
-ddl_eff_Boundary_Fam,ResultsPage,css,#effBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_eff_Boundary_Fam,ResultsPage,css,#effBoundaryFam,,,FALSE,Efficacy Boundary Family — 1-Sided / symmetric,FALSE
+ddl_asym_eff_Boundary_Fam,ResultsPage,css,#asymEffBoundaryFam,,,FALSE,Efficacy Boundary Family — 2-Sided (Asymmetric) designs,FALSE
 ddl_eff_Spend_Func,ResultsPage,css,#effSpendFunc,,,FALSE,native <select> from codegen,FALSE
 txt_eff_Param_Rho,ResultsPage,css,#effParamRho,,,FALSE,textbox from codegen,FALSE
 txt_eff_Param_Gamma,ResultsPage,css,#effParamGamma,,,FALSE,textbox from codegen,FALSE
 ddl_eff_Param,ResultsPage,css,#effParam,,,FALSE,native <select> from codegen,FALSE
+ddl_upper_Spend_Func,ResultsPage,css,#upperSpendFunc,,,FALSE,Upper Efficacy Boundary spending function (2-sided asymmetric),FALSE
+txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,Upper Efficacy Boundary Gamma parameter,FALSE
+txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,Upper Efficacy Boundary Rho parameter,FALSE
+ddl_upper_Param,ResultsPage,css,#upperParam,,,FALSE,Upper Efficacy Boundary Lan-DeMets OF/Pocock parameter,FALSE
+ddl_lower_Spend_Func,ResultsPage,css,#lowerSpendFunc,,,FALSE,Lower Efficacy Boundary spending function (2-sided asymmetric),FALSE
+txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,Lower Efficacy Boundary Gamma parameter,FALSE
+txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,Lower Efficacy Boundary Rho parameter,FALSE
+ddl_lower_Param,ResultsPage,css,#lowerParam,,,FALSE,Lower Efficacy Boundary Lan-DeMets OF/Pocock parameter,FALSE
 ddl_fut_Boundary_Fam,ResultsPage,css,#futBoundaryFam,,,FALSE,native <select> from codegen,FALSE
 ddl_fut_Spend_Func,ResultsPage,css,#futSpendFunc,,,FALSE,native <select> from codegen,FALSE
 txt_fut_Param_Gamma,ResultsPage,css,#futParamGamma,,,FALSE,textbox from codegen,FALSE
@@ -317,3 +326,9 @@ btn_Close_Banner,ResultsPage,css,".btn-close, .toast .close, [aria-label=""Close
 btn_Compute_Dialog,ResultsPage,css,#credit-alert-primary,,,FALSE,confirm Compute in the Name-your-result dialog (starts the simulation),FALSE
 ddl_dropout_Input_Method,ResultsPage,css,#piecewiseInputMethod,,,FALSE,Piecewise Dropout Information input-method dropdown,FALSE
 btn_Dropout_Add_Period,ResultsPage,css,":nth-match(button:has-text(""Add Period""), 2)",,,FALSE,Add Period in the Piecewise Dropout table (2nd Add Period on the page),FALSE
+txt_dropout_Table_0_dropout_By_Time,ResultsPage,css,"[id=""dropoutTable.0.dropoutByTime""]",,,FALSE,Probability-of-Dropout period-0 By Time,FALSE
+txt_dropout_Table_0_prob_Of_Dropout_Control,ResultsPage,css,"[id=""dropoutTable.0.probOfdropoutControl""]",,,FALSE,Probability of Dropout (Control) — piecewiseInputMethod=3,FALSE
+txt_dropout_Table_0_prob_Of_Dropout_Treatment,ResultsPage,css,"[id=""dropoutTable.0.probOfdropoutTreatment""]",,,FALSE,Probability of Dropout (Treatment) — piecewiseInputMethod=3,FALSE
+txt_dropout_Table_1_dropout_By_Time,ResultsPage,css,"[id=""dropoutTable.1.dropoutByTime""]",,,FALSE,Prob-of-Dropout period-2 By Time,FALSE
+txt_dropout_Table_1_prob_Of_Dropout_Control,ResultsPage,css,"[id=""dropoutTable.1.probOfdropoutControl""]",,,FALSE,Prob-of-Dropout period-2 (Control),FALSE
+txt_dropout_Table_1_prob_Of_Dropout_Treatment,ResultsPage,css,"[id=""dropoutTable.1.probOfdropoutTreatment""]",,,FALSE,Prob-of-Dropout period-2 (Treatment),FALSE
