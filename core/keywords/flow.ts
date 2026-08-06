@@ -76,8 +76,15 @@ export const loopOverData: KeywordHandler = async (_page, ctx, step) => {
   if (!parsed) {
     throw new FrameworkError(`loopOverData: unknown testdata file "${step.objectName}"`, { stepId: step.stepId });
   }
+  // Scope child rows to the CURRENT iteration, exactly like every other testdata
+  // file: match on TC_ID and IterationID whenever those columns are present. A
+  // file that lacks either column matches on the one it has (or loops every row
+  // if it has neither) — unchanged legacy behaviour, so this is backward-safe.
   const hasTc = parsed.headers.includes('TC_ID');
-  const rows = parsed.records.map((r) => r.data).filter((d) => !hasTc || d['TC_ID'] === ctx.tcId);
+  const hasIter = parsed.headers.includes('IterationID');
+  const rows = parsed.records
+    .map((r) => r.data)
+    .filter((d) => (!hasTc || d['TC_ID'] === ctx.tcId) && (!hasIter || d['IterationID'] === ctx.iterationId));
   const steps = parseMetadataFile(abs(step.input.trim()));
   logger.info(`loopOverData: ${rows.length} row(s) from ${step.objectName} -> ${step.input}`);
   for (const row of rows) {

@@ -1,0 +1,23 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,ExtractResults,ResultsPage,click,btn_Add_Scenario,,,,,,10000,FALSE,0,never,,Open the Add-Scenario modal for THIS scenario row
+2,20,ExtractResults,ResultsPage,select,ddl_curve_Family,${runtime.loop.curveFamily},,,,,10000,FALSE,0,always,,Pick this row's Curve Family (value matches the option label: General/Emax/Four Parameter Logistic/Quadratic/Linear)
+3,30,ExtractResults,ResultsPage,fill,txt_E0,${runtime.loop.e0},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Emax,Emax: E0 (block fires only when curveFamily=Emax)
+4,40,ExtractResults,ResultsPage,fill,txt_emax,${runtime.loop.emax},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Emax,Emax: Emax
+5,50,ExtractResults,ResultsPage,fill,txt_ED50,${runtime.loop.ed50},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Emax,Emax: ED50
+6,60,ExtractResults,ResultsPage,fill,txt_Hill,${runtime.loop.hill},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Emax,Emax: Hill
+7,70,ExtractResults,ResultsPage,fill,txt_beta,${runtime.loop.beta},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Four Parameter Logistic,Four Parameter Logistic: beta
+8,80,ExtractResults,ResultsPage,fill,txt_delta,${runtime.loop.delta},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Four Parameter Logistic,Four Parameter Logistic: delta
+9,90,ExtractResults,ResultsPage,fill,txt_theta,${runtime.loop.theta},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Four Parameter Logistic,Four Parameter Logistic: theta
+10,100,ExtractResults,ResultsPage,fill,txt_tau,${runtime.loop.tau},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Four Parameter Logistic,Four Parameter Logistic: tau
+11,110,ExtractResults,ResultsPage,fill,txt_Intercept_E0,${runtime.loop.intercept},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Quadratic,Quadratic: Intercept (E0)
+12,120,ExtractResults,ResultsPage,fill,txt_Linear_Coefficient_1,${runtime.loop.linCoefficient},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Quadratic,Quadratic: Linear Coefficient (beta1)
+13,130,ExtractResults,ResultsPage,fill,txt_Quadratic_Coefficient_2,${runtime.loop.quadCoefficient},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Quadratic,Quadratic: Quadratic Coefficient (beta2)
+14,140,ExtractResults,ResultsPage,fill,txt_lin_Intercept,${runtime.loop.linIntercept},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Linear,Linear: Intercept (E0)
+15,150,ExtractResults,ResultsPage,fill,txt_Slope,${runtime.loop.slope},,,,,10000,FALSE,0,never,${runtime.loop.curveFamily}!=Linear,Linear: Slope (delta)
+16,160,ExtractResults,ResultsPage,fill,txt_modal_Dose1,${runtime.loop.modalDose1},,,,,10000,FALSE,0,never,${runtime.loop.modalDose1}==N/A,General: Dose 1 true probability (fires only when this dose is provided)
+17,170,ExtractResults,ResultsPage,fill,txt_modal_Dose2,${runtime.loop.modalDose2},,,,,10000,FALSE,0,never,${runtime.loop.modalDose2}==N/A,General: Dose 2 true probability (fires only when this dose is provided)
+18,180,ExtractResults,ResultsPage,fill,txt_modal_Dose3,${runtime.loop.modalDose3},,,,,10000,FALSE,0,never,${runtime.loop.modalDose3}==N/A,General: Dose 3 true probability (fires only when this dose is provided)
+19,190,ExtractResults,ResultsPage,fill,txt_modal_Dose4,${runtime.loop.modalDose4},,,,,10000,FALSE,0,never,${runtime.loop.modalDose4}==N/A,General: Dose 4 true probability (fires only when this dose is provided)
+20,200,ExtractResults,ResultsPage,fill,txt_modal_Dose5,${runtime.loop.modalDose5},,,,,10000,FALSE,0,never,${runtime.loop.modalDose5}==N/A,General: Dose 5 true probability (fires only when this dose is provided)
+21,210,ExtractResults,ResultsPage,fill,txt_modal_Dose6,${runtime.loop.modalDose6},,,,,10000,FALSE,0,never,${runtime.loop.modalDose6}==N/A,General: Dose 6 true probability (fires only when this dose is provided)
+22,220,ExtractResults,ResultsPage,click,txt_add_Sce_But,,,,,,10000,FALSE,0,always,,Commit this scenario (modal Add Scenario button) then loop to the next row

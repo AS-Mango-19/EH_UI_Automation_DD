@@ -246,8 +246,18 @@ function validateTestDataCoverage(
       /* no custom module for this feature */
     }
   }
+  // A file consumed by a loopOverData step is driven row-by-row through a reusable
+  // sub-flow via ${runtime.loop.<Column>} tokens — which live in that sub-flow, not
+  // in this metadata. Its columns therefore never appear as ${data.*} tokens here,
+  // so the coverage check would flag every populated column as an unused-value gap.
+  // Skip those files entirely; their columns ARE applied, just through the loop.
+  const loopFiles = new Set<string>();
+  for (const step of f.steps) {
+    if (step.Action === 'loopOverData') loopFiles.add(step.ObjectName.trim());
+  }
   const CONTROL = new Set<string>([...JOIN_KEYS, RUN_COLUMN]);
   for (const [file, parsed] of f.testDataParsed) {
+    if (loopFiles.has(file)) continue;
     const ref = referenced.get(file) ?? new Set<string>();
     for (const col of parsed.headers) {
       if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col)) continue;

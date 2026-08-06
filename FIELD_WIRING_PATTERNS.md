@@ -2,6 +2,8 @@
 
 A concrete, reusable guide for wiring three of the hardest field families in the East Horizon framework — **effect size**, **priors (assurance)**, and **early stopping (group-sequential boundaries)** — using the real GADAR(PD) implementation as the reference pattern. Every column name, selector key, css value, and StepID below is taken verbatim from the live GADAR feature so you can copy them directly.
 
+> **Adding a variable-length list of repeated records** (candidate models / scenarios / arms entered through a repeated "Add …" modal, 1…N per iteration)? That is a *different* shape — use the **[Multi-Scenario (Repeated-Modal) Pattern](MULTI_SCENARIO_GUIDE.md)** (child `scenarios.csv` + a reusable sub-flow + one `loopOverData` step), not the per-column conventions below. Reference implementation: `feature_BOIN`.
+
 > **Status:** column names, selector keys, StepIDs, and SkipIf expressions in this doc were verified against the live GADAR(PD) CSVs on 2026-08-04.
 >
 > **Run-state caveat:** `project.csv` currently has **only ITER_30 `Run=TRUE`** — this is a *transient isolation state* left over from single-iteration debugging. The committed stable set is ITER_01/02/23/24/25. Wherever this doc says "the only live row is ITER_30," that is a fact about the current working tree, not a permanent design. Restore the stable set before drawing conclusions about coverage.
