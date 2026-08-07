@@ -12,3 +12,4 @@ TC_10,ProductDesign,regression,Two Arm Confirmatory,FishersExact(PD),,chromium,0
 TC_11,ProductDesign,regression,Two Arm Superiority,RONBR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_12,ProductDesign,regression,Two Arm Confirmatory,GADAR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
 TC_13,ProductDesign,regression,Two Arm Confirmatory,WinRatio,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
+TC_15,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,

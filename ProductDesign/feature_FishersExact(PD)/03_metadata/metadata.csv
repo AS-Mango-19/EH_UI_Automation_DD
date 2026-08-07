@@ -34,7 +34,6 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 35,350,ConfigureDesign,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
 36,360,ConfigureDesign,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
 37,370,ConfigureDesign,ResultsPage,fill,txt_Odds_Ratio_of_Proportions,${data.design.Odds Ratio of Proportions},,,,,10000,FALSE,0,never,,fill Odds Ratio of Proportions
-38,380,ConfigureDesign,ResultsPage,select,ddl_Proportion_Treatment_t,${data.design.Proportion Treatment},,,,,10000,FALSE,0,always,,Select Proportion Treatment. Native <select> - select matches by visible label first
 39,390,ConfigureDesign,ResultsPage,fill,txt_Proportion_Treatment_t,${data.design.Proportion Treatment},,,,,10000,FALSE,0,never,,fill Proportion Treatment
 40,400,ConfigureDesign,ResultsPage,select,ddl_input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select inputMethod. Native <select> - select matches by visible label first
 41,410,ConfigureDesign,ResultsPage,fill,txt_Difference_of_Proportions,${data.design.Difference of Proportions},,,,,10000,FALSE,0,never,,fill Difference of Proportions

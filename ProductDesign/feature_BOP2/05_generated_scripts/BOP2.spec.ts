@@ -1,9 +1,9 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: b8757f144b69b06b6170c65253352d36bd4e7647e8b5b35e15fc4bc055740388)
+// AUTO-GENERATED — DO NOT EDIT. Source: 03_metadata/metadata.csv (hash: ede3c4a33817e0aadd9c178cab1cbf5d47390c24bb0505a75bd17b4030de28e4)
 import { runGeneratedSpec } from '../../../core/runner/specRuntime.js';
 
 runGeneratedSpec({
   module: "ProductDesign",
-  feature: "FishersExact(PD)",
+  feature: "BOP2",
   metadataFileRel: "03_metadata/metadata.csv",
   testDataDirRel: "01_testdata",
 });
