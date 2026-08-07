@@ -12,6 +12,10 @@ the *judgment* the importer can't.
 - **Framework reference:** `FRAMEWORK_KT.md` explains keywords, selectors, tokens, baselines,
   and every trap. *This playbook is the **process**; the KT is the **reference**.* Read §6
   (keywords), §7 (selectors), §8 (tokens), §4.5 (`Computed`/`N/A`), and §15 (traps).
+- **Companion guides (read for the hard field families):** `FIELD_WIRING_PATTERNS.md` (effect-size
+  hypothesis suffixes, priors/assurance, early-stopping), `MULTI_SCENARIO_GUIDE.md` (repeated-modal
+  `loopOverData` — §9), and `AI_TESTDATA_AGENT.md` (prepare a feature's testdata from its raw API
+  export, before wiring). The simulation cases live in **§8** below.
 
 ---
 
@@ -262,6 +266,21 @@ unzip -o trace.zip -d /tmp/tr
 grep -rohE '\["SELECT",\{[^}]*"id":"[^"]+"' /tmp/tr | grep -oE '"id":"[^"]+"' | sort -u
 ```
 Swap `SELECT` for `INPUT` / `BUTTON` for other controls. This is how `#piecewiseInputMethod`, `#shapeParamDelta`, and `ratioOfPercSurv_Alt_SP` were found with no live browser. The hardened `select` also **prints the option list** on a mismatch — read it before guessing.
+
+### 8 — Simulation import — the hard cases *(judgment — the GADAR sim)*
+
+The sim runs on the **same page after a green design**, so its Design tab **inherits the computed design**. The recording captures a full re-configuration, but most of it must become *inheritance*, not re-entry. Hard-won rules (proven on GADAR(PD) TC_12, sim green end-to-end; deep detail in memory `gadar-simulation-flow`):
+
+- **Inherit the design header — `N/A` it, do NOT re-enter it.** `sampleSize` / `numberOfEvents` / `allocationRatio` / `fixAtEachAnalysis` / `testStatistic` are **interdependent**: the app recomputes them from each other, so re-typing the sim's values makes them **revert** and the "Logrank Given Accrued Information" prior go **"Prior parameters are too extreme"** — Efficacy Z empties, the design turns invalid, and the Response tab then renders **no controls** (every later select/fill reports `not found`). Set those `simulation.csv` columns to `N/A` so the sim simulates the design **as computed**. Gate the leftover structural clicks (e.g. Randomization) on their data column too.
+- **Name the SIMULATION result SEPARATELY.** The design's Result Name becomes a `/designs` **nav link**; opening the sim result by the same name matches **two** links (substring). After **Save & Simulate**, fill `#inputId` (`txt_ResultName`) with a **distinct** name (a `Sim Result Name` column, e.g. `Result - Sim - Set1`) and open the result by **that**. This fill sits **between** Save & Simulate and the credit-confirm and is the single easiest step to miss.
+- **Value-drive every period table exactly like design.** Input-method / dropout / enrollment / boundary use `…Table.<n>` / `boundary.<n>` indices; gate each Add-Period on the next period's data column; `N/A` an unused period **fully**. A **mutually-exclusive branch** cell that doesn't apply this iteration (enrollment multiplier-vs-fixed, input-method hazard-rate-vs-cum%, an input-method period beyond the study's periods) is `N/A` — a stray recorded value there is the classic sim `not found`.
+- **`waitForSimulation` uses the step `Timeout`**, not `config.simulation.maxWaitMs` — set it generous (e.g. `900000`) or a slow sim trips `SIMULATION_TIMEOUT`.
+- **Two boundary tables + AG-Grid.** The analytical design's boundary is `boundary.*` (Design page); the sim's own boundary is `boundarySim.*` (Simulation Setup). The sim's **Analysis Spacing is app-computed** (information fractions from the event schedule) — overriding it is **rejected**; drive **Cum α Spent** if you must exercise a boundary recompute. Grid cells register a **typed** value (real keystrokes), not a JS `fill`. Editing a boundary clears **Efficacy Z** — you must click **Recalculate** and *verify it recomputed* (no "too extreme") before proceeding. *(The boundary-override case is still open on GADAR — see memory.)*
+- **Delete app-seeded default rows before adding yours.** Some pages seed a **varying** number of defaults (BOIN scenarios). Add your record first, then `click #btn-delete0 ×N (Optional, small timeout)`; the new record is the protected last row (its delete button is *removed*, so over-clicks safely no-op "target not present"). Never hard-code a delete count.
+
+### 9 — Repeated-modal / multi-scenario records (`loopOverData`) *(judgment)*
+
+When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`) + a reusable `03_metadata/<name>_block.csv` sub-flow (fills gated `SkipIf ${runtime.loop.<col>}…`, since the blank/`N/A` auto-skip is `${data.*}`-only) + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN`, TC_14).
 
 ---
 

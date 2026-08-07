@@ -1,0 +1,87 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+2,30,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+3,40,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+4,50,ConfigureDesign,ProjectsPage,click,btn_Password,,,,,,10000,FALSE,0,never,,click Password
+5,60,ConfigureDesign,ProjectsPage,fill,txt_Project_Name,${data.project.Project Name}_${runId}_${iterationId},,,,,90000,FALSE,0,never,,fill Project Name (made unique per run with runId)
+6,70,ConfigureDesign,ProjectsPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+7,80,ConfigureDesign,ProjectsPage,select,ddl_Study_Objective,${data.project.Study Objective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+8,90,ConfigureDesign,ProjectsPage,select,ddl_Agent_Type,${data.project.Agent Type},,,,,10000,FALSE,0,always,,Select Agent Type. Native <select> - select matches by visible label first
+9,100,ConfigureDesign,ProjectsPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,110,ConfigureDesign,ProjectsPage,fill,txt_Target_Population,${data.project.Target Population},,,,,10000,FALSE,0,never,,fill Target Population
+11,120,ConfigureDesign,ProjectsPage,select,ddl_Unit,${data.project.Unit},,,,,15000,FALSE,0,always,,Select Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+12,130,ConfigureDesign,ProjectsPage,fill,txt_Endpoint_Name,${data.project.Endpoint Name},,,,,10000,FALSE,0,never,,fill Endpoint Name
+13,140,ExtractResults,ProjectsPage,assertValue,obj_Endpoint_Type,,,,${data.project.Endpoint Type},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+14,150,ExtractResults,ProjectsPage,assertValue,obj_Outcome,,,,${data.project.Outcome},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+15,160,ConfigureDesign,ProjectsPage,fill,txt_Dose_Name,${data.project.doseName-0},,,,,10000,FALSE,0,never,,fill Dose Name
+16,170,ConfigureDesign,ProjectsPage,fill,txt_Dose_Level_mg,${data.project.doseLevel-0},,,,,10000,FALSE,0,never,,fill Dose Level
+17,180,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_1,${data.project.doseName-1},,,,,10000,FALSE,0,never,,fill doseName 1
+18,190,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_1,${data.project.doseLevel-1},,,,,10000,FALSE,0,never,,fill doseLevel 1
+19,200,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_2,${data.project.doseName-2},,,,,10000,FALSE,0,never,,fill doseName 2
+20,210,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_2,${data.project.doseLevel-2},,,,,10000,FALSE,0,never,,fill doseLevel 2
+21,220,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-3}==N/A,Add a dose row for dose 4 - only when this iteration has a 4th dose
+22,230,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_3,${data.project.doseName-3},,,,,10000,FALSE,0,never,,fill doseName 3
+23,240,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_3,${data.project.doseLevel-3},,,,,10000,FALSE,0,never,,fill doseLevel 3
+24,250,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-4}==N/A,Add a dose row for dose 5 - only when this iteration has a 5th dose
+25,260,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_4,${data.project.doseName-4},,,,,10000,FALSE,0,never,,fill doseName 4
+26,270,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_4,${data.project.doseLevel-4},,,,,10000,FALSE,0,never,,fill doseLevel 4
+27,280,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-5}==N/A,Add a dose row for dose 6 - only when this iteration has a 6th dose
+28,290,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_5,${data.project.doseName-5},,,,,10000,FALSE,0,never,,fill doseName 5
+29,300,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_5,${data.project.doseLevel-5},,,,,10000,FALSE,0,never,,fill doseLevel 5
+30,301,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-6}==N/A,Add a dose row for dose 7 - only when this iteration has that dose
+31,302,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_6,${data.project.doseName-6},,,,,10000,FALSE,0,never,,fill doseName 6
+32,303,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_6,${data.project.doseLevel-6},,,,,10000,FALSE,0,never,,fill doseLevel 6
+33,304,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-7}==N/A,Add a dose row for dose 8 - only when this iteration has that dose
+34,305,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_7,${data.project.doseName-7},,,,,10000,FALSE,0,never,,fill doseName 7
+35,306,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_7,${data.project.doseLevel-7},,,,,10000,FALSE,0,never,,fill doseLevel 7
+36,307,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-8}==N/A,Add a dose row for dose 9 - only when this iteration has that dose
+37,308,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_8,${data.project.doseName-8},,,,,10000,FALSE,0,never,,fill doseName 8
+38,309,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_8,${data.project.doseLevel-8},,,,,10000,FALSE,0,never,,fill doseLevel 8
+39,310,ConfigureDesign,ProjectsPage,click,btn_Add_Dose,,,,,,10000,FALSE,0,never,${data.project.doseName-9}==N/A,Add a dose row for dose 10 - only when this iteration has that dose
+40,311,ConfigureDesign,ProjectsPage,fill,txt_dose_Name_9,${data.project.doseName-9},,,,,10000,FALSE,0,never,,fill doseName 9
+41,312,ConfigureDesign,ProjectsPage,fill,txt_dose_Level_9,${data.project.doseLevel-9},,,,,10000,FALSE,0,never,,fill doseLevel 9
+42,315,ConfigureDesign,ProjectsPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+43,320,ConfigureDesign,ProjectsPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+44,330,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+45,340,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
+46,350,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,click Design Compute or simulate a
+47,360,ExtractResults,ResultsPage,select,ddl_Select_Test,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
+48,370,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+49,380,ExtractResults,ResultsPage,fill,txt_Max_Sample_Size,${data.design.Max. Sample Size},,,,,10000,FALSE,0,never,,fill Max. Sample Size
+50,390,ExtractResults,ResultsPage,fill,txt_Cohort_Size,${data.design.Cohort Size},,,,,10000,FALSE,0,never,,fill Cohort Size
+51,400,ExtractResults,ResultsPage,fill,txt_Target_Probability_of,${data.design.Target Probability of Toxicity},,,,,10000,FALSE,0,never,,fill Target Probability of
+52,410,ExtractResults,ResultsPage,fill,txt_1,${data.design.epsilon1},,,,,10000,FALSE,0,never,,fill ε1
+53,420,ExtractResults,ResultsPage,fill,txt_2,${data.design.epsilon2},,,,,10000,FALSE,0,never,,fill ε2
+54,440,ExtractResults,ResultsPage,check,chk_stopping_Rules,,,,,,10000,FALSE,0,always,${data.design.Stopping Rule}!=Checked,check stoppingRules when testdata stoppingRules=check (SkipIf gates it per iteration)
+55,450,ExtractResults,ResultsPage,uncheck,chk_stopping_Rules,,,,,,10000,FALSE,0,always,${data.design.Stopping Rule}!=unchecked,uncheck stoppingRules when testdata stoppingRules=uncheck (SkipIf gates it per iteration)
+56,460,ExtractResults,ResultsPage,fill,txt_Maximum_Number_of_Patients_at,${data.design.maxNoOfPatientsAtDoseLevel},,,,,10000,FALSE,0,never,,fill Maximum Number of Patients at
+57,470,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+58,480,ExtractResults,ResultsPage,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
+59,490,ExtractResults,ResultsPage,select,ddl_Starting_Dose,${data.design.startingDose},,,,,10000,FALSE,0,always,,Select Starting Dose. Native <select> - select matches by visible label first
+60,600,ExtractResults,ResultsPage,loopOverData,scenarios,ProductDesign/feature_BOIN/03_metadata/scenario_block.csv,,,,,120000,FALSE,0,never,,"For each scenarios.csv row matched to this TC_ID+IterationID, add one candidate-model scenario via the Add-Scenario modal loop (scenario_block.csv). Change the scenario COUNT by adding/removing rows in scenarios.csv - no metadata edits."
+61,610,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,"Clear leftover default scenario rows from the top (default count varies per iteration; repeated to remove them all). The newly-added scenario is the last row and cannot be deleted, so only it remains."
+62,620,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+63,630,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+64,640,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+65,650,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+66,660,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+67,670,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+68,680,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,never,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+69,690,ExtractResults,ResultsPage,click,txt_btn_delete0,,,,,,4000,TRUE,0,always,,Clear another leftover default row from the top (no-op once only the new scenario remains).
+70,980,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+71,990,ExtractResults,ResultsPage,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
+72,1000,ExtractResults,ResultsPage,fill,txt_Number_of_Simulations_Run,${data.design.Number of Simulations Run},,,,,10000,FALSE,0,never,,Fill Number of Simulations Run from design.csv
+73,1010,ExtractResults,ResultsPage,select,ddl_Random_Number_Seed,${data.design.Random Number Seed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
+74,1020,ExtractResults,ResultsPage,fill,txt_Fixed_Seed,${data.design.Fixed Seed},,,,,10000,FALSE,0,never,,fill Fixed Seed
+75,1030,ExtractResults,ResultsPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
+76,1040,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+77,1050,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,TRUE,0,never,,click credit alert primary
+78,1060,ExtractResults,ResultsPage,click,txt_Status,,,,,,10000,TRUE,0,never,,click Status
+79,1080,ExtractResults,ResultsPage,click,txt_Completed,,,,,,10000,TRUE,0,never,,click Completed
+80,1090,ExtractResults,ResultsPage,click,txt_close_tab_0,,,,,,10000,TRUE,0,never,,click close tab 0
+81,1100,ExtractResults,ResultsPage,click,txt_ag_icon_ag_icon_tree_closed,,,,,,10000,TRUE,0,never,,click ag icon ag icon tree closed
+82,1110,ExtractResults,ResultsPage,click,txt_close_tab_0,,,,,,10000,TRUE,0,never,,click close tab 0
+83,1120,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,900000,FALSE,0,always,,Poll the run status until Completed before opening the result
+84,1130,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+85,1140,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+86,1150,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL

@@ -41,3 +41,6 @@ Thumbs.db
 
 # NOTE: 06_baseline/ is intentionally NOT ignored — baselines are committed.
 # Generated POM/spec files ARE committed so diffs are reviewable, but are never hand-edited.
+
+# Local-only AI/session context (handoff notes) — NEVER commit these.
+*.local.md

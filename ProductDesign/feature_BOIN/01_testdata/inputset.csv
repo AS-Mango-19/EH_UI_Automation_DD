@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
+TC_14,ITER_01,Set 1,Design,Bayesian Optimal Interval Design (BOIN),Set 1 C
+TC_14,ITER_02,Set 2,Design,Bayesian Optimal Interval Design (BOIN),Set 2 C
+TC_14,ITER_03,Set 3,Design,Bayesian Optimal Interval Design (BOIN),Set 3 C
+TC_14,ITER_04,Set 4,Design,Bayesian Optimal Interval Design (BOIN),Set 4 C
+TC_14,ITER_05,Set 5,Design,Bayesian Optimal Interval Design (BOIN),Set 5 C

@@ -1869,6 +1869,39 @@ function main(): number {
       console.log(`    StepID ${st.StepID}  ObjectName "${st.ObjectName}"  (selector: role=button "${sel?.roleName ?? ''}")`);
     }
   }
+
+  // Additive guard (prints only — never edits a generated file): a REPEATED-MODAL /
+  // multi-scenario pattern — the SAME "Add …" modal filled once per record — cannot be
+  // imported. The dedup pass above collapses the modal's value fields to ONE occurrence
+  // while its open/commit clicks survive as literal repeats, leaving a garbled,
+  // non-looping block. Detect the fingerprint (a click ObjectName that repeats + a
+  // generic "Add <Record>" role=button, excluding the Add-Period/Add-Interim case handled
+  // above) and point the author at the loopOverData recipe. See MULTI_SCENARIO_GUIDE.md.
+  const clickCounts = new Map<string, number>();
+  for (const st of steps) {
+    if (String(st.Action) === 'click') {
+      const k = String(st.ObjectName);
+      clickCounts.set(k, (clickCounts.get(k) ?? 0) + 1);
+    }
+  }
+  const hasRepeatedClick = [...clickCounts.values()].some((n) => n >= 2);
+  const addRecordButtons = steps.filter((st) => {
+    if (String(st.Action) !== 'click') return false;
+    const sel = selectorByName.get(String(st.ObjectName));
+    if (!sel || sel.selectorType !== 'role') return false;
+    const rn = (sel.roleName ?? '').trim();
+    return /^add\s+\w+/i.test(rn) && !/^add\s+(period|interim)$/i.test(rn);
+  });
+  if (hasRepeatedClick && addRecordButtons.length) {
+    const addNames = [...new Set(addRecordButtons.map((s) => String(s.ObjectName)))].join(', ');
+    console.log(
+      `  WARNING: a REPEATED-MODAL / multi-scenario pattern was detected (add-record button(s): ${addNames}). ` +
+        `A button is clicked once per record while the modal's value fields collapsed to one occurrence — the emitted ` +
+        `modal block is NOT usable. The importer cannot generate this pattern; replace it with ONE loopOverData step + ` +
+        `01_testdata/scenarios.csv (one row per record) + 03_metadata/scenario_block.csv (gated sub-flow). ` +
+        `See MULTI_SCENARIO_GUIDE.md (reference: ProductDesign/feature_BOIN).`,
+    );
+  }
   // The sim import shares the design feature.config.json — never clobber it (that
   // would reset serial/reuseAuthState the design import already tuned).
   if (!isSim) {
@@ -1956,6 +1989,12 @@ function main(): number {
     console.log('    Sim then chains automatically after a GREEN design run — same browser, same iteration.');
     console.log('  - Review 01_testdata/simulation.csv: values are seeded from the sim recording; N/A a field that is hidden for an iteration.');
     console.log('  - sim_metadata is a SUPERSET recording — consolidate it (one data-driven step per control, controls before dependents) exactly like design.');
+    console.log('  - INHERIT the computed design: set sampleSize / numberOfEvents / allocationRatio / fixAtEachAnalysis / testStatistic to N/A in simulation.csv.');
+    console.log('    Re-entering these interdependent fields makes the app revert them and the prior go "too extreme" (Efficacy Z empties, the Response tab then renders no controls).');
+    console.log('  - Give the SIMULATION result a DISTINCT name: after Save & Simulate, fill #inputId (txt_ResultName) from a "Sim Result Name" column and open the result by it (else it collides with the design result link).');
+    console.log('  - Value-drive & gate every period table (input-method / dropout / enrollment / boundary) like design; N/A an unused period or mutually-exclusive branch FULLY.');
+    console.log('  - Set the waitForSimulation step Timeout generous (e.g. 900000) — it governs the wait, not config.simulation.maxWaitMs.');
+    console.log('  - Full hard-case list: AI_IMPORT_AGENT.md section 8 (Simulation import); reference feature_GADAR(PD).');
     console.log(`  - Then:  npm run validate   &&   npm run test -- --testcase ${parsed.args.tcId ?? '<TC_ID>'}`);
     return 0;
   }
@@ -1964,6 +2003,8 @@ function main(): number {
   console.log('  - Review 01_testdata/*.csv: seeded values come from the recording; make names unique with ${runId} if the app rejects duplicates.');
   console.log('  - Date pickers cannot be filled — the import clicks the recorded day cell, which is pinned to the recorded month. Data-drive it if the date must move.');
   console.log('  - If a result tail was emitted, export extractAllResultTables from custom/<Feature>/customSteps.ts and verify lbl_RunStatus col-id.');
+  console.log('  - Repeated "Add <Record>" modal (candidate models / scenarios / arms)? The dedup collapses it to ONE occurrence — do NOT use the emitted block.');
+  console.log('    Overlay the loopOverData pattern instead (one loopOverData step + scenarios.csv + <name>_block.csv): AI_IMPORT_AGENT.md section 9 + MULTI_SCENARIO_GUIDE.md.');
   console.log('  - Has a Simulation flow? Record it from the results page, save as sim_recording.txt, then:  npm run import-codegen -- ' + parsed.args.module + ' ' + parsed.args.feature + ' --tc ' + (parsed.args.tcId ?? '<TC_ID>') + ' --sim');
   console.log(`  - Then:  npm run validate   &&   npm run test -- --testcase ${parsed.args.tcId ?? '<TC_ID>'}`);
   return 0;

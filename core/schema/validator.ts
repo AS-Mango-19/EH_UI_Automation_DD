@@ -45,7 +45,9 @@ function featureFilterMatches(rowFeature: string, want: string): boolean {
   return norm(rowFeature) === norm(want);
 }
 
-export function validateAll(opts: { master?: string; feature?: string; testcase?: string } = {}): ValidationReport {
+export function validateAll(
+  opts: { master?: string; feature?: string; testcase?: string; skipDisabled?: boolean } = {},
+): ValidationReport {
   const issues: string[] = [];
   const warnings: string[] = [];
   const seenCombos = new Set<string>();
@@ -64,6 +66,10 @@ export function validateAll(opts: { master?: string; feature?: string; testcase?
     // error rather than a spurious pass.
     if (opts.feature && !featureFilterMatches(feature, opts.feature)) continue;
     if (opts.testcase && row.TC_ID.trim() !== opts.testcase.trim()) continue;
+    // For the test-run pre-check: a disabled (Execute=FALSE) feature is not going to
+    // run, so its problems must never block the run. Standalone `validate` omits this
+    // flag and still checks the whole suite.
+    if (opts.skipDisabled && !row.Execute) continue;
     testCasesValidated++;
 
     // Feature folder must exist (folder name === master.Feature).
@@ -246,8 +252,18 @@ function validateTestDataCoverage(
       /* no custom module for this feature */
     }
   }
+  // A file consumed by a loopOverData step is driven row-by-row through a reusable
+  // sub-flow via ${runtime.loop.<Column>} tokens — which live in that sub-flow, not
+  // in this metadata. Its columns therefore never appear as ${data.*} tokens here,
+  // so the coverage check would flag every populated column as an unused-value gap.
+  // Skip those files entirely; their columns ARE applied, just through the loop.
+  const loopFiles = new Set<string>();
+  for (const step of f.steps) {
+    if (step.Action === 'loopOverData') loopFiles.add(step.ObjectName.trim());
+  }
   const CONTROL = new Set<string>([...JOIN_KEYS, RUN_COLUMN]);
   for (const [file, parsed] of f.testDataParsed) {
+    if (loopFiles.has(file)) continue;
     const ref = referenced.get(file) ?? new Set<string>();
     for (const col of parsed.headers) {
       if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col)) continue;

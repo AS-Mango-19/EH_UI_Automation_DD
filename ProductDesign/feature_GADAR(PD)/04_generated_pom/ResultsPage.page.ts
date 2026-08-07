@@ -84,22 +84,22 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_Input_Method', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #hazardRatio_Null_SS) */
   txt_Hazard_Ratio_Null(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Hazard_Ratio_Null', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #hazardRatio_Alt_SS) */
   txt_Hazard_Ratio_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Hazard_Ratio_Alternative', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #ratioOfMedians_Null_SS) */
   txt_Ratio_of_Medians_Null(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Medians_Null', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #ratioOfMedians_Alt_SS) */
   txt_Ratio_of_Medians_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Medians_Alternative', { dynamicArgs });
   }
@@ -134,12 +134,12 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_id_input_Method_Table_1_hazard_Rate_Control', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #logHazardRatio_Null_SS) */
   txt_Log_Hazard_Ratio_Null(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Log_Hazard_Ratio_Null', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** prefix-match: id suffix is hypothesis-specific (_SP/_SS/_NI); covers all (was #logHazardRatio_Alt_SS) */
   txt_Log_Hazard_Ratio_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Log_Hazard_Ratio_Alternative', { dynamicArgs });
   }
@@ -624,9 +624,14 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_perc_STHR2nd_Percentile_Prob', { dynamicArgs });
   }
 
-  /** native <select> from codegen */
+  /** Efficacy Boundary Family — 1-Sided / symmetric */
   ddl_eff_Boundary_Fam(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_eff_Boundary_Fam', { dynamicArgs });
+  }
+
+  /** Efficacy Boundary Family — 2-Sided (Asymmetric) designs */
+  ddl_asym_eff_Boundary_Fam(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_asym_eff_Boundary_Fam', { dynamicArgs });
   }
 
   /** native <select> from codegen */
@@ -647,6 +652,46 @@ export class ResultsPage {
   /** native <select> from codegen */
   ddl_eff_Param(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_eff_Param', { dynamicArgs });
+  }
+
+  /** Upper Efficacy Boundary spending function (2-sided asymmetric) */
+  ddl_upper_Spend_Func(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_upper_Spend_Func', { dynamicArgs });
+  }
+
+  /** Upper Efficacy Boundary Gamma parameter */
+  txt_upper_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Gamma', { dynamicArgs });
+  }
+
+  /** Upper Efficacy Boundary Rho parameter */
+  txt_upper_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Rho', { dynamicArgs });
+  }
+
+  /** Upper Efficacy Boundary Lan-DeMets OF/Pocock parameter */
+  ddl_upper_Param(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_upper_Param', { dynamicArgs });
+  }
+
+  /** Lower Efficacy Boundary spending function (2-sided asymmetric) */
+  ddl_lower_Spend_Func(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_lower_Spend_Func', { dynamicArgs });
+  }
+
+  /** Lower Efficacy Boundary Gamma parameter */
+  txt_lower_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Gamma', { dynamicArgs });
+  }
+
+  /** Lower Efficacy Boundary Rho parameter */
+  txt_lower_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Rho', { dynamicArgs });
+  }
+
+  /** Lower Efficacy Boundary Lan-DeMets OF/Pocock parameter */
+  ddl_lower_Param(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_lower_Param', { dynamicArgs });
   }
 
   /** native <select> from codegen */
@@ -979,6 +1024,11 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Alpha_Spent', { dynamicArgs });
   }
 
+  /** Interpolated spend-func: IA3 cumulative alpha (added for multi-interim boundaries) */
+  txt_boundary_2_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_cum_Alpha_Spent', { dynamicArgs });
+  }
+
   /** textbox from codegen */
   txt_boundary_1_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Beta_Spent', { dynamicArgs });
@@ -1074,12 +1124,12 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_input_Method_Table_3_cum_Perc_Survival_Control', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both */
   txt_Ratio_of_Survivals_at_Period_1_Null(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Survivals_at_Period_1_Null', { dynamicArgs });
   }
 
-  /** textbox from codegen */
+  /** id suffix is hypothesis-specific (_SP Superiority / _NI Noninferiority); prefix-match covers both */
   txt_Ratio_of_Survivals_at_Period_1_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_Ratio_of_Survivals_at_Period_1_Alternative', { dynamicArgs });
   }
@@ -1397,5 +1447,35 @@ export class ResultsPage {
   /** Add Period in the Piecewise Dropout table (2nd Add Period on the page) */
   btn_Dropout_Add_Period(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Dropout_Add_Period', { dynamicArgs });
+  }
+
+  /** Probability-of-Dropout period-0 By Time */
+  txt_dropout_Table_0_dropout_By_Time(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_0_dropout_By_Time', { dynamicArgs });
+  }
+
+  /** Probability of Dropout (Control) — piecewiseInputMethod=3 */
+  txt_dropout_Table_0_prob_Of_Dropout_Control(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_0_prob_Of_Dropout_Control', { dynamicArgs });
+  }
+
+  /** Probability of Dropout (Treatment) — piecewiseInputMethod=3 */
+  txt_dropout_Table_0_prob_Of_Dropout_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_0_prob_Of_Dropout_Treatment', { dynamicArgs });
+  }
+
+  /** Prob-of-Dropout period-2 By Time */
+  txt_dropout_Table_1_dropout_By_Time(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_1_dropout_By_Time', { dynamicArgs });
+  }
+
+  /** Prob-of-Dropout period-2 (Control) */
+  txt_dropout_Table_1_prob_Of_Dropout_Control(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_1_prob_Of_Dropout_Control', { dynamicArgs });
+  }
+
+  /** Prob-of-Dropout period-2 (Treatment) */
+  txt_dropout_Table_1_prob_Of_Dropout_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_1_prob_Of_Dropout_Treatment', { dynamicArgs });
   }
 }

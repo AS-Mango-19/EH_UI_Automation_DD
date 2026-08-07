@@ -7,6 +7,7 @@ import { ProjectPage } from './ProjectPage.page.js';
 import { InputSetPage } from './InputSetPage.page.js';
 import { DesignPage } from './DesignPage.page.js';
 import { ResultsPage } from './ResultsPage.page.js';
+import { Page } from './Page.page.js';
 
 export { LoginPage } from './LoginPage.page.js';
 export { ProjectsPage } from './ProjectsPage.page.js';
@@ -14,6 +15,7 @@ export { ProjectPage } from './ProjectPage.page.js';
 export { InputSetPage } from './InputSetPage.page.js';
 export { DesignPage } from './DesignPage.page.js';
 export { ResultsPage } from './ResultsPage.page.js';
+export { Page } from './Page.page.js';
 
 export function createPages(page: Page, selectors: Map<string, SelectorRow>) {
   return {
@@ -23,6 +25,7 @@ export function createPages(page: Page, selectors: Map<string, SelectorRow>) {
     InputSetPage: new InputSetPage(page, selectors),
     DesignPage: new DesignPage(page, selectors),
     ResultsPage: new ResultsPage(page, selectors),
+    Page: new Page(page, selectors),
   };
 }
 export type Pages = ReturnType<typeof createPages>;

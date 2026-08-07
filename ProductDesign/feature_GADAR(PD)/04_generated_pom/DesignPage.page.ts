@@ -78,4 +78,14 @@ export class DesignPage {
   obj_Ratio_of_Survivals_at_Period_1_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'DesignPage', 'obj_Ratio_of_Survivals_at_Period_1_Alternative', { dynamicArgs });
   }
+
+  /** button from codegen */
+  btn_Simulate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'DesignPage', 'btn_Simulate', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Save_Simulate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'DesignPage', 'btn_Save_Simulate', { dynamicArgs });
+  }
 }
