@@ -1,0 +1,3 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,Target Population,Treatment Arm,Priority,Endpoint Name,Endpoint Type,Better Response
+TC_15,ITER_01,TRUE,Project BOP2,Day,8/7/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value
+TC_15,ITER_02,TRUE,Project BOP2,Week,8/7/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Binary,Larger Value

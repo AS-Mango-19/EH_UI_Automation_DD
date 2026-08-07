@@ -45,12 +45,12 @@ function renderClass(pageName: string, objects: SelectorRow[], header: string): 
     .join('\n\n');
   return (
     `${header}\n` +
-    `import type { Page, Locator } from 'playwright';\n` +
+    `import type { Page as PlaywrightPage, Locator } from 'playwright';\n` +
     `import type { SelectorRow } from '${CORE}/schema/selectors.schema.js';\n` +
     `import { resolveLocator } from '${CORE}/locators/resolver.js';\n\n` +
     `export class ${pageName} {\n` +
     `  constructor(\n` +
-    `    private readonly page: Page,\n` +
+    `    private readonly page: PlaywrightPage,\n` +
     `    private readonly selectors: Map<string, SelectorRow>,\n` +
     `  ) {}\n\n` +
     `${methods}\n` +
@@ -64,11 +64,11 @@ function renderBarrel(pages: string[], header: string): string {
   const factory = pages.map((p) => `    ${p}: new ${p}(page, selectors),`).join('\n');
   return (
     `${header}\n` +
-    `import type { Page } from 'playwright';\n` +
+    `import type { Page as PlaywrightPage } from 'playwright';\n` +
     `import type { SelectorRow } from '${CORE}/schema/selectors.schema.js';\n` +
     `${imports}\n\n` +
     `${reexports}\n\n` +
-    `export function createPages(page: Page, selectors: Map<string, SelectorRow>) {\n` +
+    `export function createPages(page: PlaywrightPage, selectors: Map<string, SelectorRow>) {\n` +
     `  return {\n${factory}\n  };\n` +
     `}\n` +
     `export type Pages = ReturnType<typeof createPages>;\n`

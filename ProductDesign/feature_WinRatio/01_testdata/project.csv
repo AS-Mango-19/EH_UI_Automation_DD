@@ -1,0 +1,4 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,MM dd yyyy,Study Objective,Phase,Target Population,Treatment Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Start Date
+TC_13,ITER_01,TRUE,AutoProj_WinRatio,Month,8/5/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPT,Composite,More Wins,8/2/2026
+TC_13,ITER_02,TRUE,AutoProj_WinRatio,Year,8/5/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPT,Composite,Less Wins,8/2/2026
+TC_13,ITER_03,TRUE,AutoProj_WinRatio,Day,8/5/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPT,Composite,Less Wins,8/2/2026

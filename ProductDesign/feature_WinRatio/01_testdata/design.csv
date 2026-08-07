@@ -1,0 +1,4 @@
+TC_ID,IterationID,Hypothesis,Computed Parameter,Sample Size,power,Test Type,Type 1 Error,Allocation Ratio,Win Ratio,Probability of Tie,,Result Name,Select Test
+TC_13,ITER_01,Superiority,Sample Size,Computed,0.555,1-Sided,0.0456,1.1,1.4,,0.1,Result - Set1,Win Ratio
+TC_13,ITER_02,Superiority,Type 1 Error,105,0.654,2-Sided,Computed,1.2,1.5,,0.123,Result - Set1,Win Ratio
+TC_13,ITER_03,Superiority,Power,110,Computed,1-Sided,0.0546,0.9,1.6,,0.212,Result - Set1,Win Ratio

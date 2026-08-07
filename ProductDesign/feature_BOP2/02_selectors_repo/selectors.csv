@@ -1,0 +1,85 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+obj_Username,Page,label,Username,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+btn_Password,ProjectsPage,role,button,New Project,,FALSE,button from codegen,FALSE
+txt_Project_Name,ProjectsPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectsPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectsPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectsPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectsPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectsPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectsPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectsPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectsPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectsPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Smaller_Value,ProjectsPage,role,button,Smaller Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Create_Project,ProjectsPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectsPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Design_Compute_or_simulate_a,DesignPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,ResultsPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_btn_delete,ResultsPage,css,#btn-delete,,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_0_sample_Size,ResultsPage,css,"[id=""sampleSizeInterimTable.0.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+btn_Futility,ResultsPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_sample_Size_Interim_Table_1_sample_Size,ResultsPage,css,"[id=""sampleSizeInterimTable.1.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+btn_Response,ResultsPage,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Response_Rate_H0,ResultsPage,css,"input[name=""respRateH0""]",,,FALSE,textbox from codegen,FALSE
+txt_Response_Rate_H1,ResultsPage,css,"input[name=""respRateH1""]",,,FALSE,textbox from codegen,FALSE
+txt_Response_Rate_Other,ResultsPage,css,#respRateOther,,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,ResultsPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+obj_Number_of_Simulations_Run,DesignPage,label,Number of Simulations Run,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+ddl_Random_Number_Seed,ResultsPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,ResultsPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Simulate,ResultsPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_ag_icon_ag_icon_tree_closed,ResultsPage,css,.ag-icon.ag-icon-tree-closed,,,FALSE,textbox from codegen,FALSE
+obj_Status,DesignPage,label,Status,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Completed,ResultsPage,text,Name,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Type_1_Error,DesignPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_btn_delete,DesignPage,css,#btn-delete,,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_0_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.0.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_1_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.1.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+btn_Add_Interim,DesignPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_sample_Size_Interim_Table_2_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.2.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_3_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.3.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_4_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.4.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_sample_Size_Interim_Table_5_sample_Size,DesignPage,css,"[id=""sampleSizeInterimTable.5.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+btn_Response,DesignPage,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Response_Rate_H0,DesignPage,css,"input[name=""respRateH0""]",,,FALSE,textbox from codegen,FALSE
+txt_Response_Rate_H1,DesignPage,css,"input[name=""respRateH1""]",,,FALSE,textbox from codegen,FALSE
+txt_Response_Rate_Other,DesignPage,css,#respRateOther,,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,DesignPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations,DesignPage,css,#numOfSimRun,,,FALSE,button from codegen,FALSE
+ddl_Random_Number_Seed,DesignPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,DesignPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,DesignPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,DesignPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_ag_icon_ag_icon_tree_closed,DesignPage,css,.ag-icon.ag-icon-tree-closed,,,FALSE,textbox from codegen,FALSE
