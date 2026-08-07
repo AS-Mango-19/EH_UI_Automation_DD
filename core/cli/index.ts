@@ -7,7 +7,7 @@ import { parseArgs } from './args.js';
 import { validateAll } from '../schema/validator.js';
 import { logger } from '../utils/logger.js';
 
-function printValidation(opts: { feature?: string; testcase?: string } = {}): number {
+function printValidation(opts: { feature?: string; testcase?: string; skipDisabled?: boolean } = {}): number {
   const report = validateAll(opts);
   for (const w of report.warnings) logger.warn(w);
   if (report.issues.length === 0) {
@@ -42,8 +42,8 @@ function printHelp(): void {
       'Flags:',
       '  --tags "<expr>"          Tag expression (OR "," AND "+" NOT "~").',
       '  --feature <Feature>      Restrict to one feature.',
-      '  --testcase <TC_ID>       Run one test case (ignores Execute).',
-      '  --all                    Run every row regardless of Execute.',
+      '  --testcase <TC_ID>       Run one test case (the only flag that runs an Execute=FALSE row).',
+      '  --all                    Run all ENABLED features (Execute=TRUE); disabled rows are skipped.',
       '  --env <env>              Override environment (.env.<env> + baseline scope).',
       '  --update-baseline        Approve current actuals as the new baseline.',
       '  --headed                 Run with a visible browser.',
@@ -71,10 +71,17 @@ async function main(): Promise<number> {
       return generateCommand(filters);
     }
     case 'test': {
-      // Validation always runs first — fail before a browser opens (§2.6).
-      const code = printValidation();
+      // Validate ONLY what this run will execute, before a browser opens (§2.6).
+      // A targeted run (--feature/--testcase) validates just that target; any other
+      // run validates only the ENABLED (Execute=TRUE) features. This way a broken or
+      // disabled OTHER feature never blocks running the feature(s) you asked for.
+      const scope =
+        filters.feature || filters.testcase
+          ? { feature: filters.feature, testcase: filters.testcase }
+          : { skipDisabled: true };
+      const code = printValidation(scope);
       if (code !== 0) {
-        logger.error('Aborting: fix validation issues before running tests.');
+        logger.error('Aborting: fix the validation issue(s) in the feature(s) selected to run (other features are unaffected).');
         return code;
       }
       const { testCommand } = await import('../runner/orchestrator.js');

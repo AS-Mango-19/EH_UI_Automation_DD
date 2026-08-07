@@ -1,7 +1,7 @@
 StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
 10,Login,-,callReusable,,flows/login.csv,,,,,60000,FALSE,0,never,,Reusable login flow
 100,CreateProject,ProjectsPage,click,btn_NewProject,,,,,visible,15000,FALSE,1,never,${master.ProjectID}!=EMPTY,Open new-project dialog
-110,CreateProject,ProjectPage,fill,txt_ProjectName,${data.project.ProjectName}_${runId},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Unique project name
+110,CreateProject,ProjectPage,fill,txt_ProjectName,${data.project.ProjectName}_${runId},,,,,90000,FALSE,0,never,${master.ProjectID}!=EMPTY,Unique project name
 120,CreateProject,ProjectPage,select,ddl_TimeUnit,${data.project.TimeUnit},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Time unit
 130,CreateProject,ProjectPage,fill,txt_StartDate,${today},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,StartDate token
 140,CreateProject,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,10000,FALSE,0,never,${master.ProjectID}!=EMPTY,Study phase

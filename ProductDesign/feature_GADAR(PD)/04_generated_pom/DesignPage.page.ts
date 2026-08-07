@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 0f0e50429ef5a151bd86c879fbfb7e074fbc16c45f12cdc0fd06dd2cf64776e2)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: d8dac98343ed4a22c24c3c1d64f2cfac04d4789827057154526391726631f668)
 import type { Page, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -77,5 +77,15 @@ export class DesignPage {
   /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) */
   obj_Ratio_of_Survivals_at_Period_1_Alternative(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'DesignPage', 'obj_Ratio_of_Survivals_at_Period_1_Alternative', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Simulate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'DesignPage', 'btn_Simulate', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Save_Simulate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'DesignPage', 'btn_Save_Simulate', { dynamicArgs });
   }
 }

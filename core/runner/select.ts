@@ -1,8 +1,10 @@
 /**
  * Test-case selection (§11). Precedence, highest wins:
- *   --testcase  >  --tags (+Execute)  >  Execute  >  --all
- * `--feature` further narrows any of these. DependsOn orders execution and gates
- * a dependent when its dependency did not pass.
+ *   --testcase  >  --tags  >  --all  >  Execute (default)
+ * Execute=FALSE rows are NEVER auto-selected — `--tags`, `--all`, and the default
+ * all require Execute=TRUE. Only `--testcase` (an explicit single target) runs a
+ * disabled row. `--feature` further narrows any of these. DependsOn orders execution
+ * and gates a dependent when its dependency did not pass.
  */
 import type { MasterEntry } from '../loaders/masterLoader.js';
 import type { CliFilters } from '../cli/args.js';
@@ -44,13 +46,14 @@ export function selectEntries(entries: MasterEntry[], filters: CliFilters): Mast
   if (filters.testcase) {
     const found = entries.filter((e) => e.row.TC_ID === filters.testcase);
     if (found.length === 0) throw new FrameworkError(`--testcase ${filters.testcase} not found in master.csv`);
-    selected = found; // ignores Execute by design
+    selected = found; // explicit single target — ignores Execute by design
   } else if (filters.tags) {
-    selected = entries.filter(
-      (e) => evaluateTagExpr(filters.tags as string, matchableTags(e)) && (filters.all || e.row.Execute),
-    );
+    // Tag runs are batch runs: a disabled (Execute=FALSE) row is never picked.
+    selected = entries.filter((e) => evaluateTagExpr(filters.tags as string, matchableTags(e)) && e.row.Execute);
   } else if (filters.all) {
-    selected = [...entries];
+    // --all = every ENABLED feature (Execute=TRUE). Execute=FALSE rows are still
+    // excluded — run a specific disabled test with --testcase instead.
+    selected = entries.filter((e) => e.row.Execute);
   } else {
     selected = entries.filter((e) => e.row.Execute);
   }

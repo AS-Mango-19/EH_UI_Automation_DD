@@ -15,6 +15,12 @@ one, and where the sharp edges are.
   - `feature_MeanofPairedRatios` (`TC_05`) — the **conditional-fields, multi-scenario**
     example: one metadata, four iterations (Superiority/Non-Inferiority × Ratio-of-Means/
     Individual-Means), driven entirely by `N/A` cells and disabled-field skips (§6.3, §4.5).
+  - `feature_BOIN` (`TC_14`) — the **repeated-modal / multi-scenario** example: 1..N
+    candidate-model scenarios entered through a single re-opened "Add Scenario" modal (Emax /
+    4PL / Quadratic / Linear / General), driven by a child `01_testdata/scenarios.csv` + a
+    reusable `03_metadata/scenario_block.csv` sub-flow + **one `loopOverData` step** ("Option A").
+    Also shows **data-driven dose entry** (each Add-Dose gated on the iteration's dose count).
+    Full recipe: **`MULTI_SCENARIO_GUIDE.md`**.
 - **Every claim here is code-backed.** File and line references are given so you
   can verify rather than trust.
 
@@ -518,6 +524,29 @@ result *link*, and a dropdown recorded two ways, are deliberately left alone.
 > column is populated, so exactly one fires). That doc also carries the priors and
 > early-stopping (eff/fut) wiring patterns and the `HazardRatioInputSet` legend.
 
+#### Repeated-modal / multi-scenario records — the `loopOverData` pattern (see `MULTI_SCENARIO_GUIDE.md`)
+
+The rules above cover *conditional* fields on one page. A different shape is a page that adds the
+**same kind of record N times through a re-opened "Add …" modal** — candidate models, scenarios,
+arms, looks — where the modal **reuses the same DOM ids every time** and the count varies per
+iteration. Wide indexed columns (`scenario1_x … scenario10_x`) explode; instead use **"Option A"**:
+
+- **`01_testdata/scenarios.csv`** — a *child* table, **one row per record** (not per iteration),
+  keyed `TC_ID, IterationID, …`. Add a record = add a row. `N/A` in cells that don't apply.
+- **`03_metadata/<name>_block.csv`** — a reusable sub-flow authored **once** (open modal → select
+  the record type → gated fills → commit), reading `${runtime.loop.<Column>}`.
+- **One `loopOverData` step** in `metadata.csv` (§6 Flow) that runs the sub-flow per matching child row.
+
+Because the blank/`N/A` auto-skip is `${data.*}`-only, fills inside the sub-flow must be gated
+**explicitly with `SkipIf`** on the loop columns — a family-tag gate (`SkipIf
+${runtime.loop.curveFamily}!=Emax`) or a value gate (`SkipIf ${runtime.loop.modalDoseN}==N/A`).
+`loopOverData` scopes child rows by `TC_ID`+`IterationID`, and the coverage check skips a
+`loopOverData`-consumed file so its columns don't read as unused.
+
+**The importer does NOT generate this pattern** (§13 / Trap): record the flow, keep the modal
+selectors it captures, then hand-overlay the loop per **`MULTI_SCENARIO_GUIDE.md`**. Reference:
+`feature_BOIN` (TC_14) — including the *delete-app-default-rows* trick and data-driven dose entry.
+
 ### 4.6 `06_baseline/compare.config.csv` — the compare rules
 
 | Column | Meaning |
@@ -763,7 +792,7 @@ that records the failure and continues.
 | `callReusable` | InputValue (path) | Inline a flow CSV, e.g. `flows/login.csv`. |
 | `callCustom` | InputValue | Call an exported handler from `custom/<Feature>/customSteps.ts`. |
 | `ifExists` | ObjectName, InputValue | Conditional sub-flow. |
-| `loopOverData` | ObjectName, InputValue | |
+| `loopOverData` | ObjectName, InputValue | **Runs a reusable sub-flow once per row of a child testdata file.** `ObjectName` = the child CSV's basename (e.g. `scenarios`); `InputValue` = the sub-flow CSV path (e.g. `ProductDesign/feature_BOIN/03_metadata/scenario_block.csv`). Rows are scoped to the current `TC_ID`+`IterationID`; each row's columns are exposed as `${runtime.loop.<Column>}` inside the sub-flow. This is the engine of the **multi-scenario / repeated-modal** pattern — see §4.5 and `MULTI_SCENARIO_GUIDE.md`. |
 
 ### API / Comparison
 `apiRequest` · `compareWithBaseline`.
@@ -1277,7 +1306,9 @@ What it does for you:
 - **Dedups a superset recording.** If you toggled a control to reveal conditional
   fields (Input Method 1→2→1, Hypothesis 2→1), the repeated `select`/`check`/`fill`
   on the same object collapse into one data-driven step. Single-path recordings are
-  untouched.
+  untouched. *(The one case where this collapse is **unwanted** is a repeated **modal**
+  filled once per record — see "What still needs a human" → repeated-modal, and
+  `MULTI_SCENARIO_GUIDE.md`. The importer now warns when it detects it.)*
 - **Project name made unique per iteration** — `..._${runId}_${iterationId}` — so
   two iterations don't collide on "name already exists".
 - **Backfills blank `TC_ID`/`IterationID`** in the seeded rows so they resolve.
@@ -1332,6 +1363,7 @@ The importer cannot infer these from a recording — it prints them as NEXT STEP
 | **`extractAllResultTables`** | Nothing — it is feature-agnostic and lives in `custom/_shared/`. | Nothing to write. It discovers the tables and narrative panels itself (§12.2). Only override it if this app's result page is genuinely unlike the others. |
 | **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |
 | **Tolerances** | Only you know what "close enough" means. | Edit `compare.config.csv`. |
+| **A repeated-modal / multi-scenario flow** (N records added via one re-opened "Add …" modal — candidate models, scenarios, arms) | The modal reuses the **same** DOM ids each time, so the dedup (below) collapses its fills to **one** occurrence and leaves N ungated open/commit clicks — a garbled, non-looping block. The importer now **prints a WARNING** when it detects this fingerprint. | Delete the recorded modal block and hand-build the **`loopOverData` (Option A)** pattern: child `01_testdata/scenarios.csv` (one row per record) + reusable `03_metadata/<name>_block.csv` sub-flow + one `loopOverData` step (§4.5, §6 Flow). Recipe: **`MULTI_SCENARIO_GUIDE.md`**; reference `feature_BOIN` (TC_14). |
 
 ### 13.9 The AI agent path — `/import-feature`
 

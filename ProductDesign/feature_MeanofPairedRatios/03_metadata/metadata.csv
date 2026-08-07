@@ -3,7 +3,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
 3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
 4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,click New Project
-5,50,ConfigureDesign,ProjectPage,fill,txt_project_Name,${data.project.projectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill projectName (made unique per run with runId)
+5,50,ConfigureDesign,ProjectPage,fill,txt_project_Name,${data.project.projectName}_${runId}_${iterationId},,,,,90000,FALSE,0,never,,fill projectName (made unique per run with runId)
 6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.Time Unit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
 7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
 8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.Study Objective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns

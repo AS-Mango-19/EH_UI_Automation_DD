@@ -45,7 +45,9 @@ function featureFilterMatches(rowFeature: string, want: string): boolean {
   return norm(rowFeature) === norm(want);
 }
 
-export function validateAll(opts: { master?: string; feature?: string; testcase?: string } = {}): ValidationReport {
+export function validateAll(
+  opts: { master?: string; feature?: string; testcase?: string; skipDisabled?: boolean } = {},
+): ValidationReport {
   const issues: string[] = [];
   const warnings: string[] = [];
   const seenCombos = new Set<string>();
@@ -64,6 +66,10 @@ export function validateAll(opts: { master?: string; feature?: string; testcase?
     // error rather than a spurious pass.
     if (opts.feature && !featureFilterMatches(feature, opts.feature)) continue;
     if (opts.testcase && row.TC_ID.trim() !== opts.testcase.trim()) continue;
+    // For the test-run pre-check: a disabled (Execute=FALSE) feature is not going to
+    // run, so its problems must never block the run. Standalone `validate` omits this
+    // flag and still checks the whole suite.
+    if (opts.skipDisabled && !row.Execute) continue;
     testCasesValidated++;
 
     // Feature folder must exist (folder name === master.Feature).
