@@ -1,11 +1,11 @@
 // AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: d8dac98343ed4a22c24c3c1d64f2cfac04d4789827057154526391726631f668)
-import type { Page, Locator } from 'playwright';
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class Page {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 

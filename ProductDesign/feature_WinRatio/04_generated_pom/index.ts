@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c9d45f305f0f51f18586f6d9d863332f6360f23d85fd19c99afacdb3649684e9)
-import type { Page } from 'playwright';
+import type { Page as PlaywrightPage } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { LoginPage } from './LoginPage.page.js';
 import { ProjectsPage } from './ProjectsPage.page.js';
@@ -15,7 +15,7 @@ export { InputSetPage } from './InputSetPage.page.js';
 export { DesignPage } from './DesignPage.page.js';
 export { ResultsPage } from './ResultsPage.page.js';
 
-export function createPages(page: Page, selectors: Map<string, SelectorRow>) {
+export function createPages(page: PlaywrightPage, selectors: Map<string, SelectorRow>) {
   return {
     LoginPage: new LoginPage(page, selectors),
     ProjectsPage: new ProjectsPage(page, selectors),
