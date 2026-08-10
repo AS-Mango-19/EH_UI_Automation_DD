@@ -355,6 +355,9 @@ txt_boundary_Sim_1_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.1.cumAlpha
 txt_boundary_Sim_0_futility_HR,Page,css,"[id=""boundarySim.0.futilityHR""]",,,FALSE,sim boundary IA1 Futility HR,FALSE
 txt_boundary_Sim_1_futility_HR,Page,css,"[id=""boundarySim.1.futilityHR""]",,,FALSE,sim boundary IA2 Futility HR,FALSE
 btn_Recalculate,Page,role,button,Recalculate,,FALSE,button from codegen,FALSE
+btn_InputMethod_Add_Period,Page,css,":nth-match(button:has-text(""Add Period""), 1)",,,FALSE,First Add Period = Survival/input-method table (sim Response tab renders all sections at once),FALSE
+txt_Margin_NI,Page,css,#margin_NI,,,FALSE,Noninferiority margin (hypothesis-specific; renders only for Noninferiority),FALSE
+txt_Margin_SS,Page,css,#margin_SS,,,FALSE,Super Superiority margin (hypothesis-specific; renders only for Super Superiority),FALSE
 ddl_Adaptation_Method,Page,css,#adaptationMethod,,,FALSE,native <select> from codegen,FALSE
 ddl_Adapt_At,Page,css,#adaptAtSelect,,,FALSE,native <select> from codegen,FALSE
 txt_adapt_At_Input,Page,css,#adaptAtInput,,,FALSE,textbox from codegen,FALSE
@@ -389,6 +392,8 @@ btn_Add_Period,Page,role,button,Add Period,,FALSE,button from codegen,FALSE
 btn_Dropout_Add_Period,Page,css,":nth-match(button:has-text(""Add Period""), 2)",,,FALSE,Add Period in the Piecewise Dropout table (2nd Add Period on the page),FALSE
 txt_input_Method_Table_1_starting_At_Time,Page,css,"[id=""inputMethodTable.1.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
 txt_input_Method_Table_1_hazard_Rate_Control,Page,css,"[id=""inputMethodTable.1.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_2_starting_At_Time,Page,css,"[id=""inputMethodTable.2.startingAtTime""]",,,FALSE,3rd survival period Starting At Time (Hazard Rates piecewise),FALSE
+txt_input_Method_Table_2_hazard_Rate_Control,Page,css,"[id=""inputMethodTable.2.hazardRateControl""]",,,FALSE,3rd survival period Hazard Rate Control (Hazard Rates piecewise),FALSE
 txt_input_Method_Table_1_hazard_Ratio,Page,css,"[id=""inputMethodTable.1.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
 txt_input_Method_Table_0_by_Time,Page,css,"input[name=""inputMethodTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
 txt_input_Method_Table_0_cum_Perc_Survival_Control,Page,css,"[id=""inputMethodTable.0.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE

@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: d8dac98343ed4a22c24c3c1d64f2cfac04d4789827057154526391726631f668)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 2bdadc5a7420726112c3bcb72c1c44cf31d93c0783307ca3a562b968ce99b394)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -117,6 +117,21 @@ export class Page {
   /** button from codegen */
   btn_Recalculate(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'btn_Recalculate', { dynamicArgs });
+  }
+
+  /** First Add Period = Survival/input-method table (sim Response tab renders all sections at once) */
+  btn_InputMethod_Add_Period(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_InputMethod_Add_Period', { dynamicArgs });
+  }
+
+  /** Noninferiority margin (hypothesis-specific; renders only for Noninferiority) */
+  txt_Margin_NI(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Margin_NI', { dynamicArgs });
+  }
+
+  /** Super Superiority margin (hypothesis-specific; renders only for Super Superiority) */
+  txt_Margin_SS(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Margin_SS', { dynamicArgs });
   }
 
   /** native <select> from codegen */
@@ -287,6 +302,16 @@ export class Page {
   /** textbox from codegen */
   txt_input_Method_Table_1_hazard_Rate_Control(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_1_hazard_Rate_Control', { dynamicArgs });
+  }
+
+  /** 3rd survival period Starting At Time (Hazard Rates piecewise) */
+  txt_input_Method_Table_2_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_2_starting_At_Time', { dynamicArgs });
+  }
+
+  /** 3rd survival period Hazard Rate Control (Hazard Rates piecewise) */
+  txt_input_Method_Table_2_hazard_Rate_Control(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_2_hazard_Rate_Control', { dynamicArgs });
   }
 
   /** textbox from codegen */

@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: e2f0d3bfbab2cf83f0382b8e3bf7b59d57ffad4b4d4c5c4cb3caa885c0e9de4b)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 2bdadc5a7420726112c3bcb72c1c44cf31d93c0783307ca3a562b968ce99b394)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class LoginPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
