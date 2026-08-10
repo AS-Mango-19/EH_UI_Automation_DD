@@ -15,3 +15,4 @@ TC_13,ProductDesign,regression,Two Arm Confirmatory,WinRatio,,chromium,01_testda
 TC_14,ProductDesign,regression,Dose Escalation,BOIN,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_15,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_16,ProductDesign,regression,Dose Escalation,i3+3,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_18,ProductDesign,regression,Dose Escalation,3+3,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
