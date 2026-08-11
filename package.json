@@ -20,7 +20,9 @@
     "xlsx-to-csv": "tsx scripts/xlsx-to-csv.ts",
     "unit": "node --import tsx --test tests/unit/*.test.ts",
     "itest": "node --import tsx --test tests/integration/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check-recordings": "tsx scripts/check-recordings.ts",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "dependencies": {
     "@faker-js/faker": "^9.0.0",
