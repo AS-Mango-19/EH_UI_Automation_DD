@@ -1,8 +1,8 @@
 {
   "feature": "GADSD(PD)",
   "module": "ProductDesign",
-  "serial": false,
-  "reuseAuthState": true,
+  "serial": true,
+  "reuseAuthState": false,
   "testdata": {
     "format": "csv",
     "files": {

@@ -203,6 +203,78 @@ export function loadCompareConfig(module: string, feature: string): Loaded<Compa
 
 // ---- testdata CSVs ------------------------------------------------------------
 
+/**
+ * Fold normalized child-table CSVs back into their parent record.
+ *
+ * A feature may split a wide, multi-period table out of design.csv / simulation.csv
+ * into a normalized child file `<parent>_<tableName>.csv` — one row per analysis
+ * period, keyed (TC_ID, IterationID, PeriodIndex). This reconstructs the wide inline
+ * model the rest of the framework already runs on: each child cell (PeriodIndex=n,
+ * field=v) becomes a synthetic column `<tableName>.<n>.<field>` = v on the parent's
+ * (TC_ID, IterationID) row — exactly as if it had been authored inline. The child
+ * file is then dropped from the map so the store and validators see only the merged
+ * parent (one row per iteration, wide columns); nothing downstream needs a per-period
+ * concept, and `${data.design.inputMethodTable.0.hazardRateControl}` resolves as before.
+ *
+ * Generic across phases: a file is a foldable child iff the part of its basename
+ * before the first underscore is itself a loaded parent file (e.g. `design`,
+ * `simulation`) AND it carries a `PeriodIndex` column. Rows whose PeriodIndex is
+ * blank / N/A are "table absent this iteration" placeholders and are skipped, which
+ * matches the wide format's all-N/A-period convention (the fill is simply omitted).
+ * Field values are copied verbatim (N/A, blank, Computed included) so the runtime
+ * N/A / Computed skip logic behaves identically to an inline design.csv. If the
+ * parent already carries the same column inline (a half-migrated feature), the inline
+ * value is kept and the collision is flagged rather than silently clobbered.
+ */
+export function foldChildTables(parsedMap: Map<string, ParsedCsv>): void {
+  const RESERVED = new Set(['TC_ID', 'IterationID', 'PeriodIndex']);
+  const isNa = (v: string): boolean => {
+    const t = v.trim();
+    return t === '' || /^(n\/a|not applicable)$/i.test(t);
+  };
+  for (const childKey of [...parsedMap.keys()]) {
+    const us = childKey.indexOf('_');
+    if (us <= 0) continue; // not a `<parent>_<table>` name
+    const parentKey = childKey.slice(0, us);
+    const tableName = childKey.slice(us + 1);
+    const parent = parsedMap.get(parentKey);
+    if (!parent) continue; // prefix isn't a loaded parent -> ordinary sibling file, leave as-is
+    const child = parsedMap.get(childKey)!;
+    if (!child.headers.includes('PeriodIndex')) continue; // not a period-keyed child table
+
+    const fieldCols = child.headers.filter((h) => h && !RESERVED.has(h));
+    const parentRowByKey = new Map<string, Record<string, string>>();
+    for (const rec of parent.records) {
+      parentRowByKey.set(`${rec.data.TC_ID ?? ''}|${rec.data.IterationID ?? ''}`, rec.data);
+    }
+    const inlineHeaders = new Set(parent.headers); // snapshot BEFORE folding
+    const added = new Set<string>();
+    for (const rec of child.records) {
+      const period = (rec.data.PeriodIndex ?? '').trim();
+      if (isNa(period)) continue; // placeholder row for a table this iteration doesn't use
+      const joinKey = `${rec.data.TC_ID ?? ''}|${rec.data.IterationID ?? ''}`;
+      const target = parentRowByKey.get(joinKey);
+      // Orphan row (no parent for this TC/iteration): skip it — the period simply
+      // isn't folded, so a reference resolves to '' and the fill is skipped. This is
+      // reported (non-fatally) by validateChildTables, not thrown here, so a
+      // half-authored feature still loads instead of crashing the runtime.
+      if (!target) continue;
+      for (const field of fieldCols) {
+        const col = `${tableName}.${period}.${field}`;
+        // If the parent already carries this column inline (a half-migrated feature),
+        // keep the inline value — validateChildTables flags the collision as a warning.
+        if (inlineHeaders.has(col)) continue;
+        target[col] = rec.data[field] ?? '';
+        if (!added.has(col)) {
+          parent.headers.push(col);
+          added.add(col);
+        }
+      }
+    }
+    parsedMap.delete(childKey); // fully folded -> hide the child from the store & validators
+  }
+}
+
 export function loadTestData(
   module: string,
   feature: string,
@@ -229,6 +301,12 @@ export function loadTestData(
     const key = path.basename(f, '.csv');
     parsedMap.set(key, parsed);
   }
+  // Fold any `<parent>_<table>.csv` period child files into their parent's wide model
+  // BEFORE building the store, so both the store and the parsed map (used by the
+  // validators) see only the merged parents. Advisory problems (orphan rows, inline
+  // collisions, non-contiguous periods) are reported non-fatally by the validator's
+  // validateChildTables, never here — the loader must not break the runtime.
+  foldChildTables(parsedMap);
   return { value: { store: new TestDataStore(parsedMap), parsed: parsedMap }, issues };
 }
 

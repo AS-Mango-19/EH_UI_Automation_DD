@@ -5,19 +5,25 @@
 .env.*
 !.env.example
 
-# Codegen recordings — Playwright codegen captures the LOGIN steps verbatim,
-# including the typed password, so recordings hold real credentials. Never commit
-# them. A recording can be named anything (recording.txt, codegen.ts,
-# <Feature>.txt, "new 2.txt") and saved in any format codegen or a human picks.
+# 02_selectors_repo — ALLOWLIST, not a blacklist. Everything in this folder is
+# ignored by default, whatever it is called; only the files re-included below are
+# committed. This is deliberate: raw Playwright codegen captures the LOGIN steps
+# verbatim (typed username + password), and a codegen export can land under any
+# name/format (codegen.ts, a .har, a .json, "new 2.txt") — a blacklist would let a
+# credential-bearing file sail straight through.
 #
-# So this is an ALLOWLIST, not a blacklist. Blacklisting extensions only covered
-# *.txt/*.ts directly in this folder — a recording.json, a .har, or one dropped in
-# a subfolder would have sailed straight through. The only files that belong here
-# are selectors.csv and (optionally) locators.json; everything else is ignored by
-# default, whatever it is called.
+# Recordings (*recording*.txt) ARE committed — they are the codegen source that
+# `import-codegen` consumes, so keeping them reviewable in git is worth it. The
+# catch: they must be credential-SCRUBBED first (login value replaced with the
+# <<USERNAME>> / <<PASSWORD>> placeholder — the literal is never used because login
+# runs through the shared flows/login.csv reusable). This is ENFORCED by the
+# pre-commit guard scripts/check-recordings.ts (npm run check-recordings), which
+# blocks any commit whose recordings still hold a real credential. Do NOT allowlist
+# other codegen formats here (.ts/.har/.json) — they are not guard-checked.
 **/02_selectors_repo/**
 !**/02_selectors_repo/selectors.csv
 !**/02_selectors_repo/locators.json
+!**/02_selectors_repo/*[Rr]ecording*.txt
 
 # Node
 node_modules/

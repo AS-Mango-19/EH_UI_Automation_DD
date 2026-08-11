@@ -1728,9 +1728,39 @@ function main(): number {
   // duplicate from a prior import.
   const reuseLog: string[] = [];
   const normalizeColName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const testDataDir = path.join(targetRoot, '01_testdata');
+  // A normalized child table `<file>_<table>.csv` (one row per period, keyed by
+  // PeriodIndex) OWNS its `<table>.<n>.<field>` columns: the loader folds them back
+  // into <file>.csv's wide model at runtime. So a recorded dotted table-cell id must
+  // NOT be seeded inline into <file>.csv — that would author the table in two places.
+  // Map each parent file to { tableName -> field columns } its child files declare.
+  const childTableFields = (parentFile: string): Map<string, Set<string>> => {
+    const out = new Map<string, Set<string>>();
+    let siblings: string[];
+    try {
+      siblings = fs.readdirSync(testDataDir).filter((x) => x.toLowerCase().endsWith('.csv'));
+    } catch {
+      return out;
+    }
+    for (const sib of siblings) {
+      const b = sib.slice(0, -4);
+      if (!b.startsWith(`${parentFile}_`)) continue;
+      const table = b.slice(parentFile.length + 1);
+      const { header: h } = readCsvGrid(path.join(testDataDir, sib));
+      if (!h.includes('PeriodIndex')) continue;
+      const fields = new Set(h.filter((x) => x && x !== 'TC_ID' && x !== 'IterationID' && x !== 'PeriodIndex'));
+      if (fields.size) out.set(table, fields);
+    }
+    return out;
+  };
+  const isChildCovered = (childFields: Map<string, Set<string>>, col: string): boolean => {
+    const m = /^(.+)\.\d+\.(.+)$/.exec(col);
+    return !!m && (childFields.get(m[1] ?? '')?.has(m[2] ?? '') ?? false);
+  };
   for (const file of dataFilesForReuse) {
     const cols = dataColumns.get(file);
     if (!cols) continue;
+    const childFields = childTableFields(file);
     const { header } = readCsvGrid(path.join(targetRoot, '01_testdata', `${file}.csv`));
     const existingByNorm = new Map<string, string>();
     for (const h of header) {
@@ -1739,6 +1769,16 @@ function main(): number {
     }
     for (const derived of [...cols]) {
       if (derived === 'TC_ID' || derived === 'IterationID') continue;
+      // Owned by a `<file>_<table>.csv` child table -> keep it there and let the
+      // loader fold it in at runtime; do NOT seed a duplicate wide column inline.
+      if (childFields.size && isChildCovered(childFields, derived)) {
+        cols.delete(derived);
+        dataValues.delete(`${file}|${derived}`);
+        reuseLog.push(
+          `${file}.csv: "${derived}" is owned by ${file}_${derived.split('.')[0]}.csv (child table) — left there, not duplicated inline`,
+        );
+        continue;
+      }
       const derivedNorm = normalizeColName(derived);
       let existing = existingByNorm.get(derivedNorm);
 
@@ -1767,6 +1807,30 @@ function main(): number {
             norm !== derivedNorm && !col.includes('.') && (norm.startsWith(derivedNorm) || derivedNorm.startsWith(norm)),
         );
         if (prefixHits.length === 1) existing = prefixHits[0]?.[1];
+        else if (prefixHits.length > 1) {
+          reuseLog.push(
+            `${file}.csv: recorded field "${derived}" is an ambiguous prefix of ${prefixHits.length} existing columns (${prefixHits.map(([, c]) => c).join(', ')}) — seeded a NEW column; wire it manually if it duplicates one (e.g. futBoundary -> futBoundaryType).`,
+          );
+        }
+      }
+
+      // Short effect/prior field ids (eHR, sdHR, eMC, …) arrive as a SUFFIX of the
+      // tester's descriptive column ("input name eHR" ends with "eHR"); the prefix
+      // match above misses them because neither string is a prefix of the other. Fall
+      // back to an UNAMBIGUOUS suffix match so the recorded field binds to the tester's
+      // existing column instead of minting a parallel "eHR" duplicate. Dotted/split ids
+      // are excluded as above, and an ambiguous suffix warns rather than guesses.
+      if (!existing && derivedNorm.length >= 3 && !derived.includes('.') && !splitColumns.has(`${file}|${derived}`)) {
+        const suffixHits = [...existingByNorm.entries()].filter(
+          ([norm, col]) =>
+            norm !== derivedNorm && !col.includes('.') && norm.length > derivedNorm.length && norm.endsWith(derivedNorm),
+        );
+        if (suffixHits.length === 1) existing = suffixHits[0]?.[1];
+        else if (suffixHits.length > 1) {
+          reuseLog.push(
+            `${file}.csv: recorded field "${derived}" ambiguously matches ${suffixHits.length} existing columns by suffix (${suffixHits.map(([, c]) => c).join(', ')}) — seeded a NEW column; wire it manually if it duplicates one.`,
+          );
+        }
       }
 
       if (!existing || existing === derived) continue;
