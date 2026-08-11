@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadMaster } from '../loaders/masterLoader.js';
 import { loadFeatureAll, selectorKey, SIM_METADATA_REL } from '../loaders/featureLoader.js';
+import { readCsv } from '../csv/reader.js';
 import { featureDir, abs } from '../utils/paths.js';
 import { getKeywordSpec } from '../keywords/catalog.js';
 import { FRAMEWORK_CONFIG } from '../../config/framework.config.js';
@@ -97,6 +98,7 @@ export function validateAll(
     validateMetadata(f, issues, warnings);
     validateTestDataCoverage(f, warnings);
     validateIterationCompleteness(f, issues);
+    validateChildTables(f, path.join(dir, testDataDirRel), warnings);
     validateSelectors(f, warnings);
     validateCompareConfig(f, issues, warnings);
     validateColumnMap(f, warnings);
@@ -327,6 +329,118 @@ function validateIterationCompleteness(
           `[${f.feature}] testdata: ${file}.csv has no row for ${tc}/${iter}, but another referenced testdata file does — the run will fail with "No testdata row". Add the row or align the IterationIDs.`,
         );
       }
+    }
+  }
+}
+
+/**
+ * Child-table structure (warnings only). The loader's foldChildTables has already
+ * merged every `<parent>_<table>.csv` period file into its parent and dropped it, so
+ * a malformed child can't crash the runtime. This re-reads them from disk to surface
+ * authoring problems at validate time: non-integer / non-contiguous / duplicate
+ * PeriodIndex, orphan rows (no parent), blank cells (use N/A), and a table authored
+ * both inline in the parent AND in a child file.
+ */
+function validateChildTables(
+  f: NonNullable<ReturnType<typeof loadFeatureAll>['value']>,
+  testDataDir: string,
+  warnings: string[],
+): void {
+  let files: string[];
+  try {
+    files = fs.readdirSync(testDataDir).filter((x) => x.toLowerCase().endsWith('.csv'));
+  } catch {
+    return;
+  }
+  const isNa = (v: string): boolean => {
+    const t = v.trim();
+    return t === '' || /^(n\/a|not applicable)$/i.test(t);
+  };
+  const parentHeaderCache = new Map<string, Set<string>>();
+  const parentRawHeaders = (base: string): Set<string> => {
+    let cached = parentHeaderCache.get(base);
+    if (!cached) {
+      try {
+        cached = new Set(readCsv(path.join(testDataDir, `${base}.csv`)).headers);
+      } catch {
+        cached = new Set<string>();
+      }
+      parentHeaderCache.set(base, cached);
+    }
+    return cached;
+  };
+
+  for (const file of files) {
+    const base = file.slice(0, -4);
+    const us = base.indexOf('_');
+    if (us <= 0) continue;
+    const parentBase = base.slice(0, us);
+    const tableName = base.slice(us + 1);
+    if (!f.testDataParsed.has(parentBase)) continue; // prefix isn't a loaded parent -> ordinary file
+    const parsed = readCsv(path.join(testDataDir, file));
+    if (!parsed.headers.includes('PeriodIndex')) continue; // not a period-keyed child table
+
+    const where = `[${f.feature}] ${file}`;
+    const fieldCols = parsed.headers.filter((h) => h && !JOIN_KEYS.includes(h as (typeof JOIN_KEYS)[number]) && h !== 'PeriodIndex');
+    const inline = parentRawHeaders(parentBase);
+    const parentPairs = new Set<string>();
+    const parentParsed = f.testDataParsed.get(parentBase);
+    if (parentParsed) {
+      for (const r of parentParsed.records) parentPairs.add(`${r.data.TC_ID ?? ''}|${r.data.IterationID ?? ''}`);
+    }
+
+    const periodsByIter = new Map<string, number[]>();
+    let blankCells = 0;
+    let collisionFlagged = false;
+    for (const rec of parsed.records) {
+      const tc = (rec.data.TC_ID ?? '').trim();
+      const iter = (rec.data.IterationID ?? '').trim();
+      const pair = `${tc}|${iter}`;
+      if (!parentPairs.has(pair)) {
+        warnings.push(
+          `${where}: row ${tc}/${iter} has no matching ${parentBase}.csv row — it will not be folded (add the parent row or align the IterationIDs).`,
+        );
+      }
+      const pk = (rec.data.PeriodIndex ?? '').trim();
+      if (!isNa(pk)) {
+        const n = Number(pk);
+        if (!Number.isInteger(n) || n < 0) {
+          warnings.push(`${where}: PeriodIndex "${pk}" for ${tc}/${iter} is not a 0-based integer.`);
+        } else {
+          const arr = periodsByIter.get(pair) ?? [];
+          arr.push(n);
+          periodsByIter.set(pair, arr);
+        }
+        if (!collisionFlagged && fieldCols.some((field) => inline.has(`${tableName}.${pk}.${field}`))) {
+          collisionFlagged = true;
+          warnings.push(
+            `${where}: ${parentBase}.csv also carries inline "${tableName}.*" columns — keep this table in ONE place (the child file OR inline), not both.`,
+          );
+        }
+      }
+      for (const field of fieldCols) {
+        if ((rec.data[field] ?? '') === '') blankCells++;
+      }
+    }
+    for (const [pair, periods] of periodsByIter) {
+      const sorted = [...periods].sort((a, b) => a - b);
+      const label = pair.replace('|', '/');
+      if (sorted.some((v, i) => i > 0 && v === sorted[i - 1])) {
+        warnings.push(`${where}: duplicate PeriodIndex for ${label} (${sorted.join(',')}).`);
+      }
+      for (let i = 0; i < sorted.length; i++) {
+        if (sorted[i] !== i) {
+          warnings.push(
+            `${where}: PeriodIndex for ${label} is not contiguous from 0 (${sorted.join(',')}) — periods must be 0,1,2,…`,
+          );
+          break;
+        }
+      }
+    }
+    if (blankCells > 0) {
+      warnings.push(
+        `${where}: ${blankCells} blank cell(s) — use N/A for not-applicable table cells (a blank can slip past a SkipIf ==N/A Add-Period gate and add an empty period row).`,
+      );
     }
   }
 }
