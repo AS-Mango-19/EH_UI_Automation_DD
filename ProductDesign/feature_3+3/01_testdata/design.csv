@@ -1,0 +1,6 @@
+TC_ID,IterationID,Max. Sample Size,Cohort Size,Target Probability of Toxicity,Variant,Start With Accelerated Titration,startingDose,Number of Simulations Run,Random Number Seed,Fixed Seed,Result Name,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Average Allocations
+TC_18,ITER_01,27,Computed,Computed,3+3 H,Checked,Dose 5,100,Fixed,100,Result - Input Set 1 Group,Checked,Checked,12,2
+TC_18,ITER_02,27,Computed,Computed,3+3 L,Unchecked,Dose 2,100,Fixed,100,Result - Input Set 1 Group,Checked,Checked,5,1
+TC_18,ITER_03,27,Computed,Computed,3+3 L (Modified),Checked,Dose 3,100,Fixed,100,Result - Input Set 1 Group,Checked,Unchecked,N/A,1
+TC_18,ITER_04,27,Computed,Computed,3+3 H,Unchecked,Dose 1,100,Fixed,100,Result - Input Set 1 Group,Unchecked,Unchecked,N/A,2
+TC_18,ITER_05,27,Computed,Computed,3+3 H,Checked,Dose 4,100,Fixed,100,Result - Input Set 1 Group,Unchecked,Unchecked,N/A,1

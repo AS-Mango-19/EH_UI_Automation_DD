@@ -1,5 +1,5 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 43376e0563071c3d7990c60cffd23d8b685ef57b78f3fadf587a0efdfc3de11c)
-import type { Page } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 6eafddfd82d8c95dd73059692125f8d2a3efb0188bcc62d1c2648011c114828b)
+import type { Page as PlaywrightPage } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { LoginPage } from './LoginPage.page.js';
 import { ProjectsPage } from './ProjectsPage.page.js';
@@ -15,7 +15,7 @@ export { InputSetPage } from './InputSetPage.page.js';
 export { DesignPage } from './DesignPage.page.js';
 export { ResultsPage } from './ResultsPage.page.js';
 
-export function createPages(page: Page, selectors: Map<string, SelectorRow>) {
+export function createPages(page: PlaywrightPage, selectors: Map<string, SelectorRow>) {
   return {
     LoginPage: new LoginPage(page, selectors),
     ProjectsPage: new ProjectsPage(page, selectors),
