@@ -1,8 +1,8 @@
 TC_ID,IterationID,collectionName,SelectTask,SelectTest
-TC_15,ITER_01,Set 1,,
-TC_15,ITER_02,Set 2,,
-TC_15,ITER_03,Set 3,,
-TC_15,ITER_04,Set 4,,
-TC_15,ITER_05,Set 5,,
-TC_15,ITER_06,Set 6,,
-TC_15,ITER_07,Set 7,,
+TC_17,ITER_01,Set 1,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_02,Set 2,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_03,Set 3,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_04,Set 4,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_05,Set 5,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_06,Set 6,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
+TC_17,ITER_07,Set 7,Design,Logrank Test Given Accrual Duration and Study Duration (Parallel Design)
