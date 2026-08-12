@@ -1,0 +1,6 @@
+TC_ID,IterationID,Target Probability of Toxicity,Follow-up Time ,Mean Inter-patient Arrival Time (MIAT),Inevaluable Rate,Distribution of Time to DLT,Probability,Last Fraction of Assessment Window,startingDose,Number of Simulations Run,Random Number Seed,Fixed Seed,Result Name
+TC_19,ITER_01,0.333,22,11,0.111,Weibull,0.55,0.555,Dose 5,123,Fixed,123,Result - Input Set 1 C
+TC_19,ITER_02,0.34,21,10,0.21,Uniform,N/A,N/A,Dose 2,100,Fixed,100,Result - Input Set 1 C
+TC_19,ITER_03,0.41,20,12,0.321,Weibull,0.545,0.656,Dose 3,100,Fixed,100,Result - Input Set 1 C
+TC_19,ITER_04,0.365,23,11,0.125,Uniform,N/A,N/A,Dose 1,100,Fixed,100,Result - Input Set 1 C
+TC_19,ITER_05,0.456,22,10,0.22,Weibull,0.456,0.654,Dose 4,100,Fixed,100,Result - Input Set 1 C
