@@ -1,8 +1,8 @@
 TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,Treatment Arm,Control Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Variable,followUpTime
-TC_15,ITER_01,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_02,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_03,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_04,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_05,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_06,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
-TC_15,ITER_07,FALSE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_01,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_02,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_03,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_04,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_05,TRUE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_06,FALSE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10
+TC_17,ITER_07,FALSE,GADSD_AD,Week,08/06/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10

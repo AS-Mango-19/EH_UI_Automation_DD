@@ -63,6 +63,19 @@ When it is unsure, it **asks the user** rather than guessing.
 If the API export mixes in project/inputset-looking columns, route each to the file whose feature
 owns it; if a column maps to **no** target file, **ask**.
 
+**Normalized child tables (optional).** Any repeated multi-period table that would otherwise live as
+inline `<tableName>.<n>.<field>` columns — `inputMethodTable`, `boundary`, `dropoutTable`,
+`enrollmentTable` (and the sim's `boundarySim`) — **MAY** instead be authored as its own normalized
+child CSV named `<phase>_<tableName>.csv`, where `<phase>` is the parent basename (`design` or
+`simulation`): e.g. `design_inputMethodTable.csv`, `design_boundary.csv`, `design_dropoutTable.csv`,
+`design_enrollmentTable.csv`, `simulation_boundary.csv`, `simulation_accrual.csv`. Columns are
+`TC_ID, IterationID, PeriodIndex, <field1>, <field2>, …` with **one row per period** (multiple rows
+per `TC_ID`+`IterationID`). At load time the loader folds each child row back into its parent row —
+cell `(PeriodIndex=n, field=v)` → synthetic column `<tableName>.<n>.<field>`=`v` — so it is **exactly
+equivalent** to authoring the wide inline columns; `${data.design.inputMethodTable.0.hazardRateControl}`
+resolves identically either way. **Never** author the same table **both** inline and as a child file
+(the loader keeps inline; the validator warns). See "The period rules" below for the row conventions.
+
 ## What goes in a cell — decide by intent, preserve the export
 
 | The field is… | Cell |
@@ -90,13 +103,25 @@ Repeated tables use a `…Table.<n>.<field>` / `boundary.<n>.<field>` index per 
 - Keep period indices **contiguous per iteration** (use 0, then 1, then 2 — don't set period 2 while
   period 1 is `N/A`).
 
+When the table is instead authored as a **normalized child file** (`design_<tableName>.csv` /
+`simulation_<tableName>.csv`, see "Which file each column goes in"), the same intent applies **per
+row** rather than per column-index:
+- `PeriodIndex` is **0-based and contiguous** per iteration (0, 1, 2, … — no gaps, no duplicates).
+- A period an iteration does **not** use is simply **absent** (no row) — or a single placeholder row
+  with `PeriodIndex=N/A` and every field `N/A`; both fold to nothing. (This replaces the inline rule
+  "an unused period index is all `N/A`".)
+- Not-applicable cells use `N/A`, **never blank** — a blank can slip past a `SkipIf …==N/A`
+  Add-Period gate.
+
 ## The effect-size hypothesis-suffix rule
 
 Effect columns carry a hypothesis suffix — `_Null_SS`, `_Alt_SS`, `_Alt_SP`, `_Null_NI`, `_Alt_NI`
 (and treatment-cell variants `_SPSS`, `_SS`, `_NI`). Per the design's `Hypothesis`/`Test Type`,
 **exactly one** suffix column per effect holds a value and **all the others are `N/A`** (a
 Superiority row → `_Alt_SP`; a Non-Inferiority row → `_…_NI`; etc.). The export already does this —
-preserve it. Full legend + the `HazardRatioInputSet` sub-method mapping:
+preserve it. This applies equally to a **child table's field columns** — in a `design_<tableName>.csv`
+row, exactly one suffix column per effect holds a value (per that row's `Hypothesis`/`Test Type`) and
+the rest are `N/A`. Full legend + the `HazardRatioInputSet` sub-method mapping:
 [FIELD_WIRING_PATTERNS.md](FIELD_WIRING_PATTERNS.md).
 
 ## Repeated-modal / multi-scenario data

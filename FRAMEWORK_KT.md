@@ -503,6 +503,52 @@ Interim **spacing is period-wise the same way** — `"25, 50, 75"` becomes
 as your deepest scenario needs**: the recording captures a fixed number of periods, so a
 scenario with *more* periods than were recorded needs the extra rows re-recorded.
 
+#### Normalized child-table files (the split alternative)
+
+The indexed columns above may instead live in their **own CSV** — same model, your choice
+of layout. A wide multi-period table that would otherwise sprawl across
+`inputMethodTable.0.… inputMethodTable.1.…` columns of `design.csv` (or the sim's
+`boundarySim.0.…`) can be authored **normalized** — one row per period — in a sibling file,
+and the loader folds it back into exactly the inline shape before anything downstream runs.
+The tester may choose **either** layout.
+
+- **File name `<phase>_<tableName>.csv`** — `<phase>` is the parent basename (`design` or
+  `simulation`), `<tableName>` the table: `design_inputMethodTable.csv`, `design_boundary.csv`,
+  `design_dropoutTable.csv`, `design_enrollmentTable.csv`, `simulation_boundary.csv`,
+  `simulation_accrual.csv`.
+- **Columns `TC_ID, IterationID, PeriodIndex, <field1>, <field2>, …`** — the table's fields
+  become plain columns; the period index is a **column**, not part of the heading.
+- **One row per period** — `PeriodIndex` `0,1,2,…` (0-based, matching the inline `.0/.1/.2`),
+  so a `(TC_ID, IterationID)` spanning three periods is three rows.
+
+**Same model, either way.** `core/loaders/featureLoader.ts` → `foldChildTables()` folds each
+child row back onto its parent's `(TC_ID, IterationID)` row **at load time**: cell
+`(PeriodIndex=n, field=v)` becomes the synthetic column `<tableName>.<n>.<field>=v`, then the
+child file is dropped from the loaded set. So
+`${data.design.inputMethodTable.0.hazardRateControl}` resolves **identically** whether that
+cell was authored inline in `design.csv` **or** as a row in `design_inputMethodTable.csv`.
+Metadata tokens, the runtime blank/`N/A`/`Computed` skip, the importer, and the resolver are
+all **unchanged** — this is purely a load-time reshape.
+
+**Authoring rules (a child table):**
+
+- `PeriodIndex` is **0-based and contiguous** per iteration (`0,1,2,…` — no gaps, no
+  duplicates). A period an iteration doesn't use is simply **absent** (no row), or a single
+  placeholder row `PeriodIndex=N/A` (all fields `N/A`) meaning "table absent this iteration";
+  both fold to nothing.
+- Not-applicable cells are **`N/A`, not blank** (runtime treats blank as N/A for fills, but a
+  literal-comparison `SkipIf …==N/A` Add-Period gate can let a blank slip past and add an empty
+  period — Trap 23).
+- Author each table in **one place only** — inline in the parent **or** the child file, never
+  both (the loader keeps the inline value and the validator warns on the collision).
+- The **hypothesis-suffix rule still applies** to the child's field columns (e.g.
+  `hazardRateTrmt_Null_SS` / `_Alt_SPSS` / `_Null_NI`): exactly one suffix per effect is valued
+  per the row's `Hypothesis`, the rest `N/A` — same as inline (see the box below and
+  `FIELD_WIRING_PATTERNS.md`).
+
+`core/schema/validator.ts` → `validateChildTables` **warns** (never errors) on non-integer /
+non-contiguous / duplicate `PeriodIndex`, orphan rows, an inline+child collision, and blank cells.
+
 #### Null / Alternative (and NI/SP) paired fields — the split is automatic
 
 Forms that show the **same label** under a Null and an Alternative section —
@@ -1580,7 +1626,10 @@ Ordered by how much time they will cost you.
     invalid so it won't compute. Gate every period/interim-add on the new period's
     key column: `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. The recording may
     **mis-name** the button (captured `role=button "Add Period"`, named after a nearby
-    label) — trust the *selector*, not the ObjectName.
+    label) — trust the *selector*, not the ObjectName. This token/gate is **unchanged**
+    when the table is authored as a normalized child file (§4.5) — the fold reconstructs the
+    same `<table>.<idx>.<col>` column — but there the not-applicable cell must be `N/A`, **not
+    blank**, or the literal `==N/A` compare misses it and the blank row is added anyway.
 
 ---
 

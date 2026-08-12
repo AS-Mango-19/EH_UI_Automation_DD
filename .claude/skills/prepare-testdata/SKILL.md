@@ -1,6 +1,6 @@
 ---
 name: prepare-testdata
-description: Prepare ready-to-use UI-automation testdata for ONE feature from its raw API export (_api_source/Testdata-*.csv) — re-shape it into 01_testdata/design.csv, project.csv, inputset.csv (and simulation.csv if it has a sim), applying the framework's N/A / Computed / value-driven-period / hypothesis-suffix conventions. TESTDATA ONLY — never changes code, metadata, selectors, or master.csv; asks the user on any doubt. Use when the user asks to build/prepare/convert testdata for a feature from an API dump.
+description: Prepare ready-to-use UI-automation testdata for ONE feature from its raw API export (_api_source/Testdata-*.csv) — re-shape it into 01_testdata/design.csv, project.csv, inputset.csv (and simulation.csv if it has a sim), applying the framework's N/A / Computed / value-driven-period / hypothesis-suffix conventions (period tables may be inline columns or a normalized child CSV keyed TC_ID/IterationID/PeriodIndex). TESTDATA ONLY — never changes code, metadata, selectors, or master.csv; asks the user on any doubt. Use when the user asks to build/prepare/convert testdata for a feature from an API dump.
 ---
 
 Follow the playbook in [AI_TESTDATA_AGENT.md](../../../AI_TESTDATA_AGENT.md) **exactly**, for the
@@ -11,7 +11,8 @@ point.
 Non-negotiables (full detail is in the playbook):
 
 - **CODE-FREE — data files only.** Create/edit **only** `ProductDesign/feature_<Name>/01_testdata/*.csv`
-  (`design.csv`, `project.csv`, `inputset.csv`, `simulation.csv`). **Never** touch `core/`, `scripts/`,
+  (`design.csv`, `project.csv`, `inputset.csv`, `simulation.csv`, plus any normalized child tables
+  `design_<tableName>.csv` / `simulation_<tableName>.csv`). **Never** touch `core/`, `scripts/`,
   `custom/`, any `*.ts`, `03_metadata/`, `02_selectors_repo/`, generated `04_/05_`, or `master.csv`.
   Registering + wiring the feature is the **import** agent's job ([AI_IMPORT_AGENT.md](../../../AI_IMPORT_AGENT.md)).
 - **Re-shape, don't invent.** The API export (`_api_source/Testdata-*.csv`) already encodes the
@@ -23,7 +24,11 @@ Non-negotiables (full detail is in the playbook):
   → skipped. `Computed` = app-derived → never set. A value = editable field. Preserve whatever the
   export already says; never turn an `N/A`/`Computed` cell into a guessed number.
 - **Period rules.** A period (`…Table.<n>` / `boundary.<n>`) is present iff its columns hold values;
-  an unused period is **all `N/A`**; never leave a period half-filled; keep indices contiguous.
+  an unused period is **all `N/A`**; never leave a period half-filled; keep indices contiguous. A
+  period table may instead be authored as a **normalized child CSV** (`design_<tableName>.csv` /
+  `simulation_<tableName>.csv`) keyed `(TC_ID, IterationID, PeriodIndex)` — one row per period, folded
+  back to the inline columns at load time; there `PeriodIndex` is 0-based/contiguous and an unused
+  period is an **absent row** (or a `PeriodIndex=N/A` placeholder), `N/A` never blank.
 - **Effect-size suffix rule.** Per the row's Hypothesis/Test Type, exactly one suffixed column
   (`_Alt_SP` / `_…_NI` / …) per effect is valued and the rest are `N/A` — as the export has it.
 - **Ask on any doubt** — TC id, project defaults, which iterations `Run`, an unmapped API column, an

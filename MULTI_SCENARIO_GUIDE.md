@@ -11,6 +11,14 @@ scenario is one new row, and it scales to any count with no metadata edits.**
 
 The reference implementation is **`ProductDesign/feature_BOIN`**. Copy it.
 
+> **Not the same as a period child-table.** This guide's child CSV (`scenarios.csv`) is keyed
+> `(TC_ID, IterationID, ScenarioIndex)` and drives **repeated sub-flows** via `loopOverData` +
+> `${runtime.loop.*}` — one modal record per row. A `<phase>_<tableName>.csv` **period** child
+> table (e.g. `design_boundary.csv`) is a *different* shape: the loader **folds** it into the
+> parent's wide `${data.<phase>.<table>.<n>.<field>}` model at load time — no loop, no runtime
+> tokens. Use that for multi-period tables; use this for repeated records. See FRAMEWORK_KT §4.5 /
+> AI_TESTDATA_AGENT for the period-table fold.
+
 ---
 
 ## 1. The three moving parts

@@ -247,6 +247,8 @@ Step 4  assuranceInputMethod (StepID 1440 -> #assuranceInputMethod)   picks the 
 
 All boundary ids use dotted array names `boundary.{i}.*` (look index `i`, 0-based) and are **hypothesis-agnostic** (no `_SP`/`_SS`/`_NI`). Steps run sorted by StepID; band **2570–3050**.
 
+> **Authoring note:** these `boundary.*` columns (and the `dropoutTable.*` / `enrollmentTable.*` period columns) may live inline in design.csv **or** in a normalized child CSV `design_<tableName>.csv` (one row per period, keyed `TC_ID,IterationID,PeriodIndex`) that the loader folds into the **same** `${data.design.<table>.<n>.<field>}` tokens — no token, selector, or step changes either way. See AI_IMPORT_AGENT.md §3 / FRAMEWORK_KT §4.5.
+
 The **master gate** is `effBoundaryFam`. The three Calculate clicks are gated `SkipIf ${data.design.effBoundaryFam}==N/A`:
 
 ```
@@ -326,7 +328,7 @@ Only the method the row selects has non-N/A cells, so the other table's fills (a
 ### Flow order — a committed/input field must precede its Calculate
 
 The app **disables Calculate until its required input is filled**, and the required input flips with a dropdown:
-- **Enrollment**: `Input Parameters` = `Duration` needs `committedDuration`; `= Subjects` needs `committedSubjects`. The recording filled `committedDuration` before Calculate but `committedSubjects` *after* → for a Subjects design Calculate stayed disabled ("Committed (Subjects) is required"). Fix: fill **both** committed columns (one is N/A and skips) **before** the Calculate. Likewise the **accrual periods** (Add-Period + start-time + rate for every period) must be filled **before** the `Input Parameters` dropdown.
+- **Enrollment**: `Input Parameters` = `Duration` needs `committedDuration`; `= Subjects` needs `committedSubjects`. The recording filled `committedDuration` before Calculate but `committedSubjects` *after* → for a Subjects design Calculate stayed disabled ("Committed (Subjects) is required"). Fix: fill **both** committed columns (one is N/A and skips) **before** the Calculate. Likewise the **accrual periods** (Add-Period + start-time + rate for every period) must be filled **before** the `Input Parameters` dropdown. **Add-Period quirk — enrollment inserts at the TOP:** in the Enrollment table *only*, clicking *Add Period* prepends the new blank row and shifts the existing rows **down** (the final 100%-accrued row stays last) — unlike every other period table, which appends at the **bottom**. So `enrollmentTable` Add-Period gating and per-period fill ordering must target the **top** row, not a bottom-append. *(Runtime special-casing is pending a GADSD recording — author/gate around it for now.)*
 - **Early stopping**: select **Boundary Scale before** the first boundary Calculate — the recording had Calculate first.
 
 General rule: **whenever a dropdown chooses which field is required, fill the required field (all value-driven variants) before the Calculate/commit that consumes it.** Verify by screenshot — a red "X is required" under a greyed Calculate is this bug.

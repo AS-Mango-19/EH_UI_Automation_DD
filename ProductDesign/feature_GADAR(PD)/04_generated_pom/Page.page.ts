@@ -119,6 +119,21 @@ export class Page {
     return resolveLocator(this.page, this.selectors, 'Page', 'btn_Recalculate', { dynamicArgs });
   }
 
+  /** First Add Period = Survival/input-method table (sim Response tab renders all sections at once) */
+  btn_InputMethod_Add_Period(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_InputMethod_Add_Period', { dynamicArgs });
+  }
+
+  /** Noninferiority margin (hypothesis-specific; renders only for Noninferiority) */
+  txt_Margin_NI(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Margin_NI', { dynamicArgs });
+  }
+
+  /** Super Superiority margin (hypothesis-specific; renders only for Super Superiority) */
+  txt_Margin_SS(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Margin_SS', { dynamicArgs });
+  }
+
   /** native <select> from codegen */
   ddl_Adaptation_Method(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Adaptation_Method', { dynamicArgs });
@@ -287,6 +302,16 @@ export class Page {
   /** textbox from codegen */
   txt_input_Method_Table_1_hazard_Rate_Control(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_1_hazard_Rate_Control', { dynamicArgs });
+  }
+
+  /** 3rd survival period Starting At Time (Hazard Rates piecewise) */
+  txt_input_Method_Table_2_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_2_starting_At_Time', { dynamicArgs });
+  }
+
+  /** 3rd survival period Hazard Rate Control (Hazard Rates piecewise) */
+  txt_input_Method_Table_2_hazard_Rate_Control(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_input_Method_Table_2_hazard_Rate_Control', { dynamicArgs });
   }
 
   /** textbox from codegen */

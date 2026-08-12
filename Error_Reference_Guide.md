@@ -59,6 +59,12 @@ These short, high-frequency items were taken from the repository's `USAGE_ERRORS
   - Symptom: `No testdata row` or iteration validation fails.
   - Fix: Ensure keyed CSVs include rows for every `TC_ID` + `IterationID` referenced by flows. See [FRAMEWORK_KT.md](FRAMEWORK_KT.md#L360).
 
+- "Prior parameters are too extreme" at Recalculate (Cytel East Horizon design/sim):
+  - Symptom: the design **Recalculate** never completes — the boundary's **Final Futility HR** stays empty and the page shows *"Prior parameters are too extreme"*. In GADAR this surfaces as `clickRecalculate: boundary recompute did not complete`.
+  - **Root cause (definitively established 2026-08-10, by payload diff): the `POST …/engine/boundary` request is MISSING its `testParams` block — the treatment effect size (hazard rates).** The solver has no effect to work with and returns `returnValue: -10001` (= "prior too extreme"). The app builds `testParams` from the **Response tab's** model, which only populates once that tab has been **mounted**; the sim edited the Design header and clicked Recalculate *before Response was ever visited*, so the effect size was never sent. Confirmed by diffing a failing automated payload against a working manual one on the same design — `testParams` was the only difference.
+  - Fix: **mount the Response tab into the model before Recalculate** (`loadResponseTabIntoModel`, called at the start of `enterDesignHeader`): click the "Response" tab, wait for a Response input to render, return to the Design tab. The payload then carries the hazard rates and Recalculate completes on the first attempt. See [ProductDesign/feature_GADAR(PD)/GADAR_SIM_NOTES.md](ProductDesign/feature_GADAR(PD)/GADAR_SIM_NOTES.md) §1.
+  - Debugging technique (reusable): when a UI-driven server compute fails but the SAME inputs succeed **by hand**, hook `page.on('request'/'response')` around the action, capture the request body, and diff automated-vs-manual — the differing field is the bug. Do NOT assume a flaky server or a lingering session. (RETRACTED prior theory: this error was mis-attributed to a lingering shared-account session / force-kill / concurrent login. That was never the cause — a fresh env + fresh account reproduced it on the first attempt, and a rested session never fixed it. The missing `testParams` is the whole story.)
+
 How to use these quick notes:
 - Search logs for the short phrase shown and follow the recommended fix; this section is intentionally compact for quick triage.
 
