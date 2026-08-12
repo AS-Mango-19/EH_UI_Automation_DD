@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: e0908691446cd19055b1af0505d4ac3883b1fa2744eba67e8dedad2d240e849f)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: a146fdee11965ca0baaff596e0868fe000b1c81b2d4e8af08230b1ba0145dea1)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -1010,8 +1010,18 @@ export class ResultsPage {
   }
 
   /** textbox from codegen */
+  txt_boundary_0_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_0_analysis_Spacing_Info', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
   txt_boundary_1_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_analysis_Spacing_Info', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_analysis_Spacing_Info', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -1117,5 +1127,140 @@ export class ResultsPage {
   /** period-2 fill */
   txt_input_Method_Table_2_cum_Perc_Survival_Control(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_input_Method_Table_2_cum_Perc_Survival_Control', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_boundary_0_futility_Check(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_boundary_0_futility_Check', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_1_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_1_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_cum_Beta_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_1_futility_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_futility_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_1_futility_CP(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_futility_CP', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_boundary_1_efficacy_Check(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_boundary_1_efficacy_Check', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_cum_Beta_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_efficacy_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_efficacy_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_futility_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_futility_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_futility_CP(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_futility_CP', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_2_futility_HR(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_futility_HR', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_boundary_2_efficacy_Check(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_boundary_2_efficacy_Check', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_boundary_2_futility_Check(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'chk_boundary_2_futility_Check', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_cum_Beta_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_efficacy_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_efficacy_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_futility_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_futility_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_futility_CP(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_futility_CP', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_3_futility_HR(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_futility_HR', { dynamicArgs });
+  }
+
+  /** native <select> (asymmetric efficacy boundary family) */
+  ddl_asym_Eff_Boundary_Fam(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_asym_Eff_Boundary_Fam', { dynamicArgs });
+  }
+
+  /** native <select> (upper efficacy spending function) */
+  ddl_upper_Spend_Func(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_upper_Spend_Func', { dynamicArgs });
+  }
+
+  /** native <select> (lower efficacy spending function) */
+  ddl_lower_Spend_Func(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_lower_Spend_Func', { dynamicArgs });
+  }
+
+  /** upper efficacy Gamma parameter */
+  txt_upper_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Gamma', { dynamicArgs });
+  }
+
+  /** upper efficacy Rho parameter */
+  txt_upper_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Rho', { dynamicArgs });
+  }
+
+  /** lower efficacy Gamma parameter */
+  txt_lower_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Gamma', { dynamicArgs });
+  }
+
+  /** lower efficacy Rho parameter */
+  txt_lower_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Rho', { dynamicArgs });
   }
 }

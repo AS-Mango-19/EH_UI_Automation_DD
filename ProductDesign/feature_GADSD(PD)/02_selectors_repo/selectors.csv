@@ -223,7 +223,9 @@ txt_boundary_0_futility_PValue,ResultsPage,css,"[id=""boundary.0.futilityPValue"
 txt_boundary_0_futility_CP,ResultsPage,css,"[id=""boundary.0.futilityCP""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_0_futility_HR,ResultsPage,css,"[id=""boundary.0.futilityHR""]",,,FALSE,textbox from codegen,FALSE
 btn_Add_Interim,ResultsPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_boundary_0_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.0.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_1_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.1.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.2.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
 txt_col_md_12_card_table_tbody_tr_nth_child_2_td_nth_child_5,ResultsPage,css,.col-md-12 > .card > .table > tbody > tr:nth-child(2) > td:nth-child(5),,,FALSE,textbox from codegen,FALSE
 txt_boundary_1_efficacy_PValue,ResultsPage,css,"[id=""boundary.1.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_1_futility_HR,ResultsPage,css,"[id=""boundary.1.futilityHR""]",,,FALSE,textbox from codegen,FALSE
@@ -245,3 +247,30 @@ lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
 lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
 txt_input_Method_Table_2_by_Time,ResultsPage,css,"input[name=""inputMethodTable.2.byTime""]",,,FALSE,period-2 fill (recording captured only 0-1; testdata needs 3),FALSE
 txt_input_Method_Table_2_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.2.cumPercSurvivalControl""]",,,FALSE,period-2 fill,FALSE
+chk_boundary_0_futility_Check,ResultsPage,css,"[id=""boundary.0.futilityCheck""]",,,FALSE,checkbox from codegen,FALSE
+txt_boundary_1_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.1.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.1.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_PValue,ResultsPage,css,"[id=""boundary.1.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_CP,ResultsPage,css,"[id=""boundary.1.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+chk_boundary_1_efficacy_Check,ResultsPage,css,"[id=""boundary.1.efficacyCheck""]",,,FALSE,checkbox from codegen,FALSE
+txt_boundary_2_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.2.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.2.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_efficacy_PValue,ResultsPage,css,"[id=""boundary.2.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_PValue,ResultsPage,css,"[id=""boundary.2.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_CP,ResultsPage,css,"[id=""boundary.2.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_HR,ResultsPage,css,"[id=""boundary.2.futilityHR""]",,,FALSE,textbox from codegen,FALSE
+chk_boundary_2_efficacy_Check,ResultsPage,css,"[id=""boundary.2.efficacyCheck""]",,,FALSE,checkbox from codegen,FALSE
+chk_boundary_2_futility_Check,ResultsPage,css,"[id=""boundary.2.futilityCheck""]",,,FALSE,checkbox from codegen,FALSE
+txt_boundary_3_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.3.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.3.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_efficacy_PValue,ResultsPage,css,"[id=""boundary.3.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_futility_PValue,ResultsPage,css,"[id=""boundary.3.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_futility_CP,ResultsPage,css,"[id=""boundary.3.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_futility_HR,ResultsPage,css,"[id=""boundary.3.futilityHR""]",,,FALSE,textbox from codegen,FALSE
+ddl_asym_Eff_Boundary_Fam,ResultsPage,css,#asymEffBoundaryFam,,,FALSE,native <select> (asymmetric efficacy boundary family),FALSE
+ddl_upper_Spend_Func,ResultsPage,css,#upperSpendFunc,,,FALSE,native <select> (upper efficacy spending function),FALSE
+ddl_lower_Spend_Func,ResultsPage,css,#lowerSpendFunc,,,FALSE,native <select> (lower efficacy spending function),FALSE
+txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,upper efficacy Gamma parameter,FALSE
+txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,upper efficacy Rho parameter,FALSE
+txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,lower efficacy Gamma parameter,FALSE
+txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,lower efficacy Rho parameter,FALSE
