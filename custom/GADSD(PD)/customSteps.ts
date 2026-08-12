@@ -115,6 +115,80 @@ export const reconcileSurvivalPeriods: KeywordHandler = async (page, ctx, step) 
 export const reconcileDropoutPeriods: KeywordHandler = async (page, ctx, step) => {
   await reconcilePeriods(page, ctx, 'dropoutTable', step.timeout);
 };
+
+/**
+ * BOUNDARY interim table — like survival/dropout it is data-driven, but the row-add
+ * control is "Add Interim" (not "Add Period") and the row count is the number of
+ * INTERIM analyses, which the app models as the editable `boundary.<n>.analysisSpacingInfo`
+ * inputs. A DISABLED final row (spacing fixed at 100) always sits at the bottom and is
+ * NOT an interim, so it must be excluded from the count.
+ *
+ * The recording captured a fixed 2-interim design (one "Add Interim" + boundary.1 only),
+ * so static metadata can neither add the right number of interims nor knows each is
+ * present. This reconciles the live interim rows to the DESIGN testdata's interim count
+ * (distinct `boundary.<n>` whose analysisSpacingInfo is not N/A); the ordinary metadata
+ * `fill` steps then set each row's analysisSpacingInfo (ascending -> satisfies the app's
+ * "strictly increasing" rule) and any per-interim checks/p-values by DOM id.
+ *
+ * Count = editable `[id$=".analysisSpacingInfo"]` boundary inputs (the disabled final row
+ * is skipped by the enabled-filter). Default state is one interim (IA1) already present.
+ */
+function targetBoundaryInterimCount(ctx: RunContext): number {
+  const parsed = ctx.feature.testDataParsed.get('design');
+  if (!parsed) return 0;
+  const row = parsed.records.find(
+    (r) => r.data['TC_ID'] === ctx.tcId && r.data['IterationID'] === ctx.iterationId,
+  )?.data;
+  if (!row) return 0;
+  const re = /^boundary\.(\d+)\.analysisSpacingInfo$/;
+  const interims = new Set<string>();
+  for (const h of parsed.headers) {
+    const m = re.exec(h);
+    if (m && !isNA(row[h])) interims.add(m[1]);
+  }
+  return interims.size;
+}
+
+async function editableInterimCount(page: Page): Promise<number> {
+  return page
+    .locator('[id^="boundary."][id$=".analysisSpacingInfo"]')
+    .evaluateAll((els) => els.filter((e) => !(e as HTMLInputElement).disabled).length);
+}
+
+export const reconcileBoundaryInterims: KeywordHandler = async (page, ctx, step) => {
+  const timeout = step.timeout;
+  const target = targetBoundaryInterimCount(ctx);
+  let current = await editableInterimCount(page);
+  logger.info(`reconcile boundary interims: live ${current} editable, design testdata wants ${target}`);
+  if (target <= current) {
+    if (target < current) {
+      logger.warn(
+        `reconcile boundary: testdata wants FEWER interims (${target}) than present (${current}) — interim deletion not implemented; extra rows left for N/A fills to leave blank.`,
+      );
+    }
+    return;
+  }
+  let guard = 0;
+  while (current < target && guard++ < target + 5) {
+    const addBtn = page.getByRole('button', { name: 'Add Interim' }).first();
+    if (!(await addBtn.count().catch(() => 0))) {
+      throw new Error(`reconcile boundary: no "Add Interim" button found (current=${current}, target=${target})`);
+    }
+    await addBtn.click({ timeout }).catch(async () => {
+      await addBtn.click({ timeout, force: true }).catch(() => undefined);
+    });
+    await page.waitForTimeout(400);
+    const next = await editableInterimCount(page);
+    if (next <= current) {
+      throw new Error(`reconcile boundary: "Add Interim" did not add an interim (still ${next}, target ${target})`);
+    }
+    current = next;
+  }
+  if (current !== target) {
+    throw new Error(`reconcile boundary: ended with ${current} interim(s), expected ${target}`);
+  }
+  logger.info(`reconcile boundary interims: now ${current} interim(s)`);
+};
 /**
  * ENROLLMENT is the EXCEPTIONAL table (the reason it gets its own handler instead of
  * the standard reconcile). Two app behaviours make it different from survival/dropout:
@@ -198,4 +272,9 @@ export const enterEnrollmentTable: KeywordHandler = async (page, ctx, step) => {
   logger.info(`enterEnrollmentTable: entered ${periods.length} period(s)`);
 };
 
-export default { reconcileSurvivalPeriods, reconcileDropoutPeriods, enterEnrollmentTable };
+export default {
+  reconcileSurvivalPeriods,
+  reconcileDropoutPeriods,
+  reconcileBoundaryInterims,
+  enterEnrollmentTable,
+};
