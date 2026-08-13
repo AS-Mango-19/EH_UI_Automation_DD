@@ -256,6 +256,10 @@ npm run test -- --testcase TC_XX
 | a `check`/`uncheck` step **times out** | the checkbox isn't rendered for this combination (e.g. the efficacy/futility checkboxes exist only when a **futility boundary** does) → set the cell to **`N/A`** |
 | a **blank period/interim row** appears and the design won't compute | an **ungated** Add-Period / Add-Interim click. Gate every one with `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. Watch for a **mis-named** button whose *selector* is really `role=button "Add Period"` (§7) |
 | navigating shows an **"Unsaved Changes"** dialog | the design has unsaved edits — **Save it first; never add a "Leave" click** (Leave *discards* the design and masks a real validation error) |
+| `select … "unable to resolve"` on a **table-cell dropdown** (Endpoint Type, Better Response, Priority) | the "label" is a **column header** with no adjacent control, so a label-walk finds nothing. Use the **value-trigger** selector — `role=button "<the cell's current/default value>"` (stable: each fresh project starts at the default) — to open the menu; the option then commits. Set a controlling cell (Endpoint Type) **before** the cells whose options depend on it (Better Response) |
+| a `select` logs **OK** but the field still shows the placeholder ("Select"), then every dependent field reports **"unable to resolve"** | the value matched **no option**, so the type+Enter fallback fired — it logs OK but commits **nothing**, and a wrong **controlling** value silently starves every field it should reveal. Fix the value to a real option; the **recording** is authoritative (e.g. Study Objective is `Two Arm Confirmatory`, not the master's "…Superiority" — that is the design-page *hypothesis*) |
+| a `check`/`uncheck` **never fires** though its column has a value | the `SkipIf` convention doesn't match the column's values. Checkbox columns in the SAME testdata can differ — one `TRUE`/`FALSE`, another `check`/`uncheck`. Gate each on its own convention (`…!=TRUE` vs `…!=check`), or the section it reveals never renders and the next field is "unable to resolve" |
+| an administrative field (`Phase`, Program, Indication) is **absent on this app version** | the project page is app-version-dependent (fields move between General and the post-Study-Objective Plan section). Fields with **no effect on the computed design** should be `Optional=TRUE` so a missing one warns instead of failing the run |
 
 ### 7 — Scenario-conditional wiring, dialogs & recovering a real `#id` *(judgment — the GADAR cases)*
 
@@ -294,6 +298,141 @@ When a page adds **N same-kind records through one re-opened "Add …" modal** (
 
 ---
 
+## Worked family reference — two-arm continuous "Difference of Means" (DOM / ROM / ROPR)
+
+*Proven end-to-end on `feature_DOM(PD)` TC_03, FULLY GREEN 2026-08-13: all 10 designs PASS-verified; all 7
+defined sims (ITER_01–07, incl. CHW/CDL adaptive) run + baseline; ITER_08/09/10 are design-only (no sim data
+yet). ITER_02 = 2-Sided-Asymmetric, ITER_05 = CHW SSR, ITER_06 = CDL SSR. This family is the sibling of the
+survival family (GADAR/GADSD) — the SAME project → input-set → design → boundary → enrollment → save → compute →
+result flow; only the effect section differs (means + variance/SD instead of hazard ratios). Import a new
+means/continuous feature the same way and expect every note below. A lesser model can follow this section
+verbatim.*
+
+**1. Config coupling (settle it first).** The importer ends the design flow with `callCustom
+extractAllResultTables` + `compareWithBaseline` (GENERIC shape `TableName/RowLabel/ColumnName/Value`) and
+OVERWRITES `00_config/feature.config.json` to a skeleton. Keep the three coupled: generic tail ⇄ generic
+`compare.config.csv` (that 4-column fingerprint) ⇄ `feature.config.json` with `columnMap:{}`. If a stale
+STRUCTURED config is lying around, do NOT restore it — mirror the green sibling: `serial:true,
+reuseAuthState:false, resultsExtraction.mode:"domTable", columnMap:{}, sortBy:[]`. `extractAllResultTables`
+and `selectStartDate` come from `custom/_shared/` (callCustom resolves feature > shared per keyword), so the
+feature's own `customSteps.ts` holds only its NEW handlers (e.g. a boundary reconcile).
+
+**2. Map every importer-added column to an existing one** (the "no new columns" pass — back up testdata,
+run the importer, note the "+N columns" line, restore testdata, repoint the metadata tokens):
+
+| importer-added column (recorded label) | real field id | existing column |
+|---|---|---|
+| `react select input container` | `.react-select__input-container` | `${data.inputset.SelectTest}` (the test card) |
+| `collectionName` | `#collectionName` | `${data.inputset.InputSetname}` |
+| `Noninferiority Margin (δ0…` / `Super Superiority Margin (δ0…` | `#nonInf_margin` / `#supsup_margin` | `nonInf_margin` / `supsup_margin` |
+| `E` / `SD` (bare 1-letter labels) | `#eDelta` / `#sdDelta` | `eDelta` / `sdDelta` (assurance prior) |
+| `Efficacy Boundary Family` / `Spending Function` | `#effBoundaryFam` / `#effSpendFunc` | `effBoundaryFam` / `effSpendFunc` (dups of `ddl_eff_*`) |
+| `Include` (under the Enrollment tab) | role checkbox "Include" | `IncludeEnrollment` |
+| `enrollmentTable.0.avgSubjectsEnrolled` | that id | scalar `avgSubjectsEnrolled` (design enrollment is single-period) |
+| `Result Name` | `#inputId` / result link | runtime token `<Feat>_Result_${iterationId}` (no column) |
+| `1`, stray `Mean Treatment (μt0)` clicks | — | GARBAGE — drop the step |
+
+**3. VERIFY each reused token against the selector's real #id.** The importer binds a fill to whichever
+existing column shares its truncated label; on a shared prefix it guesses WRONG. Read each step's `#id` in
+selectors.csv and fix the token to the id, not the label: `#sdControl`/`#sdTreatment` (not `standardDeviation`);
+`#nonInf_differenceInMeans` (not `differenceInMeans`); `#effParamRho`/`#effParam` (not `Computed Parameter`).
+
+**4. Project page — five silent failures.**
+- **Study Objective is `Two Arm Confirmatory`, NOT the master's "Two Arm Superiority"** (Superiority is the
+  design-page `hypothesis`). A wrong option makes the `select` type+Enter fallback log OK but commit NOTHING,
+  so every downstream field then reports "unable to resolve". The recording is authoritative.
+- **Endpoint Type / Better Response are TABLE-CELL dropdowns** — open via the value-trigger selector
+  (`role=button "Time to Event"` / `"Larger Value"`, the fresh-project default), NOT a label-walk. Set
+  Endpoint Type BEFORE Better Response (its options depend on it).
+- **Endpoint Name strips underscores** (`EP_Cont`→`EPCont`) though Project Name keeps them — administrative
+  label, use a value the field accepts.
+- **`Phase`/Program/Indication are app-version-dependent** — make administrative project fields `Optional=TRUE`
+  (they don't affect the computed design).
+- **Computed Parameter is a RADIO group** — `check opt_Computed_Parameter ${data.design.Computed Parameter}`
+  with a Dynamic `{0}` role=radio selector; the greyed solved-for field's cell is `Computed` (auto-skips).
+
+**5. Checkbox columns can use DIFFERENT conventions in the SAME testdata.** DOM `includeAssurance`=TRUE/blank
+but `IncludeEnrollment`=check/uncheck. Gate each `check`/`uncheck` on its own convention (`…!=TRUE` vs
+`…!=check`) — a mismatch silently skips the toggle and the section it reveals never renders.
+
+**6. 2-Sided (Asymmetric) efficacy boundary** (Test-Type-gated; SkipIf supports exact `==`/`!=`):
+- Type 1 Error splits into `#upperType1Error`/`#lowerType1Error` (fill after Test Type). Single `#type1Error`
+  is N/A on asymmetric.
+- Efficacy family is **`#asymEffBoundaryFam`** (NOT `#effBoundaryFam`); the spend function splits into
+  `#upperSpendFunc`/`#lowerSpendFunc`.
+- **Interpolated** spend REQUIRES per-analysis cumulative alpha `[id="boundary.<n>.upperAlpha"]` /
+  `[id="boundary.<n>.lowerAlpha"]` at each interim (Final auto-fills). Omit them → "Upper/Lower α is required",
+  the design never computes, Enrollment's Include checkbox times out.
+- Recover unknown cell ids from `artifacts/<run>/<TC>_<ITER>/trace.zip`:
+  `grep -rohaE '"id":"boundary\.[0-9]+\.[a-zA-Z]+"'`.
+
+**7. Boundary interims vary 0→8 per iteration** → data-driven `reconcileBoundaryInterims` (count non-N/A
+`boundary.<n>.analysisSpacingInfo` = target; count ENABLED analysisSpacingInfo inputs live, excluding the
+disabled 100% Final; click "Add Interim" to match). Runs before the per-period fills; the Final is auto, NOT
+a testdata row. Boundary checkbox toggles go LAST, just before Calculate.
+
+**8. Simulation flow** (DOM sim is ADAPTIVE / SSR). Import `--sim`; then:
+- The sim boundary DOM ids are `boundarySim.*`, but a `simulation_boundary.csv` child folds to `boundary.*` —
+  **rename the child to `simulation_boundarySim.csv`** so it folds to `boundarySim.*` matching the ids, then
+  restore simulation.csv (drop the importer's inline `boundarySim.*` columns).
+- Remap recorded-label tokens to the sim testdata's real columns (`upperLimitStudyDuration`→`Upper Limit on
+  Study Duration`, `refCPChart`→`Reference HR for CP Chart`, `meanControl`→`meanCtrl`, `meanTreatment`→`meanTrmt`,
+  `sdControl`→`stdDeviationCtrl`, `sdTreatment`→`stdDeviationTrmt`, `probabilityOfDropout`→`probOfDropout`).
+- Give the sim TWO distinct runtime result-names (setup at the Simulate click; result at Save & Simulate — the
+  importer captures only the first, so ADD the 2nd `#inputId` fill before the credit confirm) so the sim result
+  link never collides with the design's.
+- Drop bare cell-CLICK steps (token-less `click txt_boundarySim.*` grid noise) — but NEVER delete the
+  `credit_alert_primary` confirms or the `leftPanel.*` nav clicks (also named `txt_*` yet essential).
+- Drop only token-less `click txt_boundarySim.*` grid clicks (recording noise); NEVER delete the
+  `credit_alert_primary` confirms or `leftPanel.*` nav clicks (also named `txt_*` but essential to the flow).
+- **GADAR Recalculate fix DOES apply** (proven on DOM ITER_01 sim): editing the header/boundary and clicking
+  Recalculate BEFORE the Response tab is mounted → "prior parameters are too extreme" (then an Unsaved-Changes
+  dialog that blocks the next tab-nav). Fix: MOUNT the Response tab (click `leftPanel.response`, let it bind,
+  return to `leftPanel.designs`) BEFORE any header edit, while the inherited design is still clean (no dialog).
+  DOM DOES re-enter the header (it's adaptive) — that part is fine; the "too extreme" is purely the un-mounted
+  Response model.
+- **Separate tabs — click the leftPanel id before each field block** (a valid state navigates with no dialog):
+  `[id="leftPanel.response"]` (distribution/means/SD), `[id="leftPanel.enrollment"]` (accrual),
+  `[id="leftPanel.simulation-setup"]` (seed/sim-runs — HYPHENATED id; the recording reached it via a goto that
+  `--sim` drops). Sim boundary INHERITS the design's rows (no Add-Period).
+- **Response tab**: uncheck `#commonStandardDeviation` (testid) to enable per-arm `#sdControl`/`#sdTreatment`.
+- **Enrollment tab**: `#includeSwitch` ON reveals the accrual table (1 row) → a custom reconcile (count sim
+  `enrollmentTable.<n>` periods, click "Add Period", INTEGER StepID before the fills) → fill each row's
+  `avgSubjectsEnrolled` AND `startingAtTime` (a missing per-period startingAtTime shows "Starting At Time is
+  required" and blocks the next nav).
+- **Simulation Setup**: `saveSubjectLevelData` (testid checkbox) ON to enable `#subLevelDataSimRuns` (+
+  `saveSummaryStats`). Then Save → Save & Simulate → the (2nd, distinct) result name → credit → waitForSimulation.
+
+**8b. ADAPTIVE (CHW/CDL) sample-size re-estimation — the "Save & Simulate stays disabled" trap** (proven on
+DOM ITER_05=CHW / ITER_06=CDL; whole feature green 2026-08-13). Only the adaptive iterations show the SSR
+(Sample-Size-Re-Estimation) panel, so a non-adaptive recording never captured it. Four silent blockers:
+- **Include Enrollment MUST be checked or the adaptive design is INVALID and `#save-compute` (Save & Simulate)
+  stays DISABLED.** It looks like a timing/flaky bug (the button never actuates) but it is a CONFIG invalidity.
+  Proof: sim `Include Enrollment=uncheck` → button disabled 56s+; `=check` → enabled in ~13ms. Mirror the DESIGN's
+  enrollment into the sim (`Include Enrollment=check`); the app's DEFAULT 1-row accrual is enough — no child
+  `simulation_enrollmentTable` rows required (the reconcile no-ops, the per-period fills skip on blank).
+- **Wait for `#save-compute` to be ENABLED before clicking it.** The plain `click` auto-waits ~10s then
+  FORCE-clicks, and force CANNOT actuate a `disabled` button. Add a custom `waitAndInspectSaveSimulate` that polls
+  `isEnabled()` up to ~60s and, on timeout, DUMPS the reason (visible toasts, spinner, `[aria-invalid]`/error text,
+  the button outerHTML, "Not Saved") then throws — a silent "element is not enabled" becomes diagnosable.
+- **Settle after EACH SSR dropdown** (Adaptation Method, Adapt At, Interim #, Enroll-Rate-After-Adapt,
+  Promising-Zone Scale, CP-Computation-Based-On). Driving them faster than the app recomputes fires the toast
+  **"Unable to convert values. Reverting to defaults."** (the Scale select CONVERTS the promising-zone min/max),
+  corrupting the design so Save & Simulate never re-enables. A 0.7–1.2s sleep after each avoids it.
+- **Wire the SSR controls the recording missed** (mirror GADAR): `cpComputationBasedOn`→`#cpComputationBasedOn`
+  (native select, value-matched), `numOfSimRun`→`input[name="numOfSimRun"]`. While `numOfSimRun` is unwired the
+  app default (10000) runs, IGNORING the testdata count — wiring it CHANGES results, so re-baseline every sim
+  built before it was wired.
+
+**8c. Baselines are ENVIRONMENT-SPECIFIC.** They live under `06_baseline/<env>/` but are tied to the ACTUAL
+server the `.env` points to. Swapping `.env` to a different East Horizon instance → design `VALUE_MISMATCH` on the
+sensitive designs (2-Sided-Asymmetric, Wang-Tsiatis) **plus** 220s login/nav `waitForSelector` timeouts if that
+instance is flaky (a full DOM run on the wrong env = 5 fails: 2 login timeouts, 2 complex-boundary mismatches, 1
+checkbox timeout; the identical suite on the correct env = 0 fails). When comparisons start failing after any
+`.env` change, confirm `.env` points to the env the baselines were built on BEFORE touching data or selectors.
+The sim chains only for iterations that have a `simulation.csv` row with `Run=TRUE`; a row-less iteration
+auto-skips ("no simulation.csv row"), so design-only and sim iterations coexist under one master `Simulation=YES`.
+
 ## What is deterministic vs. judgment (why this split scales)
 
 | Deterministic — the **importer** does it | Judgment — the **agent/QA** does it |
@@ -314,4 +453,5 @@ what lets it handle a new feature **without destabilising the ones already commi
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] Each iteration screenshot-verified; blank/`N/A` skipped, valued fields landed.
 - [ ] No `recording.txt` / `.env` / `.auth` staged for commit.
-- [ ] Baseline reviewed by a human before it's trusted.
+- [ ] Baseline reviewed by a human before it's trusted — and built on the SAME `.env` server it will be compared against (baselines are env-specific; an `.env` swap invalidates them, §8c).
+- [ ] Adaptive (CHW/CDL) sim: `Include Enrollment=check`, SSR dropdowns settled, and a wait-for-enabled before Save & Simulate (§8b).

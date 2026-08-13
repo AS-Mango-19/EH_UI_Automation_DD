@@ -142,6 +142,9 @@ Resolution steps:
 Recurring pattern:
 - Most impactful hard-failure category in error-level logs.
 
+Cross-note:
+- A sudden burst of 200s+ login/navigation timeouts across MANY iterations right after an `.env` change usually means `.env` now points at a different (flaky) East Horizon instance than the baselines were built on — see category R.
+
 ## D. Browser/context closed during action
 
 How often seen:
@@ -334,6 +337,9 @@ Resolution steps:
 Recurring pattern:
 - Less frequent, but high signal because it directly affects pass/fail outcome.
 
+Cross-note:
+- If VALUE_MISMATCH appears suddenly across MANY iterations at once (not just one), suspect an `.env` change rather than data drift: baselines are environment-specific — see category R.
+
 ## M. Field value normalization mismatch
 
 How often seen:
@@ -387,6 +393,55 @@ Resolution steps:
 2. Reduce force-click dependence where possible.
 3. Add targeted waits before fragile interactions.
 
+## P. Save & Simulate button stays disabled (adaptive sim)
+
+How often seen:
+- New — first documented 2026-08-13 (DOM(PD) TC_03, CHW/CDL adaptive simulation). Only adaptive iterations reach the Sample-Size-Re-Estimation panel, so plain fixed/GSD sims never hit this.
+
+Exact messages seen:
+- `locator.click: ... element is not enabled` targeting `#save-compute` (a `<button disabled id="save-compute">`).
+- `waitAndInspectSaveSimulate: Save & Simulate never enabled within 60000ms` (with a dumped reason block: visible toasts / spinner / `[aria-invalid]` / "Not Saved" / the button `outerHTML`).
+
+Likely root cause:
+- The adaptive design is INVALID, so the app keeps `#save-compute` disabled — it is a CONFIG invalidity, not a timing/flaky bug. The commonest cause is `Include Enrollment=uncheck` on the sim. A second cause is clicking before the app re-enables: the framework's plain `click` auto-waits ~10s then FORCE-clicks, and a force click CANNOT actuate a `disabled` button (force ≠ enable).
+
+Resolution steps:
+1. Set `Include Enrollment=check` on the sim (mirror the design). The app's DEFAULT 1-row accrual is sufficient — no child `simulation_enrollmentTable` rows are needed. Proof: `uncheck` left the button disabled 56s+; `check` enabled it in ~13–21ms.
+2. Wait for `#save-compute` to be ENABLED before clicking — add a custom step (`waitAndInspectSaveSimulate` in `custom/DOM(PD)/customSteps.ts`) that polls `isEnabled()` up to 60s and, on timeout, DUMPS the reason (toasts, spinner, `[aria-invalid]`/error text, button `outerHTML`, any "Not Saved" indicator) then throws.
+3. See point A of the adaptive-sim notes (§5.1 of `FRAMEWORK_KT.md`) and category Q below for the related SSR-panel toast.
+
+## Q. "Unable to convert values. Reverting to defaults." (toast on the adaptive SSR panel)
+
+How often seen:
+- New — first documented 2026-08-13 (DOM(PD) TC_03, adaptive SSR panel).
+
+Exact messages seen:
+- Toast: `Unable to convert values. Reverting to defaults.`
+
+Likely root cause:
+- An SSR dropdown (Adaptation Method, Adapt At, Interim #, Enroll-Rate-After-Adapt, Promising-Zone Scale, CP-Computation-Based-On) was driven faster than the app recomputed. The Promising-Zone Scale select especially CONVERTS the min/max bounds to the new scale; racing it corrupts the design so Save & Simulate never re-enables (see category P).
+
+Resolution steps:
+1. Settle 0.7–1.2s after EACH SSR select so the app finishes recomputing before the next change.
+2. Order the SSR selects deliberately and avoid batch-firing them.
+
+## R. Design VALUE_MISMATCH (or 220s login/nav timeouts) appearing suddenly across many iterations after an `.env` change
+
+How often seen:
+- New — first documented 2026-08-13 (full DOM(PD) suite run on the wrong East Horizon instance).
+
+Exact messages seen:
+- `Compare TC_XX/ITER_YY: FAIL - VALUE_MISMATCH; N value mismatch(es), ...` across several iterations at once.
+- `waitForSelector: locator.waitFor: Timeout 220000ms exceeded.` (login/navigation) and `locator.check: Timeout ... exceeded.` on a flaky instance.
+
+Likely root cause:
+- Baselines are ENVIRONMENT-SPECIFIC. `06_baseline/<env>/` is tied to the ACTUAL East Horizon server the `.env` `BASE_URL` pointed at when it was approved — not just the `AD` label. Switching `.env` to a different instance produces design `VALUE_MISMATCH` on the sensitive designs (2-Sided-Asymmetric boundaries, Wang-Tsiatis) plus login/navigation timeouts if that instance is flaky. Proof: the full DOM suite gave 5 failures on the wrong instance (2× 220s login `waitForSelector` timeouts, 2× complex-boundary value-mismatches, 1× checkbox `check` timeout) and 0 failures on the correct one.
+
+Resolution steps:
+1. When comparisons start failing after any `.env` change, FIRST confirm `.env` points at the instance the baselines were built on. Do NOT "fix" the data.
+2. Repoint `.env` to the correct instance and re-run before re-baselining.
+3. See point B of the adaptive-sim notes (`FRAMEWORK_KT.md` §9.1/§10.1, Trap 26). Cross-refs: categories C (navigation timeout) and L (result comparison mismatch).
+
 ## 4) Recurring Patterns and Known Issues
 
 - The largest recurring issue is unused testdata columns.
@@ -394,6 +449,7 @@ Resolution steps:
 - Optional assertions hide instability by allowing runs to continue.
 - Some failures are data quality issues (missing rows, wrong combinations).
 - Comparison mismatches are less frequent but critical for release confidence.
+- Baselines are environment-specific: a burst of VALUE_MISMATCH (or 200s+ login/nav timeouts) across many iterations at once usually traces to an `.env` change pointing at a different East Horizon instance, not data drift — confirm `.env` matches the baseline instance before touching data (category R).
 
 ## 5) Recommended Troubleshooting Order (Beginner-friendly)
 

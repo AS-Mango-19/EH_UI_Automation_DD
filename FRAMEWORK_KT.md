@@ -686,6 +686,13 @@ second phase:
 design phase still runs. A missing `simulation.csv` row for an iteration skips sim
 there too.
 
+**Sim-chain gating (the exact rule).** `core/runner/iterationRunner.ts` chains the
+simulation **only** when the iteration has a `simulation.csv` row with `Run=TRUE`; an
+iteration with **no** `simulation.csv` row is auto-skipped with reason *"no
+simulation.csv row"*. So design-only iterations and sim iterations coexist under **one**
+master `Simulation=YES` — there is no per-iteration sim flag to set beyond the
+`simulation.csv` `Run` column.
+
 **Status.** The iteration's reported status is the **worst of** design and sim, and
 the report tags the sim phase (`+SIM PASS` / `SIM skipped`). `sim_metadata` is
 validated up front too — `Simulation=YES` with a missing/broken `sim_metadata.csv`
@@ -760,6 +767,40 @@ Enrollment, Plan) → `sim_baseline` written, and a second run compares **PASS 7
 > (§13, §14). It reuses selectors and compare.config, adds no login/navigate, and
 > writes `sim_metadata.csv`. The generated Playwright specs (`npm run pw:test`) run
 > the design flow only; the chained sim runs under `npm run test`.
+
+#### Adaptive simulation (CHW/CDL sample-size re-estimation) — the extra SSR wiring
+
+An **adaptive** iteration (CHW / CDL sample-size re-estimation, "SSR") exercises a
+Sample-Size-Re-Estimation panel that plain fixed/GSD sims never touch — so an
+importer's non-adaptive recording never captures these controls. Wiring one has four
+sharp edges (all proven on DOM(PD) TC_03):
+
+- **`Include Enrollment` MUST be checked, or the adaptive design is INVALID and the
+  "Save & Simulate" button (`#save-compute`) stays DISABLED.** It reads like a
+  timing/flaky bug — the button never actuates — but it is a *config* invalidity: with
+  the sim's `Include Enrollment=uncheck` the button stayed disabled 56s+; flipping it to
+  `check` enabled it in ~13–21ms. Mirror the design's enrollment into the sim
+  (`Include Enrollment=check`); the app's DEFAULT 1-row accrual is sufficient — **no**
+  child `simulation_enrollmentTable` rows are required.
+- **Wait for `#save-compute` to be ENABLED before clicking it.** A plain `click`
+  auto-waits ~10s then FORCE-clicks, and a force click **cannot** actuate a `disabled`
+  button (force ≠ enable). Use a custom step (`waitAndInspectSaveSimulate` in
+  `custom/DOM(PD)/customSteps.ts`) that polls `isEnabled()` up to 60s and, on timeout,
+  DUMPS the reason (visible toasts, spinner, `[aria-invalid]`/error text, the button's
+  `outerHTML`, any "Not Saved" indicator) then throws — turning a bare "element is not
+  enabled" into a diagnosable failure.
+- **Settle 0.7–1.2s after EACH SSR dropdown** (Adaptation Method, Adapt At, Interim #,
+  Enroll-Rate-After-Adapt, Promising-Zone Scale, CP-Computation-Based-On). Driving them
+  faster than the app recomputes fires the toast **"Unable to convert values. Reverting
+  to defaults."** — the Promising-Zone Scale select especially CONVERTS the min/max
+  bounds to the new scale — which corrupts the design so Save & Simulate never
+  re-enables.
+- **Wire the SSR controls the recording missed** (mirror the sibling feature GADAR):
+  `cpComputationBasedOn` → selector `#cpComputationBasedOn` (native `<select>`, matched
+  by option value), `numOfSimRun` → selector `input[name="numOfSimRun"]`. CAUTION: while
+  `numOfSimRun` is unwired the app default (**10000**) runs, IGNORING the testdata's
+  sim-run count — wiring it CHANGES results, so every sim baseline built before it was
+  wired must be re-baselined.
 
 #### End-to-end walkthrough (design + simulation for one feature)
 
@@ -1051,6 +1092,14 @@ Today: `06_baseline/AD/baseline_TC_04_ITER_01.csv` (124 rows).
 The `.meta.json` sidecar records runId/env/approver/hash. It is **write-only** —
 nothing reads it at runtime. It is for humans.
 
+> **Baselines are ENVIRONMENT-SPECIFIC — see §10.1 and Trap 26.** The folder is chosen
+> by the env label, but the *numbers* belong to the actual East Horizon server `.env`
+> pointed at when they were approved. An `.env` swap to a different instance (same `AD`
+> label) invalidates them — design `VALUE_MISMATCH` on the sensitive designs
+> (2-Sided-Asymmetric boundaries, Wang-Tsiatis), plus login/nav timeouts if that
+> instance is flaky. When compares fail after an `.env` change, confirm `.env` matches
+> the baseline instance **before** touching data.
+
 ### 9.2 Lifecycle
 1. **First run** — no baseline. The run captures results, **writes** the baseline,
    reports `BASELINE_CREATED`. Nothing was verified.
@@ -1094,6 +1143,17 @@ Green. Verifying nothing.
 **The env name selects two things:** the `.env.<env>` file *and* the baseline
 folder `06_baseline/<env>/`. They are the same knob — you cannot rename the
 baseline folder without renaming the env.
+
+> **But the baselines are tied to the ACTUAL server, not just the label.**
+> `06_baseline/<env>/` is keyed to the East Horizon *instance* the `.env` `BASE_URL`
+> pointed at when it was approved. Pointing `.env` at a **different** instance under the
+> same `AD` label makes the sensitive designs — 2-Sided-Asymmetric boundaries,
+> Wang-Tsiatis — report design `VALUE_MISMATCH`, plus login/nav timeouts if that
+> instance is flaky. Proof: the full DOM(PD) suite gave **5 failures** on the wrong
+> instance (2× 220s login `waitForSelector` timeouts, 2× complex-boundary
+> value-mismatches, 1× checkbox `check` timeout) and **0** on the correct one. **RULE:**
+> when comparisons start failing after any `.env` change, first confirm `.env` points at
+> the instance the baselines were built on — do **not** "fix" the data. See Trap 26.
 
 `.env.<env>` falls back to `.env` when absent (`config/environments.ts`). There is
 **no `.env.AD` on disk** — the real `BASE_URL` / credentials live in `.env`, so
@@ -1630,6 +1690,26 @@ Ordered by how much time they will cost you.
     when the table is authored as a normalized child file (§4.5) — the fold reconstructs the
     same `<table>.<idx>.<col>` column — but there the not-applicable cell must be `N/A`, **not
     blank**, or the literal `==N/A` compare misses it and the blank row is added anyway.
+24. **Adaptive Save & Simulate stays disabled unless `Include Enrollment` is checked.**
+    On a CHW/CDL sample-size-re-estimation sim, `#save-compute` never enables while the
+    design is invalid, and the commonest invalidity is `Include Enrollment=uncheck` — it
+    looks like a flaky button but is a config error. Mirror the design's enrollment
+    (`Include Enrollment=check`; the app's default 1-row accrual suffices — no child
+    `simulation_enrollmentTable` rows), and wait for the button to be **enabled** before
+    clicking: a plain `click` force-clicks after ~10s, and a force click can't actuate a
+    `disabled` button. Use `waitAndInspectSaveSimulate` (§5.1) to poll `isEnabled()` and
+    dump the reason on timeout.
+25. **Fast SSR dropdowns fire "Unable to convert values. Reverting to defaults."** Driving
+    the adaptive SSR selects (Adaptation Method, Adapt At, Interim #, Enroll-Rate-After-Adapt,
+    Promising-Zone Scale, CP-Computation-Based-On) faster than the app recomputes corrupts
+    the design — the Promising-Zone Scale select converts the min/max bounds — and Save &
+    Simulate never re-enables. Settle 0.7–1.2s after each SSR select (§5.1).
+26. **Baselines are environment-specific — an `.env` swap invalidates them.**
+    `06_baseline/<env>/` is tied to the actual East Horizon instance `.env` pointed at when
+    it was approved, not just the `AD` label. Repointing `.env` at another instance gives
+    design `VALUE_MISMATCH` on sensitive designs (2-Sided-Asymmetric, Wang-Tsiatis) plus
+    login/nav timeouts on a flaky one. When compares fail after an `.env` change, confirm
+    `.env` matches the baseline instance before touching data (§9.1 / §10.1).
 
 ---
 

@@ -1,0 +1,11 @@
+TC_ID,IterationID,PeriodIndex,analysisSpacingInfo,cumAlphaSpent,efficacyZUpper,efficacyZLower,cumAlphaSpentUpper,cumAlphaSpentLower,efficacyPValue,futilityCP,futilityZ,futilityPValue
+TC_03,ITER_01,0,30,N/A,N/A,N/A,0.000123,0.000111,N/A,N/A,N/A,N/A
+TC_03,ITER_01,1,60,N/A,N/A,N/A,N/A,0.00255,N/A,N/A,N/A,N/A
+TC_03,ITER_01,2,75,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_03,ITER_02,0,N/A,N/A,2.1111,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_03,ITER_02,1,N/A,N/A,2.65555,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_03,ITER_02,2,N/A,N/A,N/A,-2.4568,N/A,N/A,N/A,N/A,N/A,N/A
+TC_03,ITER_05,0,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0.4458,N/A,N/A
+TC_03,ITER_06,0,66,N/A,N/A,N/A,N/A,N/A,N/A,N/A,-1.2008,N/A
+TC_03,ITER_06,1,82,N/A,N/A,N/A,N/A,N/A,N/A,N/A,-1.2355,N/A
+TC_03,ITER_07,0,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0.9188
