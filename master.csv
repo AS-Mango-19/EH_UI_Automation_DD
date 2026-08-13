@@ -1,7 +1,7 @@
 TC_ID,Module,Tags,StudyObjective,Feature,ProjectID,Browser,TestDataFile,MetadataFile,Execute,Environment,Simulation
 TC_01,ProductDesign,regression,One Arm Exploratory / Confirmatory,SinglePoissonRate,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_02,ProductDesign,regression,One Arm Exploratory / Confirmatory,Simon2Stage,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-TC_03,ProductDesign,regression,Two Arm Superiority,DOM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
+TC_03,ProductDesign,regression,Two Arm Superiority,DOM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_05,ProductDesign,regression,One Arm Exploratory / Confirmatory,MeanofPairedRatios,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_06,ProductDesign,regression,One Arm Exploratory / Confirmatory,LogrankWeibullDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
