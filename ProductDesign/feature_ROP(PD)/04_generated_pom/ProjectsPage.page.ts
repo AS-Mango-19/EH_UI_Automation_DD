@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 880fd6e9550c4700f8a974606ee3d118e5bc171f5f7896b4fb049899836a812e)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 27b37a93e0e901ca8f0ec5d3b6a64b73a73bb73427dbe8eb1c8ebf106b37a1dc)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -8,11 +8,6 @@ export class ProjectsPage {
     private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
-
-  /** Open new-project dialog */
-  btn_NewProject(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'btn_NewProject', { dynamicArgs });
-  }
 
   /** New Project button (login flow landing) */
   btn_New_Project(...dynamicArgs: string[]): Promise<Locator> {

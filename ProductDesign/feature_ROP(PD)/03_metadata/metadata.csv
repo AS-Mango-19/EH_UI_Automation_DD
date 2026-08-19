@@ -1,150 +1,188 @@
 Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
-1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,Log in via the shared login flow (identity-provider steps are shared infrastructure - one callReusable)
-2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to the projects landing page
-3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Poll for the landing page (app cold-starts slowly and never goes network-idle)
-4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,Open New Project
-5,50,ConfigureDesign,ProjectPage,fill,txt_Project_Name,${data.project.ProjectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,Project name (made unique per run so re-runs are not rejected as duplicates)
-6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.TimeUnit},,,,,15000,FALSE,0,always,,Time Unit
-7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick Start Date in the calendar (shared handler reads project.StartDate; value must be M/d/yyyy or yyyy-MM-dd)
-8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.StudyObjective},,,,,15000,FALSE,0,always,,Study Objective (Two Arm Superiority)
-9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,TRUE,0,always,,Phase (Optional) - tolerant (Optional): this env moved General fields to Program/Indication; Phase is administrative and does not affect the computed design
-10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,Target Population
-11,110,ConfigureDesign,ProjectPage,fill,txt_Treatment_Arm,${data.project.TreatmentArm},,,,,10000,FALSE,0,never,,Treatment Arm name (Control Arm left at the app default - testdata only overrides the treatment arm)
-12,120,ConfigureDesign,ProjectPage,fill,txt_Endpoint_Name,${data.project.EndpointName},,,,,10000,FALSE,0,never,,Endpoint Name
-13,130,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.EndpointType},,,,,15000,FALSE,0,always,,"Endpoint Type is a TABLE-CELL dropdown: open via its value-trigger (role button ""Time to Event"", the fresh-project default) then pick Continuous. GADSD-proven pattern"
-14,140,ConfigureDesign,ProjectPage,select,ddl_Larger_Value,${data.project.BetterResponse},,,,,15000,FALSE,0,always,,"Better Response is a TABLE-CELL dropdown: open via its value-trigger (role button ""Larger Value"", the Continuous default) then pick the direction. MUST run after Endpoint Type=Continuous (its options depend on it)"
-15,150,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,Create Project
-16,160,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,Open Inputs
-17,170,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,New Input Set
-18,180,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.InputSetname},,,,,10000,FALSE,0,never,,Input-set collection name (mapped to the existing InputSetname column - no new column)
-19,190,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,Open the Design (compute/simulate) card
-20,200,ExtractResults,ResultsPage,select,ddl_react_select_input_container,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Pick the statistical test from the inputset SelectTest (Difference of Means) - the react-select test card
-21,210,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,Continue into the design inputs
-22,220,ExtractResults,ResultsPage,select,ddl_Hypothesis,${data.design.hypothesis},,,,,10000,FALSE,0,always,,Hypothesis (Superiority / Noninferiority / Super Superiority) - controls which margin fields render
-23,230,ExtractResults,ResultsPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.allocationRatio},,,,,10000,FALSE,0,never,,Allocation Ratio (nt/nc)
-24,240,ExtractResults,ResultsPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,Computed Parameter radio (Sample Size / Power / Type 1 Error / Difference in Means) - greys out the chosen output
-25,250,ExtractResults,ResultsPage,fill,txt_Sample_Size_n,${data.design.sampleSize},,,,,10000,FALSE,0,never,,Sample Size (skips when Computed - it is the solved-for output that iteration)
-26,260,ExtractResults,ResultsPage,fill,txt_Power,${data.design.power},,,,,10000,FALSE,0,never,,Power (skips when Computed)
-27,270,ExtractResults,ResultsPage,fill,txt_Type_1_Error,${data.design.type1Error},,,,,10000,FALSE,0,never,,Type 1 Error (symmetric). Asymmetric upper/lower alpha are added when ITER_02 is stabilized
-28,280,ExtractResults,ResultsPage,select,ddl_Test_Type,${data.design.testtype},,,,,10000,FALSE,0,always,,Test Type (1-Sided / 2-Sided / 2-Sided Asymmetric) - MUST precede the Type-1-Error fields (asymmetric splits into Upper/Lower)
-28.1,282,ExtractResults,ResultsPage,fill,txt_Upper_Type_1_Error,${data.design.upperType1Error},,,,,10000,FALSE,0,never,,Upper Type 1 Error (2-Sided Asymmetric only; #upperType1Error). N/A for symmetric iterations
-28.2,284,ExtractResults,ResultsPage,fill,txt_Lower_Type_1_Error,${data.design.lowerType1Error},,,,,10000,FALSE,0,never,,Lower Type 1 Error (2-Sided Asymmetric only; #lowerType1Error). N/A for symmetric iterations
-29,290,ExtractResults,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Input Method (Individual Means / Difference of Means / Standardized Diff.) - controls which effect field renders
-30,300,ExtractResults,ResultsPage,fill,txt_Mean_Control_c,${data.design.meanControl},,,,,10000,FALSE,0,never,,Mean Control (Individual Means)
-31,310,ExtractResults,ResultsPage,fill,txt_Mean_Treatment_t,${data.design.meanTreatment},,,,,10000,FALSE,0,never,,Mean Treatment (Individual Means)
-32,320,ExtractResults,ResultsPage,fill,txt_Difference_in_Means_t,${data.design.differenceInMeans},,,,,10000,FALSE,0,never,,Difference in Means (Difference-of-Means input method)
-33,330,ExtractResults,ResultsPage,fill,txt_Standardized_Difference_t,${data.design.standardizedDifference},,,,,10000,FALSE,0,never,,Standardized Difference (Standardized-Diff input method)
-335,335,ExtractResults,ResultsPage,fill,txt_nonInf_Mean_Control,${data.design.nonInf_meanControl},,,,,10000,FALSE,0,never,,Noninferiority Mean Control (editable; was defaulting - correctness fix)
-34,340,ExtractResults,ResultsPage,fill,txt_Noninferiority_Margin_0,${data.design.nonInf_margin},,,,,10000,FALSE,0,never,,Noninferiority Margin (Noninferiority hypothesis only; #nonInf_margin)
-35,350,ExtractResults,ResultsPage,fill,txt_Difference_in_Means_1_t1,${data.design.nonInf_differenceInMeans},,,,,10000,FALSE,0,never,,Noninferiority Difference in Means (#nonInf_differenceInMeans - fixed from the importer's differenceInMeans guess)
-358,358,ExtractResults,ResultsPage,fill,txt_supsup_Mean_Control,${data.design.supsup_meanControl},,,,,10000,FALSE,0,never,,Super Superiority Mean Control (editable)
-36,360,ExtractResults,ResultsPage,fill,txt_Super_Superiority_Margin_0,${data.design.supsup_margin},,,,,10000,FALSE,0,never,,Super Superiority Margin (Super Superiority hypothesis only; #supsup_margin)
-362,362,ExtractResults,ResultsPage,fill,txt_supsup_Difference_in_Means,${data.design.supsup_differenceInMeans},,,,,10000,FALSE,0,never,,Super Superiority alt Difference in Means
-364,364,ExtractResults,ResultsPage,fill,txt_supsup_nh_Mean_Treatment,${data.design.supsup_nhMeanTreatment},,,,,10000,FALSE,0,never,,Super Superiority null Mean Treatment (verify editable vs computed at runtime)
-37,370,ExtractResults,ResultsPage,select,ddl_Test_Statistic,${data.design.testStatistic},,,,,10000,FALSE,0,always,,Test Statistic
-38,380,ExtractResults,ResultsPage,select,ddl_Variance,${data.design.variance},,,,,10000,FALSE,0,always,,Variance (Equal / Unequal) - controls common SD vs per-arm SD
-39,390,ExtractResults,ResultsPage,fill,txt_Standard_Deviation,${data.design.standardDeviation},,,,,10000,FALSE,0,never,,Standard Deviation (common; Equal variance) - #standardDeviation
-40,400,ExtractResults,ResultsPage,fill,txt_Standard_Deviation_Control,${data.design.sdControl},,,,,10000,FALSE,0,never,,SD Control (Unequal variance; #sdControl - fixed from the importer's standardDeviation guess)
-41,410,ExtractResults,ResultsPage,fill,txt_Standard_Deviation_Treatment,${data.design.sdTreatment},,,,,10000,FALSE,0,never,,SD Treatment (Unequal variance; #sdTreatment - fixed from the importer's standardDeviation guess)
-42,420,ExtractResults,ResultsPage,fill,txt_Follow_up_Time_Week,${data.design.followUpTime},,,,,10000,FALSE,0,never,,Follow-up Time (design/dropout section; #followUpTime)
-43,430,ExtractResults,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.probabilityOfDropout},,,,,10000,FALSE,0,never,,Probability of Dropout
-44,440,ExtractResults,ResultsPage,check,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=TRUE,Include Assurance ON (reveals prior distribution + input method); gated per iteration. NOTE: this column uses TRUE/FALSE (not check/uncheck like IncludeEnrollment)
-45,450,ExtractResults,ResultsPage,uncheck,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=FALSE,Include Assurance OFF; gated per iteration (TRUE/FALSE convention). Never fires today - iterations that skip assurance leave it blank (default off)
-46,460,ExtractResults,ResultsPage,select,ddl_Distribution,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Prior Distribution (Normal / Uniform) - Uniform reveals Min/Max
-47,470,ExtractResults,ResultsPage,fill,txt_Min,${data.design.uniformMin},,,,,10000,FALSE,0,never,,Uniform prior Min (Uniform distribution only)
-48,480,ExtractResults,ResultsPage,fill,txt_Max,${data.design.uniformMax},,,,,10000,FALSE,0,never,,Uniform prior Max (Uniform distribution only)
-49,490,ExtractResults,ResultsPage,select,ddl_assurance_Input_Method,${data.design.assuranceInputMethod},,,,,10000,FALSE,0,always,,Assurance Input Method - controls which prior-elicitation fields render (E/SD vs percentiles)
-50,500,ExtractResults,ResultsPage,fill,txt_E,${data.design.eDelta},,,,,10000,FALSE,0,never,,Prior E(delta) (#eDelta - fixed from the importer's bare-label E guess)
-51,510,ExtractResults,ResultsPage,fill,txt_SD,${data.design.sdDelta},,,,,10000,FALSE,0,never,,Prior SD(delta) (#sdDelta - fixed from the importer's bare-label SD guess)
-52,520,ExtractResults,ResultsPage,select,ddl_perc_Delta1st_Operator,${data.design.percDelta1stOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta 1st operator
-53,530,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Val,${data.design.percDelta1stPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 1st value
-54,540,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Prob,${data.design.percDelta1stPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 1st probability
-55,550,ExtractResults,ResultsPage,select,ddl_perc_Delta2nd_Operator,${data.design.percDelta2ndOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta 2nd operator
-56,560,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Val,${data.design.percDelta2ndPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 2nd value
-57,570,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Prob,${data.design.percDelta2ndPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 2nd probability
-58,580,ExtractResults,ResultsPage,select,ddl_perc_Delta_By_Sigma1st_Operator,${data.design.percDeltaBySigma1stOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta/sigma 1st operator
-59,590,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma1st_Percentile_Val,${data.design.percDeltaBySigma1stPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 1st value
-60,600,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma1st_Percentile_Prob,${data.design.percDeltaBySigma1stPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 1st probability
-61,610,ExtractResults,ResultsPage,select,ddl_perc_Delta_By_Sigma2nd_Operator,${data.design.percDeltaBySigma2ndOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta/sigma 2nd operator
-62,620,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Val,${data.design.percDeltaBySigma2ndPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd value
-63,630,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Prob,${data.design.percDeltaBySigma2ndPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd probability
-63.5,638,ExtractResults,ResultsPage,select,ddl_asym_Eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}!=2-Sided (Asymmetric),Asymmetric efficacy boundary family (#asymEffBoundaryFam) - fires ONLY on 2-Sided Asymmetric (Test-Type gated)
-64,640,ExtractResults,ResultsPage,select,ddl_eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}==2-Sided (Asymmetric),Efficacy Boundary Family (#effBoundaryFam) - SYMMETRIC only; asymmetric uses #asymEffBoundaryFam (Test-Type gated)
-65,650,ExtractResults,ResultsPage,select,ddl_eff_Spend_Func,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Efficacy Spending Function - single/symmetric (#effSpendFunc). N/A on asymmetric iterations (they use upper/lower)
-65.1,652,ExtractResults,ResultsPage,select,ddl_upper_Spend_Func,${data.design.upperSpendFunc},,,,,10000,FALSE,0,always,,Upper efficacy spending function (2-Sided Asymmetric only; #upperSpendFunc). N/A for symmetric
-65.2,654,ExtractResults,ResultsPage,select,ddl_lower_Spend_Func,${data.design.lowerSpendFunc},,,,,10000,FALSE,0,always,,Lower efficacy spending function (2-Sided Asymmetric only; #lowerSpendFunc). N/A for symmetric
-66,660,ExtractResults,ResultsPage,select,ddl_Parameter,${data.design.effParam},,,,,10000,FALSE,0,always,,Efficacy spending Parameter select (#effParam)
-67,670,ExtractResults,ResultsPage,fill,txt_Parameter,${data.design.effParamRho},,,,,10000,FALSE,0,never,,Efficacy Rho parameter (#effParamRho - fixed from the importer's Computed-Parameter guess)
-68,680,ExtractResults,ResultsPage,fill,txt_eff_Param_Gamma,${data.design.effParamGamma},,,,,10000,FALSE,0,never,,Efficacy Gamma parameter (#effParamGamma)
-69,690,ExtractResults,ResultsPage,select,ddl_fix,${data.design.fix},,,,,10000,FALSE,0,always,,Boundary fix select (#fix)
-70,700,ExtractResults,ResultsPage,fill,txt_Shape_Parameter,${data.design.shapeParamDelta},,,,,10000,FALSE,0,never,,Efficacy shape parameter (#shapeParamDelta)
-71,710,ExtractResults,ResultsPage,select,ddl_fut_Boundary_Fam,${data.design.futBoundaryFam},,,,,10000,FALSE,0,always,,Futility Boundary Family (#futBoundaryFam) - controls which futility fields render
-72,720,ExtractResults,ResultsPage,select,ddl_fut_Spend_Func,${data.design.futSpendFunc},,,,,10000,FALSE,0,always,,Futility Spending Function (#futSpendFunc)
-73,730,ExtractResults,ResultsPage,select,ddl_fut_Boundary,${data.design.futBoundary},,,,,10000,FALSE,0,always,,Futility boundary select (#futBoundary)
-74,740,ExtractResults,ResultsPage,fill,txt_fut_Param_Rho,${data.design.futParamRho},,,,,10000,FALSE,0,never,,Futility Rho parameter (#futParamRho - hand-added selector; ITER_01 = 4.55)
-75,750,ExtractResults,ResultsPage,fill,txt_Shape_Parameter_2,${data.design.shapeParamDeltaTwo},,,,,10000,FALSE,0,never,,Futility shape parameter (#shapeParamDeltaTwo)
-76,760,ExtractResults,ResultsPage,select,ddl_Compute_CP_Using,${data.design.computeCP},,,,,10000,FALSE,0,always,,Compute CP Using (Conditional-Power futility only; #computeCP)
-77,770,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Boundary Scale (Score / Z / p-value / cp_deltahat ...)
-78,780,ExtractResults,ResultsPage,callCustom,,reconcileBoundaryInterims,,,,,30000,FALSE,0,always,,Reconcile the interim table to the testdata's interim count (clicks Add Interim; fixed designs = no-op). MUST run before the per-period fills
-79,790,ExtractResults,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 0 spacing
-791,791,ExtractResults,ResultsPage,fill,txt_boundary_3_analysis_Spacing_Info,${data.design.boundary.3.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 3 spacing (many-interim GSD; N/A otherwise)
-792,792,ExtractResults,ResultsPage,fill,txt_boundary_4_analysis_Spacing_Info,${data.design.boundary.4.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 4 spacing (many-interim GSD; N/A otherwise)
-793,793,ExtractResults,ResultsPage,fill,txt_boundary_5_analysis_Spacing_Info,${data.design.boundary.5.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 5 spacing (many-interim GSD; N/A otherwise)
-794,794,ExtractResults,ResultsPage,fill,txt_boundary_6_analysis_Spacing_Info,${data.design.boundary.6.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 6 spacing (many-interim GSD; N/A otherwise)
-795,795,ExtractResults,ResultsPage,fill,txt_boundary_7_analysis_Spacing_Info,${data.design.boundary.7.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 7 spacing (many-interim GSD; N/A otherwise)
-80,800,ExtractResults,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 1 spacing
-81,810,ExtractResults,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 2 spacing
-81.1,812,ExtractResults,ResultsPage,fill,txt_boundary_0_upper_Alpha,${data.design.boundary.0.upperAlpha},,,,,10000,FALSE,0,never,,Interim 0 Upper alpha (2-Sided Asymmetric Interpolated - required per-analysis; N/A on symmetric)
-81.2,813,ExtractResults,ResultsPage,fill,txt_boundary_1_upper_Alpha,${data.design.boundary.1.upperAlpha},,,,,10000,FALSE,0,never,,Interim 1 Upper alpha
-81.3,814,ExtractResults,ResultsPage,fill,txt_boundary_2_upper_Alpha,${data.design.boundary.2.upperAlpha},,,,,10000,FALSE,0,never,,Interim 2 Upper alpha
-81.4,815,ExtractResults,ResultsPage,fill,txt_boundary_0_lower_Alpha,${data.design.boundary.0.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 0 Lower alpha
-81.5,816,ExtractResults,ResultsPage,fill,txt_boundary_1_lower_Alpha,${data.design.boundary.1.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 1 Lower alpha
-81.6,817,ExtractResults,ResultsPage,fill,txt_boundary_2_lower_Alpha,${data.design.boundary.2.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 2 Lower alpha
-82,820,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 0 cumulative alpha spent
-83,830,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 1 cumulative alpha spent
-84,840,ExtractResults,ResultsPage,fill,txt_boundary_2_cum_Alpha_Spent,${data.design.boundary.2.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 2 cumulative alpha spent
-85,850,ExtractResults,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 0 efficacy p-value
-851,851,ExtractResults,ResultsPage,fill,txt_boundary_3_efficacy_PValue,${data.design.boundary.3.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 3 efficacy p-value
-852,852,ExtractResults,ResultsPage,fill,txt_boundary_4_efficacy_PValue,${data.design.boundary.4.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 4 efficacy p-value
-853,853,ExtractResults,ResultsPage,fill,txt_boundary_5_efficacy_PValue,${data.design.boundary.5.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 5 efficacy p-value
-854,854,ExtractResults,ResultsPage,fill,txt_boundary_6_efficacy_PValue,${data.design.boundary.6.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 6 efficacy p-value
-855,855,ExtractResults,ResultsPage,fill,txt_boundary_7_efficacy_PValue,${data.design.boundary.7.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 7 efficacy p-value
-86,860,ExtractResults,ResultsPage,fill,txt_boundary_1_efficacy_PValue,${data.design.boundary.1.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 1 efficacy p-value
-865,865,ExtractResults,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 2 efficacy p-value
-87,870,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 0 cumulative beta spent
-88,880,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Beta_Spent,${data.design.boundary.1.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 1 cumulative beta spent
-885,885,ExtractResults,ResultsPage,fill,txt_boundary_2_cum_Beta_Spent,${data.design.boundary.2.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 2 cum beta spent
-89,890,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_PValue,${data.design.boundary.0.futilityPValue},,,,,10000,FALSE,0,never,,Interim 0 futility p-value
-90,900,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_PValue,${data.design.boundary.1.futilityPValue},,,,,10000,FALSE,0,never,,Interim 1 futility p-value
-905,905,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_PValue,${data.design.boundary.2.futilityPValue},,,,,10000,FALSE,0,never,,Interim 2 futility p-value
-91,910,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_CP,${data.design.boundary.0.futilityCP},,,,,10000,FALSE,0,never,,Interim 0 futility conditional power
-92,920,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_CP,${data.design.boundary.1.futilityCP},,,,,10000,FALSE,0,never,,Interim 1 futility conditional power
-925,925,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_CP,${data.design.boundary.2.futilityCP},,,,,10000,FALSE,0,never,,Interim 2 futility CP
-93,930,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_Delta_By_Sigma,${data.design.boundary.0.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 0 futility delta/sigma
-94,940,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_Delta_By_Sigma,${data.design.boundary.1.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 1 futility delta/sigma
-946,946,ExtractResults,ResultsPage,check,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.efficacyCheck}!=check,"Per-analysis boundary.0.efficacyCheck (checks-LAST, before Calculate)"
-947,947,ExtractResults,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.efficacyCheck}!=uncheck,"Per-analysis boundary.0.efficacyCheck (checks-LAST, before Calculate)"
-948,948,ExtractResults,ResultsPage,check,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=check,"Per-analysis boundary.1.efficacyCheck (checks-LAST, before Calculate)"
-949,949,ExtractResults,ResultsPage,uncheck,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=uncheck,"Per-analysis boundary.1.efficacyCheck (checks-LAST, before Calculate)"
-95,950,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_Delta_By_Sigma,${data.design.boundary.2.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 2 futility delta/sigma
-951,951,ExtractResults,ResultsPage,check,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=check,"Per-analysis boundary.2.efficacyCheck (checks-LAST, before Calculate)"
-952,952,ExtractResults,ResultsPage,uncheck,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=uncheck,"Per-analysis boundary.2.efficacyCheck (checks-LAST, before Calculate)"
-953,953,ExtractResults,ResultsPage,check,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=check,"Per-analysis boundary.0.futilityCheck (checks-LAST, before Calculate)"
-954,954,ExtractResults,ResultsPage,uncheck,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=uncheck,"Per-analysis boundary.0.futilityCheck (checks-LAST, before Calculate)"
-955,955,ExtractResults,ResultsPage,check,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityCheck}!=check,"Per-analysis boundary.1.futilityCheck (checks-LAST, before Calculate)"
-956,956,ExtractResults,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityCheck}!=uncheck,"Per-analysis boundary.1.futilityCheck (checks-LAST, before Calculate)"
-957,957,ExtractResults,ResultsPage,check,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=check,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
-958,958,ExtractResults,ResultsPage,uncheck,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=uncheck,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
-96,960,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,15000,FALSE,0,always,${data.design.effBoundaryFam}==EMPTY,"Calculate the GSD boundary. SKIPPED for FIXED designs (effBoundaryFam empty = no boundary table, so no Calculate button - it would time out). Boundary checkbox toggles go LAST, just before this"
-97,970,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,Open the Enrollment (accrual) section
-98,980,ExtractResults,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=check,Include Enrollment ON (reveals avg subjects enrolled); gated per iteration (maps to IncludeEnrollment)
-99,990,ExtractResults,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=uncheck,Include Enrollment OFF; gated per iteration
-100,1000,ExtractResults,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Average subjects enrolled (design enrollment is a single scalar; #enrollmentTable.0.avgSubjectsEnrolled)
-101,1010,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,Save the design
-102,1020,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,Save & Compute (opens the credit dialog)
-103,1030,ExtractResults,ResultsPage,fill,txt_ResultName,DOM_Result_${iterationId},,,,,10000,FALSE,0,never,,Name the result in the credit dialog (#inputId) - runtime token keeps it unique per iteration with no new testdata column
-104,1040,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,Confirm the credit dialog to start the compute (#credit-alert-primary)
-105,1050,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
-106,1060,ExtractResults,ResultsPage,click,lnk_ResultName,DOM_Result_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by its (distinct) name once compute finishes
-107,1070,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page (shared _shared/customSteps.extractAllResultTables)
-108,1080,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells vs 06_baseline/AD/. First run writes the baseline (green but verifies nothing); a second run is a real PASS/FAIL
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,"Log in via the shared login flow. Recorded identity-provider steps are intentionally not imported - login is shared, not per-feature"
+2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to app page
+3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Wait for the landing page to finish loading. Polls instead of sleeping; the app cold-starts slowly and never goes network-idle
+4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,click New Project
+5,50,ConfigureDesign,ProjectPage,fill,txt_Project_Name,${data.project.ProjectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,fill Project Name (made unique per run with runId)
+6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.TimeUnit},,,,,15000,FALSE,0,always,,Select Time Unit. select opens the menu and commits the option itself - works for native and custom dropdowns
+7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick the Start Date in the calendar (shared selectStartDate). REVIEW the Start Date value in testdata - dates cannot be inferred reliably from a recording
+8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.StudyObjective},,,,,15000,FALSE,0,always,,Select Study Objective. select opens the menu and commits the option itself - works for native and custom dropdowns
+9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,FALSE,0,always,,Select Phase. select opens the menu and commits the option itself - works for native and custom dropdowns
+10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,fill Target Population
+11,110,ConfigureDesign,ProjectPage,fill,txt_Control_Arm,${data.project.Control Arm},,,,,10000,FALSE,0,never,,fill Control Arm
+12,120,ConfigureDesign,ProjectPage,fill,txt_Treatment_Arm,${data.project.TreatmentArm},,,,,10000,FALSE,0,never,,fill Treatment Arm
+13,130,ConfigureDesign,ProjectPage,assertValue,obj_Priority,,,,${data.project.Priority},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in project.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+14,140,ConfigureDesign,ProjectPage,fill,txt_Endpoint_Name,${data.project.EndpointName},,,,,10000,FALSE,0,never,,fill Endpoint Name
+15,150,ConfigureDesign,ProjectPage,fill,txt_endpoint_Name_0,${data.project.EndpointName},,,,,10000,FALSE,0,never,,fill endpointName-0
+16,160,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.EndpointType},,,,,15000,FALSE,0,always,,Select Endpoint Type. select opens the menu and commits the option itself - works for native and custom dropdowns
+17,170,ConfigureDesign,ProjectPage,select,ddl_Better_Response,${data.project.BetterResponse},,,,,15000,FALSE,0,always,,Select Better Response. select opens the menu and commits the option itself - works for native and custom dropdowns
+18,180,ConfigureDesign,ProjectPage,fill,txt_Follow_up_Time_Week,${data.project.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
+19,190,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
+20,200,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+21,210,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
+22,220,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
+23,230,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
+24,240,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.Select Test},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
+25,250,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+26,260,ConfigureDesign,DesignPage,select,ddl_Hypothesis,${data.design.hypothesis},,,,,10000,FALSE,0,always,,Select Hypothesis. Native <select> - select matches by visible label first
+27,270,ConfigureDesign,DesignPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.allocationRatio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+28,280,Simulate,DesignPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
+29,290,ConfigureDesign,ResultsPage,fill,txt_Sample_Size_n,${data.design.sampleSize},,,,,10000,FALSE,0,never,,fill Sample Size
+30,300,ConfigureDesign,ResultsPage,fill,txt_Power,${data.design.power},,,,,10000,FALSE,0,never,,fill Power
+31,310,ConfigureDesign,ResultsPage,select,ddl_Test_Type,${data.design.testtype},,,,,10000,FALSE,0,always,,Select Test Type. Native <select> - select matches by visible label first
+32,320,ConfigureDesign,ResultsPage,select,ddl_Type_1_Error,${data.design.testtype},,,,,10000,FALSE,0,always,,Select Type 1 Error. Native <select> - select matches by visible label first
+33,330,ConfigureDesign,ResultsPage,fill,txt_Upper_Type_1_Error,${data.design.upperType1Error},,,,,10000,FALSE,0,never,,fill Upper Type 1 Error
+34,340,ConfigureDesign,ResultsPage,fill,txt_Lower_Type_1_Error,${data.design.lowerType1Error},,,,,10000,FALSE,0,never,,fill Lower Type 1 Error
+35,350,ConfigureDesign,ResultsPage,fill,txt_type1Error,${data.design.type1Error},,,,,10000,FALSE,0,never,,fill type1Error
+36,360,ConfigureDesign,ResultsPage,fill,txt_Proportion_under_Control_c,${data.design.proportionUnderControl_SS},,,,,10000,FALSE,0,never,,fill Proportion under Control
+38,380,ConfigureDesign,ResultsPage,fill,txt_Super_Superiority_Margin_0,${data.design.superSuperiorityMargin},,,,,10000,FALSE,0,never,,fill Super Superiority Margin (ρ0
+40,400,ConfigureDesign,ResultsPage,fill,txt_Ratio_of_Proportions_1,${data.design.ratioOfProportions_SS},,,,,10000,FALSE,0,never,,fill Ratio of Proportions (ρ1 = π
+42,420,ConfigureDesign,ResultsPage,fill,txt_Ratio_of_Proportions_1_t,${data.design.ratioOfProportions_SP},,,,,10000,FALSE,0,never,,fill Ratio of Proportions (ρ1 = πt
+44,440,ConfigureDesign,ResultsPage,fill,txt_Noninferiority_Margin_0,${data.design.nonInferiorityMargin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin (ρ0 = π
+46,460,ConfigureDesign,ResultsPage,check,chk_include_Exact_Computation,,,,,,10000,FALSE,0,always,${data.design.includeExactComputation}!=check,check includeExactComputation when testdata includeExactComputation=check (SkipIf gates it per iteration)
+47,470,ConfigureDesign,ResultsPage,uncheck,chk_include_Exact_Computation,,,,,,10000,FALSE,0,always,${data.design.includeExactComputation}!=uncheck,uncheck includeExactComputation when testdata includeExactComputation=uncheck (SkipIf gates it per iteration)
+48,480,ConfigureDesign,ResultsPage,uncheck,chk_include_Exact_Computation,,,,,,10000,FALSE,0,always,${data.design.includeExactComputation}!=uncheck,uncheck includeExactComputation when testdata includeExactComputation=uncheck (SkipIf gates it per iteration)
+49,490,ConfigureDesign,ResultsPage,fill,txt_Follow_up_Time_Week,${data.design.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
+50,500,ConfigureDesign,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.probabilityOfDropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+51,510,ConfigureDesign,ResultsPage,select,ddl_Variance_of_Standardized_Test,${data.design.variance},,,,,10000,FALSE,0,always,,Select Variance of Standardized Test. Native <select> - select matches by visible label first
+52,520,ConfigureDesign,ResultsPage,select,ddl_Test_Statistic,${data.design.testStatistic},,,,,10000,FALSE,0,always,,Select Test Statistic. Native <select> - select matches by visible label first
+53,530,ConfigureDesign,ResultsPage,check,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=TRUE,check includeAssurance when testdata includeAssurance=check (SkipIf gates it per iteration)
+54,540,ConfigureDesign,ResultsPage,uncheck,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=FALSE,uncheck includeAssurance when testdata includeAssurance=uncheck (SkipIf gates it per iteration)
+55,550,ConfigureDesign,ResultsPage,select,ddl_Prior_Distribution_For,${data.design.priorDistributionFor},,,,,10000,FALSE,0,always,,Select Prior Distribution For. Native <select> - select matches by visible label first
+56,560,ConfigureDesign,ResultsPage,select,ddl_Distribution,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Select Distribution. Native <select> - select matches by visible label first
+59,590,ConfigureDesign,ResultsPage,select,ddl_distribution_Method,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Select distributionMethod. Native <select> - select matches by visible label first
+60,600,ConfigureDesign,ResultsPage,select,ddl_Input_Method,${data.design.assuranceInputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
+61,610,ConfigureDesign,ResultsPage,select,ddl_select_name_perc_Pi_T1st_Operator,${data.design.percPiT1stOperator},,,,,10000,FALSE,0,always,,Select percPiT1stOperator. Native <select> - select matches by visible label first
+62,620,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_T1st_Percentile_Val,${data.design.percPiT1stPercentileVal},,,,,10000,FALSE,0,never,,fill percPiT1stPercentileVal
+63,630,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_T1st_Percentile_Prob,${data.design.percPiT1stPercentileProb},,,,,10000,FALSE,0,never,,fill percPiT1stPercentileProb
+64,640,ConfigureDesign,ResultsPage,select,ddl_select_name_perc_Pi_T2nd_Operator,${data.design.percPiT2ndOperator},,,,,10000,FALSE,0,always,,Select percPiT2ndOperator. Native <select> - select matches by visible label first
+65,650,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_T2nd_Percentile_Val,${data.design.percPiT2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percPiT2ndPercentileVal
+66,660,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_T2nd_Percentile_Prob,${data.design.percPiT2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percPiT2ndPercentileProb
+67,670,ConfigureDesign,ResultsPage,select,ddl_assurance_Input_Method,${data.design.assuranceInputMethod},,,,,10000,FALSE,0,always,,Select assuranceInputMethod. Native <select> - select matches by visible label first
+68,680,ConfigureDesign,ResultsPage,fill,txt_pi_t_a,${data.design.pi_t_a},,,,,10000,FALSE,0,never,,fill pi_t_a
+69,690,ConfigureDesign,ResultsPage,fill,txt_pi_t_b,${data.design.pi_t_b},,,,,10000,FALSE,0,never,,fill pi_t_b
+70,700,ConfigureDesign,ResultsPage,select,ddl_perc_Pi_TRho1st_Operator,${data.design.percPiTRho1stOperator},,,,,10000,FALSE,0,always,,Select percPiTRho1stOperator. Native <select> - select matches by visible label first
+71,710,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_TRho1st_Percentile_Val,${data.design.percPiTRho1stPercentileVal},,,,,10000,FALSE,0,never,,fill percPiTRho1stPercentileVal
+72,720,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_TRho1st_Percentile_Prob,${data.design.percPiTRho1stPercentileProb},,,,,10000,FALSE,0,never,,fill percPiTRho1stPercentileProb
+73,730,ConfigureDesign,ResultsPage,select,ddl_perc_Pi_TRho2nd_Operator,${data.design.percPiTRho2ndOperator},,,,,10000,FALSE,0,always,,Select percPiTRho2ndOperator. Native <select> - select matches by visible label first
+74,740,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_TRho2nd_Percentile_Val,${data.design.percPiTRho2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percPiTRho2ndPercentileVal
+75,750,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_TRho2nd_Percentile_Prob,${data.design.percPiTRho2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percPiTRho2ndPercentileProb
+76,760,ConfigureDesign,ResultsPage,select,ddl_prior_Distribution_For,${data.design.priorDistributionFor},,,,,10000,FALSE,0,always,,Select priorDistributionFor. Native <select> - select matches by visible label first
+79,790,ConfigureDesign,ResultsPage,select,ddl_select_name_perc_Pi_C1st_Operator,${data.design.percPiC1stOperator},,,,,10000,FALSE,0,always,,Select percPiC1stOperator. Native <select> - select matches by visible label first
+80,800,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_C1st_Percentile_Val,${data.design.percPiC1stPercentileVal},,,,,10000,FALSE,0,never,,fill percPiC1stPercentileVal
+81,810,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_C1st_Percentile_Prob,${data.design.percPiC1stPercentileProb},,,,,10000,FALSE,0,never,,fill percPiC1stPercentileProb
+82,820,ConfigureDesign,ResultsPage,select,ddl_select_name_perc_Pi_C2nd_Operator,${data.design.percPiC2ndOperator},,,,,10000,FALSE,0,always,,Select percPiC2ndOperator. Native <select> - select matches by visible label first
+83,830,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_C2nd_Percentile_Val,${data.design.percPiC2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percPiC2ndPercentileVal
+84,840,ConfigureDesign,ResultsPage,fill,txt_input_name_perc_Pi_C2nd_Percentile_Prob,${data.design.percPiC2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percPiC2ndPercentileProb
+85,850,ConfigureDesign,ResultsPage,fill,txt_pi_c_a,${data.design.pi_c_a},,,,,10000,FALSE,0,never,,fill pi_c_a
+86,860,ConfigureDesign,ResultsPage,fill,txt_pi_c_b,${data.design.pi_c_b},,,,,10000,FALSE,0,never,,fill pi_c_b
+87,870,ConfigureDesign,ResultsPage,select,ddl_perc_Pi_CRho1st_Operator,${data.design.percPiCRho1stOperator},,,,,10000,FALSE,0,always,,Select percPiCRho1stOperator. Native <select> - select matches by visible label first
+88,880,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_CRho1st_Percentile_Val,${data.design.percPiCRho1stPercentileVal},,,,,10000,FALSE,0,never,,fill percPiCRho1stPercentileVal
+89,890,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_CRho1st_Percentile_Prob,${data.design.percPiCRho1stPercentileProb},,,,,10000,FALSE,0,never,,fill percPiCRho1stPercentileProb
+90,900,ConfigureDesign,ResultsPage,select,ddl_perc_Pi_CRho2nd_Operator,${data.design.percPiCRho2ndOperator},,,,,10000,FALSE,0,always,,Select percPiCRho2ndOperator. Native <select> - select matches by visible label first
+91,910,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_CRho2nd_Percentile_Val,${data.design.percPiCRho2ndPercentileVal},,,,,10000,FALSE,0,never,,fill percPiCRho2ndPercentileVal
+92,920,ConfigureDesign,ResultsPage,fill,txt_perc_Pi_CRho2nd_Percentile_Prob,${data.design.percPiCRho2ndPercentileProb},,,,,10000,FALSE,0,never,,fill percPiCRho2ndPercentileProb
+93,930,ConfigureDesign,ResultsPage,fill,txt_input_name_min_Pi_C,${data.design.minPiC},,,,,10000,FALSE,0,never,,fill minPiC
+94,940,ConfigureDesign,ResultsPage,fill,txt_input_name_max_Pi_C,${data.design.maxPiC},,,,,10000,FALSE,0,never,,fill maxPiC
+95,950,ConfigureDesign,ResultsPage,fill,txt_input_name_min_Pi_T,${data.design.minPiT},,,,,10000,FALSE,0,never,,fill minPiT
+96,960,ConfigureDesign,ResultsPage,fill,txt_input_name_max_Pi_T,${data.design.maxPiT},,,,,10000,FALSE,0,never,,fill maxPiT
+97,970,ConfigureDesign,ResultsPage,select,ddl_Efficacy_Boundary_Family,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,,Select Efficacy Boundary Family. Native <select> - select matches by visible label first
+98,980,ConfigureDesign,ResultsPage,select,ddl_Spending_Function,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Select Spending Function. Native <select> - select matches by visible label first
+99,990,ConfigureDesign,ResultsPage,fill,txt_eff_Param_Rho,${data.design.effParamRho},,,,,10000,FALSE,0,never,,fill effParamRho
+100,1000,ConfigureDesign,ResultsPage,select,ddl_eff_Spend_Func,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Select effSpendFunc. Native <select> - select matches by visible label first
+101,1010,ConfigureDesign,ResultsPage,fill,txt_eff_Param_Gamma,${data.design.effParamGamma},,,,,10000,FALSE,0,never,,fill effParamGamma
+102,1020,ConfigureDesign,ResultsPage,select,ddl_eff_Param,${data.design.effParam},,,,,10000,FALSE,0,always,,Select effParam. Native <select> - select matches by visible label first
+104,1040,ConfigureDesign,ResultsPage,select,ddl_eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,,Select effBoundaryFam. Native <select> - select matches by visible label first
+105,1050,ConfigureDesign,ResultsPage,select,ddl_fix,${data.design.fix},,,,,10000,FALSE,0,always,,Select fix. Native <select> - select matches by visible label first
+106,1060,ConfigureDesign,ResultsPage,fill,txt_shape_Param_Delta,${data.design.shapeParamDelta},,,,,10000,FALSE,0,never,,fill shapeParamDelta
+107,1070,ConfigureDesign,ResultsPage,select,ddl_fut_Boundary_Fam,${data.design.futBoundaryFam},,,,,10000,FALSE,0,always,,Select futBoundaryFam. Native <select> - select matches by visible label first
+108,1080,ConfigureDesign,ResultsPage,select,ddl_fut_Spend_Func,${data.design.futSpendFunc},,,,,10000,FALSE,0,always,,Select futSpendFunc. Native <select> - select matches by visible label first
+109,1090,ConfigureDesign,ResultsPage,fill,txt_fut_Param_Rho,${data.design.futParamRho},,,,,10000,FALSE,0,never,,fill futParamRho
+110,1100,ConfigureDesign,ResultsPage,fill,txt_fut_Param_Gamma,${data.design.futParamGamma},,,,,10000,FALSE,0,never,,fill futParamGamma
+111,1110,ConfigureDesign,ResultsPage,select,ddl_fut_Param,${data.design.futParam},,,,,10000,FALSE,0,always,,Select futParam. Native <select> - select matches by visible label first
+112,1120,ConfigureDesign,ResultsPage,select,ddl_fut_Boundary,${data.design.futBoundary},,,,,10000,FALSE,0,always,,Select futBoundary. Native <select> - select matches by visible label first
+113,1130,Simulate,DesignPage,select,ddl_compute_CP,${data.design.computeCP},,,,,10000,FALSE,0,always,,Select computeCP. Native <select> - select matches by visible label first
+114,1140,ConfigureDesign,ResultsPage,select,ddl_asym_Eff_Boundary_Fam,${data.design.asymEffBoundaryFam},,,,,10000,FALSE,0,always,,Select asymEffBoundaryFam. Native <select> - select matches by visible label first
+115,1150,ConfigureDesign,ResultsPage,select,ddl_upper_Spend_Func,${data.design.upperSpendFunc},,,,,10000,FALSE,0,always,,Select upperSpendFunc. Native <select> - select matches by visible label first
+116,1160,ConfigureDesign,ResultsPage,fill,txt_upper_Param_Rho,${data.design.upperParamRho},,,,,10000,FALSE,0,never,,fill upperParamRho
+117,1170,ConfigureDesign,ResultsPage,fill,txt_upper_Param_Gamma,${data.design.upperParamGamma},,,,,10000,FALSE,0,never,,fill upperParamGamma
+118,1180,ConfigureDesign,ResultsPage,select,ddl_upper_Param,${data.design.upperParam},,,,,10000,FALSE,0,always,,Select upperParam. Native <select> - select matches by visible label first
+119,1190,ConfigureDesign,ResultsPage,select,ddl_lower_Spend_Func,${data.design.lowerSpendFunc},,,,,10000,FALSE,0,always,,Select lowerSpendFunc. Native <select> - select matches by visible label first
+120,1200,ConfigureDesign,ResultsPage,fill,txt_lower_Param_Rho,${data.design.lowerParamRho},,,,,10000,FALSE,0,never,,fill lowerParamRho
+121,1210,ConfigureDesign,ResultsPage,fill,txt_lower_Param_Gamma,${data.design.lowerParamGamma},,,,,10000,FALSE,0,never,,fill lowerParamGamma
+122,1220,ConfigureDesign,ResultsPage,select,ddl_lower_Param,${data.design.lowerParam},,,,,10000,FALSE,0,always,,Select lowerParam. Native <select> - select matches by visible label first
+123,1230,ConfigureDesign,ResultsPage,select,ddl_Boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Select Boundary Scale. Native <select> - select matches by visible label first
+124,1240,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.1.analysisSpacingInfo}==EMPTY,click Add Interim
+125,1250,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.2.analysisSpacingInfo}==EMPTY,click Add Interim
+125,1252,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.3.analysisSpacingInfo}==EMPTY,Add Interim for period 3 (>=4 interims - each gate fires only when that period has data; e.g. ITER_10 has 7)
+125,1254,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.4.analysisSpacingInfo}==EMPTY,Add Interim for period 4
+125,1256,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.5.analysisSpacingInfo}==EMPTY,Add Interim for period 5
+125,1258,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.6.analysisSpacingInfo}==EMPTY,Add Interim for period 6 (period 7 = auto Final row - NO Add Interim)
+126,1260,ConfigureDesign,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.0.analysisSpacingInfo
+127,1270,ConfigureDesign,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.1.analysisSpacingInfo
+128,1280,ConfigureDesign,ResultsPage,click,txt_boundary_2_analysis_Spacing_Info,,,,,,10000,FALSE,0,never,${data.design.boundary.2.analysisSpacingInfo}==EMPTY,click boundary.2.analysisSpacingInfo
+129,1290,ConfigureDesign,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.2.analysisSpacingInfo
+129,1291,ConfigureDesign,ResultsPage,fill,txt_boundary_3_analysis_Spacing_Info,${data.design.boundary.3.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.3.analysisSpacingInfo (auto-skips when absent/N/A)
+129,1292,ConfigureDesign,ResultsPage,fill,txt_boundary_4_analysis_Spacing_Info,${data.design.boundary.4.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.4.analysisSpacingInfo
+129,1293,ConfigureDesign,ResultsPage,fill,txt_boundary_5_analysis_Spacing_Info,${data.design.boundary.5.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.5.analysisSpacingInfo
+129,1294,ConfigureDesign,ResultsPage,fill,txt_boundary_6_analysis_Spacing_Info,${data.design.boundary.6.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.6.analysisSpacingInfo
+129,1295,ConfigureDesign,ResultsPage,fill,txt_boundary_7_analysis_Spacing_Info,${data.design.boundary.7.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.7.analysisSpacingInfo (Final row - usually N/A - auto-skips)
+130,1300,ConfigureDesign,ResultsPage,check,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=check,check boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=check (SkipIf gates it per iteration)
+131,1310,ConfigureDesign,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=uncheck,uncheck boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=uncheck (SkipIf gates it per iteration)
+132,1320,ConfigureDesign,ResultsPage,check,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=check,check boundary.1.futilityCheck when testdata boundary.1.futilityCheck=check (SkipIf gates it per iteration)
+133,1330,ConfigureDesign,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=uncheck,uncheck boundary.1.futilityCheck when testdata boundary.1.futilityCheck=uncheck (SkipIf gates it per iteration)
+134,1340,ConfigureDesign,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.0.efficacyPValue
+135,1350,ConfigureDesign,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumAlphaSpent
+136,1360,ConfigureDesign,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumBetaSpent
+137,1370,ConfigureDesign,ResultsPage,fill,txt_boundary_0_futility_PValue,${data.design.boundary.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.0.futilityPValue
+138,1380,ConfigureDesign,ResultsPage,fill,txt_boundary_0_futility_CP,${data.design.boundary.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundary.0.futilityCP
+139,1390,ConfigureDesign,ResultsPage,fill,txt_boundary_0_futility_Rho,${data.design.boundary.0.futilityRho},,,,,10000,FALSE,0,never,,fill boundary.0.futilityRho
+140,1400,ConfigureDesign,ResultsPage,fill,txt_boundary_0_upper_Alpha,${data.design.boundary.0.upperAlpha},,,,,10000,FALSE,0,never,,fill boundary.0.upperAlpha
+142,1420,ConfigureDesign,ResultsPage,fill,txt_boundary_0_lower_Alpha,${data.design.boundary.0.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.0.lowerAlpha
+143,1430,ConfigureDesign,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,click Calculate
+144,1440,ConfigureDesign,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+145,1450,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=check,check Include when testdata Include=check (SkipIf gates it per iteration)
+146,1460,ConfigureDesign,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=uncheck,uncheck Include when testdata Include=uncheck (SkipIf gates it per iteration)
+147,1470,ConfigureDesign,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
+148,1480,ConfigureDesign,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+149,1490,Simulate,DesignPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
+150,1500,ExtractResults,ResultsPage,fill,txt_ResultName,ROP_Result_${iterationId},,,,,10000,FALSE,0,never,,fill Result Name
+151,1510,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit-alert-primary
+152,1520,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+153,1530,ExtractResults,ResultsPage,click,lnk_ResultName,ROP_Result_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+154,1540,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+155,1550,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+142.1,1421,ConfigureDesign,ResultsPage,fill,txt_boundary_1_upper_Alpha,${data.design.boundary.1.upperAlpha},,,,,10000,FALSE,0,never,,fill boundary.1.upperAlpha
+142.2,1422,ConfigureDesign,ResultsPage,fill,txt_boundary_1_lower_Alpha,${data.design.boundary.1.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.1.lowerAlpha
+142.3,1423,ConfigureDesign,ResultsPage,fill,txt_boundary_2_upper_Alpha,${data.design.boundary.2.upperAlpha},,,,,10000,FALSE,0,never,,fill boundary.2.upperAlpha
+142.4,1424,ConfigureDesign,ResultsPage,fill,txt_boundary_2_lower_Alpha,${data.design.boundary.2.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.2.lowerAlpha
+1331,1331,ConfigureDesign,ResultsPage,check,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=check,check boundary.0.futilityCheck
+1332,1332,ConfigureDesign,ResultsPage,uncheck,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=uncheck,uncheck boundary.0.futilityCheck
+1333,1333,ConfigureDesign,ResultsPage,check,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=check,check boundary.1.efficacyCheck
+1334,1334,ConfigureDesign,ResultsPage,uncheck,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=uncheck,uncheck boundary.1.efficacyCheck
+1335,1335,ConfigureDesign,ResultsPage,check,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=check,check boundary.2.efficacyCheck
+1336,1336,ConfigureDesign,ResultsPage,uncheck,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=uncheck,uncheck boundary.2.efficacyCheck
+1337,1337,ConfigureDesign,ResultsPage,check,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=check,check boundary.2.futilityCheck
+1338,1338,ConfigureDesign,ResultsPage,uncheck,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=uncheck,uncheck boundary.2.futilityCheck
+1341,1341,ConfigureDesign,ResultsPage,fill,txt_boundary_1_efficacy_PValue,${data.design.boundary.1.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.1.efficacyPValue
+1342,1342,ConfigureDesign,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.2.efficacyPValue
+1343,1343,ConfigureDesign,ResultsPage,fill,txt_boundary_3_efficacy_PValue,${data.design.boundary.3.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.3.efficacyPValue
+1344,1344,ConfigureDesign,ResultsPage,fill,txt_boundary_4_efficacy_PValue,${data.design.boundary.4.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.4.efficacyPValue
+1345,1345,ConfigureDesign,ResultsPage,fill,txt_boundary_5_efficacy_PValue,${data.design.boundary.5.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.5.efficacyPValue
+1346,1346,ConfigureDesign,ResultsPage,fill,txt_boundary_6_efficacy_PValue,${data.design.boundary.6.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.6.efficacyPValue
+1347,1347,ConfigureDesign,ResultsPage,fill,txt_boundary_7_efficacy_PValue,${data.design.boundary.7.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.7.efficacyPValue (Final row efficacy p-value - ITER_10 period 7 = 0.0008)
+1351,1351,ConfigureDesign,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.1.cumAlphaSpent
+1352,1352,ConfigureDesign,ResultsPage,fill,txt_boundary_2_cum_Alpha_Spent,${data.design.boundary.2.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.2.cumAlphaSpent
+1361,1361,ConfigureDesign,ResultsPage,fill,txt_boundary_1_cum_Beta_Spent,${data.design.boundary.1.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.1.cumBetaSpent
+1362,1362,ConfigureDesign,ResultsPage,fill,txt_boundary_2_cum_Beta_Spent,${data.design.boundary.2.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.2.cumBetaSpent
+1371,1371,ConfigureDesign,ResultsPage,fill,txt_boundary_1_futility_PValue,${data.design.boundary.1.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.1.futilityPValue
+1372,1372,ConfigureDesign,ResultsPage,fill,txt_boundary_2_futility_PValue,${data.design.boundary.2.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.2.futilityPValue
+1373,1373,ConfigureDesign,ResultsPage,fill,txt_boundary_3_futility_PValue,${data.design.boundary.3.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.3.futilityPValue
+1374,1374,ConfigureDesign,ResultsPage,fill,txt_boundary_4_futility_PValue,${data.design.boundary.4.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.4.futilityPValue
+1375,1375,ConfigureDesign,ResultsPage,fill,txt_boundary_5_futility_PValue,${data.design.boundary.5.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.5.futilityPValue
+1376,1376,ConfigureDesign,ResultsPage,fill,txt_boundary_6_futility_PValue,${data.design.boundary.6.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.6.futilityPValue
+1377,1377,ConfigureDesign,ResultsPage,fill,txt_boundary_7_futility_PValue,${data.design.boundary.7.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.7.futilityPValue (Final row - usually N/A - auto-skips)
+1381,1381,ConfigureDesign,ResultsPage,fill,txt_boundary_1_futility_CP,${data.design.boundary.1.futilityCP},,,,,10000,FALSE,0,never,,fill boundary.1.futilityCP
+1382,1382,ConfigureDesign,ResultsPage,fill,txt_boundary_2_futility_CP,${data.design.boundary.2.futilityCP},,,,,10000,FALSE,0,never,,fill boundary.2.futilityCP
+1391,1391,ConfigureDesign,ResultsPage,fill,txt_boundary_1_futility_Rho,${data.design.boundary.1.futilityRho},,,,,10000,FALSE,0,never,,fill boundary.1.futilityRho
+1392,1392,ConfigureDesign,ResultsPage,fill,txt_boundary_2_futility_Rho,${data.design.boundary.2.futilityRho},,,,,10000,FALSE,0,never,,fill boundary.2.futilityRho

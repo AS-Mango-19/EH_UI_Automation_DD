@@ -1,5 +1,5 @@
 {
-  "feature": "DOM(PD)",
+  "feature": "ROP(PD)",
   "module": "ProductDesign",
   "serial": true,
   "reuseAuthState": false,

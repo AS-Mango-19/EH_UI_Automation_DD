@@ -1,106 +1,71 @@
 Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
 1,10,Simulate,DesignPage,click,btn_Simulate,,,,,,10000,FALSE,0,never,,click Simulate
-2,20,ConfigureDesign,Page,fill,txt_ResultName,DOM_Sim_${iterationId},,,,,10000,FALSE,0,never,,fill Result Name
-4,30,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,Confirm credit dialog to enter the sim setup (NOT a grid cell - essential)
-5,40,ConfigureDesign,Page,click,txt_left_Panel_designs,,,,,,10000,FALSE,0,never,,Navigate to the Design tab in the sim (leftPanel.designs - essential nav)
-4.2,42,ConfigureDesign,Page,click,txt_left_Panel_response,,,,,,10000,FALSE,0,never,,GADAR fix: MOUNT the Response tab into the model BEFORE header/boundary edits (clean state = no Unsaved-Changes dialog) so Recalculate carries the effect params
-4.4,44,ConfigureDesign,Page,sleep,,1800,,,,,5000,FALSE,0,never,,Let the Response inputs bind into the model
-4.6,46,ConfigureDesign,Page,click,txt_left_Panel_designs,,,,,,10000,FALSE,0,never,,Return to the Design tab to enter the header/boundary (Response now mounted)
-4.8,48,ConfigureDesign,Page,sleep,,1000,,,,,5000,FALSE,0,never,,Design tab ready
+2,20,ConfigureDesign,Page,fill,txt_ResultName,ROP_Sim_${iterationId},,,,,10000,FALSE,0,never,,Name the simulation NODE at config stage - MUST be distinct from the post-Save&Simulate RESULT name (step 575) or the result link opens the design/config page (14-char empty capture)
+3,30,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit-alert-primary
+4,40,ConfigureDesign,Page,click,txt_left_Panel_designs,,,,,,10000,FALSE,0,never,,click leftPanel.designs
 5,50,ConfigureDesign,Page,fill,txt_Sample_Size_n,${data.simulation.sampleSize},,,,,10000,FALSE,0,never,,fill Sample Size
 6,60,ConfigureDesign,Page,select,ddl_Randomization_Method,${data.simulation.randomizationMethodSelect},,,,,10000,FALSE,0,always,,Select Randomization Method. Native <select> - select matches by visible label first
 7,70,ConfigureDesign,Page,select,ddl_randomization_Method_Select,${data.simulation.randomizationMethodSelect},,,,,10000,FALSE,0,always,,Select randomizationMethodSelect. Native <select> - select matches by visible label first
-8,80,ConfigureDesign,Page,fill,txt_allocation_Ratio,${data.simulation.allocationRatio},,,,,10000,FALSE,0,never,,fill allocationRatio
-9,90,ConfigureDesign,Page,select,ddl_Test_Statistic,${data.simulation.testStatistic},,,,,10000,FALSE,0,always,,Select Test Statistic. Native <select> - select matches by visible label first
-10,100,ConfigureDesign,Page,fill,txt_Standard_Deviation,${data.simulation.standardDeviation},,,,,10000,FALSE,0,never,,fill Standard Deviation
-11,110,ConfigureDesign,Page,select,ddl_Variance,${data.simulation.variance},,,,,10000,FALSE,0,always,,Select Variance. Native <select> - select matches by visible label first
-12,120,ConfigureDesign,Page,fill,txt_non_Inf_margin,${data.simulation.nonInf_margin},,,,,10000,FALSE,0,never,,fill nonInf margin
-13,130,ConfigureDesign,Page,fill,txt_critical_Point,${data.simulation.criticalPoint},,,,,10000,FALSE,0,never,,fill criticalPoint
-14,140,ConfigureDesign,Page,fill,txt_supsup_margin,${data.simulation.supsup_margin},,,,,10000,FALSE,0,never,,fill supsup margin
-15,150,ConfigureDesign,Page,fill,txt_boundary_Sim_0_analysis_Spacing_Info,${data.simulation.boundarySim.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.0.analysisSpacingInfo
-17,170,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent,${data.simulation.boundarySim.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpent
-18,180,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_CP,${data.simulation.boundarySim.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityCP
-19,190,ConfigureDesign,Page,fill,txt_boundary_Sim_1_analysis_Spacing_Info,${data.simulation.boundarySim.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.1.analysisSpacingInfo
-20,200,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_PValue,${data.simulation.boundarySim.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyPValue
-21,210,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_PValue,${data.simulation.boundarySim.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityPValue
-22,220,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.0.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentUpper
-23,230,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.0.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentLower
-25,250,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_Z,${data.simulation.boundarySim.0.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZ
-26,260,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZUpper,${data.simulation.boundarySim.0.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZUpper
-27,270,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZLower,${data.simulation.boundarySim.0.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZLower
-30,300,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Recalculate the sim boundary. SKIPPED for FIXED designs (no boundary = no Recalculate button; would time out)
-30.5,305,ConfigureDesign,Page,sleep,,4500,,,,,6000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Settle after Recalculate: the boundary recompute (spinner) must finish before the Sample Size Re-Estimation / adaptation fields enable (GSD only)
-31,310,ConfigureDesign,Page,select,ddl_adaptation_Method,${data.simulation.adaptationMethod},,,,,10000,FALSE,0,always,,Select adaptationMethod. Native <select> - select matches by visible label first
-31.5,315,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Settle after Adaptation Method (SSR panel renders/recomputes) - fast dropdown changes here corrupt the design and leave Save & Simulate disabled
-32,320,ConfigureDesign,Page,select,ddl_adapt_At_Select,${data.simulation.Adapt At},,,,,10000,FALSE,0,always,,Select adaptAtSelect. Native <select> - select matches by visible label first
-32.5,325,ConfigureDesign,Page,sleep,,700,,,,,5000,FALSE,0,never,,Settle after Adapt At (SSR dropdown)
-33,330,ConfigureDesign,Page,fill,txt_adapt_At_Input,${data.simulation.adaptAtInput},,,,,10000,FALSE,0,never,,fill adaptAtInput
-34,340,ConfigureDesign,Page,select,ddl_adapt_At_Number_Of_Interims,${data.simulation.adaptAtNumberOfInterims},,,,,10000,FALSE,0,always,,Select adaptAtNumberOfInterims. Native <select> - select matches by visible label first
-34.5,345,ConfigureDesign,Page,sleep,,900,,,,,5000,FALSE,0,never,,Settle after Interim Analysis # (SSR dropdown; boundary/looks recompute)
-35,350,ConfigureDesign,Page,fill,txt_use_Wald_Stat,${data.simulation.useWaldStat},,,,,10000,FALSE,0,never,,fill useWaldStat
-36,360,ConfigureDesign,Page,fill,txt_upper_Limit_Study_Duration,${data.simulation.Upper Limit on Study Duration},,,,,10000,FALSE,0,never,,fill upperLimitStudyDuration
-37,370,ConfigureDesign,Page,select,ddl_enroll_Rate_After_Adapt,${data.simulation.enrollRateAfterAdapt},,,,,10000,FALSE,0,always,,Select enrollRateAfterAdapt. Native <select> - select matches by visible label first
-37.5,375,ConfigureDesign,Page,sleep,,700,,,,,5000,FALSE,0,never,,Settle after Enroll Rate After Adapt (SSR dropdown; reveals multiplier/fixed rate)
-38,380,ConfigureDesign,Page,fill,txt_multiplier_Enroll_Rate,${data.simulation.multiplierEnrollRate},,,,,10000,FALSE,0,never,,fill multiplierEnrollRate
-39,390,ConfigureDesign,Page,fill,txt_fixed_Enroll_Rate,${data.simulation.fixedEnrollRate},,,,,10000,FALSE,0,never,,fill fixedEnrollRate
-40,400,ConfigureDesign,Page,fill,txt_ref_CPChart,${data.simulation.Reference HR for CP Chart},,,,,10000,FALSE,0,never,,fill refCPChart
-41,410,ConfigureDesign,Page,select,ddl_scale,${data.simulation.scale},,,,,10000,FALSE,0,always,,Select scale. Native <select> - select matches by visible label first
-41.5,415,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Settle after Promising Zone Scale (SSR dropdown; app CONVERTS min/max to the new scale) - filling min/max before this settles triggers "Unable to convert values. Reverting to defaults"
-42,420,ConfigureDesign,Page,fill,txt_min_Test_Statistic,${data.simulation.minTestStatistic},,,,,10000,FALSE,0,never,,fill minTestStatistic
-43,430,ConfigureDesign,Page,fill,txt_max_Test_Statistic,${data.simulation.maxTestStatistic},,,,,10000,FALSE,0,never,,fill maxTestStatistic
-44,440,ConfigureDesign,Page,fill,txt_min_Cp,${data.simulation.minCp},,,,,10000,FALSE,0,never,,fill minCp
-45,450,ConfigureDesign,Page,fill,txt_max_Cp,${data.simulation.maxCp},,,,,10000,FALSE,0,never,,fill maxCp
-46,460,ConfigureDesign,Page,fill,txt_min_Delta_By_Sigma,${data.simulation.minDeltaBySigma},,,,,10000,FALSE,0,never,,fill minDeltaBySigma
-47,470,ConfigureDesign,Page,fill,txt_max_Delta_By_Sigma,${data.simulation.maxDeltaBySigma},,,,,10000,FALSE,0,never,,fill maxDeltaBySigma
-48,480,ConfigureDesign,Page,fill,txt_target_Cp_For_Re_Estimating_Sample_Size,${data.simulation.targetCpForReEstimatingSampleSize},,,,,10000,FALSE,0,never,,fill targetCpForReEstimatingSampleSize
-48.5,485,ConfigureDesign,Page,select,ddl_CP_Computation_Based_On,${data.simulation.cpComputationBasedOn},,,,,10000,FALSE,0,always,,Select CP Computation Based On (SSR Adaptation Rule; #cpComputationBasedOn - mirrors GADAR). Native <select> matched by value
-48.6,486,ConfigureDesign,Page,sleep,,900,,,,,5000,FALSE,0,never,,Settle after CP Computation Based On (SSR dropdown; last adaptive recompute before leaving the Design tab)
-49,490,ConfigureDesign,Page,fill,txt_multiplier,${data.simulation.multiplier},,,,,10000,FALSE,0,never,,fill multiplier
-49.5,495,ConfigureDesign,Page,click,txt_left_Panel_response,,,,,,10000,FALSE,0,never,,Activate the Response tab before its fields (sim tabs are separate views; recording did not capture the switch)
-49.6,496,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Let the Response tab render before filling distribution/means/SD
-50,500,ConfigureDesign,Page,select,ddl_distribution_Select,${data.simulation.distributionSelect},,,,,10000,FALSE,0,always,,Select distributionSelect. Native <select> - select matches by visible label first
-51,510,ConfigureDesign,Page,fill,txt_mean_Control,${data.simulation.meanCtrl},,,,,10000,FALSE,0,never,,fill meanControl
-52,520,ConfigureDesign,Page,fill,txt_mean_Treatment,${data.simulation.meanTrmt},,,,,10000,FALSE,0,never,,fill meanTreatment
-52.2,522,ConfigureDesign,Page,check,chk_common_Standard_Deviation,,,,,,10000,FALSE,0,never,${data.simulation.commonStandardDeviation}!=check,Common SD ON (single SD) - gated
-52.4,524,ConfigureDesign,Page,uncheck,chk_common_Standard_Deviation,,,,,,10000,FALSE,0,never,${data.simulation.commonStandardDeviation}!=uncheck,Common SD OFF -> per-arm sdControl/sdTreatment editable (gated). Must precede the SD fills
-53,530,ConfigureDesign,Page,fill,txt_sd_Control,${data.simulation.stdDeviationCtrl},,,,,10000,FALSE,0,never,,fill sdControl
-54,540,ConfigureDesign,Page,fill,txt_sd_Treatment,${data.simulation.stdDeviationTrmt},,,,,10000,FALSE,0,never,,fill sdTreatment
-55,550,ConfigureDesign,Page,fill,txt_follow_Up_Time,${data.simulation.followUpTime},,,,,10000,FALSE,0,never,,fill followUpTime
-56,560,ConfigureDesign,Page,select,ddl_dropout_Distribution_Select,${data.simulation.dropoutDistributionSelect},,,,,10000,FALSE,0,always,,Select dropoutDistributionSelect. Native <select> - select matches by visible label first
-57,570,ConfigureDesign,Page,fill,txt_probability_Of_Dropout,${data.simulation.probOfDropout},,,,,10000,FALSE,0,never,,fill probabilityOfDropout
-57.5,571,ConfigureDesign,Page,click,txt_left_Panel_enrollment,,,,,,10000,FALSE,0,never,,Activate the Enrollment tab before its accrual fields
-57.6,572,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Let the Enrollment tab render
-57.7,573,ConfigureDesign,Page,check,chk_include_Switch,,,,,,10000,FALSE,0,never,${data.simulation.Include Enrollment}!=check,Include Enrollment ON (reveals the accrual table) - gated
-57.8,574,ConfigureDesign,Page,uncheck,chk_include_Switch,,,,,,10000,FALSE,0,never,${data.simulation.Include Enrollment}!=uncheck,Include Enrollment OFF - gated
-57.9,575,ConfigureDesign,Page,sleep,,1500,,,,,5000,FALSE,0,never,,Let the accrual table render after Include ON
-57.95,576,ConfigureDesign,Page,callCustom,,reconcileSimEnrollment,,,,,20000,FALSE,0,never,,Add sim enrollment periods to match the sim testdata (Include shows 1 row; multi-period needs Add Period). Must run before the per-period fills
-58,580,ConfigureDesign,Page,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
-58.5,585,ConfigureDesign,Page,fill,txt_enrollment_Table_0_starting_At_Time,${data.simulation.enrollmentTable.0.startingAtTime},,,,,10000,FALSE,0,never,,Sim enrollment period 0 startingAtTime (N/A on period 0 = auto time 0)
-59,590,ConfigureDesign,Page,fill,txt_enrollment_Table_1_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.1.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.avgSubjectsEnrolled
-59.5,595,ConfigureDesign,Page,fill,txt_enrollment_Table_1_starting_At_Time,${data.simulation.enrollmentTable.1.startingAtTime},,,,,10000,FALSE,0,never,,Sim enrollment period 1 startingAtTime (required - recording only captured period 2)
-60,600,ConfigureDesign,Page,fill,txt_enrollment_Table_2_starting_At_Time,${data.simulation.enrollmentTable.2.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.startingAtTime
-61,610,ConfigureDesign,Page,fill,txt_enrollment_Table_2_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.2.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.avgSubjectsEnrolled
-611,611,ConfigureDesign,Page,fill,txt_enrollment_Table_3_starting_At_Time,${data.simulation.enrollmentTable.3.startingAtTime},,,,,10000,FALSE,0,never,,Sim enrollment enrollmentTable.3.startingAtTime (N/A for <5-period iterations)
-612,612,ConfigureDesign,Page,fill,txt_enrollment_Table_3_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.3.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Sim enrollment enrollmentTable.3.avgSubjectsEnrolled (N/A for <5-period iterations)
-613,613,ConfigureDesign,Page,fill,txt_enrollment_Table_4_starting_At_Time,${data.simulation.enrollmentTable.4.startingAtTime},,,,,10000,FALSE,0,never,,Sim enrollment enrollmentTable.4.startingAtTime (N/A for <5-period iterations)
-614,614,ConfigureDesign,Page,fill,txt_enrollment_Table_4_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.4.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Sim enrollment enrollmentTable.4.avgSubjectsEnrolled (N/A for <5-period iterations)
-61.5,615,ConfigureDesign,Page,click,txt_left_Panel_simulation_setup,,,,,,10000,FALSE,0,never,,Navigate to Simulation Setup tab before seed/sim-runs (recording used a goto that sim-mode drops)
-61.7,617,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Let Simulation Setup render
-61.8,618,ConfigureDesign,Page,fill,txt_Number_of_Simulations_Run,${data.simulation.numOfSimRun},,,,,10000,FALSE,0,never,,fill Number of Simulations Run (numOfSimRun) - honor testdata sim-run count; app default is 10000
-62,620,ConfigureDesign,Page,select,ddl_random_Number_Seed,${data.simulation.randomNumberSeed},,,,,10000,FALSE,0,always,,Select randomNumberSeed. Native <select> - select matches by visible label first
-63,630,ConfigureDesign,Page,fill,txt_fixed_Seed,${data.simulation.fixedSeed},,,,,10000,FALSE,0,never,,fill fixedSeed
-634,634,ConfigureDesign,Page,check,chk_save_Summary_Stats,,,,,,10000,FALSE,0,never,${data.simulation.saveSummaryStats}!=check,saveSummaryStats ON (gated)
-635,635,ConfigureDesign,Page,uncheck,chk_save_Summary_Stats,,,,,,10000,FALSE,0,never,${data.simulation.saveSummaryStats}!=uncheck,saveSummaryStats OFF (gated)
-636,636,ConfigureDesign,Page,check,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,never,${data.simulation.saveSubjectLevelData}!=check,saveSubjectLevelData ON (gated)
-637,637,ConfigureDesign,Page,uncheck,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,never,${data.simulation.saveSubjectLevelData}!=uncheck,saveSubjectLevelData OFF (gated)
-63.8,638,ConfigureDesign,Page,sleep,,800,,,,,5000,FALSE,0,never,,Let subLevelDataSimRuns enable after Save Subject-Level Data
-64,640,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
-65,650,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
-65.5,655,ConfigureDesign,Page,callCustom,,waitAndInspectSaveSimulate,,,,,60000,FALSE,0,always,,Wait for Save & Simulate (#save-compute) to re-enable after Save (adaptive designs re-validate); if it never enables INSPECT + log the reason (toasts/spinner/invalid fields) instead of a bare disabled-click failure
-66,660,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
-66.5,665,ExtractResults,ResultsPage,fill,txt_ResultName,DOM_SimRes_${iterationId},,,,,10000,FALSE,0,never,,"Name the SIMULATION result distinctly (runtime token, no column) - fill #inputId before confirming the credit dialog; opened by the same name at 690"
-67,670,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,Confirm the credit dialog to START the simulation (after the sim result name)
-68,680,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,900000,FALSE,0,always,,Poll the run status until Completed before opening the result
-69,690,ExtractResults,ResultsPage,click,lnk_ResultName,DOM_SimRes_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
-70,700,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
-71,710,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+8,80,ConfigureDesign,Page,fill,txt_Allocation_Ratio_nt_nc,${data.simulation.allocationRatio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+9,90,ConfigureDesign,Page,fill,txt_critical_Point,${data.simulation.criticalPoint},,,,,10000,FALSE,0,never,,fill criticalPoint
+10,100,ConfigureDesign,Page,fill,txt_Noninferiority_Margin_0,${data.simulation.nonInferiorityMargin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin
+11,110,ConfigureDesign,Page,fill,txt_super_Superiority_Margin,${data.simulation.superSuperiorityMargin},,,,,10000,FALSE,0,never,,fill superSuperiorityMargin
+12,120,ConfigureDesign,Page,fill,txt_upper_Critical_Point,${data.simulation.upperCriticalPoint},,,,,10000,FALSE,0,never,,fill upperCriticalPoint
+13,130,ConfigureDesign,Page,fill,txt_boundary_Sim_0_analysis_Spacing_Info,${data.simulation.boundarySim.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.0.analysisSpacingInfo
+14,140,ConfigureDesign,Page,fill,txt_boundary_Sim_1_analysis_Spacing_Info,${data.simulation.boundarySim.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.1.analysisSpacingInfo
+15,150,ConfigureDesign,Page,fill,txt_boundary_Sim_2_analysis_Spacing_Info,${data.simulation.boundarySim.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.2.analysisSpacingInfo
+16,160,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZUpper,${data.simulation.boundarySim.0.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZUpper
+17,170,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZLower,${data.simulation.boundarySim.0.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZLower
+18,180,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_ZUpper,${data.simulation.boundarySim.0.futilityZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZUpper
+19,190,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_ZLower,${data.simulation.boundarySim.0.futilityZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZLower
+20,200,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.0.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentUpper
+21,210,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.0.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentLower
+22,220,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent,${data.simulation.boundarySim.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpent
+23,230,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_Z,${data.simulation.boundarySim.1.efficacyZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZ
+24,240,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_Z,${data.simulation.boundarySim.0.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZ
+25,250,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_CP,${data.simulation.boundarySim.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityCP
+26,260,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_PValue,${data.simulation.boundarySim.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityPValue
+27,270,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.simulation.boundarySim.0.analysisSpacingInfo}==EMPTY,click Recalculate
+28,280,ConfigureDesign,Page,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
+29,290,ConfigureDesign,Page,select,ddl_Distribution,${data.simulation.distributionSelect},,,,,10000,FALSE,0,always,,Select Distribution. Native <select> - select matches by visible label first
+30,300,ConfigureDesign,Page,select,ddl_distribution_Select,${data.simulation.distributionSelect},,,,,10000,FALSE,0,always,,Select distributionSelect. Native <select> - select matches by visible label first
+31,310,ConfigureDesign,Page,fill,txt_Proportion_Under_Control_c,${data.simulation.propUnderControl},,,,,10000,FALSE,0,never,,fill Proportion Under Control
+33,330,ConfigureDesign,Page,fill,txt_Ratio_of_Proportions_t,${data.simulation.ratioOfProps},,,,,10000,FALSE,0,never,,fill Ratio of Proportions (ρ = πt
+34,340,ConfigureDesign,Page,fill,txt_Follow_up_Time_Week,${data.simulation.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
+35,350,ConfigureDesign,Page,select,ddl_Dropout_Distribution,${data.simulation.dropoutDistributionSelect},,,,,10000,FALSE,0,always,,Select Dropout Distribution. Native <select> - select matches by visible label first
+36,360,ConfigureDesign,Page,select,ddl_dropout_Distribution_Select,${data.simulation.dropoutDistributionSelect},,,,,10000,FALSE,0,always,,Select dropoutDistributionSelect. Native <select> - select matches by visible label first
+37,370,ConfigureDesign,Page,fill,txt_Probability_of_Dropout,${data.simulation.probabilityOfDropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+38,380,ConfigureDesign,Page,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+39,390,ConfigureDesign,Page,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.1.avgSubjectsEnrolled}==EMPTY,click Add Period
+40,400,ConfigureDesign,Page,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.2.avgSubjectsEnrolled}==EMPTY,click Add Period
+41,410,ConfigureDesign,Page,fill,txt_enrollment_Table_1_starting_At_Time,${data.simulation.enrollmentTable.1.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.startingAtTime
+42,420,ConfigureDesign,Page,fill,txt_enrollment_Table_2_starting_At_Time,${data.simulation.enrollmentTable.2.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.startingAtTime
+43,430,ConfigureDesign,Page,click,txt_enrollment_Table_0_avg_Subjects_Enrolled,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled}==EMPTY,click enrollmentTable.0.avgSubjectsEnrolled
+44,440,ConfigureDesign,Page,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
+45,450,ConfigureDesign,Page,fill,txt_enrollment_Table_1_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.1.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.avgSubjectsEnrolled
+46,460,ConfigureDesign,Page,fill,txt_enrollment_Table_2_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.2.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.avgSubjectsEnrolled
+47,470,ConfigureDesign,Page,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
+48,480,ConfigureDesign,Page,fill,txt_Number_of_Simulations_Run,${data.simulation.numOfSimRun},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
+49,490,ConfigureDesign,Page,select,ddl_Random_Number_Seed,${data.simulation.randomNumberSeed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
+50,500,ConfigureDesign,Page,fill,txt_Fixed_Seed,${data.simulation.fixedSeed},,,,,10000,FALSE,0,never,,fill Fixed Seed
+51,510,ConfigureDesign,Page,check,chk_save_Summary_Stats,,,,,,10000,FALSE,0,always,${data.simulation.saveSummaryStats}!=check,check saveSummaryStats when testdata saveSummaryStats=check (SkipIf gates it per iteration)
+52,520,ConfigureDesign,Page,uncheck,chk_save_Summary_Stats,,,,,,10000,FALSE,0,always,${data.simulation.saveSummaryStats}!=uncheck,uncheck saveSummaryStats when testdata saveSummaryStats=uncheck (SkipIf gates it per iteration)
+53,530,ConfigureDesign,Page,check,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,always,${data.simulation.saveSubjectLevelData}!=check,check saveSubjectLevelData when testdata saveSubjectLevelData=check (SkipIf gates it per iteration)
+54,540,ConfigureDesign,Page,uncheck,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,always,${data.simulation.saveSubjectLevelData}!=uncheck,uncheck saveSubjectLevelData when testdata saveSubjectLevelData=uncheck (SkipIf gates it per iteration)
+55,550,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
+56,560,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+57,570,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
+57,575,ExtractResults,ResultsPage,fill,txt_ResultName,${data.simulation.Sim Result Name},,,,,10000,FALSE,0,never,,Name the RESULT on the results-list page AFTER Save & Simulate (recording line 107 / DOM step 665). Distinct from the sim-node name (step 20) so the result link opens the completed result, not the design page
+58,580,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit-alert-primary
+59,590,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+60,600,ExtractResults,ResultsPage,click,lnk_ResultName,${data.simulation.Sim Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+61,610,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+62,620,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+45,45,ConfigureDesign,Page,callCustom,,loadResponseTabIntoModel,,,,,15000,FALSE,0,always,,Go to Response tab then back to Design before Recalculate (GADAR prior-too-extreme fix)
+383,383,ConfigureDesign,Page,check,chk_include_Switch,,,,,,10000,FALSE,0,always,${data.simulation.Include Enrollment}!=check,Include Enrollment ON (reveals accrual table) - gated
+384,384,ConfigureDesign,Page,uncheck,chk_include_Switch,,,,,,10000,FALSE,0,always,${data.simulation.Include Enrollment}!=uncheck,Include Enrollment OFF - gated
+22.1,221,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.1.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentUpper
+22.2,222,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.1.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentLower
+22.3,223,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZUpper,${data.simulation.boundarySim.1.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZUpper
+22.4,224,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZLower,${data.simulation.boundarySim.1.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZLower
+22.5,225,ConfigureDesign,Page,fill,txt_boundary_Sim_1_futility_Z,${data.simulation.boundarySim.1.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.futilityZ

@@ -390,6 +390,22 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
     opts.find((o) => norm(o.text).includes(norm(want)) && norm(want).length >= 2);
   if (hit) {
     await loc.selectOption({ value: hit.value }, { timeout: step.timeout });
+    // React-controlled <select>: the PREVIOUS field's change often re-mounts THIS
+    // dropdown (e.g. choosing Distribution=Beta re-renders the Input Method select).
+    // A selectOption that lands mid-re-render is silently discarded and the control
+    // snaps back to its default — no error, wrong value, and the dependent fields
+    // (percentile inputs) never appear. Mirror `fill`'s read-back: confirm the value
+    // stuck; if it reverted, let the render settle and re-select once. A no-op on the
+    // normal path (value already correct), so other features are unaffected.
+    const current = async (): Promise<string> =>
+      (await loc.first().evaluate((el) => (el as HTMLSelectElement).value).catch(() => '')).trim();
+    if ((await current()) !== hit.value) {
+      await _page.waitForTimeout(300).catch(() => undefined);
+      await loc.selectOption({ value: hit.value }, { timeout: step.timeout }).catch(() => undefined);
+      if ((await current()) !== hit.value) {
+        logger.warn(`select: "${step.objectName}" did not hold value "${hit.value}" after re-select — the control may be re-rendering; proceeding with best effort.`);
+      }
+    }
     return;
   }
   // No option matched our own scan — try Playwright's matcher once more, then fail clearly.

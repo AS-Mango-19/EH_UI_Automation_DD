@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 880fd6e9550c4700f8a974606ee3d118e5bc171f5f7896b4fb049899836a812e)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 27b37a93e0e901ca8f0ec5d3b6a64b73a73bb73427dbe8eb1c8ebf106b37a1dc)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -8,51 +8,6 @@ export class ProjectPage {
     private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
-
-  /** Project name input */
-  txt_ProjectName(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_ProjectName', { dynamicArgs });
-  }
-
-  /** Time unit dropdown */
-  ddl_TimeUnit(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_TimeUnit', { dynamicArgs });
-  }
-
-  /** Start date input */
-  txt_StartDate(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_StartDate', { dynamicArgs });
-  }
-
-  /** dropdown (opener+option collapsed into one select step) */
-  ddl_Phase(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Phase', { dynamicArgs });
-  }
-
-  /** Endpoint name input */
-  txt_EndpointName(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_EndpointName', { dynamicArgs });
-  }
-
-  /** Endpoint type dropdown */
-  ddl_EndpointType(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_EndpointType', { dynamicArgs });
-  }
-
-  /** Better response direction dropdown */
-  ddl_BetterResponse(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_BetterResponse', { dynamicArgs });
-  }
-
-  /** Save project button */
-  btn_SaveProject(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_SaveProject', { dynamicArgs });
-  }
-
-  /** Element carrying the generated project id in data-id */
-  lbl_ProjectId(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'lbl_ProjectId', { dynamicArgs });
-  }
 
   /** textbox from codegen */
   txt_Project_Name(...dynamicArgs: string[]): Promise<Locator> {
@@ -67,6 +22,11 @@ export class ProjectPage {
   /** dropdown (opener+option collapsed into one select step) */
   ddl_Study_Objective(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Study_Objective', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Phase(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Phase', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -94,19 +54,19 @@ export class ProjectPage {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Endpoint_Name', { dynamicArgs });
   }
 
+  /** textbox from codegen */
+  txt_endpoint_Name_0(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_endpoint_Name_0', { dynamicArgs });
+  }
+
   /** dropdown (opener+option collapsed into one select step) */
   ddl_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Endpoint_Type', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Better_Response', { dynamicArgs });
-  }
-
   /** dropdown (opener+option collapsed into one select step) */
-  ddl_Larger_Value(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Larger_Value', { dynamicArgs });
+  ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -122,10 +82,5 @@ export class ProjectPage {
   /** button from codegen */
   btn_Inputs(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Inputs', { dynamicArgs });
-  }
-
-  /** Endpoint type dropdown by label (robust vs the value-trigger ddl_Endpoint_Type) */
-  ddl_Endpoint_Type_Label(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Endpoint_Type_Label', { dynamicArgs });
   }
 }

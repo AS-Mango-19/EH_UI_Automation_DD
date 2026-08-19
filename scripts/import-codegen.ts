@@ -29,6 +29,16 @@ type ArgSet = {
    * selectors.csv, and the design compare.config.csv reused.
    */
   sim?: boolean;
+  /**
+   * Seed (create) testdata columns for recorded fields that have NO matching
+   * existing column. OFF by default: the importer wires to the columns the tester
+   * already authored and never adds parallel/junk columns — an unmatched field is
+   * reported as a warning (see --strict) so the tester fixes the data or the name.
+   * Turn ON only to bootstrap a brand-new feature whose testdata is still empty.
+   */
+  seed?: boolean;
+  /** Exit non-zero when any recorded field could not be wired to an existing column. */
+  strict?: boolean;
 };
 
 type ParsedArgs =
@@ -152,6 +162,12 @@ function usage(): void {
     '  --sim         Import the SIMULATION flow: sim_recording.txt -> 03_metadata/sim_metadata.csv,',
     '                tokens bound to simulation.csv, no login/navigate (starts on the results page),',
     '                selectors merged into the shared selectors.csv, design compare.config reused.',
+    '  --seed        Bootstrap mode: CREATE testdata columns for recorded fields that have no',
+    '                matching existing column. OFF by default — the importer wires to the columns',
+    '                you already authored (matching by DOM id OR label) and never adds junk columns;',
+    '                an unmatched field is reported as a warning instead. Use only for a brand-new',
+    '                feature whose 01_testdata is still empty.',
+    '  --strict      Exit non-zero if any recorded field cannot be wired to an existing column.',
     '',
     'Examples:',
     '  npm run import-codegen -- ProductDesign ROM(PD) --tc TC_05            (design flow)',
@@ -164,12 +180,22 @@ function parseArgs(argv: string[]): ParsedArgs {
   let page: string | undefined;
   let tcId: string | undefined;
   let sim = false;
+  let seed = false;
+  let strict = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === undefined) continue;
     if (arg === '--sim') {
       sim = true;
+      continue;
+    }
+    if (arg === '--seed') {
+      seed = true;
+      continue;
+    }
+    if (arg === '--strict') {
+      strict = true;
       continue;
     }
     if (arg === '--page') {
@@ -197,7 +223,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   // feature's 02_selectors_repo/ folder (recordings live WITH the feature, not
   // scattered in the repo root).
   if (!module || !feature) return { help: true };
-  return { args: { module, feature, inputFile, page, tcId, sim } };
+  return { args: { module, feature, inputFile, page, tcId, sim, seed, strict } };
 }
 
 function featureFolderName(feature: string): string {
@@ -684,6 +710,13 @@ function stripQuotes(value: string): string {
 function deriveColumnName(event: ParsedEvent, pendingLabel: string, fallbackRef: string): string {
   const label = stripOptionalSuffix(pendingLabel || '');
   if (label) return labelToColumnName(label);
+  // No accessible label: prefer the selector's CLEAN field id (#id / [id=] / [name=])
+  // so a label-less control keeps the hand-authored "column === DOM id" convention —
+  // e.g. input[name="maxPiC"] -> "maxPiC", not the mangled "input name maxPiC". Only
+  // falls through to selector-string normalisation when the selector yields no id
+  // (role / text / xpath / class selectors), so those stay byte-for-byte unchanged.
+  const cleanId = extractFieldId(event.selectorValue);
+  if (cleanId) return cleanId;
   const fallback = normalizeFallbackRef(fallbackRef || event.ref || event.selectorValue || '');
   return labelToColumnName(fallback || fallbackRef || event.ref || event.selectorValue || '');
 }
@@ -722,6 +755,12 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   dataColumns: Map<string, Set<string>>;
   /** "<file>|<Column>" -> the value actually recorded, used to seed testdata so the first run is runnable. */
   dataValues: Map<string, string>;
+  /**
+   * "<file>|<Column>" -> the field's candidate testdata names, so the reuse pass can
+   * match a recorded field to an existing column by its DOM id OR its label (whichever
+   * the tester named the column after), not only by the single derived column name.
+   */
+  fieldKeys: Map<string, { id?: string; label?: string }>;
   sawLogin: boolean;
   /** Radios recorded without a label: no data-driven step could be built (see below). */
   blindChoiceWarnings: string[];
@@ -733,6 +772,7 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   const steps: StepRow[] = [];
   const dataColumns = new Map<string, Set<string>>();
   const dataValues = new Map<string, string>();
+  const fieldKeys = new Map<string, { id?: string; label?: string }>();
   const blindChoiceWarnings: string[] = [];
   const events = lines.map((line, lineNo) => parseCodegenEvent(line, lineNo)).filter((event): event is ParsedEvent => event !== null);
 
@@ -770,6 +810,23 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   const registerDataValue = (file: string, col: string, value: string): void => {
     registerDataColumn(file, col);
     if (value && !dataValues.has(`${file}|${col}`)) dataValues.set(`${file}|${col}`, value);
+  };
+
+  /**
+   * Record the alternate names a recorded field could be wired by: its DOM id (from
+   * an #id / [id=] / [name=] selector) and its on-screen label. The reuse pass tries
+   * both against the tester's existing columns, so a field recorded with an id still
+   * binds to a label-named column and vice-versa. Dotted table-cell ids are skipped
+   * here — they are matched exactly, by the child-table / inline convention.
+   */
+  const registerFieldKeys = (file: string, col: string, selectorValue: string, label: string): void => {
+    const key = `${file}|${col}`;
+    const entry = fieldKeys.get(key) ?? {};
+    const id = extractFieldId(selectorValue || '');
+    if (id && !id.includes('.') && !entry.id) entry.id = id;
+    const lbl = stripOptionalSuffix(label || '').trim();
+    if (lbl && !entry.label) entry.label = lbl;
+    if (entry.id || entry.label) fieldKeys.set(key, entry);
   };
 
   const addSelector = (ref: LocatorRef): void => {
@@ -1018,6 +1075,15 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
       : fieldId && fieldId.includes('.')
         ? fieldId
         : deriveColumnName(event, pendingLabel, event.ref);
+    // Remember how this field could ALSO be named (DOM id / on-screen label) so the
+    // reuse pass can bind it to an existing testdata column named either way. Only a
+    // real dotted TABLE-CELL id (…​.<n>.…) is excluded — those match exactly. A label
+    // that merely carries an abbreviation period ("Min. πt", "Max. πc", "Std. Dev.")
+    // must NOT be excluded: doing so left those fields with no id key, so they could
+    // not fall back to their DOM-id column when the label column was absent.
+    if (!isResultName && columnName && !/\.\d+\./.test(columnName)) {
+      registerFieldKeys(dataFile, columnName, event.selectorValue, pendingLabel || event.roleName);
+    }
     const targetAction = event.action || 'click';
     const ref = pendingLabel || event.ref || event.selectorValue;
     const fieldType = isResultName ? 'textbox' : inferControlKind(ref, event.selectorType, event.roleName, event.roleType);
@@ -1094,6 +1160,9 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
       const fieldLabel = event.kind === 'text' || event.kind === 'label' ? event.selectorValue : pendingLabel || '';
       const ddlColumn = fieldLabel ? labelToColumnName(fieldLabel) : columnName;
       const ddlObject = objectNameFromRef(ddlColumn || event.roleName || event.selectorValue, 'dropdown');
+      if (ddlColumn && !/\.\d+\./.test(ddlColumn)) {
+        registerFieldKeys(dataFile, ddlColumn, event.selectorValue, fieldLabel || pendingLabel || event.roleName);
+      }
       // Choose what to scope the select by:
       //  - A GENERIC placeholder trigger ("Select"/"Choose") does not identify the
       //    field, and is often shared across fields, so scope by the field LABEL
@@ -1624,7 +1693,7 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     }
   }
 
-  return { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns };
+  return { selectors, steps, dataColumns, dataValues, fieldKeys, sawLogin, blindChoiceWarnings, splitColumns };
 }
 
 function buildFeatureConfig(feature: string, module: string): string {
@@ -1713,7 +1782,7 @@ function main(): number {
 
   const lines = readLines(inputFile);
   const isSim = parsed.args.sim === true;
-  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns } = parseCodegen(lines, { sim: isSim });
+  const { selectors, steps, dataColumns, dataValues, fieldKeys, sawLogin, blindChoiceWarnings, splitColumns } = parseCodegen(lines, { sim: isSim });
   // Sim testdata lives in one file (simulation.csv); design splits across three.
   const dataFilesForReuse = isSim ? ['simulation'] : ['inputset', 'project', 'design'];
 
@@ -1757,11 +1826,35 @@ function main(): number {
     const m = /^(.+)\.\d+\.(.+)$/.exec(col);
     return !!m && (childFields.get(m[1] ?? '')?.has(m[2] ?? '') ?? false);
   };
+  // Read every testdata file's header once — used for the per-file reuse below AND for
+  // the cross-file index that follows.
+  const headerCache = new Map<string, string[]>();
+  for (const f of dataFilesForReuse) headerCache.set(f, readCsvGrid(path.join(testDataDir, `${f}.csv`)).header);
+  // Cross-file index: a field is bound to a file by its step's page/group, but the tester
+  // may have authored the column in a DIFFERENT file (a test-card "Select Test" lands in
+  // inputset.csv, not design.csv). This lets the reuse fall back to wherever the column
+  // actually lives. Normalized column -> {file, col}; first file in reuse order wins.
+  const globalByNorm = new Map<string, { file: string; col: string }>();
+  for (const f of dataFilesForReuse)
+    for (const h of headerCache.get(f) ?? []) {
+      const n = normalizeColName(h);
+      if (n && !globalByNorm.has(n)) globalByNorm.set(n, { file: f, col: h });
+    }
+  // Rewrite a data token everywhere it can appear (a select's InputValue, a checkbox's
+  // SkipIf gate, an assertValue's ExpectedValue), so a reused/repointed column stays
+  // consistent across the whole step, not just its InputValue.
+  const rewriteToken = (fromTok: string, toTok: string): void => {
+    for (const step of steps)
+      for (const k of ['InputValue', 'SkipIf', 'ExpectedValue'] as const) {
+        const v = step[k];
+        if (typeof v === 'string' && v.includes(fromTok)) step[k] = v.split(fromTok).join(toTok);
+      }
+  };
   for (const file of dataFilesForReuse) {
     const cols = dataColumns.get(file);
     if (!cols) continue;
     const childFields = childTableFields(file);
-    const { header } = readCsvGrid(path.join(targetRoot, '01_testdata', `${file}.csv`));
+    const header = headerCache.get(file) ?? [];
     const existingByNorm = new Map<string, string>();
     for (const h of header) {
       const n = normalizeColName(h);
@@ -1780,7 +1873,21 @@ function main(): number {
         continue;
       }
       const derivedNorm = normalizeColName(derived);
-      let existing = existingByNorm.get(derivedNorm);
+      // Wire by the field's DOM id OR its on-screen label OR the derived name —
+      // whichever the tester named the existing column after (id is most precise, so
+      // it is tried first). This is what lets a field recorded as input[name="maxPiC"]
+      // bind to a label-named column, and a field recorded via getByText('Efficacy
+      // Boundary Family') bind to an id-named column effBoundaryFam.
+      const keys = fieldKeys.get(`${file}|${derived}`) ?? {};
+      let existing: string | undefined;
+      for (const cand of [keys.id, keys.label, derived]) {
+        if (!cand) continue;
+        const hit = existingByNorm.get(normalizeColName(cand));
+        if (hit) {
+          existing = hit;
+          break;
+        }
+      }
 
       // Codegen TRUNCATES long accessible names, so the recorded field arrives as a
       // PREFIX of the tester's column: "Sample Size" for "Sample Size (n)",
@@ -1833,14 +1940,25 @@ function main(): number {
         }
       }
 
-      if (!existing || existing === derived) continue;
-      const from = buildDataToken(file, derived);
-      const to = buildDataToken(file, existing);
-      for (const step of steps) {
-        if (typeof step.InputValue === 'string' && step.InputValue.includes(from)) {
-          step.InputValue = step.InputValue.split(from).join(to);
+      // Cross-file fallback: nothing matched in THIS file, so try every file's columns
+      // and repoint the token to wherever the tester actually authored the column.
+      if (!existing) {
+        for (const cand of [keys.id, keys.label, derived]) {
+          if (!cand) continue;
+          const hit = globalByNorm.get(normalizeColName(cand));
+          if (hit && hit.file !== file) {
+            rewriteToken(buildDataToken(file, derived), buildDataToken(hit.file, hit.col));
+            cols.delete(derived);
+            dataValues.delete(`${file}|${derived}`);
+            reuseLog.push(`${file}.csv: recorded field "${derived}" wired to ${hit.file}.csv column "${hit.col}" (cross-file)`);
+            break;
+          }
         }
+        if (!cols.has(derived)) continue; // wired cross-file
       }
+
+      if (!existing || existing === derived) continue;
+      rewriteToken(buildDataToken(file, derived), buildDataToken(file, existing));
       cols.delete(derived);
       dataValues.delete(`${file}|${derived}`);
       reuseLog.push(`${file}.csv: reused existing column "${existing}" for recorded field "${derived}"`);
@@ -1856,13 +1974,20 @@ function main(): number {
   // deduped (a click may legitimately repeat). A single-path recording has no such
   // duplicates, so this is a NO-OP there and never alters an existing feature.
   {
+    // Identify each value-step by its DOM FIELD, not its ObjectName: the SAME control
+    // recorded two ways (label-first `getByText('Min. πt')`+`input[name="minPiT"]` vs a
+    // bare `input[name="minPiT"]`) yields two ObjectNames but ONE selector id. Keying on
+    // the selector's id collapses those twins; a selector with no id keeps the old
+    // ObjectName identity, so a single-path recording is unaffected.
+    const objSel = new Map(selectors.map((s) => [s.objectName, s.selectorValue]));
     const seenValueStep = new Set<string>();
     const deduped: StepRow[] = [];
     let dropped = 0;
     for (const step of steps) {
       const action = String(step.Action ?? '');
       if (action === 'select' || action === 'check' || action === 'fill') {
-        const key = `${step.Page}|${step.ObjectName}|${action}`;
+        const fid = extractFieldId(objSel.get(String(step.ObjectName)) ?? '');
+        const key = fid ? `${step.Page}|${action}|#${fid}` : `${step.Page}|${action}|${step.ObjectName}`;
         if (seenValueStep.has(key)) {
           dropped++;
           continue;
@@ -1872,6 +1997,29 @@ function main(): number {
       deduped.push(step);
     }
     if (dropped) {
+      // A collapsed twin can leave a derived column that no surviving step references;
+      // prune it so the write pass neither seeds nor warns about a phantom column.
+      const referenced = new Map<string, Set<string>>();
+      const tokenRe = /\$\{data\.([a-z]+)\.([^}]+)\}/g;
+      for (const step of deduped)
+        for (const k of ['InputValue', 'SkipIf', 'ExpectedValue'] as const) {
+          const s = String(step[k] ?? '');
+          let m: RegExpExecArray | null;
+          while ((m = tokenRe.exec(s)) !== null) {
+            const f = m[1] ?? '';
+            const c = m[2] ?? '';
+            if (!referenced.has(f)) referenced.set(f, new Set());
+            referenced.get(f)!.add(c);
+          }
+        }
+      for (const [f, cset] of dataColumns)
+        for (const c of [...cset]) {
+          if (c === 'TC_ID' || c === 'IterationID') continue;
+          if (!referenced.get(f)?.has(c)) {
+            cset.delete(c);
+            dataValues.delete(`${f}|${c}`);
+          }
+        }
       // Close the gaps the removals leave: Seq 1..N, StepID 10,20,30…
       deduped.forEach((step, i) => {
         step.Seq = i + 1;
@@ -1983,6 +2131,7 @@ function main(): number {
   // Existing columns/values always win; nothing the tester typed is overwritten.
   const tcId = parsed.args.tcId ?? 'TC_01';
   const writtenData: string[] = [];
+  const unwiredFields: { file: string; column: string; id?: string; label?: string; value: string }[] = [];
   for (const file of dataFilesForReuse) {
     const needed = [...(dataColumns.get(file) ?? new Set<string>())].filter((c) => c && c !== 'TC_ID' && c !== 'IterationID');
     const dataPath = path.join(targetRoot, '01_testdata', `${file}.csv`);
@@ -1993,7 +2142,21 @@ function main(): number {
     const base = existingHeader.length ? existingHeader : ['TC_ID', 'IterationID'];
     const finalCols = [...base];
     for (const c of ['TC_ID', 'IterationID']) if (!finalCols.includes(c)) finalCols.unshift(c);
-    const added = needed.filter((c) => !finalCols.includes(c));
+    // A recorded field with no matching existing column is UNWIRED. By default we do
+    // NOT invent a column for it — that is exactly what produced junk/parallel columns
+    // like "input name maxPiC". It is reported as a warning instead so the tester adds
+    // the column (or fixes its name) deliberately. --seed opts back into creating the
+    // columns to bootstrap a feature; a file with NO header yet is always seeded, since
+    // there is nothing to pollute and the first run needs runnable columns.
+    const missing = needed.filter((c) => !finalCols.includes(c));
+    const bootstrap = Boolean(parsed.args.seed) || existingHeader.length === 0;
+    const added = bootstrap ? missing : [];
+    if (!bootstrap) {
+      for (const c of missing) {
+        const k = fieldKeys.get(`${file}|${c}`) ?? {};
+        unwiredFields.push({ file, column: c, id: k.id, label: k.label, value: dataValues.get(`${file}|${c}`) ?? '' });
+      }
+    }
     finalCols.push(...added);
 
     const seedFor = (col: string): string =>
@@ -2041,6 +2204,22 @@ function main(): number {
   for (const r of reuseLog) console.log(`  ${r}`);
   for (const d of writtenData) console.log(`  ${d}`);
   console.log('');
+  if (unwiredFields.length) {
+    console.log(
+      `UNWIRED: ${unwiredFields.length} recorded field(s) had NO matching testdata column and were NOT added ` +
+        `(the importer never invents columns). For EACH, either add a column to the testdata named after its DOM id ` +
+        `OR its label, or rename an existing column to match — then re-run. Bootstrap an empty feature with --seed:`,
+    );
+    for (const u of unwiredFields) {
+      const names = [u.id && `id="${u.id}"`, u.label && `label="${u.label}"`].filter(Boolean).join('  or  ') || `"${u.column}"`;
+      console.log(`  ! ${u.file}.csv <- wire ${names}${u.value ? `  (recorded value: ${u.value})` : ''}  [token: \${data.${u.file}.${u.column}}]`);
+    }
+    console.log('');
+    if (parsed.args.strict) {
+      console.log(`--strict: exiting non-zero because ${unwiredFields.length} field(s) are unwired.`);
+      return 1;
+    }
+  }
   if (blindChoiceWarnings.length) {
     console.log(`SKIPPED ${blindChoiceWarnings.length} radio interaction(s) that could NOT be data-driven:`);
     for (const w of blindChoiceWarnings) console.log(`  ! ${w}`);

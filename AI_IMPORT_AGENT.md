@@ -16,10 +16,51 @@ the *judgment* the importer can't.
   hypothesis suffixes, priors/assurance, early-stopping), `MULTI_SCENARIO_GUIDE.md` (repeated-modal
   `loopOverData` — §9), and `AI_TESTDATA_AGENT.md` (prepare a feature's testdata from its raw API
   export, before wiring). The simulation cases live in **§8** below.
+- **Self-improving memory — [IMPORT_LESSONS.md](IMPORT_LESSONS.md):** a cross-platform lessons
+  ledger you **READ before** resolving a feature's `UNWIRED`/judgment calls (apply the first rule
+  whose *Signal* matches, instead of asking) and **APPEND to after** (record any non-obvious
+  decision or user correction as a new rule). This is how the agent gets better each iteration.
 
 ---
 
-## The 4 golden rules
+## The importer contract — read this first (works for any model)
+
+The importer **wires; it does not invent.** For every field in the recording it finds the
+testdata column **you already authored** and binds the step's `${data.*}` token to it — matching
+your column **by its DOM id OR its on-screen label** (either naming works; the id is tried
+first). It writes selectors + steps + one token per field; it does **not** add, rename, or
+reorder your testdata columns.
+
+- **Your `01_testdata/*.csv` are left byte-for-byte unchanged** by a normal import (the only
+  auto-edit is a one-time backfill of a blank `TC_ID`/`IterationID`). **Author the testdata
+  first; the importer conforms to it** — see `AI_TESTDATA_AGENT.md`.
+- **A recorded field that matches no existing column is reported `UNWIRED`**, with its **DOM
+  id**, its **label**, and the **recorded value**, e.g.
+  `! design.csv <- wire id="sampleSize" or label="Sample Size" (recorded value: 100)`.
+  Your job for each: **add that one column** to the testdata — named after the field's **DOM id
+  OR its label** — or rename an existing column to match, then re-run. The importer never seeds
+  a junk/parallel column for it (that is what used to create `input name maxPiC` clutter).
+- **`--seed`** flips this off: it *creates* a column for every unmatched field, to **bootstrap a
+  brand-new, empty feature**. Use it only when there is no testdata yet — never over
+  hand-authored data. **`--strict`** exits non-zero if anything is `UNWIRED` (CI / clean-import gate).
+- **Table cells** (`table.<n>.<field>`) wire the same way — to an inline `table.<n>.<field>`
+  column or a `<phase>_<tableName>.csv` child row (§3).
+- **It wires across files.** If you authored a field's column in a different testdata file than
+  the recording implies (a test-card `Select Test` in `inputset.csv`, not `design.csv`), the
+  importer finds it and repoints the token — no manual move needed.
+- **It collapses same-field duplicates automatically.** A superset recording that touches one
+  control two ways — label-first (`getByText('Min. πt')` + `input[name="minPiT"]`) and bare
+  (`input[name="minPiT"]`) — is auto-collapsed to a single step by the control's DOM id, so you
+  no longer hand-delete the twin.
+
+**The loop, minimally (a small model can run this verbatim):** author testdata → `import-codegen`
+→ read the `UNWIRED` list → add/rename exactly those columns (by id or label) → re-run until
+`UNWIRED` is empty → `validate` → `test` → screenshot-verify. The importer's warnings name the
+exact fix, so little judgment is needed to get to a wired feature.
+
+---
+
+## The 6 golden rules
 
 1. **Scope: touch only the target feature.** Edit only `<Module>/feature_<Name>/…` and that
    feature's row in `master.csv`. Do **not** touch `core/`, other features, or shared files.
@@ -50,6 +91,16 @@ the *judgment* the importer can't.
    verifies nothing — KT §9.4).
 4. **Never commit secrets.** `recording.txt`, `.env`, `.auth/` are gitignored and hold real
    credentials. Leave the feature's generated files for the tester to review/commit.
+5. **The importer wires to your columns; it never invents them.** By default it adds **no**
+   testdata columns — it binds each recorded field to an existing column by **DOM id or label**
+   and reports the rest as `UNWIRED`. **Do not "fix" an `UNWIRED` warning by re-running with
+   `--seed`** (that reintroduces junk columns) — add the real column, named by the field's id or
+   label, or correct the name. `--seed` is only for bootstrapping a feature whose testdata is
+   still empty. (See "The importer contract" above.)
+6. **Learn every iteration — read then feed [IMPORT_LESSONS.md](IMPORT_LESSONS.md).** Apply a
+   matching *Signal→Decision* rule instead of asking; when you make a new judgment call or the user
+   corrects you, **append it as a rule** so the next feature is easier. The ledger is the agent's
+   memory — keep it accurate and it compounds.
 
 ---
 
@@ -117,13 +168,33 @@ result *link*, and a dropdown recorded two ways, are left alone.)
 
 ## Workflow
 
+### 0 — Start from the closest existing feature *(do this first)*
+A feature in the same statistical family already solved 90% of your wiring — the same
+project→input-set→design→boundary→enrollment→compute→result flow, the same selector patterns, the
+same custom steps. **Find it, read it, mirror it**, then adapt values. Pick by family:
+
+| Your feature is… | Mirror this committed feature |
+|---|---|
+| Two-arm **continuous / means** (DOM, ROM, ROPR, MeanofPairedRatios) | `feature_DOM(PD)` (TC_03) |
+| Two-arm **survival / group-sequential** (GADAR, GADSD, Logrank*, ParametricWeibull) | `feature_GADAR(PD)` (TC_12), `feature_GADSD(PD)` (TC_17) |
+| Two-arm **binomial / proportions** (ROP, RONBR, FishersExact) | `feature_RONBR(PD)`, `feature_FishersExact(PD)` |
+| **One-arm** (SinglePoissonRate, Simon2Stage, BOP2, *OAD) | `feature_SinglePoissonRate`, `feature_Simon2Stage` |
+| **Repeated-modal / multi-scenario** (BOIN, dose-response, arms) | `feature_BOIN` (TC_14) + `MULTI_SCENARIO_GUIDE.md` |
+
+Concretely: `diff` the reference feature's `01_testdata/*.csv` **headers**, skim its
+`03_metadata/*.csv` and any `custom/<Feature>/customSteps.ts`, and reuse its column names so the
+importer's id/label wiring matches on the first pass. The survival and means families share
+almost the entire `design.csv` column set — a straight retarget (see `AI_TESTDATA_AGENT.md`).
+
 ### 1 — Run the deterministic importer (standalone-capable)
 ```bash
 npm run import-codegen -- <Module> feature_<Name> --tc TC_XX
 ```
-It auto-discovers the recording, captures selectors, generates steps + `${data.*}` tokens,
-reuses matching testdata columns, and seeds skeletons. **The tester can run this alone** — the
-agent's job is steps 2-6.
+It auto-discovers the recording, captures selectors, generates steps + `${data.*}` tokens, and
+**wires each field to an existing testdata column by DOM id or label** (§ "The importer
+contract"). It adds **no** columns by default; unmatched fields print as `UNWIRED`. Add `--seed`
+only to bootstrap an empty feature, `--strict` to fail the import on any `UNWIRED`. **The tester
+can run this alone** — the agent's job is steps 2-6.
 
 > **Two flows, one feature.** A feature can have a **design** flow and a chained **simulation**
 > flow. They are imported and consolidated the SAME way; only the inputs and the command flag
@@ -157,18 +228,27 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   A controlling select must run **before** the fields it reveals, or the fill hits a
   not-yet-visible field.
 
-### 3 — Reconcile columns & add missing steps *(judgment)*
-- **Duplicate columns.** Where the importer added an id-named column (`sampleSize`) that
-  duplicates your human column (`Sample Size (n)`), repoint the metadata token to your column
-  and delete the duplicate. Reuse bridges case/spacing **and a truncated recorded label**
-  (`Sample Size` → `Sample Size (n)`), but it deliberately gives up when the prefix is
-  **ambiguous** (`Mean` matches both `Mean Control` and `Mean Treatment`) — those you
-  reconcile by hand.
+### 3 — Wire `UNWIRED` fields & add missing steps *(judgment)*
+- **Resolve every `UNWIRED` line.** The importer already wired each field it could match to an
+  existing column by **id or label**; what remains is the `UNWIRED` list. For each one it prints
+  the field's **id**, **label**, and **recorded value**. Decide, per field:
+  - **A field you meant to drive** → add exactly one column, named after the printed **DOM id or
+    label**, and give it the value (or `N/A`/`Computed` per the cell-decision table). Re-run;
+    the line disappears.
+  - **A field this iteration doesn't use** (a hidden/greyed/branch field) → it needs no column;
+    remove or gate its step, or set the cell `N/A` on the iterations that don't apply.
+  - **Recording noise** (a stray label click, a `1`, a computed-parameter mirror) → delete the step.
 
-  > **Check the values, not just the column names.** A duplicate column is not a cosmetic
-  > problem: the run reads the *duplicate*, which holds the value from the recording, so the
-  > test silently exercises numbers nobody chose. ROM(PD) typed `123` and `0.56` while the
-  > testdata said `120` and `0.58`. Open the design screenshot and compare it to the row.
+  The importer matches case/spacing and a **truncated recorded label** (`Sample Size` →
+  `Sample Size (n)`) and tries the **id first**, so an id-named column always wins; it
+  deliberately gives up when a prefix is **ambiguous** (`Mean` matches both `Mean Control` and
+  `Mean Treatment`) and leaves those `UNWIRED` for you rather than guessing wrong.
+
+  > **Check the values, not just the names.** If you ever run with `--seed` (bootstrap), a
+  > seeded column holds the value **from the recording**, so the test would silently exercise
+  > numbers nobody chose. ROM(PD) once typed `123`/`0.56` while the testdata said `120`/`0.58`.
+  > Open the design screenshot and compare it to the row. Default (no `--seed`) can't create
+  > this drift — it wires to *your* column — but it is why `--seed` output must be reviewed.
 - **Fields the recording couldn't capture** — add the step + selector by hand:
   - a **computed/greyed** field that is an *input* in another iteration (e.g. Power),
   - a field the recording only **clicked as a stray label** (e.g. Test Type),
@@ -317,10 +397,12 @@ reuseAuthState:false, resultsExtraction.mode:"domTable", columnMap:{}, sortBy:[]
 and `selectStartDate` come from `custom/_shared/` (callCustom resolves feature > shared per keyword), so the
 feature's own `customSteps.ts` holds only its NEW handlers (e.g. a boundary reconcile).
 
-**2. Map every importer-added column to an existing one** (the "no new columns" pass — back up testdata,
-run the importer, note the "+N columns" line, restore testdata, repoint the metadata tokens):
+**2. The "no new columns" pass is now automatic** — the importer wires each of these to your
+existing column by **id or label** and adds nothing. This table is the reference for what the
+fields ARE, so that if one shows up `UNWIRED` (your column is named something else entirely) you
+know which column to point it at. You no longer back up / restore testdata around the run.
 
-| importer-added column (recorded label) | real field id | existing column |
+| recorded field (id / label) | real field id | existing column |
 |---|---|---|
 | `react select input container` | `.react-select__input-container` | `${data.inputset.SelectTest}` (the test card) |
 | `collectionName` | `#collectionName` | `${data.inputset.InputSetname}` |
@@ -438,7 +520,7 @@ auto-skips ("no simulation.csv row"), so design-only and sim iterations coexist 
 | Deterministic — the **importer** does it | Judgment — the **agent/QA** does it |
 |---|---|
 | capture selectors, generate steps + tokens | consolidate a toggling superset recording |
-| reuse matching columns, seed skeletons | decide `N/A` per iteration; check scenario consistency |
+| wire fields to existing columns by **id or label**; warn on `UNWIRED` (never invent columns) | resolve each `UNWIRED` field: add the real column, gate it, or drop noise |
 | backfill identity, unique names, `serial` | add steps for computed/label-only fields; find their `#id` |
 | validate structure | screenshot-verify; fix grid/timing/id issues |
 
@@ -450,6 +532,9 @@ what lets it handle a new feature **without destabilising the ones already commi
 
 ## Guardrails checklist (run before you finish)
 - [ ] Only the target feature's files + its `master.csv` row changed.
+- [ ] **No `UNWIRED` fields remain** in the last import run (or each was deliberately dropped/gated).
+- [ ] Testdata columns are the ones **you authored** — the import added none (no `--seed` over real data).
+- [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] Each iteration screenshot-verified; blank/`N/A` skipped, valued fields landed.
 - [ ] No `recording.txt` / `.env` / `.auth` staged for commit.
