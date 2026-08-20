@@ -260,15 +260,31 @@ function validateTestDataCoverage(
   // so the coverage check would flag every populated column as an unused-value gap.
   // Skip those files entirely; their columns ARE applied, just through the loop.
   const loopFiles = new Set<string>();
+  // A loopPeriods step drives a folded period table's `<prefix>.<n>.<field>` columns
+  // through its per-field template via ${runtime.period.<field>} tokens — which live in
+  // that template, not here. Collect (file -> prefixes) so those wide columns are not
+  // flagged as unused-value gaps (the non-period columns of the same file still are).
+  const periodPrefixByFile = new Map<string, string[]>();
   for (const step of f.steps) {
     if (step.Action === 'loopOverData') loopFiles.add(step.ObjectName.trim());
+    if (step.Action === 'loopPeriods') {
+      const file = step.ObjectName.trim();
+      const prefix = (step.ExpectedValue.split('|')[0] ?? '').trim();
+      if (file && prefix) {
+        if (!periodPrefixByFile.has(file)) periodPrefixByFile.set(file, []);
+        periodPrefixByFile.get(file)!.push(prefix);
+      }
+    }
   }
   const CONTROL = new Set<string>([...JOIN_KEYS, RUN_COLUMN]);
   for (const [file, parsed] of f.testDataParsed) {
     if (loopFiles.has(file)) continue;
     const ref = referenced.get(file) ?? new Set<string>();
+    const periodPrefixes = periodPrefixByFile.get(file) ?? [];
+    const isLoopedPeriodCol = (col: string): boolean =>
+      periodPrefixes.some((p) => new RegExp(`^${p}\\.\\d+\\.`).test(col));
     for (const col of parsed.headers) {
-      if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col)) continue;
+      if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col) || isLoopedPeriodCol(col)) continue;
       const hasValue = parsed.records.some((r) => (r.data[col] ?? '').trim() !== '');
       if (hasValue) {
         warnings.push(

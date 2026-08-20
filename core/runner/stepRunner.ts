@@ -62,6 +62,13 @@ function resolveStep(ctx: RunContext, step: MetadataStep): ResolvedStep {
   const loc = { stepId: step.StepID };
   const input = ctx.resolve(step.InputValue, { ...loc, column: 'InputValue' });
   const expected = ctx.resolve(step.ExpectedValue, { ...loc, column: 'ExpectedValue' });
+  // Dynamic {0}/{1} selector args: an explicit DynamicArgs column wins (resolved for
+  // ${...}); otherwise fall back to InputValue so every pre-DynamicArgs metadata.csv
+  // keeps its exact legacy behaviour. This decouples "the value to enter" from "which
+  // parameterised selector to address" — required by loopPeriods templates.
+  const dynSource = step.DynamicArgs.trim()
+    ? ctx.resolve(step.DynamicArgs, { ...loc, column: 'DynamicArgs' })
+    : input;
   return {
     raw: step,
     stepId: step.StepID,
@@ -75,7 +82,7 @@ function resolveStep(ctx: RunContext, step: MetadataStep): ResolvedStep {
     waitCondition: step.WaitCondition,
     timeout: step.Timeout,
     storeAs: step.StoreAs,
-    dynamicArgs: input ? input.split('|').map((s) => s.trim()) : [],
+    dynamicArgs: dynSource ? dynSource.split('|').map((s) => s.trim()) : [],
   };
 }
 
@@ -136,9 +143,13 @@ export async function runStep(ctx: RunContext, step: MetadataStep): Promise<Step
   // supplies a value, so ONE metadata serves every data combination — no
   // per-iteration metadata. Guarded by "InputValue references ${data.*}" so a
   // static action with a deliberately empty InputValue is never skipped.
+  // ${data.*} AND ${runtime.period.*} (loopPeriods) both mean "this cell is driven by
+  // testdata"; a blank/N/A/Computed resolution therefore skips the same way, so ONE
+  // looped template row serves every period without hand-gating absent fields. Scoped
+  // to runtime.period (NOT all runtime.*) so loopOverData and StoreAs vars are untouched.
   const entersNotApplicable =
     VALUE_ENTERING_ACTIONS.has(step.Action) &&
-    /\$\{data\./.test(step.InputValue) &&
+    /\$\{(?:data|runtime\.period)\./.test(step.InputValue) &&
     (isNotApplicable(resolved.input) || isAppComputed(resolved.input));
   const assertsNotApplicable =
     VALUE_ASSERTING_ACTIONS.has(step.Action) &&

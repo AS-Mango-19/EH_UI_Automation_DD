@@ -19,11 +19,13 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 18,180,ConfigureDesign,ProjectPage,fill,txt_Follow_up_Time_Week,${data.project.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
 19,190,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
 20,200,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
+20.5,205,CreateInputSet,ProjectsPage,waitForSelector,div_Spinner,,,,,hidden,90000,FALSE,0,never,,wait for the #spinner overlay to clear before New Input Set — app-slowness spinner was intercepting the click (step 210 field-not-found)
 21,210,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
 22,220,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
 23,230,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
 24,240,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.Select Test},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
 25,250,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
+25.5,255,ConfigureDesign,DesignPage,waitForSelector,ddl_Hypothesis,,,,,visible,120000,FALSE,0,never,,wait for the design-inputs page to actually RENDER (Hypothesis dropdown) after Continue — spinner-hidden alone is not enough on a slow app; the page content mounts after the overlay clears
 26,260,ConfigureDesign,DesignPage,select,ddl_Hypothesis,${data.design.hypothesis},,,,,10000,FALSE,0,always,,Select Hypothesis. Native <select> - select matches by visible label first
 27,270,ConfigureDesign,DesignPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.allocationRatio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
 28,280,Simulate,DesignPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter
@@ -112,25 +114,8 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 121,1210,ConfigureDesign,ResultsPage,fill,txt_lower_Param_Gamma,${data.design.lowerParamGamma},,,,,10000,FALSE,0,never,,fill lowerParamGamma
 122,1220,ConfigureDesign,ResultsPage,select,ddl_lower_Param,${data.design.lowerParam},,,,,10000,FALSE,0,always,,Select lowerParam. Native <select> - select matches by visible label first
 123,1230,ConfigureDesign,ResultsPage,select,ddl_Boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Select Boundary Scale. Native <select> - select matches by visible label first
-124,1240,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.1.analysisSpacingInfo}==EMPTY,click Add Interim
-125,1250,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.2.analysisSpacingInfo}==EMPTY,click Add Interim
-125,1252,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.3.analysisSpacingInfo}==EMPTY,Add Interim for period 3 (>=4 interims - each gate fires only when that period has data; e.g. ITER_10 has 7)
-125,1254,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.4.analysisSpacingInfo}==EMPTY,Add Interim for period 4
-125,1256,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.5.analysisSpacingInfo}==EMPTY,Add Interim for period 5
-125,1258,ConfigureDesign,ResultsPage,click,btn_Add_Interim,,,,,,10000,FALSE,0,never,${data.design.boundary.6.analysisSpacingInfo}==EMPTY,Add Interim for period 6 (period 7 = auto Final row - NO Add Interim)
-126,1260,ConfigureDesign,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.0.analysisSpacingInfo
-127,1270,ConfigureDesign,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.1.analysisSpacingInfo
-128,1280,ConfigureDesign,ResultsPage,click,txt_boundary_2_analysis_Spacing_Info,,,,,,10000,FALSE,0,never,${data.design.boundary.2.analysisSpacingInfo}==EMPTY,click boundary.2.analysisSpacingInfo
-129,1290,ConfigureDesign,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.2.analysisSpacingInfo
-129,1291,ConfigureDesign,ResultsPage,fill,txt_boundary_3_analysis_Spacing_Info,${data.design.boundary.3.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.3.analysisSpacingInfo (auto-skips when absent/N/A)
-129,1292,ConfigureDesign,ResultsPage,fill,txt_boundary_4_analysis_Spacing_Info,${data.design.boundary.4.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.4.analysisSpacingInfo
-129,1293,ConfigureDesign,ResultsPage,fill,txt_boundary_5_analysis_Spacing_Info,${data.design.boundary.5.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.5.analysisSpacingInfo
-129,1294,ConfigureDesign,ResultsPage,fill,txt_boundary_6_analysis_Spacing_Info,${data.design.boundary.6.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.6.analysisSpacingInfo
-129,1295,ConfigureDesign,ResultsPage,fill,txt_boundary_7_analysis_Spacing_Info,${data.design.boundary.7.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.7.analysisSpacingInfo (Final row - usually N/A - auto-skips)
-130,1300,ConfigureDesign,ResultsPage,check,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=check,check boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=check (SkipIf gates it per iteration)
-131,1310,ConfigureDesign,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=uncheck,uncheck boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=uncheck (SkipIf gates it per iteration)
-132,1320,ConfigureDesign,ResultsPage,check,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=check,check boundary.1.futilityCheck when testdata boundary.1.futilityCheck=check (SkipIf gates it per iteration)
-133,1330,ConfigureDesign,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.1.futilityCheck}!=uncheck,uncheck boundary.1.futilityCheck when testdata boundary.1.futilityCheck=uncheck (SkipIf gates it per iteration)
+124,1240,ConfigureDesign,ResultsPage,callCustom,,reconcilePeriodTable,,,design|boundary|analysisSpacingInfo|Add Interim|true,,15000,FALSE,0,always,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,PROTOTYPE reconcile boundary interim rows to the testdata period count (replaces the per-period Add Interim clicks; data-driven for any N)
+125,1250,ConfigureDesign,ResultsPage,loopPeriods,design,flows/rop_boundary_period.csv,,,boundary|analysisSpacingInfo,,30000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,loopPeriods (Option C): fill boundary spacing + efficacy/futility checks per period from design_boundary — count-agnostic; replaces the enumerated per-period spacing fills and check/uncheck rows
 134,1340,ConfigureDesign,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.0.efficacyPValue
 135,1350,ConfigureDesign,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumAlphaSpent
 136,1360,ConfigureDesign,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumBetaSpent
@@ -141,6 +126,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 142,1420,ConfigureDesign,ResultsPage,fill,txt_boundary_0_lower_Alpha,${data.design.boundary.0.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.0.lowerAlpha
 143,1430,ConfigureDesign,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,click Calculate
 144,1440,ConfigureDesign,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+144.5,1445,ConfigureDesign,ProjectsPage,waitForSelector,div_Spinner,,,,,hidden,90000,FALSE,0,never,,wait for #spinner after opening Enrollment before the Include checkbox — check has no force-retry so it races the loading panel otherwise
 145,1450,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=check,check Include when testdata Include=check (SkipIf gates it per iteration)
 146,1460,ConfigureDesign,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=uncheck,uncheck Include when testdata Include=uncheck (SkipIf gates it per iteration)
 147,1470,ConfigureDesign,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
@@ -156,14 +142,6 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 142.2,1422,ConfigureDesign,ResultsPage,fill,txt_boundary_1_lower_Alpha,${data.design.boundary.1.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.1.lowerAlpha
 142.3,1423,ConfigureDesign,ResultsPage,fill,txt_boundary_2_upper_Alpha,${data.design.boundary.2.upperAlpha},,,,,10000,FALSE,0,never,,fill boundary.2.upperAlpha
 142.4,1424,ConfigureDesign,ResultsPage,fill,txt_boundary_2_lower_Alpha,${data.design.boundary.2.lowerAlpha},,,,,10000,FALSE,0,never,,fill boundary.2.lowerAlpha
-1331,1331,ConfigureDesign,ResultsPage,check,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=check,check boundary.0.futilityCheck
-1332,1332,ConfigureDesign,ResultsPage,uncheck,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=uncheck,uncheck boundary.0.futilityCheck
-1333,1333,ConfigureDesign,ResultsPage,check,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=check,check boundary.1.efficacyCheck
-1334,1334,ConfigureDesign,ResultsPage,uncheck,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=uncheck,uncheck boundary.1.efficacyCheck
-1335,1335,ConfigureDesign,ResultsPage,check,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=check,check boundary.2.efficacyCheck
-1336,1336,ConfigureDesign,ResultsPage,uncheck,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=uncheck,uncheck boundary.2.efficacyCheck
-1337,1337,ConfigureDesign,ResultsPage,check,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=check,check boundary.2.futilityCheck
-1338,1338,ConfigureDesign,ResultsPage,uncheck,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=uncheck,uncheck boundary.2.futilityCheck
 1341,1341,ConfigureDesign,ResultsPage,fill,txt_boundary_1_efficacy_PValue,${data.design.boundary.1.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.1.efficacyPValue
 1342,1342,ConfigureDesign,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.2.efficacyPValue
 1343,1343,ConfigureDesign,ResultsPage,fill,txt_boundary_3_efficacy_PValue,${data.design.boundary.3.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.3.efficacyPValue

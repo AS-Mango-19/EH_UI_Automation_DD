@@ -238,3 +238,6 @@ txt_boundary_1_futility_CP,ResultsPage,css,"[id=""boundary.1.futilityCP""]",,,FA
 txt_boundary_2_futility_CP,ResultsPage,css,"[id=""boundary.2.futilityCP""]",,,FALSE,boundary period futility CP,FALSE
 txt_boundary_1_futility_Rho,ResultsPage,css,"[id=""boundary.1.futilityRho""]",,,FALSE,boundary period futility rho,FALSE
 txt_boundary_2_futility_Rho,ResultsPage,css,"[id=""boundary.2.futilityRho""]",,,FALSE,boundary period futility rho,FALSE
+txt_boundary_spacing,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysis-spacing input; {0}=period index (loopPeriods),FALSE
+chk_boundary_efficacy,ResultsPage,css,"[id=""boundary.{0}.efficacyCheck""]",,,TRUE,PARAMETRIC boundary efficacy checkbox; {0}=period index (loopPeriods),FALSE
+chk_boundary_futility,ResultsPage,css,"[id=""boundary.{0}.futilityCheck""]",,,TRUE,PARAMETRIC boundary futility checkbox; {0}=period index (loopPeriods),FALSE

@@ -376,6 +376,17 @@ The sim runs on the **same page after a green design**, so its Design tab **inhe
 
 When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`) + a reusable `03_metadata/<name>_block.csv` sub-flow (fills gated `SkipIf ${runtime.loop.<col>}…`, since the blank/`N/A` auto-skip is `${data.*}`-only) + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN`, TC_14).
 
+### 9.1 — Count-agnostic period-table FILLS (`loopPeriods`) *(judgment)*
+
+A folded period table (`boundary.<n>.*`, `enrollmentTable.<n>.*`, dropout, …) normally costs **one metadata fill row + one selector PER field PER period**, capped at a hand-written ceiling (`boundary.0`…`boundary.7`). To make a field's fills **count-agnostic** — add a period and just run, no new selector/metadata — replace the enumeration with `loopPeriods`:
+
+1. **One PARAMETRIC selector per FIELD** (not per period): `SelectorValue="[id=""<table>.{0}.<field>""]"`, `Dynamic=TRUE`. `{0}` is the period index.
+2. **A per-field template flow** `flows/<feature>_<table>_period.csv` (header MUST include the trailing `DynamicArgs` column): one row per field — `fill`/`check`/`uncheck` driven by `${runtime.period.<field>}`, with `DynamicArgs=${runtime.period.n}` feeding the selector's `{0}`. Value fills auto-skip on blank/`N/A` (the skip now covers `${runtime.period.*}` too); gate a checkbox with `SkipIf ${runtime.period.<field>}!=check` / `!=uncheck`.
+3. **One `loopPeriods` step** in the main metadata — `ObjectName=<parentFile>` (`design`/`simulation`), `InputValue=flows/<feature>_<table>_period.csv`, `ExpectedValue=<table>|<countField>` (a period EXISTS iff its `<countField>` is non-N/A). Gate the whole step with `SkipIf ${data.design.<table>.0.<countField>}==EMPTY` so a fixed design skips it.
+4. **Keep the reconcile BEFORE it.** `reconcilePeriodTable` (or `reconcileBoundaryInterims`) still **ADDS** the rows (Add Interim/Period clicks); `loopPeriods` then **FILLS** them. Reconcile-then-loop, in StepID order.
+
+**Only loop fields that are a TRUE per-period INPUT across every period** (interim spacing; efficacy/futility checkboxes). A field that is an editable input for period 0 but a **computed/greyed output** at higher looks in some boundary families (per-analysis p-values, α/β-spent, boundary Z/alpha) must stay **enumerated** — a blanket loop would type into a greyed cell and fail. Values route through the ordinary core `fill`/`check`/`select`, so read-back/retry/N/A-skip are all inherited. **Proven on `feature_ROP(PD)` TC_21** (boundary spacing + efficacy/futility checks; the p-value/α fields left enumerated).
+
 ---
 
 ## Worked family reference — two-arm continuous "Difference of Means" (DOM / ROM / ROPR)

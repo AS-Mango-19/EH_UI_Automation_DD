@@ -8,6 +8,7 @@ import type { KeywordHandler } from './types.js';
 import { targetLocator } from './util.js';
 import { parseMetadataFile } from '../runner/metadataFile.js';
 import { runSteps } from '../runner/stepRunner.js';
+import { reconstructPeriods } from './periodTable.js';
 import { abs } from '../utils/paths.js';
 import { FrameworkError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
@@ -90,5 +91,55 @@ export const loopOverData: KeywordHandler = async (_page, ctx, step) => {
   for (const row of rows) {
     for (const [k, v] of Object.entries(row)) ctx.setVar(`loop.${k}`, v);
     await runSteps(ctx, steps, { source: `${step.input}[loop]` });
+  }
+};
+
+/**
+ * loopPeriods: reconstruct the per-period rows of a FOLDED child table (design_boundary,
+ * simulation_enrollmentTable, …) from the parent file's wide `<prefix>.<n>.<field>`
+ * columns and, for each period the testdata declares, run the reusable CSV in InputValue —
+ * exposing that period's fields as `${runtime.period.<field>}` plus `${runtime.period.n}`
+ * (the period index, for a Dynamic selector's {0} via the DynamicArgs column).
+ *
+ *   ObjectName    = parent testdata file        (e.g. "design")
+ *   InputValue    = reusable per-field template  (e.g. "flows/rop_boundary_period.csv")
+ *   ExpectedValue = "<prefix>|<countField>"      (e.g. "boundary|analysisSpacingInfo")
+ *
+ * A period EXISTS iff its <countField> cell is non-N/A. This is the count-agnostic FILL
+ * half of a period table — the reconcile custom step ADDS the rows first; loopPeriods then
+ * fills them with ONE templated row per FIELD instead of N-per-period enumeration, for any
+ * N, needing no new selectors/metadata when a period is added. Values route through the
+ * ordinary core fill/check/select (read-back, retry, N/A-skip all inherited).
+ */
+export const loopPeriods: KeywordHandler = async (_page, ctx, step) => {
+  const parsed = ctx.feature.testDataParsed.get(step.objectName);
+  if (!parsed) {
+    throw new FrameworkError(`loopPeriods: unknown testdata file "${step.objectName}"`, { stepId: step.stepId });
+  }
+  const [prefix, countField] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!prefix || !countField) {
+    throw new FrameworkError(
+      `loopPeriods: ExpectedValue must be "<prefix>|<countField>" — got "${step.expected}"`,
+      { stepId: step.stepId },
+    );
+  }
+  const hasTc = parsed.headers.includes('TC_ID');
+  const hasIter = parsed.headers.includes('IterationID');
+  const row = parsed.records
+    .map((r) => r.data)
+    .find((d) => (!hasTc || d['TC_ID'] === ctx.tcId) && (!hasIter || d['IterationID'] === ctx.iterationId));
+  if (!row) {
+    logger.info(`loopPeriods[${prefix}]: no ${step.objectName} row for ${ctx.tcId}/${ctx.iterationId} — nothing to loop`);
+    return;
+  }
+  // Rebuild the present periods (countField non-N/A) from the wide folded columns.
+  const periods = reconstructPeriods(parsed.headers, row, prefix, countField);
+  const steps = parseMetadataFile(abs(step.input.trim()));
+  logger.info(`loopPeriods[${prefix}]: ${periods.length} period(s) [${periods.map((p) => p.n).join(',')}] -> ${step.input}`);
+  for (const { n, fields } of periods) {
+    ctx.setVar('period.n', String(n));
+    ctx.setVar('period.index', String(n));
+    for (const [field, val] of Object.entries(fields)) ctx.setVar(`period.${field}`, val);
+    await runSteps(ctx, steps, { source: `${step.input}[period ${n}]` });
   }
 };

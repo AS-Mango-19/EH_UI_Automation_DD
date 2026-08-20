@@ -91,7 +91,7 @@ type LocatorRef = {
 type StepRow = Record<string, string | number | boolean>;
 
 /** Seq is the human-facing 1..N order; StepID keeps the gapped 10,20,30 numbering so steps can be inserted without renumbering. */
-const STEP_HEADER = 'Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description';
+const STEP_HEADER = 'Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs';
 const SELECTOR_HEADER = 'ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact';
 const RESULT_NAME_COLUMN = 'Result Name';
 
@@ -745,7 +745,7 @@ function inferStepGroup(page: string, event: ParsedEvent, ref: string): { stepGr
 }
 
 function stepRowToCsv(row: StepRow): string {
-  const keys = ['Seq', 'StepID', 'StepGroup', 'Page', 'Action', 'ObjectName', 'InputValue', 'StoreAs', 'AssertType', 'ExpectedValue', 'WaitCondition', 'Timeout', 'Optional', 'Retry', 'Screenshot', 'SkipIf', 'Description'];
+  const keys = ['Seq', 'StepID', 'StepGroup', 'Page', 'Action', 'ObjectName', 'InputValue', 'StoreAs', 'AssertType', 'ExpectedValue', 'WaitCondition', 'Timeout', 'Optional', 'Retry', 'Screenshot', 'SkipIf', 'Description', 'DynamicArgs'];
   return keys.map((k) => csvEscape(String(row[k] ?? ''))).join(',');
 }
 

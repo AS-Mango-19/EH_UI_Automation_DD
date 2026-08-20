@@ -2,12 +2,29 @@
  * Input keywords: click, doubleClick, rightClick, fill, type, clear, select,
  * check, uncheck, upload, hover, press, dragAndDrop.
  */
+import type { Page } from 'playwright';
 import type { KeywordHandler } from './types.js';
 import { targetLocator } from './util.js';
 import { selectorKey } from '../loaders/featureLoader.js';
 import { resolveLocator, type LocatorRoot } from '../locators/resolver.js';
 import { logger, mask } from '../utils/logger.js';
 import { FrameworkError } from '../utils/errors.js';
+
+/**
+ * Best-effort wait for the app's global loading overlay (#spinner) to clear BEFORE a
+ * value-entering action. That overlay both intercepts pointer events and gates when the
+ * target field mounts, so on a slow tab/page transition fill/check/select/type — which,
+ * unlike `click`, do NOT force-retry/DOM-dispatch through it — otherwise race the
+ * still-loading page and throw a "not found"/timeout for a field that simply had not
+ * rendered yet. NO-OP when the overlay is absent or already hidden (waitFor 'hidden'
+ * resolves instantly, including when #spinner is detached), and bounded so a genuinely
+ * stuck spinner never hangs the step — we then proceed and let the action's own timeout
+ * surface the real error. Gives value-entering keywords the transition-resilience that
+ * `click` already has. Cheap on a settled page; only actually waits mid-transition.
+ */
+async function settleLoadingOverlay(page: Page): Promise<void> {
+  await page.locator('#spinner').first().waitFor({ state: 'hidden', timeout: 60000 }).catch(() => undefined);
+}
 
 function buildFallbackLocator(root: Parameters<typeof targetLocator>[0]['root'] extends (...args: never[]) => infer R ? R : never, fallback: string) {
   return root.locator(fallback.startsWith('//') || fallback.startsWith('xpath=') ? fallback : fallback);
@@ -198,6 +215,7 @@ export const fill: KeywordHandler = async (_page, ctx, step) => {
     logger.info(`fill: "${step.objectName}" = "Computed" — computed-output field (disabled by the app), skipping.`);
     return;
   }
+  await settleLoadingOverlay(_page);
   const loc = (await targetLocator(ctx, step)).first();
   // The field must be present. A missing field is a hard failure (clear message,
   // not a generic fill timeout) — the required value could not be entered.
@@ -244,7 +262,8 @@ export const fill: KeywordHandler = async (_page, ctx, step) => {
   await loc.press('Tab').catch(() => undefined);
 };
 
-export const type: KeywordHandler = async (_page, ctx, step) => {
+export const type: KeywordHandler = async (page, ctx, step) => {
+  await settleLoadingOverlay(page);
   await (await targetLocator(ctx, step)).pressSequentially(step.input, { timeout: step.timeout });
 };
 
@@ -258,6 +277,7 @@ export const clear: KeywordHandler = async (_page, ctx, step) => {
  * For a custom combobox, click the label-targeted control and commit the option.
  */
 export const select: KeywordHandler = async (_page, ctx, step) => {
+  await settleLoadingOverlay(_page);
   const selector = ctx.feature.selectorIndex.get(selectorKey(step.page, step.objectName));
   const loc = await resolveLabelInteractiveTarget(ctx, step);
   const fallbackLoc = selector?.FallbackSelector ? buildFallbackLocator(ctx.root(), selector.FallbackSelector) : null;
@@ -420,11 +440,13 @@ export const select: KeywordHandler = async (_page, ctx, step) => {
   }
 };
 
-export const check: KeywordHandler = async (_page, ctx, step) => {
+export const check: KeywordHandler = async (page, ctx, step) => {
+  await settleLoadingOverlay(page);
   await (await targetLocator(ctx, step)).check({ timeout: step.timeout });
 };
 
-export const uncheck: KeywordHandler = async (_page, ctx, step) => {
+export const uncheck: KeywordHandler = async (page, ctx, step) => {
+  await settleLoadingOverlay(page);
   await (await targetLocator(ctx, step)).uncheck({ timeout: step.timeout });
 };
 

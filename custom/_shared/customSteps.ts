@@ -429,6 +429,111 @@ async function waitForTablesToSettle(page: Page, timeout: number): Promise<void>
   logger.warn(`extractAllResultTables: table count never settled within ${timeout}ms (last saw ${last}) — capturing anyway.`);
 }
 
+// ---------------------------------------------------------------------------
+// Generic period-table Add-count reconciler — reconcilePeriodTable
+// ---------------------------------------------------------------------------
+
+const isNaCell = (v: string | undefined): boolean => {
+  const t = (v ?? '').trim();
+  return t === '' || /^(n\/a|not applicable)$/i.test(t);
+};
+
+/**
+ * Make a multi-period table's LIVE editable row count match the count the testdata
+ * declares for the CURRENT iteration, by clicking its "Add" button — so a feature no
+ * longer needs one gated Add-click PER period; the count is data-driven, for any N.
+ *
+ * Config comes from the step's ExpectedValue column, pipe-delimited:
+ *   <testDataFile>|<prefix>|<countField>|<addButtonLabel>[|<excludeDisabled>]
+ *     design|boundary|analysisSpacingInfo|Add Interim|true
+ *     simulation|enrollmentTable|avgSubjectsEnrolled|Add Period
+ *
+ * TARGET = distinct "<prefix>.<n>.<countField>" folded columns holding a non-N/A value
+ * on the current (TC_ID, IterationID) row. LIVE = inputs whose id OR name is
+ * "<prefix>.<n>.<countField>" (excludeDisabled=true drops the app-computed disabled
+ * Final row, matching the East-Horizon GSD boundary table). Clicks the Add button
+ * (located RELATIVE to the table's own inputs, so it is unambiguous on a busy page)
+ * until LIVE == TARGET, verifying each add. Can only ADD, never delete — warns if the
+ * app already renders more rows than declared. The ordinary metadata `fill` steps then
+ * populate each row (a blank/N/A cell auto-skips).
+ *
+ * Centralizes the reconcile logic that was copied per-feature (DOM/GADAR/GADSD) and ORs
+ * id AND name so it also works on tables whose cells carry only `name=` (unlike GADSD's
+ * id-only copy, which silently under-counts a name= boundary row).
+ */
+export const reconcilePeriodTable: KeywordHandler = async (page, ctx, step) => {
+  const cfg = (step.expected || '').split('|').map((s) => s.trim());
+  const [file, prefix, countField, addLabel, excludeFlag] = cfg;
+  if (!file || !prefix || !countField || !addLabel) {
+    throw new Error(
+      `reconcilePeriodTable: ExpectedValue must be "<file>|<prefix>|<countField>|<addLabel>[|excludeDisabled]" — got "${step.expected}"`,
+    );
+  }
+  const excludeDisabled = /^(true|1|yes)$/i.test(excludeFlag ?? '');
+  const timeout = step.timeout;
+
+  // TARGET — distinct <prefix>.<n>.<countField> folded columns with a non-N/A value.
+  const parsed = ctx.feature.testDataParsed.get(file);
+  const row = parsed?.records.find(
+    (r) => r.data['TC_ID'] === ctx.tcId && r.data['IterationID'] === ctx.iterationId,
+  )?.data;
+  const re = new RegExp(`^${prefix}\\.(\\d+)\\.${countField}$`);
+  const periods = new Set<string>();
+  if (parsed && row) {
+    for (const h of parsed.headers) {
+      const m = re.exec(h);
+      if (m && !isNaCell(row[h])) periods.add(m[1]!);
+    }
+  }
+  const target = periods.size;
+
+  // LIVE — inputs addressed by id OR name (codegen emits either).
+  const sel = `[id^="${prefix}."][id$=".${countField}"], [name^="${prefix}."][name$=".${countField}"]`;
+  const liveCount = async (): Promise<number> =>
+    page
+      .locator(sel)
+      .evaluateAll((els, exclude) => els.filter((e) => !(exclude && (e as HTMLInputElement).disabled)).length, excludeDisabled)
+      .catch(() => 0);
+
+  let current = await liveCount();
+  logger.info(`reconcilePeriodTable[${prefix}]: live ${current} row(s), testdata wants ${target}`);
+  if (target <= current) {
+    if (target < current) {
+      logger.warn(
+        `reconcilePeriodTable[${prefix}]: testdata wants FEWER rows (${target}) than present (${current}) — row deletion not implemented; extra rows left at their computed default.`,
+      );
+    }
+    return;
+  }
+  let guard = 0;
+  while (current < target && guard++ < target + 5) {
+    const anchor = page.locator(`[id^="${prefix}."], [name^="${prefix}."]`).last();
+    const addBtn = anchor
+      .locator(`xpath=following::button[contains(normalize-space(), ${JSON.stringify(addLabel)})][1]`)
+      .first();
+    if (!(await addBtn.count().catch(() => 0))) {
+      throw new Error(
+        `reconcilePeriodTable[${prefix}]: no "${addLabel}" button found after the table (current=${current}, target=${target})`,
+      );
+    }
+    await addBtn.click({ timeout }).catch(async () => {
+      await addBtn.click({ timeout, force: true }).catch(() => undefined);
+    });
+    await page.waitForTimeout(400);
+    const next = await liveCount();
+    if (next <= current) {
+      throw new Error(
+        `reconcilePeriodTable[${prefix}]: "${addLabel}" click did not add a row (still ${next}, target ${target}) — check the button label/locator`,
+      );
+    }
+    current = next;
+  }
+  if (current !== target) {
+    throw new Error(`reconcilePeriodTable[${prefix}]: ended with ${current} row(s), expected ${target}`);
+  }
+  logger.info(`reconcilePeriodTable[${prefix}]: now ${current} row(s)`);
+};
+
 /**
  * Capture EVERY table on the result page into one tidy row-set and hand it to
  * compareWithBaseline. Table count is discovered, never assumed. Feature-agnostic.

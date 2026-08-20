@@ -2,6 +2,14 @@
  * metadata.csv schema — the steps (§5.3). Columns exact:
  * StepID, StepGroup, Page, Action, ObjectName, InputValue, StoreAs, AssertType,
  * ExpectedValue, WaitCondition, Timeout, Optional, Retry, Screenshot, SkipIf, Description
+ *
+ * DynamicArgs (optional, trailing): pipe-separated values for a Dynamic selector's
+ * {0}/{1} placeholders, resolved for ${...} like any cell. When present it OVERRIDES
+ * the legacy default (the selector args come from splitting InputValue on '|'), which
+ * lets a step fill one value while addressing a parameterised selector by a DIFFERENT
+ * index — e.g. a loopPeriods template row fills ${runtime.period.<field>} into
+ * `[id="boundary.{0}.<field>"]` with DynamicArgs=${runtime.period.n}. Absent/blank =
+ * legacy behaviour, so every existing metadata.csv is unaffected.
  */
 import { z } from 'zod';
 import { boolField, numberWithDefault, strField, strWithDefault } from './common.js';
@@ -46,6 +54,7 @@ export const MetadataStepSchema = z.object({
   Screenshot: screenshotField.default('never'),
   SkipIf: strWithDefault(''),
   Description: strWithDefault(''),
+  DynamicArgs: strWithDefault(''),
 });
 
 export type MetadataStep = z.infer<typeof MetadataStepSchema>;
