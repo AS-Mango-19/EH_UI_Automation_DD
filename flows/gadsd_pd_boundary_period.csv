@@ -1,0 +1,2 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ExtractResults,ResultsPage,fill,txt_boundary_analysisSpacingInfo,${runtime.period.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary analysisSpacingInfo for the current looped period (blank/N/A auto-skips),${runtime.period.n}

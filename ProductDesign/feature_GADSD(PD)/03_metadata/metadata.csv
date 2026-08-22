@@ -221,14 +221,12 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 220,2200,ExtractResults,ResultsPage,fill,txt_fut_Param_Gamma,${data.design.futParamGamma},,,,,10000,FALSE,0,never,,fill futParamGamma
 221,2210,ExtractResults,ResultsPage,select,ddl_fut_Param,${data.design.futParam},,,,,10000,FALSE,0,always,,Select futParam. Native <select> - select matches by visible label first
 222,2220,ExtractResults,ResultsPage,select,ddl_fix,${data.design.fix},,,,,10000,FALSE,0,always,,Select fix. Native <select> - select matches by visible label first
-223,2230,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta,${data.design.shapeParamDeltaOne},,,,,10000,FALSE,0,never,,fill shapeParamDeltaOne (efficacy Delta," #shapeParamDelta)"
+223,2230,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta,${data.design.shapeParamDeltaOne},,,,,10000,FALSE,0,never,,fill shapeParamDeltaOne (efficacy Delta, #shapeParamDelta)
 224,2240,ExtractResults,ResultsPage,fill,txt_shape_Param_Delta_Two,${data.design.shapeParamDeltaTwo},,,,,10000,FALSE,0,never,,fill shapeParamDeltaTwo
 225,2250,ExtractResults,ResultsPage,select,ddl_compute_CP,${data.design.computeCP},,,,,10000,FALSE,0,always,,Select computeCP. Native <select> - select matches by visible label first
 226,2260,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Select boundaryScale. Native <select> - select matches by visible label first
 227,2265,ExtractResults,ResultsPage,callCustom,,reconcileBoundaryInterims,,,,,20000,FALSE,0,never,,reconcile boundary interim rows to the design testdata count (data-driven Add Interim; final row excluded)
-228,2266,ExtractResults,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.0.analysisSpacingInfo (IA1) — was never entered before; app default collided
-229,2267,ExtractResults,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.1.analysisSpacingInfo
-230,2268,ExtractResults,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary.2.analysisSpacingInfo (IA3) — 3rd interim when the iteration declares one
+226.5,2269,ExtractResults,ResultsPage,loopPeriods,design,flows/gadsd_pd_boundary_period.csv,,,boundary|analysisSpacingInfo,,30000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,loopPeriods (Option C): fill boundary analysisSpacingInfo per period from design_boundary — count-agnostic; replaces the enumerated per-period spacing fills. Checks stay enumerated LAST (means/survival requirement); reconcileBoundaryInterims above still sizes the table.
 231,2300,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumAlphaSpent
 232,2301,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumBetaSpent
 233,2302,ExtractResults,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.0.efficacyPValue

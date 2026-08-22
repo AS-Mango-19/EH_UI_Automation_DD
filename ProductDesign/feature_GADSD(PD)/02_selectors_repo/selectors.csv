@@ -274,3 +274,4 @@ txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,upper efficacy Ga
 txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,upper efficacy Rho parameter,FALSE
 txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,lower efficacy Gamma parameter,FALSE
 txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,lower efficacy Rho parameter,FALSE
+txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE

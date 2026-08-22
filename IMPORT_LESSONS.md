@@ -125,6 +125,16 @@ must still complete per-iteration coverage the single recording could not captur
 
 ## Feature log *(append-only; newest first)*
 
+- **2026-08-22 · GADSD(PD) TC_17 — boundary loopPeriods retrofit, all 5 enabled iters green.** Survival GSD,
+  design-only. Same means/survival recipe as DOM: kept `reconcileBoundaryInterims`, removed the 3 enumerated
+  `boundary.<n>.analysisSpacingInfo` fills, added one `loopPeriods` (flows/gadsd_pd_boundary_period.csv) + a parametric
+  selector at a fresh StepID (2269, no renumber); efficacy/futility CHECKS stay enumerated LAST, numeric fields
+  enumerated. **Left the survival period tables `inputMethodTable` / `dropoutTable` ENUMERATED** — they have
+  mutually-exclusive methods (hazard-rate vs median-survival vs cum-%-survival; hazard vs prob dropout) so they are
+  NOT safe to blanket-loop (inputMethodTable is OFF in PERIOD_LOOP_CONFIG; dropout unproven) — plus DOM's
+  `hazardRatioInputMethod` re-select-after-Add-Period gotcha lives there. Verified: full enabled suite (ITER_01–05,
+  gated by project.csv Run; 06/07 are Run=FALSE WIP) **PASS 5 / FAIL 0** vs committed baselines. **Iteration-selection
+  gotcha:** GADSD's `Run` column is in **project.csv**, NOT inputset.csv — toggle the right file for single-iteration runs.
 - **2026-08-22 · DOM(PD) TC_03 — loopPeriods retrofit of an existing green feature (design boundary), all 10 green.**
   Targeted retrofit (NOT a re-import — preserves all hand-crafted judgment). **KEY means/survival-family rule:**
   loop ONLY `analysisSpacingInfo` (the spacing that varies 0–N); the boundary **efficacy/futility CHECKS must stay
