@@ -125,6 +125,22 @@ must still complete per-iteration coverage the single recording could not captur
 
 ## Feature log *(append-only; newest first)*
 
+- **2026-08-22 · DOM(PD) TC_03 — loopPeriods retrofit of an existing green feature (design boundary), all 10 green.**
+  Targeted retrofit (NOT a re-import — preserves all hand-crafted judgment). **KEY means/survival-family rule:**
+  loop ONLY `analysisSpacingInfo` (the spacing that varies 0–N); the boundary **efficacy/futility CHECKS must stay
+  ENUMERATED and LAST** (means-family "checks-last, before Calculate" requirement — DOM/GADSD), so do NOT use the
+  importer's default boundary flow that interleaves checks per period (that shape is proportions-only, proven on DOP).
+  Mechanics: kept DOM's tested `reconcileBoundaryInterims` (it sizes the table), removed the 8 enumerated
+  `boundary.<n>.analysisSpacingInfo` fills, inserted ONE `loopPeriods design flows/dom_pd_boundary_period.csv`
+  (ExpectedValue `boundary|analysisSpacingInfo`, gated `${data.design.boundary.0.analysisSpacingInfo}==EMPTY`) right
+  after the reconcile at a fresh StepID (785) — **no renumbering**, so checks-last + all numeric fills keep their exact
+  order. Added ONE parametric selector `[id="boundary.{0}.analysisSpacingInfo"]` (Dynamic). Flow has the trailing
+  `DynamicArgs=${runtime.period.n}` column even though DOM's parent metadata has no DynamicArgs column (only the flow
+  needs it). Numeric boundary fields (upper/lowerAlpha, cumAlphaSpent, efficacyPValue 0-7, futilityCP, futilityDeltaBySigma,
+  cumBetaSpent, futilityPValue) stay enumerated. Design enrollment was already a scalar fill (`avgSubjectsEnrolled`) — no
+  change. Smoke-tested ITER_10 (7 interims) then full suite: **PASS 10 / FAIL 0** vs committed baselines (incl. adaptive
+  CHW/CDL sims), so the loop reproduces the enumerated behavior exactly. Sim enrollment left enumerated (marginal;
+  already green). Same recipe applies to GADSD next.
 - **2026-08-22 · DOP(PD) TC_22 — ALL 11 ITERATIONS GREEN on-app (design; sim ITER_01–08).** First live run of
   the wired feature, one iteration at a time (§5a). Six fixes, each re-running that same iteration:
   **(1)** StartDate `08-10-2026`→`2026-08-10` (S1; testdata → user-confirmed). **(2)** stray `click opt_3` — an

@@ -263,3 +263,6 @@ txt_boundary_6_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.6.analysisS
 txt_boundary_6_efficacy_PValue,ResultsPage,css,"[id=""boundary.6.efficacyPValue""]",,,FALSE,boundary cell,FALSE
 txt_boundary_7_analysis_Spacing_Info,ResultsPage,css,"[id=""boundary.7.analysisSpacingInfo""]",,,FALSE,boundary cell,FALSE
 txt_boundary_7_efficacy_PValue,ResultsPage,css,"[id=""boundary.7.efficacyPValue""]",,,FALSE,boundary cell,FALSE
+txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_startingAtTime,Page,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC sim enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,Page,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC sim enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE

@@ -86,14 +86,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 76,760,ExtractResults,ResultsPage,select,ddl_Compute_CP_Using,${data.design.computeCP},,,,,10000,FALSE,0,always,,Compute CP Using (Conditional-Power futility only; #computeCP)
 77,770,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Boundary Scale (Score / Z / p-value / cp_deltahat ...)
 78,780,ExtractResults,ResultsPage,callCustom,,reconcileBoundaryInterims,,,,,30000,FALSE,0,always,,Reconcile the interim table to the testdata's interim count (clicks Add Interim; fixed designs = no-op). MUST run before the per-period fills
-79,790,ExtractResults,ResultsPage,fill,txt_boundary_0_analysis_Spacing_Info,${data.design.boundary.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 0 spacing
-791,791,ExtractResults,ResultsPage,fill,txt_boundary_3_analysis_Spacing_Info,${data.design.boundary.3.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 3 spacing (many-interim GSD; N/A otherwise)
-792,792,ExtractResults,ResultsPage,fill,txt_boundary_4_analysis_Spacing_Info,${data.design.boundary.4.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 4 spacing (many-interim GSD; N/A otherwise)
-793,793,ExtractResults,ResultsPage,fill,txt_boundary_5_analysis_Spacing_Info,${data.design.boundary.5.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 5 spacing (many-interim GSD; N/A otherwise)
-794,794,ExtractResults,ResultsPage,fill,txt_boundary_6_analysis_Spacing_Info,${data.design.boundary.6.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 6 spacing (many-interim GSD; N/A otherwise)
-795,795,ExtractResults,ResultsPage,fill,txt_boundary_7_analysis_Spacing_Info,${data.design.boundary.7.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 7 spacing (many-interim GSD; N/A otherwise)
-80,800,ExtractResults,ResultsPage,fill,txt_boundary_1_analysis_Spacing_Info,${data.design.boundary.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 1 spacing
-81,810,ExtractResults,ResultsPage,fill,txt_boundary_2_analysis_Spacing_Info,${data.design.boundary.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,Interim 2 spacing
+78.5,785,ExtractResults,ResultsPage,loopPeriods,design,flows/dom_pd_boundary_period.csv,,,boundary|analysisSpacingInfo,,30000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,loopPeriods (Option C): fill boundary analysisSpacingInfo per period from design_boundary — count-agnostic; replaces the enumerated per-period spacing fills. Checks stay enumerated LAST (means-family requirement); reconcile above still sizes the table.
 81.1,812,ExtractResults,ResultsPage,fill,txt_boundary_0_upper_Alpha,${data.design.boundary.0.upperAlpha},,,,,10000,FALSE,0,never,,Interim 0 Upper alpha (2-Sided Asymmetric Interpolated - required per-analysis; N/A on symmetric)
 81.2,813,ExtractResults,ResultsPage,fill,txt_boundary_1_upper_Alpha,${data.design.boundary.1.upperAlpha},,,,,10000,FALSE,0,never,,Interim 1 Upper alpha
 81.3,814,ExtractResults,ResultsPage,fill,txt_boundary_2_upper_Alpha,${data.design.boundary.2.upperAlpha},,,,,10000,FALSE,0,never,,Interim 2 Upper alpha

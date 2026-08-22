@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 880fd6e9550c4700f8a974606ee3d118e5bc171f5f7896b4fb049899836a812e)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 268b377b5d863015b8bbfa3b94bcc23a69a6eacca400c7ffc81a8c4a7c41032f)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -397,5 +397,15 @@ export class Page {
   /** Sim enrollment period 4 avgSubjectsEnrolled */
   txt_enrollment_Table_4_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_4_avg_Subjects_Enrolled', { dynamicArgs });
+  }
+
+  /** PARAMETRIC sim enrollmentTable startingAtTime; {0}=period index (loopPeriods) */
+  txt_enrollmentTable_startingAtTime(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollmentTable_startingAtTime', { dynamicArgs });
+  }
+
+  /** PARAMETRIC sim enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods) */
+  txt_enrollmentTable_avgSubjectsEnrolled(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollmentTable_avgSubjectsEnrolled', { dynamicArgs });
   }
 }
