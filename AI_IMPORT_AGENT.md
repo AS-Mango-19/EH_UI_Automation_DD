@@ -296,10 +296,55 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   file. The importer is **child-table-aware**: when a child owns a table it will **not** seed a
   duplicate `<table>.<n>.<field>` cell inline into design.csv/simulation.csv (the recorded token
   resolves via the fold; the child CSV stays the human-authored source of truth). Full rules:
-  FRAMEWORK_KT.md §4.5 "Indexed table cells and multi-period values".
+  FRAMEWORK_KT.md §4.5 "Indexed table cells and multi-period values". **For the allowlisted
+  tables (boundary / enrollment / dropout) the importer now emits ONE count-agnostic `loopPeriods`
+  block instead of per-cell fills — see §9.1.**
 - **Checkbox toggles** (`getByTestId('variable')`, a role/id checkbox) import as a data-driven
   `check` **and** `uncheck` pair, each `SkipIf`-gated on the column value (`…!=check` / `…!=uncheck`),
   so one testdata cell drives the box on or off per iteration.
+
+### 3.1 — Ambiguous-prefix, read-only asserts & non-ASCII labels *(judgment — the DOP(PD) cases)*
+
+- **Ambiguous-prefix `UNWIRED` → disambiguate by PANEL CONTEXT, don't leave it.** When the
+  importer reports `recorded field "Include" is an ambiguous prefix of 3 existing columns
+  (includeExactComputation, includeAssurance, IncludeEnrollment) — NOT auto-wired … NOT seeded`,
+  it has correctly refused to guess. **You** resolve it: look at the **preceding navigation step**
+  to see which panel the control is in. `chk_Include` fires right after `click btn_Enrollment`, so
+  it is the **Enrollment** panel's checkbox → `IncludeEnrollment`. Rewire the token **and its
+  `SkipIf`** (`${data.design.Include}` → `${data.design.IncludeEnrollment}` on the `check`/`uncheck`
+  pair). Same method for any `X is an ambiguous prefix of …` line — the candidate list is printed;
+  pick by context, never by guessing. **Durability:** a metadata token edit is **regenerated away on the
+  next re-import**. To make it stick, prefer the stable side — name the column after the control's
+  real **DOM id** (wired by id, which is tried first and is unambiguous), or, if you must keep a
+  semantic name that collides, move the step into a hand-authored flow (below).
+
+- **Read-only / computed-field assertions — make them survive re-import.** A bare label click on a
+  computed field (`getByText('Proportion under Treatment (πt0)')` with no fill) becomes an
+  `assertValue`, `Optional=TRUE`, pointed at a label-derived column. Two ways to complete it:
+  - **Path A (in-metadata, easiest — use for a CLEAN, UNIQUE label):** add the expected-value
+    column, fix the selector to the real `#id`, flip `Optional=FALSE`. Works end-to-end, but
+    `metadata.csv` **and** `selectors.csv` are **regenerated on re-import**, so the selector fix and
+    the `Optional=FALSE` are **clobbered** for any label the importer can't auto-wire (ambiguous /
+    merged). Fine when you are basically done re-importing.
+  - **Path B (durable — use for AMBIGUOUS/MERGED labels like the πt fields):** do **not** click those
+    labels while recording; instead hand-author `flows/<feature>_asserts.csv` (assertValue rows with
+    real `#id` selectors, `Optional=FALSE`, `ExpectedValue=${data.design.<asciiCol>}`), add the
+    columns to `design.csv`, add the selectors under **new** object names (a `page::objectName` the
+    codegen never emits is **preserved** by `mergeSelectorRows`), and invoke with **one**
+    `callReusable flows/<feature>_asserts.csv` step. Everything except that one step lives in files
+    the importer never rewrites.
+  - **Or skip both:** if the value appears in a **result-page table**, the end-of-run
+    `extractAllResultTables` + `compareWithBaseline` already asserts it (with tolerance) — no
+    per-field `assertValue` needed. Only assert design-panel values that never reach a result table.
+
+- **Non-ASCII labels (π, δ, α) — keep them OUT of column names & tokens.** Columns/tokens are
+  matched byte-for-byte and the CSVs are **UTF-8 without BOM**, so an ANSI **Excel/WPS save
+  corrupts** `π`→`?`. Name assert columns in **ASCII** (`piT0_SS`, `delta0`, `alpha`), not with the
+  glyph. The importer now strips a codegen-**truncated** trailing `(π` fragment, so `Proportion under
+  Treatment (π` collapses to the clean `Proportion under Treatment`; a **merged** label
+  (`Proportion under Treatment (πt0)Super Superiority Margin`) is a recorder artifact it can't split —
+  **drop that step** (or re-record clicking only one label). Edit these CSVs in VS Code (UTF-8), not
+  Excel.
 
 ### 4 — Validate (no browser)
 ```bash
@@ -321,6 +366,47 @@ npm run test -- --testcase TC_XX
   A **second** run turns it into a real `PASS`.
 - The app allows **one session per user**, so iterations run **serially** and take a while;
   leave a gap between runs (the app can crash on rapid re-runs).
+
+#### 5a — Interactive run protocol (MANDATORY once wiring is resolved) *(judgment)*
+
+Running the feature is **outward-facing** — it creates real projects on the server, consumes
+Compute/Simulate credits, and locks the one-session-per-user app. So the agent does **not**
+launch it unprompted. After the feature reaches validate-clean (steps 1-4 done, `UNWIRED`
+resolved), follow this protocol exactly:
+
+1. **ASK FIRST.** Summarise what's ready and **ask the user for approval to run** the feature.
+   Do not start any live run until the user approves. (No approval → stop here; hand off.)
+2. **ONE ITERATION AT A TIME.** On approval, run a **single iteration**, then wait for it to
+   **fully complete** (design, and the chained sim if `Simulation=YES`) before touching the next
+   one. Never launch the next iteration while one is in flight, and never run the whole `--testcase`
+   set at once for a first import. Select the single iteration by the **`Run` column** (there is no
+   `--iteration` flag): set `Run=TRUE` for the target iteration and `Run=FALSE` for the rest in
+   `01_testdata/inputset.csv` (a `switchedOff` iteration wins across all testdata files, so this one
+   file governs; **back it up first and restore all `Run=TRUE` when finished**). Then
+   `npm run test -- --testcase TC_XX`.
+3. **After each iteration, report the outcome** (per-iteration screenshot-verify; note
+   `BASELINE_CREATED` vs `PASS`/`FAIL`). If it completed cleanly, proceed to the next iteration.
+4. **ON ANY ERROR, analyse first, then act by tier.** Always **analyse the failure** (step log +
+   screenshot + trace) and identify the root cause before doing anything. Then act according to
+   what the fix touches — never skip ahead to the next iteration with a failure unresolved:
+   - **Minor issue → FIX AUTONOMOUSLY, then re-run the same iteration.** A minor issue is one whose
+     fix stays inside **this feature's own `03_metadata/*.csv` or `02_selectors_repo/selectors.csv`**
+     — a recorded-noise step to drop, a `SkipIf` convention mismatch (rule 8), a wrong/again selector,
+     a missing per-period fill, a step-order/StepID tweak, an `Optional` flip. Apply it, **report what
+     you changed and why**, and re-run. No approval needed for these (they are the importer's normal
+     wiring work).
+   - **Any TESTDATA change → CONFIRM WITH THE USER first.** Editing `01_testdata/*.csv` (a value, a
+     date format, `N/A`/`Computed` discipline, a Run toggle beyond the single-iteration selection,
+     adding/removing a column) **always** needs approval — explain the change and wait. The data
+     encodes the intended design; the agent does not silently alter it.
+   - **Major issue, or a change in ANY other file → CONFIRM first.** Anything touching `core/`,
+     `custom/`, `flows/`, `00_config/`, `master.csv`, shared files, or a structurally significant
+     redesign is **major** — analyse, propose in detail, and get approval before editing.
+
+   When in doubt about the tier, treat it as needing confirmation. After a minor autonomous fix,
+   still **report it** in the per-iteration summary so the user sees every change.
+5. **Baselines are human-reviewed.** A first green run only writes the baseline (verifies nothing)
+   — surface the numbers for the user before trusting them; never auto-bless a baseline.
 
 ### 6 — Diagnose common issues *(judgment)*
 | Symptom | What it means / fix |
@@ -376,16 +462,20 @@ The sim runs on the **same page after a green design**, so its Design tab **inhe
 
 When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`) + a reusable `03_metadata/<name>_block.csv` sub-flow (fills gated `SkipIf ${runtime.loop.<col>}…`, since the blank/`N/A` auto-skip is `${data.*}`-only) + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN`, TC_14).
 
-### 9.1 — Count-agnostic period-table FILLS (`loopPeriods`) *(judgment)*
+### 9.1 — Count-agnostic period-table FILLS (`loopPeriods`) — now the importer DEFAULT
 
-A folded period table (`boundary.<n>.*`, `enrollmentTable.<n>.*`, dropout, …) normally costs **one metadata fill row + one selector PER field PER period**, capped at a hand-written ceiling (`boundary.0`…`boundary.7`). To make a field's fills **count-agnostic** — add a period and just run, no new selector/metadata — replace the enumeration with `loopPeriods`:
+A folded period table (`boundary.<n>.*`, `enrollmentTable.<n>.*`, `dropoutTable.<n>.*`) used to cost **one metadata fill row + one selector PER field PER period**, capped at a hand-written ceiling. **The importer now emits `loopPeriods` automatically** for an allowlist of safe per-period INPUT fields — you usually do NOTHING here. When it fires you'll see `loopPeriods: <table> → looped <fields>; wrote flows/<slug>_<table>_period.csv`, and per table it generates: one parametric selector per field (`[id="<table>.{0}.<field>"]`, `Dynamic=TRUE`), a per-field template flow `flows/<slug>_<table>_period.csv` (trailing `DynamicArgs=${runtime.period.n}` column), and a `reconcilePeriodTable` + `loopPeriods` pair (both `SkipIf ${data.<file>.<table>.0.<countField>}==EMPTY`) that REPLACES the enumerated cell fills and the per-period `Add …` clicks. Non-allowlisted cells stay enumerated, exactly as before.
 
-1. **One PARAMETRIC selector per FIELD** (not per period): `SelectorValue="[id=""<table>.{0}.<field>""]"`, `Dynamic=TRUE`. `{0}` is the period index.
-2. **A per-field template flow** `flows/<feature>_<table>_period.csv` (header MUST include the trailing `DynamicArgs` column): one row per field — `fill`/`check`/`uncheck` driven by `${runtime.period.<field>}`, with `DynamicArgs=${runtime.period.n}` feeding the selector's `{0}`. Value fills auto-skip on blank/`N/A` (the skip now covers `${runtime.period.*}` too); gate a checkbox with `SkipIf ${runtime.period.<field>}!=check` / `!=uncheck`.
-3. **One `loopPeriods` step** in the main metadata — `ObjectName=<parentFile>` (`design`/`simulation`), `InputValue=flows/<feature>_<table>_period.csv`, `ExpectedValue=<table>|<countField>` (a period EXISTS iff its `<countField>` is non-N/A). Gate the whole step with `SkipIf ${data.design.<table>.0.<countField>}==EMPTY` so a fixed design skips it.
-4. **Keep the reconcile BEFORE it.** `reconcilePeriodTable` (or `reconcileBoundaryInterims`) still **ADDS** the rows (Add Interim/Period clicks); `loopPeriods` then **FILLS** them. Reconcile-then-loop, in StepID order.
+**The allowlist is `PERIOD_LOOP_CONFIG` in `scripts/import-codegen.ts`** — the ONE place to change coverage:
+- **ON:** `boundary` (`analysisSpacingInfo`, `efficacyCheck`, `futilityCheck`), `enrollmentTable` (`startingAtTime`, `avgSubjectsEnrolled`), `dropoutTable` (its raw inputs).
+- **OFF:** `inputMethodTable` (`enabled:false` — dense mutually-exclusive input methods; prove it, then flip `enabled`).
+- **Never:** `boundarySim` (absent) — the sim boundary's spacing is app-computed and its Z/p-values are outputs; leave it enumerated/assert-only.
 
-**Only loop fields that are a TRUE per-period INPUT across every period** (interim spacing; efficacy/futility checkboxes). A field that is an editable input for period 0 but a **computed/greyed output** at higher looks in some boundary families (per-analysis p-values, α/β-spent, boundary Z/alpha) must stay **enumerated** — a blanket loop would type into a greyed cell and fail. Values route through the ordinary core `fill`/`check`/`select`, so read-back/retry/N/A-skip are all inherited. **Proven on `feature_ROP(PD)` TC_21** (boundary spacing + efficacy/futility checks; the p-value/α fields left enumerated).
+**Why the allowlist (the SAFETY rule):** only loop fields that are a TRUE per-period INPUT at every look. A field that is editable at period 0 but a **computed/greyed output at higher looks** in some boundary families (per-analysis p-values, α/β-spent, boundary-Z, the family futility parameter) must stay **enumerated** — a blanket loop would type into a greyed cell and fail. This is why numeric boundary fields are deliberately absent from the config.
+
+**To extend coverage:** add a field to a table's `fields` (or flip a table `enabled`), re-import a feature that uses it, `validate`, and screenshot-verify one run (greyed period-0 cells must auto-skip). Values route through the ordinary core `fill`/`check`, so read-back/retry/N/A-skip are inherited. **Proven on `feature_ROP(PD)` TC_21**; the importer reproduces that exact shape.
+
+**Hand-authoring (rare — only for a table the config can't cover):** one parametric selector per field; a template flow driven by `${runtime.period.<field>}` with `DynamicArgs=${runtime.period.n}` (checkbox rows gated `SkipIf ${runtime.period.<field>}!=check`/`!=uncheck`); one `loopPeriods` step (`ObjectName=<parentFile>`, `InputValue=flows/…`, `ExpectedValue=<table>|<countField>`); and `reconcilePeriodTable` BEFORE it (`<file>|<table>|<countField>|<addLabel>[|excludeDisabled]`) — reconcile ADDS the rows, loop FILLS them, in StepID order.
 
 ---
 
@@ -547,6 +637,7 @@ what lets it handle a new feature **without destabilising the ones already commi
 - [ ] Testdata columns are the ones **you authored** — the import added none (no `--seed` over real data).
 - [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
 - [ ] `npm run validate` passes for **all** features (not just this one).
+- [ ] **User approval obtained before any live run**; iterations run **one at a time**; on error, analyse then fix by tier — minor metadata/selector fixes **autonomously** (reported), but **testdata** edits and **major/other-file** changes only **with user approval** (§5a).
 - [ ] Each iteration screenshot-verified; blank/`N/A` skipped, valued fields landed.
 - [ ] No `recording.txt` / `.env` / `.auth` staged for commit.
 - [ ] Baseline reviewed by a human before it's trusted — and built on the SAME `.env` server it will be compared against (baselines are env-specific; an `.env` swap invalidates them, §8c).

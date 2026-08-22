@@ -39,7 +39,7 @@ judgment. These are the calls that remain.*
 | 1 | **Label-only control, no DOM id** — `UNWIRED … wire label="Include"` (e.g. `role=checkbox "Include"`) | Name the column **exactly the label**, OR repoint the step's token/SkipIf to your existing id column. | The importer has no id to fall back to. | Ask which column name **once**, then record it. |
 | 2 | **Result-name field** — `Result Name` / `#inputId` | Runtime token `<Feat>_Result_${iterationId}` on both the fill and the open-result click; give the **sim** a 2nd distinct name. | Unique per run, no data column, no design/sim link collision. | No |
 | 3 | **Label-less radio** — `radio "Power"/"Type 1 Error" recorded without a label`, and it's an **option of a group** | Delete the orphan selector; the group's single dynamic `check ${data.design.<Group>}` (e.g. Computed Parameter) already drives it. | It's not a separate control. | Ask only if it's a standalone control. |
-| 4 | **Computed/greyed field** — Optional `assertValue`, no recorded value | Cell = `Computed` (skip) **or** the derived number (assert) **or** drop the step. | The app owns the value. | Ask only if the user wants to verify the app's math. |
+| 4 | **Computed/greyed field** — Optional `assertValue`, no recorded value | If the testdata cell is **`Computed`** → **DROP** the assert step. If it holds a **real expected number** → keep the assert (point it at the id column, `Optional=FALSE`). | `assertValue` auto-skips ONLY on **N/A**, NOT on `Computed` (stepRunner `assertsNotApplicable`), so a `Computed` ExpectedValue would FAIL the compare; and the end-of-run result-table `compareWithBaseline` already covers app-computed outputs. | Ask only if the user wants to verify the app's math with a hand-supplied number. |
 | 5 | **Test-card selection** — `react select …`/`Select Test` (value like "Difference of Means"/"Ratio of Proportions") | Column lives in **inputset** (`Select Test`/`SelectTest`). (Importer now cross-file-wires it.) | It's an input-set field, not design. | No |
 | 6 | **Study Objective value** | Use the **recording's** value (e.g. `Two Arm Confirmatory`), NOT master.csv's "…Superiority" (that's the design-page *hypothesis*). | A wrong option makes `select` commit nothing → every downstream field "unable to resolve". | No |
 | 7 | **Table-cell dropdown** — Endpoint Type, Better Response, Priority ("unable to resolve" on a label-walk) | Open via the **value-trigger** selector `role=button "<current/default value>"`; set the controlling cell (Endpoint Type) **before** dependents (Better Response). | The "label" is a column header with no adjacent control. | No |
@@ -101,12 +101,69 @@ must still complete per-iteration coverage the single recording could not captur
   etc. (id columns `minPiC/maxPiC/minPiT/maxPiT`); hypothesis effect columns are
   `proportionUnderControl_SS/_SP/_NI` + `ratioOfProportions_SS/_SP/_NI` (one suffix valued per
   Hypothesis/Test-Type, rest `N/A`). Reference: `feature_ROP(PD)`.
+- **Difference of Proportions (DOP):** direct sibling of ROP — mirror it. Effect columns
+  `proportionUnderControl_{SP,SS,NI}` (real input) + `differenceInProportions_{SP,SS,NI}` (real input) +
+  `proportionUnderTreatment_{SP_AH, SS_NH, SS_AH, NI_NH, NI_AH}`. **πt (Proportion under Treatment) is
+  ALWAYS `Computed`** (app derives it from πc + δ) — the recording captures it as a **label-only click**
+  (`getByText('Proportion under Treatment (πt0/πt1)')`, NO id), the labels **collide** across the SS/NI
+  blocks, and the testdata cells are `Computed` → **DROP all πt assert steps** (rule 4; result table
+  covers them). The sim's `propUnderTreatment` is likewise `Computed` → drop. Sim runtime = ROP's S2/S3/S5/S8
+  verbatim (`loadResponseTabIntoModel`, `#includeSwitch`, distinct node-vs-result name, Optional Recalculate).
+  **DESIGN enrollment is SINGLE-PERIOD → wire it as a SCALAR fill, NOT loopPeriods** (mirror ROP:
+  `fill txt_enrollment_Table_0_avg_Subjects_Enrolled ${data.design.enrollmentTable.0.avgSubjectsEnrolled}`).
+  The importer's loopPeriods DEFAULT loops the design enrollment too, but the enrollment template flow is
+  SHARED with the sim, and the sim import adds a `startingAtTime` row (sim enrollment is multi-period). The
+  design table has no `startingAtTime`, so `${runtime.period.startingAtTime}` throws "runtime variable never
+  captured" — an ABSENT per-period field does NOT auto-skip the way an N/A cell does. Replace the design
+  enrollment loop with the scalar fill; the sim keeps its loop. **Importer follow-up (deferred):** don't emit a
+  loopPeriods block for a single-period design enrollment, OR make `${runtime.period.<field>}` resolve to ''
+  when the field is absent (resolver.ts:66). Reference: `feature_DOP(PD)` TC_22, ITER_01 GREEN (design + sim
+  baselines created) 2026-08-22.
 - **(add survival / means / one-arm family rules as you import them)**
 
 ---
 
 ## Feature log *(append-only; newest first)*
 
+- **2026-08-22 · DOP(PD) TC_22 — ALL 11 ITERATIONS GREEN on-app (design; sim ITER_01–08).** First live run of
+  the wired feature, one iteration at a time (§5a). Six fixes, each re-running that same iteration:
+  **(1)** StartDate `08-10-2026`→`2026-08-10` (S1; testdata → user-confirmed). **(2)** stray `click opt_3` — an
+  orphan `option "3"` between Study Objective and Phase with no open dropdown → dropped (recording noise).
+  **(3)** `includeAssurance` is TRUE/FALSE but was gated check/uncheck → both toggles skipped, Assurance never
+  enabled, `ddl_Prior_Distribution_For` "unable to resolve" → re-gate `!=TRUE`/`!=FALSE` (rule 8; minor→autonomous).
+  **(4)** futility `ddl_fut_Spend_Func` recorded AFTER its Rho param → moved before it (params render only once the
+  spending function is chosen; §7; minor→autonomous). **(5)** design enrollment scalar-fill vs loopPeriods (see
+  family rule; user-directed). **(6)** `btn_Calculate` times out on FIXED designs (ITER_03/08/11, no boundary) →
+  `SkipIf ${data.design.boundary.0.analysisSpacingInfo}==EMPTY` (S8; minor→autonomous). The count-agnostic boundary
+  loopPeriods proved out across 2/3/4/7-analysis designs up to ITER_10's **8-analysis Haybittle-Peto** (efficacyPValue
+  at all 8 looks incl. Final); per-period numeric completeness fills (upper/lowerAlpha, cumAlphaSpent, futilityCP,
+  efficacyPValue 0-7) fired where valued and auto-skipped elsewhere. Sim hardening (S2/S3/S5/S8) worked on the FIRST
+  live sim. 11 design + 8 sim baselines written (3.8-34.8 KB, none empty). **Second run CONFIRMED all 11 as real
+  PASSes** (design + 8 sims, every cell within tolerance; `PASS 11, FAIL 0, ERROR 0`, ~25 min) — the baselines
+  are reproducible, so TC_22 is a working regression suite. Uncommitted; 2 benign warnings remain (`SelectTask`,
+  `CreateInputSet` — unused admin columns).
+- **2026-08-22 · DOP(PD) TC_22 imported + wired to validate-clean (design + sim; live run pending).**
+  Deterministic importer emitted `loopPeriods` by DEFAULT for boundary (analysisSpacingInfo/efficacy/futility
+  checks) + enrollment; `boundarySim` stayed enumerated (correct). Judgment layer:
+  **(1)** 3 UNWIRED "Proportion under Treatment" (design ×2 + sim ×1) → all πt cells are `Computed` (label-only
+  clicks, colliding labels) → **DROPPED the 5 πt asserts + the merged-label artifact** (rule 4; not Path A —
+  testdata says Computed, and ROP dropped them too).
+  **(2)** `Include` ambiguous-prefix (of includeExactComputation/includeAssurance/IncludeEnrollment) → repointed
+  the `check`/`uncheck` SkipIf to **IncludeEnrollment** by panel context (fires right after `btn_Enrollment`) (rule 1/§3.1).
+  **(3)** Table-completeness: recording captured only period-0 numeric boundary cells → added per-period fills
+  (design efficacyPValue 1-7, cumAlphaSpent/futilityDelta/upperAlpha/lowerAlpha .1, futilityCP .2; sim boundarySim
+  efficacyZ.0 + efficacyZUpper/futilityZUpper/cumAlphaSpentUpper/futilityZ .1) — new selectors derived from each
+  period-0/1 sibling (preserves the exact id-vs-name selector type). All auto-skip on N/A.
+  **(4)** `allocationRatio` had a bare `click` (no fill) in the design though the sim filled it and design.csv has
+  per-iteration values → changed the click to a data-driven **fill** (cleared the last real warning).
+  **(5)** Sim runtime hardening mirrored from ROP (proportions sibling): `custom/DOP(PD)/customSteps.ts`
+  `loadResponseTabIntoModel` before the first design fill (S2); `check chk_include_Switch` gated after the Enrollment
+  tab (S3); node name `DOP_Sim_${iterationId}` distinct from the result `Sim Result Name` + a result-name fill after
+  Save&Simulate + `lnk_ResultName` Exact=TRUE (S5/S10); `btn_Recalculate` Optional=TRUE (DOP mixes analysisSpacingInfo-
+  and cumAlphaSpent-driven boundaries, so ROP's single-column gate doesn't fit — Optional lets fixed-design iterations
+  skip). Result: **DOP validate = 0 errors, 2 benign warnings** (`SelectTask`="Design" is fixed by the static task
+  button; `CreateInputSet` is an unused sim column). typecheck clean. Live `npm run test -- --testcase TC_22` +
+  screenshot-verify still pending (needs the app; sim hardening is preemptive and unverified on-app).
 - **2026-08-19 · ROP(PD) TC_21 ITER_08–11 GREEN (all 11 designs now green).** Each iteration exercised a
   different assurance/boundary shape and all passed with the S11 core fix + existing gating:
   **08** Uniform prior (both πc/πt, min/max) + sim real (9 tables/99 cells); **09** Percentiles-of-ρ input

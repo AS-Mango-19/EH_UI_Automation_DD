@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadMaster } from '../loaders/masterLoader.js';
 import { loadFeatureAll, selectorKey, SIM_METADATA_REL } from '../loaders/featureLoader.js';
+import { isNaCell } from '../keywords/periodTable.js';
 import { readCsv } from '../csv/reader.js';
 import { featureDir, abs } from '../utils/paths.js';
 import { getKeywordSpec } from '../keywords/catalog.js';
@@ -95,8 +96,21 @@ export function validateAll(
     const f = loaded.value;
     if (!f) continue;
 
+    // Load the sim metadata (Simulation=YES) BEFORE coverage so its steps can be
+    // credited there — simulation.csv columns are entered by sim_metadata.csv steps,
+    // which are absent from the design metadata.
+    let simLoaded: ReturnType<typeof loadFeatureAll> | undefined;
+    let simMetadataMissing = false;
+    if (row.Simulation) {
+      if (fs.existsSync(path.join(dir, SIM_METADATA_REL))) {
+        simLoaded = loadFeatureAll({ module, feature, metadataFileRel: SIM_METADATA_REL, testDataDirRel });
+      } else {
+        simMetadataMissing = true;
+      }
+    }
+
     validateMetadata(f, issues, warnings);
-    validateTestDataCoverage(f, warnings);
+    validateTestDataCoverage(f, warnings, simLoaded?.value?.steps ?? []);
     validateIterationCompleteness(f, issues);
     validateChildTables(f, path.join(dir, testDataDirRel), warnings);
     validateSelectors(f, warnings);
@@ -108,13 +122,11 @@ export function validateAll(
     // opens — same guarantee as the design flow. It shares selectors + testdata,
     // so a sim view (same feature, sim steps) runs the same metadata checks.
     if (row.Simulation) {
-      const simFile = path.join(dir, SIM_METADATA_REL);
-      if (!fs.existsSync(simFile)) {
+      if (simMetadataMissing) {
         issues.push(
           `[${feature}] master.csv line ${line}: Simulation=YES but ${SIM_METADATA_REL} is missing. Import it with:  npm run import-codegen -- ${module} ${feature} --tc ${row.TC_ID} --sim`,
         );
-      } else {
-        const simLoaded = loadFeatureAll({ module, feature, metadataFileRel: SIM_METADATA_REL, testDataDirRel });
+      } else if (simLoaded) {
         for (const i of simLoaded.issues) issues.push(`[${feature}] sim: ${i}`);
         if (simLoaded.value) {
           validateMetadata(simLoaded.value, issues, warnings);
@@ -229,9 +241,16 @@ function validateMetadata(
 function validateTestDataCoverage(
   f: NonNullable<ReturnType<typeof loadFeatureAll>['value']>,
   warnings: string[],
+  // Steps from a chained flow (the feature's sim_metadata.csv) that also enter this
+  // feature's testdata. Coverage loads the WHOLE testdata dir (design + simulation
+  // files), but the design metadata never references ${data.simulation.*} — so
+  // without crediting the sim steps here, every populated simulation.csv column is
+  // falsely flagged "no step enters it". Passing them unions their tokens in.
+  extraSteps: NonNullable<ReturnType<typeof loadFeatureAll>['value']>['steps'] = [],
 ): void {
+  const allSteps = [...f.steps, ...extraSteps];
   const referenced = new Map<string, Set<string>>();
-  for (const step of f.steps) {
+  for (const step of allSteps) {
     for (const cell of [step.InputValue, step.ExpectedValue, step.ObjectName, step.SkipIf]) {
       for (const token of extractTokens(cell)) {
         const m = /^data\.([^.]+)\.(.+)$/.exec(token);
@@ -265,7 +284,7 @@ function validateTestDataCoverage(
   // that template, not here. Collect (file -> prefixes) so those wide columns are not
   // flagged as unused-value gaps (the non-period columns of the same file still are).
   const periodPrefixByFile = new Map<string, string[]>();
-  for (const step of f.steps) {
+  for (const step of allSteps) {
     if (step.Action === 'loopOverData') loopFiles.add(step.ObjectName.trim());
     if (step.Action === 'loopPeriods') {
       const file = step.ObjectName.trim();
@@ -277,20 +296,54 @@ function validateTestDataCoverage(
     }
   }
   const CONTROL = new Set<string>([...JOIN_KEYS, RUN_COLUMN]);
+  // A folded child-table cell: `<prefix>.<n>.<field>` (boundary.1.efficacyPValue,
+  // enrollmentTable.3.startingAtTime). Scalar columns never match.
+  const PERIOD_COL = /^(.+)\.(\d+)\.(.+)$/;
   for (const [file, parsed] of f.testDataParsed) {
     if (loopFiles.has(file)) continue;
     const ref = referenced.get(file) ?? new Set<string>();
     const periodPrefixes = periodPrefixByFile.get(file) ?? [];
     const isLoopedPeriodCol = (col: string): boolean =>
       periodPrefixes.some((p) => new RegExp(`^${p}\\.\\d+\\.`).test(col));
+    // Unentered period cells are collected per table and reported as ONE consolidated
+    // warning, not one-per-cell: an enumerated period table wired for period 0 only
+    // would otherwise emit a flood of near-identical warnings that bury the real
+    // signal (the table is under-wired — wire the later periods, adopt loopPeriods,
+    // or N/A the unused ones). prefix -> field -> [periods].
+    const periodGaps = new Map<string, Map<string, number[]>>();
     for (const col of parsed.headers) {
       if (CONTROL.has(col) || ref.has(col) || customSrc.includes(col) || isLoopedPeriodCol(col)) continue;
-      const hasValue = parsed.records.some((r) => (r.data[col] ?? '').trim() !== '');
-      if (hasValue) {
-        warnings.push(
-          `[${f.feature}] testdata: column "${col}" in ${file}.csv has a value but no step enters it — add a step to apply it or remove the column.`,
-        );
+      // A cell counts as "must be entered by a step" only if it holds a REAL value.
+      // blank / N/A / Computed are SKIPPED at runtime (stepRunner isNotApplicable /
+      // isAppComputed), so a column that is entirely N/A or Computed is never applied
+      // and must NOT be flagged as an unentered-value gap. This also stops filling
+      // blank table cells with N/A from paradoxically ADDING coverage warnings.
+      const hasValue = parsed.records.some((r) => {
+        const v = (r.data[col] ?? '').trim();
+        return !isNaCell(v) && !/^computed$/i.test(v);
+      });
+      if (!hasValue) continue;
+      const pm = PERIOD_COL.exec(col);
+      if (pm) {
+        const prefix = pm[1] ?? '';
+        const field = pm[3] ?? '';
+        if (!periodGaps.has(prefix)) periodGaps.set(prefix, new Map());
+        const byField = periodGaps.get(prefix)!;
+        if (!byField.has(field)) byField.set(field, []);
+        byField.get(field)!.push(Number(pm[2]));
+        continue;
       }
+      warnings.push(
+        `[${f.feature}] testdata: column "${col}" in ${file}.csv has a value but no step enters it — add a step to apply it or remove the column.`,
+      );
+    }
+    for (const [prefix, byField] of periodGaps) {
+      const parts = [...byField.entries()]
+        .map(([field, periods]) => `${field}[periods ${[...new Set(periods)].sort((a, b) => a - b).join(',')}]`)
+        .sort();
+      warnings.push(
+        `[${f.feature}] testdata: period table "${prefix}" in ${file}.csv has values that no step enters — ${parts.join('; ')}. Wire those periods, switch the table to loopPeriods, or N/A the unused periods.`,
+      );
     }
   }
 }
