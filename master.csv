@@ -19,3 +19,4 @@ TC_19,ProductDesign,regression,Dose Escalation,Rolling6,,chromium,01_testdata/in
 TC_20,ProductDesign,regression,Two Arm Confirmatory,GADAR_Stratification,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
 TC_21,ProductDesign,regression,Two Arm Confirmatory,ROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_22,ProductDesign,regression,Two Arm Confirmatory,DOP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_23,ProductDesign,regression,Two Arm Confirmatory,OROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES

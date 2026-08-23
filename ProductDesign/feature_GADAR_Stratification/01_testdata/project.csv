@@ -1,0 +1,7 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,Treatment Arm,Control Arm,Priority,Endpoint Name,Endpoint Type,Better Response,Variable,followUpTime,useStratification
+TC_20,ITER_01,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check
+TC_20,ITER_02,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check
+TC_20,ITER_03,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check
+TC_20,ITER_04,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check
+TC_20,ITER_05,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check
+TC_20,ITER_06,TRUE,GADAR_AD,Week,07/28/2026,Two Arm Confirmatory,3,Full Population,Experimental,Control,,Endpoint 1,Time to Event,Longer Duration,uncheck,10,check

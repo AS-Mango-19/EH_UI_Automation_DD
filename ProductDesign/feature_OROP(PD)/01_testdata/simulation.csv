@@ -1,0 +1,9 @@
+TC_ID,IterationID,Run,CreateInputSet,sampleSize,randomizationMethodSelect,allocationRatio,testtype,variance,criticalPoint,upperCriticalPoint,nonInferiorityMargin,superSuperiorityMargin,distributionSelect,propUnderControl,propUnderTreatment,oddsRatioOfProps,followUpTime,dropoutDistributionSelect,probabilityOfDropout,Include Enrollment,numOfSimRun,randomNumberSeed,fixedSeed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Sim Result Name
+TC_23,ITER_01,TRUE,Sim 1,255,Complete Randomized Design,1.333,,,,,,,Binomial,0.5211,Computed,0.44456,8.88,Binomial,0.06658,check,100,Fixed,100,check,check,100,Result - Sim 1
+TC_23,ITER_02,TRUE,Sim 2,677,Complete Randomized Design,2.221,,,,,,,Binomial,0.4632,Computed,0.3333,10.32,Binomial,0.08654,check,100,Fixed,100,check,check,100,Result - Sim 2
+TC_23,ITER_03,TRUE,Sim 3,589,Complete Randomized Design,1.955,,,8.83324,,0.3211,,Binomial,0.765488,Computed,0.2111,7.556,Binomial,0.1233,check,100,Fixed,100,uncheck,uncheck,,Result - Sim 3
+TC_23,ITER_04,TRUE,Sim 4,777,Complete Randomized Design,1.898,,,,,0.33356,,Binomial,0.65231,Computed,0.2256,0.11,Binomial,0.0485,check,100,Fixed,100,check,check,100,Result - Sim 4
+TC_23,ITER_05,TRUE,Sim 5,111,Complete Randomized Design,1.95,,,,,,,Binomial,0.5095,Computed,0.4586,12,Binomial,0.3215,check,100,Fixed,100,check,check,100,Result - Sim 5
+TC_23,ITER_06,TRUE,Sim 6,1025,Complete Randomized Design,1.7665,,,,,0.2256,,Binomial,0.53215,Computed,0.3211,10.888,Binomial,0.36524,check,100,Fixed,100,uncheck,uncheck,,Result - Sim 6
+TC_23,ITER_07,TRUE,Sim 7,1200,Complete Randomized Design,2,,,,,,2.6856,Binomial,0.633335,Computed,0.2222,8.88,Binomial,0.123456,check,100,Fixed,100,check,,,Result - Sim 7
+TC_23,ITER_08,TRUE,Sim 8,550,Complete Randomized Design,1.255,,,,0.3215,,,Binomial,0.5555,Computed,0.3333,12.8888,Binomial,0.15568,check,100,Fixed,100,check,check,100,Result - Sim 8

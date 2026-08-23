@@ -1,0 +1,11 @@
+TC_ID,IterationID,Run,InputSetname,SelectTask,SelectTest
+TC_23,ITER_01,TRUE,Set1,Design,Odds Ratio of Proportions
+TC_23,ITER_02,TRUE,Set2,Design,Odds Ratio of Proportions
+TC_23,ITER_03,TRUE,Set3,Design,Odds Ratio of Proportions
+TC_23,ITER_04,TRUE,Set4,Design,Odds Ratio of Proportions
+TC_23,ITER_05,TRUE,Set5,Design,Odds Ratio of Proportions
+TC_23,ITER_06,TRUE,Set6,Design,Odds Ratio of Proportions
+TC_23,ITER_07,TRUE,Set7,Design,Odds Ratio of Proportions
+TC_23,ITER_08,TRUE,Set8,Design,Odds Ratio of Proportions
+TC_23,ITER_09,TRUE,Set9,Design,Odds Ratio of Proportions
+TC_23,ITER_10,TRUE,Set10,Design,Odds Ratio of Proportions

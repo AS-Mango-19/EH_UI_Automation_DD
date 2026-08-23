@@ -1,0 +1,7 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_20,ITER_01,Set 1,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)
+TC_20,ITER_02,Set 2,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)
+TC_20,ITER_03,Set 3,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)
+TC_20,ITER_04,Set 4,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)
+TC_20,ITER_05,Set 5,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)
+TC_20,ITER_06,Set 6,Design,Logrank Test Given Accrual Duration and Accrual Rates (Parallel Design)

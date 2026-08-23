@@ -1,0 +1,6 @@
+TC_ID,IterationID,Factors,Level 1,Level 2,Level 3,Level 4,Level 5,Level 6,Level 7,Level 8,Level 9,Level 10,Level 11,Level 12,Level 13,Level 14,Level 15,Level 16,Level 17,Level 18,Level 19,Level 20,Level 21,Level 22,Level 23,Level 24,Level 25
+TC_20,ITER_01,Factor 1,Fac1L1,Fac1L2,Fac1L3,Fac1L4,Fac1L5,,,,,,,,,,,,,,,,,,,,
+TC_20,ITER_01,Factor 2,Fac2L1,Fac2L2,,,,,,,,,,,,,,,,,,,,,,,
+TC_20,ITER_02,Factor 1,Fac1L1,Fac1L2,Fac1L3,,,,,,,,,,,,,,,,,,,,,,
+TC_20,ITER_02,Factor 2,Fac2L1,Fac2L2,Fac2L3,Fac2L4,,,,,,,,,,,,,,,,,,,,,
+TC_20,ITER_02,Factor 3,Fac3L1,Fac3L2,,,,,,,,,,,,,,,,,,,,,,,
