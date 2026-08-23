@@ -1,0 +1,9 @@
+TC_ID,IterationID,PeriodIndex,avgSubjectsEnrolled,startingAtTime
+TC_12,ITER_01,0,8,
+TC_12,ITER_02,0,8,
+TC_12,ITER_03,0,8,
+TC_12,ITER_04,0,8,
+TC_12,ITER_05,0,8,
+TC_12,ITER_06,0,9.7,
+TC_12,ITER_06,1,10.85,2.33
+TC_12,ITER_07,0,8,

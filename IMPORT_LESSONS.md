@@ -125,6 +125,27 @@ must still complete per-iteration coverage the single recording could not captur
 
 ## Feature log *(append-only; newest first)*
 
+- **2026-08-23 · GADAR(PD) TC_12 — child-table SPLIT + full format conversion, all 6 iters green (design + sim).**
+  GADAR had no child tables (105 inline `<table>.<n>.<field>` columns across design + sim). Split them into 8
+  normalized child CSVs (fold-verified value-exact vs the inline originals). **Hard lessons for the split + `==N/A`
+  features (dose-escalation, survival):**
+  **(1) Omitting empty periods changes gate semantics.** The child fold yields `''` for an ABSENT period but the
+  literal `'N/A'` for an unused field. GADAR's enumerated Add-Period/Add-Interim gates were `==N/A` (literal), which
+  then misfired on absent periods (empty ≠ 'N/A') → extra empty rows / timeouts. `==EMPTY` fixes absent-period but
+  breaks mutually-exclusive method fields (a present-period `'N/A'` field ≠ empty → misfire). **NEITHER single
+  operator works.** **CORE FIX (skipIf.ts):** make the RHS `N/A` mean isNaCell (matches empty OR any N/A spelling);
+  `==EMPTY` stays a strict empty check (loopPeriods count-field gates rely on it). Then GADAR's gates stay/return to
+  `==N/A` and work for BOTH cases. Verified regression-free: unit test + 3+3 spot-run PASS 5/5 (uses `==N/A` for
+  Add-Dose); DOP/DOM/GADSD/ROP don't use `==N/A`; BOIN/i3+3 use it only on all-N/A cells (no-op). **(2) Reduced
+  testdata leaves DEAD higher-period fills** (the 35→7 reduction dropped the only period-3 users) → the omit fold
+  drops those columns → unknown-column errors; prune metadata fills referencing periods beyond the data's max.
+  **(3) Malformed blank-key rows** in the reduced testdata folded to blank-IterationID child rows → strip them (loader
+  ignores blank IterationID anyway). **(4) App-slowness settle-guard:** ITER_02's Save stayed disabled mid-compute
+  (spinner intercepting) → added `waitForSelector div_Spinner`(hidden) before Save (see [[rop-computed-parameter-settle-guard]]).
+  **(5) App label drift** (`Alternative`→`Alt.`, `Null`→`Null.`) + ~0.2% accrual drift on the disabled/WIP iterations
+  (03/04/06) → stale baselines → re-baselined with `--update-baseline` (same as GADSD `ceedad0`). GADAR's boundary was
+  left ENUMERATED (interleaved spacing/pValue/Add-Interim/multi-Calculate, too hand-tuned to loop safely) — only the
+  child-table split + gate conversion were applied. `Run` gate lives in **design.csv** (+ project.csv); enabled ITER_01–06.
 - **2026-08-22 · GADSD(PD) TC_17 — boundary loopPeriods retrofit, all 5 enabled iters green.** Survival GSD,
   design-only. Same means/survival recipe as DOM: kept `reconcileBoundaryInterims`, removed the 3 enumerated
   `boundary.<n>.analysisSpacingInfo` fills, added one `loopPeriods` (flows/gadsd_pd_boundary_period.csv) + a parametric

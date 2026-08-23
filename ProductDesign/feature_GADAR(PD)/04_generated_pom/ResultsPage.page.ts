@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 6165d82f74d0832dcd47b7c16554359de06ac8cfdd14e9a9bec63830210480be)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 97cfee0108ba52ecec2f002aa6cfa3321c1c698526b99de194ecd3c59dafbf32)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -1477,5 +1477,10 @@ export class ResultsPage {
   /** Prob-of-Dropout period-2 (Treatment) */
   txt_dropout_Table_1_prob_Of_Dropout_Treatment(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_dropout_Table_1_prob_Of_Dropout_Treatment', { dynamicArgs });
+  }
+
+  /** loading overlay on the design/results page (settle-guard) */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Spinner', { dynamicArgs });
   }
 }

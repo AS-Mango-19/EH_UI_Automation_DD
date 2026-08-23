@@ -433,3 +433,4 @@ chk_save_Subject_Level_Data,Page,testid,saveSubjectLevelData,,,FALSE,checkbox fr
 txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
 btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
 btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+div_Spinner,ResultsPage,css,#spinner,,,FALSE,loading overlay on the design/results page (settle-guard),FALSE
