@@ -466,6 +466,15 @@ When a page adds **N same-kind records through one re-opened "Add …" modal** (
 
 A folded period table (`boundary.<n>.*`, `enrollmentTable.<n>.*`, `dropoutTable.<n>.*`) used to cost **one metadata fill row + one selector PER field PER period**, capped at a hand-written ceiling. **The importer now emits `loopPeriods` automatically** for an allowlist of safe per-period INPUT fields — you usually do NOTHING here. When it fires you'll see `loopPeriods: <table> → looped <fields>; wrote flows/<slug>_<table>_period.csv`, and per table it generates: one parametric selector per field (`[id="<table>.{0}.<field>"]`, `Dynamic=TRUE`), a per-field template flow `flows/<slug>_<table>_period.csv` (trailing `DynamicArgs=${runtime.period.n}` column), and a `reconcilePeriodTable` + `loopPeriods` pair (both `SkipIf ${data.<file>.<table>.0.<countField>}==EMPTY`) that REPLACES the enumerated cell fills and the per-period `Add …` clicks. Non-allowlisted cells stay enumerated, exactly as before.
 
+> **`==N/A` vs `==EMPTY` in these gates — they differ (core `skipIf.ts`).** `SkipIf …==N/A` matches an
+> empty string OR any `N/A` spelling (`isNaCell`); `SkipIf …==EMPTY` is a **strict** empty-string check.
+> The reconcile/loop **count-field** gates use `==EMPTY` (they must fire whenever period 0 is present). An
+> **enumerated Add-Period / Add-Interim** gate uses `==N/A`, so it skips **both** an ABSENT child-table
+> period (which folds to `''`) AND a *present* period whose method cell is a literal `N/A` — which is why a
+> survival table with mutually-exclusive methods (e.g. GADAR dropout) gates on `==N/A`, not `==EMPTY`.
+> (Before the 2026-08-23 isNaCell fix, `==N/A` was a literal compare that let a blank absent-period slip
+> past; that is fixed. Still author the literal `N/A` in not-applicable cells — it keeps the CSV self-documenting.)
+
 **The allowlist is `PERIOD_LOOP_CONFIG` in `scripts/import-codegen.ts`** — the ONE place to change coverage:
 - **ON:** `boundary` (`analysisSpacingInfo`, `efficacyCheck`, `futilityCheck`), `enrollmentTable` (`startingAtTime`, `avgSubjectsEnrolled`), `dropoutTable` (its raw inputs).
 - **OFF:** `inputMethodTable` (`enabled:false` — dense mutually-exclusive input methods; prove it, then flip `enabled`).
