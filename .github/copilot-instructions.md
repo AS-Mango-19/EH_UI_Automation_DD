@@ -35,6 +35,10 @@ browser.
    Every `fill`/`select`/`check` must carry a `${data.*}` token.
 5. **Cell decisions:** hidden → `N/A`; editable → the value; greyed showing "Computed" →
    `Computed`; greyed showing a derived number → `assertValue` it, never `fill`.
+   **Period tables** (`boundary`/`enrollment`/`dropout`) can be normalized child CSVs
+   (`<phase>_<table>.csv`, one row per `PeriodIndex`); the importer loops them **count-agnostically
+   by default** (`loopPeriods`). Gate `Add Period`/`Add Interim` with `SkipIf …==N/A` (matches blank
+   OR an `N/A` spelling); `loopPeriods` count-fields use `==EMPTY` (strict). See `AI_IMPORT_AGENT.md` §9.1.
 6. **Start from the closest existing feature** (same family) and mirror its column names/selectors:
    means → `feature_DOM(PD)`; survival/group-sequential → `feature_GADAR(PD)`, `feature_GADSD(PD)`;
    proportions/binomial → `feature_RONBR(PD)`, `feature_FishersExact(PD)`; one-arm →
