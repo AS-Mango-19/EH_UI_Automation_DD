@@ -212,6 +212,23 @@ can run this alone** — the agent's job is steps 2-6.
 > Turn it on with `Simulation=YES` in the master row. At run time, **after a GREEN design
 > comparison**, the same browser stays open, clicks Simulate, runs the sim steps, and captures
 > `sim_results_<TC>_<ITER>.csv` / `sim_baseline_<TC>_<ITER>.csv`. A red design skips sim.
+>
+> **`[promoted from IMPORT_LESSONS.md S13, core-behavior finding, 2026-08-25]` `simulation.csv`'s
+> own `Run` column is a GLOBAL veto, not a sim-only skip — this contradicts `FRAMEWORK_KT.md` §5.1's
+> stated "Run=FALSE on a simulation.csv row skips only the sim phase; design still runs."** In
+> reality `core/loaders/featureLoader.ts` `loadTestData` reads **every** `.csv` in `01_testdata/`
+> (not just `feature.config.json`'s `testdata.files` whitelist) into one iteration-selection store,
+> and `core/runner/testDataStore.ts` `iterationsFor()` excludes an iteration from the WHOLE run
+> (design included) if **any** file has an explicit `Run=FALSE` row for it — it does not know or
+> care which file the veto came from. Symptom: `npm run test --testcase TC_XX` reports "Executing 0
+> iteration(s)" for an iteration whose `project.csv` `Run=TRUE`, with no error. A **missing**
+> `simulation.csv` row for an iteration IS safe (matches the docs — sim-only skip, confirmed
+> behavior). An **explicit `Run=FALSE` row** is not. **Practical rule: when toggling which
+> iteration runs, set `Run` in lockstep across EVERY testdata CSV that carries the column for that
+> iteration (`project.csv` AND `simulation.csv` AND any others) — never assume `project.csv` alone
+> controls it.** This is a `core/` behavior gap, not fixed as of this writing (flagged, not
+> patched — out of scope for a single-feature session per golden rule 1). Proven on `OROP(PD)`
+> TC_23 ITER_02.
 
 ### 2 — Consolidate a superset recording *(judgment)*
 A superset recording toggles controls, so the raw metadata has **duplicated, self-cancelling**
@@ -226,15 +243,29 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
 - **Order = controls before their dependent fields**, e.g.
   `Hypothesis → Test Type → Computed Parameter → Input Method → (the fills) → Test Statistic`.
   A controlling select must run **before** the fields it reveals, or the fill hits a
-  not-yet-visible field.
+  not-yet-visible field. `[promoted from IMPORT_LESSONS.md rule 11, ≥2 features]` This bites
+  hardest on **spending-function selects** — `select ddl_eff_Spend_Func` / `ddl_fut_Spend_Func`
+  must have a **lower StepID** than every param field it unlocks (`effParamRho`/`futParamGamma`/…),
+  and the recording's row order can be the opposite of the correct StepID order even though the
+  rows *look* sequential. Symptom: `fill txt_fut_Param_Rho` fails `not found` with the spending-
+  function `select` sitting right above it in the file — check StepIDs, not rows. Proven on
+  `DOP(PD)` and `OROP(PD)`.
 
 ### 3 — Wire `UNWIRED` fields & add missing steps *(judgment)*
 - **Resolve every `UNWIRED` line.** The importer already wired each field it could match to an
   existing column by **id or label**; what remains is the `UNWIRED` list. For each one it prints
   the field's **id**, **label**, and **recorded value**. Decide, per field:
-  - **A field you meant to drive** → add exactly one column, named after the printed **DOM id or
-    label**, and give it the value (or `N/A`/`Computed` per the cell-decision table). Re-run;
-    the line disappears.
+  - **First look for an existing column this field should map to** (a near-miss name, a rename
+    candidate) before concluding a new one is needed — renaming still counts as a testdata change
+    below, it isn't free just because no column is created.
+  - **A field you meant to drive** → **do not write to any testdata CSV yet.** Tell the user the
+    proposed column name (from the printed DOM id or label), which file(s) it lands in
+    (`design`/`simulation`/`inputset`/a child table), and the value (or `N/A`/`Computed` per the
+    cell-decision table) for each iteration — then **wait for approval**. Only after the user
+    approves, add exactly the one column and give it the value. Re-run; the line disappears.
+    **Never add or rename a testdata column silently** — not for a single field, not when the
+    naming looks obvious. (Mirrors the same approval gate in §5a for testdata changes found
+    during a live run — it applies here too, during initial wiring.)
   - **A field this iteration doesn't use** (a hidden/greyed/branch field) → it needs no column;
     remove or gate its step, or set the cell `N/A` on the iterations that don't apply.
   - **Recording noise** (a stray label click, a `1`, a computed-parameter mirror) → delete the step.
@@ -299,6 +330,18 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   FRAMEWORK_KT.md §4.5 "Indexed table cells and multi-period values". **For the allowlisted
   tables (boundary / enrollment / dropout) the importer now emits ONE count-agnostic `loopPeriods`
   block instead of per-cell fills — see §9.1.**
+  > **`[promoted from IMPORT_LESSONS.md, ≥3 features — ROP/DOP/OROP]` A single-period DESIGN
+  > enrollment table must be a SCALAR `fill`, never `loopPeriods`.** The importer's loopPeriods
+  > default loops the design enrollment too, but the enrollment sub-flow is shared with the sim,
+  > and the sim's `simulation_enrollmentTable.csv` adds a `startingAtTime` column the design table
+  > doesn't have (design enrollment is single-period). Result: `${runtime.period.startingAtTime}
+  > was never captured` — an **absent** per-period field throws, it does not silently skip the way
+  > an `N/A` cell does. Fix: replace the design-side `reconcilePeriodTable`+`loopPeriods` pair with
+  > one `fill txt_enrollment_Table_0_avg_Subjects_Enrolled
+  > ${data.design.enrollmentTable.0.avgSubjectsEnrolled}` against a non-parametric
+  > `[id="enrollmentTable.0.avgSubjectsEnrolled"]` selector; leave the sim's loop untouched (sim
+  > enrollment genuinely is multi-period). This is a two-arm-proportions-family trait (ROP/DOP/OROP
+  > all share it), not universal — survival features' design enrollment can be genuinely multi-period.
 - **Checkbox toggles** (`getByTestId('variable')`, a role/id checkbox) import as a data-driven
   `check` **and** `uncheck` pair, each `SkipIf`-gated on the column value (`…!=check` / `…!=uncheck`),
   so one testdata cell drives the box on or off per iteration.
@@ -417,6 +460,7 @@ resolved), follow this protocol exactly:
 | a field's value is ignored (app computes it) | set that cell to `Computed` |
 | "Forced Log Out" / login bounce | parallel logins — ensure `serial: true` (importer default) |
 | duplicate testdata columns | reconcile to the human-named column (step 3) |
+| `npm run test --testcase TC_XX` reports **"Executing 0 iteration(s)"** though `project.csv` `Run=TRUE` | another testdata CSV (usually `simulation.csv`) has an **explicit `Run=FALSE` row** for that iteration — `Run` is a GLOBAL veto across every `01_testdata/*.csv`, not per-file (S13 above). Set `Run=TRUE` in lockstep across every file that carries the column. |
 | `select … has no option matching "V"` | the error now **prints every real option** (`value=text`); map your testdata value to one — or the value belongs in a *different* field (a `select` recorded onto a text input; delete the bogus select) |
 | `field "X" is disabled but testdata requires a value` | X's **controlling `select` isn't active** — either it never ran, or a later `fill` **reset** it. Order that select **after** the table X depends on and **immediately before** X. Execution is by **StepID**, not row order (§7 below) |
 | a `check`/`uncheck` step **times out** | the checkbox isn't rendered for this combination (e.g. the efficacy/futility checkboxes exist only when a **futility boundary** does) → set the cell to **`N/A`** |
@@ -644,6 +688,9 @@ what lets it handle a new feature **without destabilising the ones already commi
 - [ ] Only the target feature's files + its `master.csv` row changed.
 - [ ] **No `UNWIRED` fields remain** in the last import run (or each was deliberately dropped/gated).
 - [ ] Testdata columns are the ones **you authored** — the import added none (no `--seed` over real data).
+- [ ] **Every new/renamed testdata column was proposed to the user (name, file, per-iteration
+  value) and approved BEFORE being written** (§3) — the agent never adds or renames a column
+  silently, including while resolving `UNWIRED`.
 - [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] **User approval obtained before any live run**; iterations run **one at a time**; on error, analyse then fix by tier — minor metadata/selector fixes **autonomously** (reported), but **testdata** edits and **major/other-file** changes only **with user approval** (§5a).

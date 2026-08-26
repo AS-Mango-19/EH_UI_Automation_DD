@@ -1,5 +1,5 @@
 ---
-mode: agent
+name: Import Feature
 description: Import and wire one recorded feature into the CSV-driven Playwright framework (follows AI_IMPORT_AGENT.md).
 ---
 
@@ -28,14 +28,19 @@ Non-negotiables:
   adding that column (named by its id or label) or renaming an existing one — **never** by
   re-running with `--seed` (that reintroduces junk columns). `--seed` is only for bootstrapping a
   feature whose `01_testdata` is still empty; `--strict` fails the import on any `UNWIRED`.
-- **Never add or rename a testdata column without asking first.** Check for an existing column
-  it should map to, then tell the user the proposed column name, file, and per-iteration value,
-  and wait for approval before writing anything — during `UNWIRED` resolution too, not only
-  during a live run (`AI_IMPORT_AGENT.md` §3/§5a).
+- **Never add or rename a testdata column without asking first.** Check whether an existing
+  column already covers the field before proposing a new one; then state the exact column name,
+  which file it lands in, and the value per iteration, and wait for approval — before writing
+  anything. This applies while resolving `UNWIRED` too, not just during a live run
+  (`AI_IMPORT_AGENT.md` §3/§5a).
 - **Start from the closest existing feature** in the same family (means→`feature_DOM(PD)`,
-  survival→`feature_GADAR(PD)`/`feature_GADSD(PD)`, proportions→`feature_RONBR(PD)`/`feature_FishersExact(PD)`,
+  survival→`feature_GADAR(PD)`/`feature_GADSD(PD)`, proportions→`feature_RONBR(PD)`/`feature_FishersExact(PD)`/`feature_ROP(PD)`,
   one-arm→`feature_SinglePoissonRate`, multi-scenario→`feature_BOIN`): reuse its testdata column
   names so the id/label wiring matches on the first pass.
+- **Read `IMPORT_LESSONS.md` before resolving any `UNWIRED`/judgment call.** It is the shared,
+  cross-tool (Claude + Copilot) lessons ledger — apply the first matching *Signal → Decision* rule
+  instead of re-deriving it from scratch, and **append** a new rule after any non-obvious call or
+  correction so the next import (by you or by Claude Code) starts smarter.
 
 Steps (detail in the playbook): pick the reference feature → **author `01_testdata` first** → run
 `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX` (standalone-capable) → **resolve
@@ -50,3 +55,8 @@ screenshot-verify each iteration → fix.
 Simulate click), selectors + compare.config shared. Set `Simulation=YES` in master.csv; it then
 chains after a green design run in the same browser and writes `sim_results_`/`sim_baseline_`.
 Consolidate and screenshot-verify `sim_metadata.csv` exactly like the design flow.
+
+**Toggling which iteration runs.** `Run` is a GLOBAL veto across *every* testdata CSV that carries
+the column (`project.csv`, `simulation.csv`, …), not a per-file switch — set it in lockstep, or a
+`Run=FALSE` sim row will silently drop the whole iteration, design included. See `IMPORT_LESSONS.md`
+rule S13.
