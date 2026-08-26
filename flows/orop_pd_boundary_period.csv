@@ -1,0 +1,6 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,ResultsPage,fill,txt_boundary_analysisSpacingInfo,${runtime.period.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundary analysisSpacingInfo for the current looped period (blank/N/A auto-skips),${runtime.period.n}
+20,ConfigureDesign,ResultsPage,check,chk_boundary_efficacyCheck,,,,,,10000,FALSE,0,never,${runtime.period.efficacyCheck}!=check,check this period's efficacyCheck when testdata=check,${runtime.period.n}
+30,ConfigureDesign,ResultsPage,uncheck,chk_boundary_efficacyCheck,,,,,,10000,FALSE,0,never,${runtime.period.efficacyCheck}!=uncheck,uncheck this period's efficacyCheck when testdata=uncheck,${runtime.period.n}
+40,ConfigureDesign,ResultsPage,check,chk_boundary_futilityCheck,,,,,,10000,FALSE,0,never,${runtime.period.futilityCheck}!=check,check this period's futilityCheck when testdata=check,${runtime.period.n}
+50,ConfigureDesign,ResultsPage,uncheck,chk_boundary_futilityCheck,,,,,,10000,FALSE,0,never,${runtime.period.futilityCheck}!=uncheck,uncheck this period's futilityCheck when testdata=uncheck,${runtime.period.n}

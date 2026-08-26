@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 880fd6e9550c4700f8a974606ee3d118e5bc171f5f7896b4fb049899836a812e)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 4a18d908c866cca0bb9604443fd73b047da8dddaf40bcce28cc6e6a63021567a)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -8,6 +8,11 @@ export class Page {
     private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
+
+  /** Sim Enrollment tab: Include toggle - ON reveals the accrual table */
+  chk_Include(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'chk_Include', { dynamicArgs });
+  }
 
   /** textbox from codegen */
   txt_ResultName(...dynamicArgs: string[]): Promise<Locator> {
@@ -40,38 +45,28 @@ export class Page {
   }
 
   /** textbox from codegen */
-  txt_allocation_Ratio(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_allocation_Ratio', { dynamicArgs });
-  }
-
-  /** native <select> from codegen */
-  ddl_Test_Statistic(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Test_Statistic', { dynamicArgs });
+  txt_Allocation_Ratio_nt_nc(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Allocation_Ratio_nt_nc', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_Standard_Deviation(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Standard_Deviation', { dynamicArgs });
-  }
-
-  /** native <select> from codegen */
-  ddl_Variance(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Variance', { dynamicArgs });
+  txt_Critical_Point(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Critical_Point', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_non_Inf_margin(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_non_Inf_margin', { dynamicArgs });
+  txt_Noninferiority_Margin_0(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Noninferiority_Margin_0', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_critical_Point(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_critical_Point', { dynamicArgs });
+  txt_super_Superiority_Margin(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_super_Superiority_Margin', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_supsup_margin(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_supsup_margin', { dynamicArgs });
+  txt_upper_Critical_Point(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_upper_Critical_Point', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -80,48 +75,28 @@ export class Page {
   }
 
   /** textbox from codegen */
-  txt_boundary_Sim_0_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_cum_Alpha_Spent', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_boundary_Sim_0_futility_CP(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_CP', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
   txt_boundary_Sim_1_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_analysis_Spacing_Info', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_boundary_Sim_0_efficacy_PValue(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_efficacy_PValue', { dynamicArgs });
+  /** table-completeness: mirrors period 0/1 id pattern for period 2 */
+  txt_boundary_Sim_2_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_analysis_Spacing_Info', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_boundary_Sim_0_futility_PValue(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_PValue', { dynamicArgs });
+  /** table-completeness: mirrors period 0 id pattern for period 1 */
+  txt_boundary_Sim_1_efficacy_ZUpper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_ZUpper', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_boundary_Sim_0_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_cum_Alpha_Spent_Upper', { dynamicArgs });
+  /** table-completeness: mirrors period 0 id pattern for period 1 */
+  txt_boundary_Sim_1_futility_ZUpper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_futility_ZUpper', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_boundary_Sim_0_cum_Alpha_Spent_Lower(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_cum_Alpha_Spent_Lower', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_boundary_Sim_0_efficacy_Z(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_efficacy_Z', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_boundary_Sim_0_futility_Z(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_Z', { dynamicArgs });
+  /** table-completeness: mirrors period 0 name pattern for period 1 */
+  txt_boundary_Sim_1_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_cum_Alpha_Spent_Upper', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -144,109 +119,64 @@ export class Page {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_ZLower', { dynamicArgs });
   }
 
+  /** textbox from codegen */
+  txt_boundary_Sim_0_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_cum_Alpha_Spent_Upper', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_0_cum_Alpha_Spent_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_cum_Alpha_Spent_Lower', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_1_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_1_efficacy_Z(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_Z', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_0_futility_Z(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_Z', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_1_efficacy_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_PValue', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_0_futility_CP(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_CP', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_0_efficacy_Z(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_efficacy_Z', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_boundary_Sim_0_futility_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_PValue', { dynamicArgs });
+  }
+
   /** button from codegen */
   btn_Recalculate(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'btn_Recalculate', { dynamicArgs });
   }
 
-  /** native <select> from codegen */
-  ddl_adaptation_Method(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_adaptation_Method', { dynamicArgs });
+  /** button from codegen */
+  btn_Response(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_Response', { dynamicArgs });
   }
 
   /** native <select> from codegen */
-  ddl_adapt_At_Select(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_adapt_At_Select', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_adapt_At_Input(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_adapt_At_Input', { dynamicArgs });
-  }
-
-  /** native <select> from codegen */
-  ddl_adapt_At_Number_Of_Interims(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_adapt_At_Number_Of_Interims', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_use_Wald_Stat(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_use_Wald_Stat', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_upper_Limit_Study_Duration(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_upper_Limit_Study_Duration', { dynamicArgs });
-  }
-
-  /** native <select> from codegen */
-  ddl_enroll_Rate_After_Adapt(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_enroll_Rate_After_Adapt', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_multiplier_Enroll_Rate(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_multiplier_Enroll_Rate', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_fixed_Enroll_Rate(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_fixed_Enroll_Rate', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_ref_CPChart(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_ref_CPChart', { dynamicArgs });
-  }
-
-  /** native <select> from codegen */
-  ddl_scale(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_scale', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_min_Test_Statistic(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_min_Test_Statistic', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_max_Test_Statistic(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_max_Test_Statistic', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_min_Cp(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_min_Cp', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_max_Cp(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_max_Cp', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_min_Delta_By_Sigma(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_min_Delta_By_Sigma', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_max_Delta_By_Sigma(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_max_Delta_By_Sigma', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_target_Cp_For_Re_Estimating_Sample_Size(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_target_Cp_For_Re_Estimating_Sample_Size', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_multiplier(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_multiplier', { dynamicArgs });
-  }
-
-  /** native <select> (SSR CP computation basis) - mirrors GADAR */
-  ddl_CP_Computation_Based_On(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_CP_Computation_Based_On', { dynamicArgs });
+  ddl_Distribution(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Distribution', { dynamicArgs });
   }
 
   /** native <select> from codegen */
@@ -255,28 +185,28 @@ export class Page {
   }
 
   /** textbox from codegen */
-  txt_mean_Control(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_mean_Control', { dynamicArgs });
+  txt_Proportion_Under_Control_c(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Proportion_Under_Control_c', { dynamicArgs });
+  }
+
+  /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) */
+  obj_Proportion_Under_Treatment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'obj_Proportion_Under_Treatment', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_mean_Treatment(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_mean_Treatment', { dynamicArgs });
+  txt_Odds_Ratio_of_Proportions_t_1_c_c_1_t(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Odds_Ratio_of_Proportions_t_1_c_c_1_t', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_sd_Control(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_sd_Control', { dynamicArgs });
+  txt_Follow_up_Time_Month(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Follow_up_Time_Month', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_sd_Treatment(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_sd_Treatment', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_follow_Up_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_follow_Up_Time', { dynamicArgs });
+  /** native <select> from codegen */
+  ddl_Dropout_Distribution(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Dropout_Distribution', { dynamicArgs });
   }
 
   /** native <select> from codegen */
@@ -285,43 +215,48 @@ export class Page {
   }
 
   /** textbox from codegen */
-  txt_probability_Of_Dropout(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_probability_Of_Dropout', { dynamicArgs });
+  txt_Probability_of_Dropout(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Probability_of_Dropout', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Enrollment(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_Enrollment', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Add_Period(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_Add_Period', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Simulation_Setup(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'btn_Simulation_Setup', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_enrollment_Table_0_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_0_avg_Subjects_Enrolled', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_enrollment_Table_1_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_1_avg_Subjects_Enrolled', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_enrollment_Table_2_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_2_starting_At_Time', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_enrollment_Table_2_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_2_avg_Subjects_Enrolled', { dynamicArgs });
+  txt_Number_of_Simulations_Run(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Number_of_Simulations_Run', { dynamicArgs });
   }
 
   /** native <select> from codegen */
-  ddl_random_Number_Seed(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_random_Number_Seed', { dynamicArgs });
+  ddl_Random_Number_Seed(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'ddl_Random_Number_Seed', { dynamicArgs });
   }
 
   /** textbox from codegen */
-  txt_fixed_Seed(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_fixed_Seed', { dynamicArgs });
+  txt_Fixed_Seed(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Fixed_Seed', { dynamicArgs });
   }
 
-  /** textbox (Number of Simulations Run) - mirrors GADAR */
-  txt_Number_of_Simulations_Run(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_Number_of_Simulations_Run', { dynamicArgs });
+  /** checkbox from codegen */
+  chk_save_Summary_Stats(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'chk_save_Summary_Stats', { dynamicArgs });
+  }
+
+  /** checkbox from codegen */
+  chk_save_Subject_Level_Data(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'chk_save_Subject_Level_Data', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -334,68 +269,13 @@ export class Page {
     return resolveLocator(this.page, this.selectors, 'Page', 'btn_Save', { dynamicArgs });
   }
 
-  /** Sim Response tab (leftPanel.response) - click to activate before filling distribution/means/SD */
-  txt_left_Panel_response(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_left_Panel_response', { dynamicArgs });
+  /** PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods) */
+  txt_enrollmentTable_startingAtTime(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollmentTable_startingAtTime', { dynamicArgs });
   }
 
-  /** Sim Enrollment tab (leftPanel.enrollment) - click to activate before filling the accrual table */
-  txt_left_Panel_enrollment(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_left_Panel_enrollment', { dynamicArgs });
-  }
-
-  /** Sim Response tab: Common Standard Deviation toggle (uncheck to enable per-arm SD) */
-  chk_common_Standard_Deviation(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'chk_common_Standard_Deviation', { dynamicArgs });
-  }
-
-  /** Sim Enrollment tab: Include toggle - ON reveals the accrual table */
-  chk_include_Switch(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'chk_include_Switch', { dynamicArgs });
-  }
-
-  /** Sim Simulation-Setup tab (leftPanel.simulation-setup) - reached by goto in the recording; nav click here */
-  txt_left_Panel_simulation_setup(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_left_Panel_simulation_setup', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 0 starting-at-time */
-  txt_enrollment_Table_0_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_0_starting_At_Time', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 1 starting-at-time */
-  txt_enrollment_Table_1_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_1_starting_At_Time', { dynamicArgs });
-  }
-
-  /** Sim Simulation-Setup: saveSummaryStats checkbox */
-  chk_save_Summary_Stats(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'chk_save_Summary_Stats', { dynamicArgs });
-  }
-
-  /** Sim Simulation-Setup: saveSubjectLevelData checkbox */
-  chk_save_Subject_Level_Data(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'chk_save_Subject_Level_Data', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 3 startingAtTime */
-  txt_enrollment_Table_3_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_3_starting_At_Time', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 3 avgSubjectsEnrolled */
-  txt_enrollment_Table_3_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_3_avg_Subjects_Enrolled', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 4 startingAtTime */
-  txt_enrollment_Table_4_starting_At_Time(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_4_starting_At_Time', { dynamicArgs });
-  }
-
-  /** Sim enrollment period 4 avgSubjectsEnrolled */
-  txt_enrollment_Table_4_avg_Subjects_Enrolled(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollment_Table_4_avg_Subjects_Enrolled', { dynamicArgs });
+  /** PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods) */
+  txt_enrollmentTable_avgSubjectsEnrolled(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_enrollmentTable_avgSubjectsEnrolled', { dynamicArgs });
   }
 }
