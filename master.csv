@@ -1,36 +1,24 @@
 TC_ID,Module,Tags,StudyObjective,Feature,ProjectID,Browser,TestDataFile,MetadataFile,Execute,Environment,Simulation
 TC_01,ProductDesign,regression,One Arm Exploratory / Confirmatory,SinglePoissonRate,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_02,ProductDesign,regression,One Arm Exploratory / Confirmatory,Simon2Stage,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-<<<<<<< HEAD
-TC_03,ProductDesign,regression,Two Arm Superiority,Difference_of_Means,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-=======
 TC_03,ProductDesign,regression,Two Arm Confirmatory,DOM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
->>>>>>> origin/main
 TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_05,ProductDesign,regression,One Arm Exploratory / Confirmatory,MeanofPairedRatios,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_06,ProductDesign,regression,One Arm Exploratory / Confirmatory,LogrankWeibullDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-TC_07,ProductDesign,regression,Two Arm Superiority,ROPR,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_07,ProductDesign,regression,Two Arm Confirmatory,ROPR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_08,ProductDesign,regression,One Arm Exploratory / Confirmatory,ParametricWeibullDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_09,ProductDesign,regression,One Arm Exploratory / Confirmatory,LogrankExponentialDistributionOAD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_10,ProductDesign,regression,Two Arm Confirmatory,FishersExact(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_11,ProductDesign,regression,Two Arm Superiority,RONBR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-<<<<<<< HEAD
-TC_12,ProductDesign,regression,Two Arm Confirmatory,GADAR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
-TC_13,ProductDesign,regression,Two Arm Confirmatory,WinRatio,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
-TC_14,ProductDesign,regression,Dose Escalation,BOIN,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
-=======
 TC_12,ProductDesign,regression,Two Arm Confirmatory,GADAR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_13,ProductDesign,regression,Two Arm Confirmatory,WinRatio,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
->>>>>>> origin/main
+TC_14,ProductDesign,regression,Dose Escalation,BOIN,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
 TC_15,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_16,ProductDesign,regression,Dose Escalation,i3+3,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_17,ProductDesign,regression,Two Arm Confirmatory,GADSD(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_18,ProductDesign,regression,Dose Escalation,3+3,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_19,ProductDesign,regression,Dose Escalation,Rolling6,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
-<<<<<<< HEAD
-=======
 TC_20,ProductDesign,regression,Two Arm Confirmatory,GADAR_Stratification,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
 TC_21,ProductDesign,regression,Two Arm Confirmatory,ROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_22,ProductDesign,regression,Two Arm Confirmatory,DOP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_23,ProductDesign,regression,Two Arm Confirmatory,OROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
->>>>>>> origin/main
