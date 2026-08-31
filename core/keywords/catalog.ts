@@ -120,6 +120,7 @@ const list: KeywordSpec[] = [
   spec('callCustom', 'flow', ['InputValue'], false),
   spec('ifExists', 'flow', ['ObjectName', 'InputValue'], true, { inputIsPath: true }),
   spec('loopOverData', 'flow', ['ObjectName', 'InputValue'], false, { inputIsPath: true }),
+  spec('loopPeriods', 'flow', ['ObjectName', 'InputValue', 'ExpectedValue'], false, { inputIsPath: true }),
 
   // API
   spec('apiRequest', 'api', ['InputValue'], false),

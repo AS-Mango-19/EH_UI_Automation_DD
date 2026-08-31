@@ -1,0 +1,11 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_03,ITER_01,TRUE,AutoProj_DOM,Week,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_02,TRUE,AutoProj_DOM,Month,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_03,TRUE,AutoProj_DOM,Year,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_04,TRUE,AutoProj_DOM,Day,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Smaller Value
+TC_03,ITER_05,TRUE,AutoProj_DOM,Week,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_06,TRUE,AutoProj_DOM,Week,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_07,TRUE,AutoProj_DOM,Month,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_08,TRUE,AutoProj_DOM,Week,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_09,TRUE,AutoProj_DOM,Day,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_03,ITER_10,TRUE,AutoProj_DOM,Week,08/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value

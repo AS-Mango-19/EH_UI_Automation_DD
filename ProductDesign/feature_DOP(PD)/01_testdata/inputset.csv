@@ -1,0 +1,12 @@
+TC_ID,IterationID,Run,collectionName,SelectTask,SelectTest
+TC_22,ITER_01,TRUE,Set1,Design,Difference of Proportions
+TC_22,ITER_02,TRUE,Set2,Design,Difference of Proportions
+TC_22,ITER_03,TRUE,Set3,Design,Difference of Proportions
+TC_22,ITER_04,TRUE,Set4,Design,Difference of Proportions
+TC_22,ITER_05,TRUE,Set5,Design,Difference of Proportions
+TC_22,ITER_06,TRUE,Set6,Design,Difference of Proportions
+TC_22,ITER_07,TRUE,Set7,Design,Difference of Proportions
+TC_22,ITER_08,TRUE,Set8,Design,Difference of Proportions
+TC_22,ITER_09,TRUE,Set9,Design,Difference of Proportions
+TC_22,ITER_10,TRUE,Set10,Design,Difference of Proportions
+TC_22,ITER_11,TRUE,Set11,Design,Difference of Proportions

@@ -12,6 +12,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import url from 'node:url';
 import Papa from 'papaparse';
 
 type ArgSet = {
@@ -29,6 +30,16 @@ type ArgSet = {
    * selectors.csv, and the design compare.config.csv reused.
    */
   sim?: boolean;
+  /**
+   * Seed (create) testdata columns for recorded fields that have NO matching
+   * existing column. OFF by default: the importer wires to the columns the tester
+   * already authored and never adds parallel/junk columns — an unmatched field is
+   * reported as a warning (see --strict) so the tester fixes the data or the name.
+   * Turn ON only to bootstrap a brand-new feature whose testdata is still empty.
+   */
+  seed?: boolean;
+  /** Exit non-zero when any recorded field could not be wired to an existing column. */
+  strict?: boolean;
 };
 
 type ParsedArgs =
@@ -81,9 +92,81 @@ type LocatorRef = {
 type StepRow = Record<string, string | number | boolean>;
 
 /** Seq is the human-facing 1..N order; StepID keeps the gapped 10,20,30 numbering so steps can be inserted without renumbering. */
-const STEP_HEADER = 'Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description';
+const STEP_HEADER = 'Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs';
 const SELECTOR_HEADER = 'ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact';
 const RESULT_NAME_COLUMN = 'Result Name';
+
+/**
+ * Period-table AUTO-LOOP allowlist — the ONE place that governs which folded
+ * period-table (`<prefix>.<n>.<field>`) fields the importer converts from
+ * enumerated per-cell fills into a single count-agnostic `loopPeriods` block
+ * (Option C). See AI_IMPORT_AGENT.md §9.1.
+ *
+ * SAFETY: only TRUE per-period INPUT fields may loop. Numeric/computed boundary
+ * fields (p-values, alpha/beta-spent, boundary-Z, the family futility parameter)
+ * are editable at period 0 but greyed/computed at higher looks in some boundary
+ * families — a blanket loop would type into a greyed cell and FAIL, so they STAY
+ * enumerated. `boundarySim` (sim spacing is app-computed; its Z/p-values are
+ * outputs) is intentionally ABSENT. `inputMethodTable` is present but DISABLED
+ * pending a proving run — flip `enabled` once verified.
+ */
+type PeriodLoopField = { name: string; action: 'fill' | 'checkbox' };
+type PeriodLoopSpec = {
+  enabled: boolean;
+  countField: string; // a period is "present" iff this cell is non-N/A
+  addLabel: string; // the reconcile Add-button role name ("Add Interim" / "Add Period")
+  excludeDisabled: boolean; // drop the app-computed Final row when reconciling (boundary)
+  fields: PeriodLoopField[]; // ONLY safe per-period INPUT fields
+};
+export const PERIOD_LOOP_CONFIG: Record<string, PeriodLoopSpec> = {
+  boundary: {
+    enabled: true, // PROVEN — ROP(PD) TC_21
+    countField: 'analysisSpacingInfo',
+    addLabel: 'Add Interim',
+    excludeDisabled: true,
+    fields: [
+      { name: 'analysisSpacingInfo', action: 'fill' },
+      { name: 'efficacyCheck', action: 'checkbox' },
+      { name: 'futilityCheck', action: 'checkbox' },
+    ],
+  },
+  enrollmentTable: {
+    enabled: true,
+    countField: 'avgSubjectsEnrolled', // period-0 startingAtTime is greyed → N/A → auto-skips
+    addLabel: 'Add Period',
+    excludeDisabled: false,
+    fields: [
+      { name: 'startingAtTime', action: 'fill' },
+      { name: 'avgSubjectsEnrolled', action: 'fill' },
+    ],
+  },
+  dropoutTable: {
+    enabled: true,
+    countField: 'dropoutByTime',
+    addLabel: 'Add Period',
+    excludeDisabled: false,
+    fields: [
+      { name: 'dropoutStartingAtTime', action: 'fill' },
+      { name: 'dropoutByTime', action: 'fill' },
+      { name: 'probOfdropoutControl', action: 'fill' },
+      { name: 'probOfdropoutTreatment', action: 'fill' },
+      { name: 'dropoutHazardRateControl', action: 'fill' },
+      { name: 'dropoutHazardRateTreatment', action: 'fill' },
+    ],
+  },
+  inputMethodTable: {
+    enabled: false, // OFF — dense mutually-exclusive input methods; prove before enabling
+    countField: 'startingAtTime',
+    addLabel: 'Add Period',
+    excludeDisabled: false,
+    fields: [
+      { name: 'startingAtTime', action: 'fill' },
+      { name: 'byTime', action: 'fill' },
+      { name: 'hazardRateControl', action: 'fill' },
+      { name: 'hazardRatio', action: 'fill' },
+    ],
+  },
+};
 
 /**
  * compare.config for the extractAllResultTables output shape. That handler always
@@ -152,6 +235,12 @@ function usage(): void {
     '  --sim         Import the SIMULATION flow: sim_recording.txt -> 03_metadata/sim_metadata.csv,',
     '                tokens bound to simulation.csv, no login/navigate (starts on the results page),',
     '                selectors merged into the shared selectors.csv, design compare.config reused.',
+    '  --seed        Bootstrap mode: CREATE testdata columns for recorded fields that have no',
+    '                matching existing column. OFF by default — the importer wires to the columns',
+    '                you already authored (matching by DOM id OR label) and never adds junk columns;',
+    '                an unmatched field is reported as a warning instead. Use only for a brand-new',
+    '                feature whose 01_testdata is still empty.',
+    '  --strict      Exit non-zero if any recorded field cannot be wired to an existing column.',
     '',
     'Examples:',
     '  npm run import-codegen -- ProductDesign ROM(PD) --tc TC_05            (design flow)',
@@ -164,12 +253,22 @@ function parseArgs(argv: string[]): ParsedArgs {
   let page: string | undefined;
   let tcId: string | undefined;
   let sim = false;
+  let seed = false;
+  let strict = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === undefined) continue;
     if (arg === '--sim') {
       sim = true;
+      continue;
+    }
+    if (arg === '--seed') {
+      seed = true;
+      continue;
+    }
+    if (arg === '--strict') {
+      strict = true;
       continue;
     }
     if (arg === '--page') {
@@ -197,7 +296,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   // feature's 02_selectors_repo/ folder (recordings live WITH the feature, not
   // scattered in the repo root).
   if (!module || !feature) return { help: true };
-  return { args: { module, feature, inputFile, page, tcId, sim } };
+  return { args: { module, feature, inputFile, page, tcId, sim, seed, strict } };
 }
 
 function featureFolderName(feature: string): string {
@@ -352,7 +451,19 @@ function mergeSelectorRows(existingRows: LocatorRef[], generatedRows: LocatorRef
 }
 
 function stripOptionalSuffix(value: string): string {
-  return value.replace(/\s*\((?:optional|month|day|year|date|time)\)\s*$/i, '').replace(/\s*\([^)]*\)\s*$/g, '').trim();
+  return (
+    value
+      .replace(/\s*\((?:optional|month|day|year|date|time)\)\s*$/i, '')
+      .replace(/\s*\([^)]*\)\s*$/g, '')
+      // Codegen truncates long accessible names mid-token, leaving a DANGLING
+      // unbalanced "(" fragment (e.g. getByText('Proportion under Treatment (π')).
+      // Strip it so the derived column/token stays ASCII-clean and STABLE: a
+      // truncated click and a full click of the same field collapse to one name,
+      // and no non-ASCII (π/δ/α) leaks into a column header or ${data.*} token
+      // (which Excel/WPS would then corrupt on an ANSI save).
+      .replace(/\s*\([^)]*$/, '')
+      .trim()
+  );
 }
 
 function labelToColumnName(value: string): string {
@@ -684,6 +795,13 @@ function stripQuotes(value: string): string {
 function deriveColumnName(event: ParsedEvent, pendingLabel: string, fallbackRef: string): string {
   const label = stripOptionalSuffix(pendingLabel || '');
   if (label) return labelToColumnName(label);
+  // No accessible label: prefer the selector's CLEAN field id (#id / [id=] / [name=])
+  // so a label-less control keeps the hand-authored "column === DOM id" convention —
+  // e.g. input[name="maxPiC"] -> "maxPiC", not the mangled "input name maxPiC". Only
+  // falls through to selector-string normalisation when the selector yields no id
+  // (role / text / xpath / class selectors), so those stay byte-for-byte unchanged.
+  const cleanId = extractFieldId(event.selectorValue);
+  if (cleanId) return cleanId;
   const fallback = normalizeFallbackRef(fallbackRef || event.ref || event.selectorValue || '');
   return labelToColumnName(fallback || fallbackRef || event.ref || event.selectorValue || '');
 }
@@ -712,16 +830,22 @@ function inferStepGroup(page: string, event: ParsedEvent, ref: string): { stepGr
 }
 
 function stepRowToCsv(row: StepRow): string {
-  const keys = ['Seq', 'StepID', 'StepGroup', 'Page', 'Action', 'ObjectName', 'InputValue', 'StoreAs', 'AssertType', 'ExpectedValue', 'WaitCondition', 'Timeout', 'Optional', 'Retry', 'Screenshot', 'SkipIf', 'Description'];
+  const keys = ['Seq', 'StepID', 'StepGroup', 'Page', 'Action', 'ObjectName', 'InputValue', 'StoreAs', 'AssertType', 'ExpectedValue', 'WaitCondition', 'Timeout', 'Optional', 'Retry', 'Screenshot', 'SkipIf', 'Description', 'DynamicArgs'];
   return keys.map((k) => csvEscape(String(row[k] ?? ''))).join(',');
 }
 
-function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
+export function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   selectors: LocatorRef[];
   steps: StepRow[];
   dataColumns: Map<string, Set<string>>;
   /** "<file>|<Column>" -> the value actually recorded, used to seed testdata so the first run is runnable. */
   dataValues: Map<string, string>;
+  /**
+   * "<file>|<Column>" -> the field's candidate testdata names, so the reuse pass can
+   * match a recorded field to an existing column by its DOM id OR its label (whichever
+   * the tester named the column after), not only by the single derived column name.
+   */
+  fieldKeys: Map<string, { id?: string; label?: string }>;
   sawLogin: boolean;
   /** Radios recorded without a label: no data-driven step could be built (see below). */
   blindChoiceWarnings: string[];
@@ -733,6 +857,7 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
   const steps: StepRow[] = [];
   const dataColumns = new Map<string, Set<string>>();
   const dataValues = new Map<string, string>();
+  const fieldKeys = new Map<string, { id?: string; label?: string }>();
   const blindChoiceWarnings: string[] = [];
   const events = lines.map((line, lineNo) => parseCodegenEvent(line, lineNo)).filter((event): event is ParsedEvent => event !== null);
 
@@ -772,11 +897,61 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     if (value && !dataValues.has(`${file}|${col}`)) dataValues.set(`${file}|${col}`, value);
   };
 
+  /**
+   * Record the alternate names a recorded field could be wired by: its DOM id (from
+   * an #id / [id=] / [name=] selector) and its on-screen label. The reuse pass tries
+   * both against the tester's existing columns, so a field recorded with an id still
+   * binds to a label-named column and vice-versa. Dotted table-cell ids are skipped
+   * here — they are matched exactly, by the child-table / inline convention.
+   */
+  const registerFieldKeys = (file: string, col: string, selectorValue: string, label: string): void => {
+    const key = `${file}|${col}`;
+    const entry = fieldKeys.get(key) ?? {};
+    const id = extractFieldId(selectorValue || '');
+    if (id && !id.includes('.') && !entry.id) entry.id = id;
+    const lbl = stripOptionalSuffix(label || '').trim();
+    if (lbl && !entry.label) entry.label = lbl;
+    if (entry.id || entry.label) fieldKeys.set(key, entry);
+  };
+
   const addSelector = (ref: LocatorRef): void => {
     const key = `${ref.page}|${ref.objectName}`;
     if (seenSelectors.has(key)) return;
     seenSelectors.add(key);
     selectors.push(ref);
+  };
+
+  /**
+   * Guarantee ONE selector per DISTINCT recorded control. When two controls share a
+   * visible label (the recorder captured a label-first click), `objectNameFromRef`
+   * yields the SAME object name for DIFFERENT DOM ids — e.g. the three hypothesis
+   * blocks all click "Proportion under Control (πc)" for `#proportionUnderControl_SP`
+   * / `_SS` / `_NI`. Without disambiguation the 2nd/3rd controls are lost: `addSelector`
+   * dedups by page|objectName (drops the row) AND the superset-dedup pass keys steps by
+   * that name's resolved id (drops the step). So every distinct id would collapse onto
+   * the first. When the proposed name is already taken by a DIFFERENT selectorValue,
+   * fall back to an id-derived name, then a numeric suffix — so each recorded id gets
+   * its own selector row and its own step. The SAME control seen again (same
+   * selectorValue) keeps its name, so a superset recording still dedups correctly.
+   */
+  const objectNameSel = new Map<string, string>(); // `${page}|${objectName}` -> selectorValue
+  const uniqueObjectName = (page: string, proposed: string, selectorValue: string, fieldType: ControlKind): string => {
+    const seen = objectNameSel.get(`${page}|${proposed}`);
+    if (seen === undefined || seen === selectorValue) {
+      objectNameSel.set(`${page}|${proposed}`, selectorValue);
+      return proposed;
+    }
+    const id = extractFieldId(selectorValue);
+    let candidate = id ? objectNameFromRef(id, fieldType) : `${proposed}_2`;
+    let n = 2;
+    for (;;) {
+      const s = objectNameSel.get(`${page}|${candidate}`);
+      if (s === undefined || s === selectorValue) {
+        objectNameSel.set(`${page}|${candidate}`, selectorValue);
+        return candidate;
+      }
+      candidate = `${proposed}_${n++}`;
+    }
   };
 
   const addStep = (step: StepRow): void => {
@@ -1018,14 +1193,26 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
       : fieldId && fieldId.includes('.')
         ? fieldId
         : deriveColumnName(event, pendingLabel, event.ref);
+    // Remember how this field could ALSO be named (DOM id / on-screen label) so the
+    // reuse pass can bind it to an existing testdata column named either way. Only a
+    // real dotted TABLE-CELL id (…​.<n>.…) is excluded — those match exactly. A label
+    // that merely carries an abbreviation period ("Min. πt", "Max. πc", "Std. Dev.")
+    // must NOT be excluded: doing so left those fields with no id key, so they could
+    // not fall back to their DOM-id column when the label column was absent.
+    if (!isResultName && columnName && !/\.\d+\./.test(columnName)) {
+      registerFieldKeys(dataFile, columnName, event.selectorValue, pendingLabel || event.roleName);
+    }
     const targetAction = event.action || 'click';
     const ref = pendingLabel || event.ref || event.selectorValue;
     const fieldType = isResultName ? 'textbox' : inferControlKind(ref, event.selectorType, event.roleName, event.roleType);
-    const objectName = isResultName
+    const proposedObjectName = isResultName
       ? 'txt_ResultName'
       : fieldId && fieldId.includes('.')
         ? objectNameFromRef(fieldId, fieldType)
         : objectNameFromRef(ref || event.roleName || event.selectorValue, fieldType);
+    // Disambiguate when a label-derived name collides with a DIFFERENT DOM id, so every
+    // distinct recorded control keeps its own selector row + step (see uniqueObjectName).
+    const objectName = uniqueObjectName(page, proposedObjectName, event.selectorValue, fieldType);
     const isOpener = isDropdownOpener(event);
     const isChoice = isChoiceEvent(event) || (event.kind === 'role' && event.roleType === 'radio' && event.action === 'check');
     const keepLabelForChoice = isOpener && (nextEvent ? isChoiceEvent(nextEvent) || (nextEvent.kind === 'role' && nextEvent.roleType === 'radio' && nextEvent.action === 'check') : false);
@@ -1094,6 +1281,9 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
       const fieldLabel = event.kind === 'text' || event.kind === 'label' ? event.selectorValue : pendingLabel || '';
       const ddlColumn = fieldLabel ? labelToColumnName(fieldLabel) : columnName;
       const ddlObject = objectNameFromRef(ddlColumn || event.roleName || event.selectorValue, 'dropdown');
+      if (ddlColumn && !/\.\d+\./.test(ddlColumn)) {
+        registerFieldKeys(dataFile, ddlColumn, event.selectorValue, fieldLabel || pendingLabel || event.roleName);
+      }
       // Choose what to scope the select by:
       //  - A GENERIC placeholder trigger ("Select"/"Choose") does not identify the
       //    field, and is often shared across fields, so scope by the field LABEL
@@ -1624,7 +1814,7 @@ function parseCodegen(lines: string[], opts: { sim?: boolean } = {}): {
     }
   }
 
-  return { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns };
+  return { selectors, steps, dataColumns, dataValues, fieldKeys, sawLogin, blindChoiceWarnings, splitColumns };
 }
 
 function buildFeatureConfig(feature: string, module: string): string {
@@ -1663,6 +1853,151 @@ function buildFeatureConfig(feature: string, module: string): string {
     cleanup: { deleteCreatedProjects: true },
   };
   return `${JSON.stringify(cfg, null, 2)}\n`;
+}
+
+/**
+ * AUTO-LOOP period tables (Option C). Replaces the enumerated per-cell fills of the
+ * PERIOD_LOOP_CONFIG allowlist fields with, per table: one parametric selector per
+ * field, one generated per-field template flow, and a `reconcilePeriodTable` +
+ * `loopPeriods` pair (replacing the per-period `Add …` clicks too). Non-allowlisted
+ * cells (numeric/computed boundary fields) are left ENUMERATED, exactly as before.
+ * Mutates `steps` and `selectors` in place; returns the template-flow files to write.
+ * A no-op for any import with no enabled+present period table.
+ */
+export function applyPeriodLoops(params: {
+  steps: StepRow[];
+  selectors: LocatorRef[];
+  parentFile: string; // 'design' | 'simulation'
+  featureSlug: string;
+}): { flows: { rel: string; content: string }[]; log: string[] } {
+  const { steps, selectors, parentFile, featureSlug } = params;
+  const flows: { rel: string; content: string }[] = [];
+  const log: string[] = [];
+
+  // Add-Period/Add-Interim buttons are ROLE selectors; key off the role name (the
+  // ObjectName can be mis-captured from a nearby label). Captured up front so later
+  // selector mutation cannot disturb it.
+  const addButtonsByLabel = new Map<string, Set<string>>();
+  for (const s of selectors) {
+    if (s.selectorType === 'role' && /^add\s+(period|interim)$/i.test((s.roleName ?? '').trim())) {
+      const k = (s.roleName ?? '').trim().toLowerCase();
+      if (!addButtonsByLabel.has(k)) addButtonsByLabel.set(k, new Set());
+      addButtonsByLabel.get(k)!.add(s.objectName);
+    }
+  }
+
+  for (const [prefix, cfg] of Object.entries(PERIOD_LOOP_CONFIG)) {
+    if (!cfg.enabled) continue;
+    const loopFields = new Set(cfg.fields.map((f) => f.name));
+    const isAddClick = (st: StepRow): boolean =>
+      String(st.Action) === 'click' &&
+      (addButtonsByLabel.get(cfg.addLabel.toLowerCase())?.has(String(st.ObjectName)) ?? false);
+    // A step belongs to THIS table iff it references ${data.<parentFile>.<prefix>.<n>.<field>}.
+    const cellRe = new RegExp(`\\$\\{data\\.${parentFile}\\.${prefix}\\.(\\d+)\\.([A-Za-z0-9_]+)\\}`);
+    const cellIdx: number[] = [];
+    const loopCellIdx: number[] = [];
+    steps.forEach((st, i) => {
+      const m = cellRe.exec(`${st.InputValue ?? ''} ${st.SkipIf ?? ''} ${st.ExpectedValue ?? ''}`);
+      if (!m) return;
+      cellIdx.push(i);
+      if (loopFields.has(m[2] ?? '')) loopCellIdx.push(i);
+    });
+    if (loopCellIdx.length === 0) continue; // table absent, or none of its safe fields recorded → leave enumerated
+
+    // Only emit template rows / parametric selectors for fields actually recorded.
+    const presentFields = cfg.fields.filter((f) =>
+      steps.some((st) =>
+        new RegExp(`\\$\\{data\\.${parentFile}\\.${prefix}\\.\\d+\\.${f.name}\\}`).test(`${st.InputValue ?? ''} ${st.SkipIf ?? ''}`),
+      ),
+    );
+
+    // Table block = [first cell .. last cell], extended backward over leading Add clicks
+    // (the recording clicks Add BEFORE filling the new row).
+    let first = Math.min(...cellIdx);
+    const last = Math.max(...cellIdx);
+    while (first > 0 && isAddClick(steps[first - 1]!)) first--;
+
+    const anchorStep = steps[Math.min(...loopCellIdx)]!;
+    const page = String(anchorStep.Page || 'ResultsPage');
+    const stepGroup = String(anchorStep.StepGroup || 'ConfigureDesign');
+    const objNameFor = (f: PeriodLoopField): string => `${f.action === 'checkbox' ? 'chk' : 'txt'}_${prefix}_${f.name}`;
+
+    // Steps to drop: the looped-field cells + this table's Add clicks within [first,last].
+    // Enumerated non-loop cells (numeric fields) are KEPT.
+    const removeIdx = new Set<number>(loopCellIdx);
+    for (let i = first; i <= last; i++) if (isAddClick(steps[i]!)) removeIdx.add(i);
+    const insertAt = Math.min(...removeIdx);
+
+    const emptyGuard = `\${data.${parentFile}.${prefix}.0.${cfg.countField}}==EMPTY`;
+    const flowRel = `flows/${featureSlug}_${prefix}_period.csv`;
+    const reconcileCfg = `${parentFile}|${prefix}|${cfg.countField}|${cfg.addLabel}${cfg.excludeDisabled ? '|true' : ''}`;
+    const mkStep = (over: Record<string, string | number | boolean>): StepRow => ({
+      StepID: 0, StepGroup: stepGroup, Page: page, Action: '', ObjectName: '', InputValue: '', StoreAs: '',
+      AssertType: '', ExpectedValue: '', WaitCondition: '', Timeout: 10000, Optional: 'FALSE', Retry: 0,
+      Screenshot: 'never', SkipIf: '', Description: '', DynamicArgs: '', ...over,
+    });
+    const reconcileStep = mkStep({
+      Action: 'callCustom', InputValue: 'reconcilePeriodTable', ExpectedValue: reconcileCfg,
+      Timeout: 15000, Screenshot: 'always', SkipIf: emptyGuard,
+      Description: `reconcile ${prefix} period rows to the testdata count (data-driven for any N; replaces per-period Add clicks)`,
+    });
+    const loopStep = mkStep({
+      Action: 'loopPeriods', ObjectName: parentFile, InputValue: flowRel, ExpectedValue: `${prefix}|${cfg.countField}`,
+      Timeout: 30000, SkipIf: emptyGuard,
+      Description: `loopPeriods (Option C): fill ${prefix} ${presentFields.map((f) => f.name).join(', ')} per period from ${parentFile}_${prefix} — count-agnostic; replaces the enumerated per-period rows`,
+    });
+
+    const newSteps: StepRow[] = [];
+    steps.forEach((st, i) => {
+      if (i === insertAt) newSteps.push(reconcileStep, loopStep);
+      if (!removeIdx.has(i)) newSteps.push(st);
+    });
+    steps.length = 0;
+    steps.push(...newSteps);
+
+    // Selectors: drop the enumerated per-cell selectors of the LOOPED fields; add one
+    // parametric `[id="<prefix>.{0}.<field>"]` per present field.
+    const fieldAlt = [...loopFields].join('|');
+    const cellSelRe = new RegExp(`^${prefix}\\.\\d+\\.(${fieldAlt})$`);
+    const kept = selectors.filter((s) => {
+      const fid = extractFieldId(s.selectorValue || '');
+      return !(fid && cellSelRe.test(fid));
+    });
+    selectors.length = 0;
+    selectors.push(...kept);
+    for (const f of presentFields) {
+      selectors.push({
+        page, objectName: objNameFor(f), selectorType: 'css',
+        selectorValue: `[id="${prefix}.{0}.${f.name}"]`, roleName: '',
+        fieldType: f.action === 'checkbox' ? 'checkbox' : 'textbox',
+        fallbackSelector: '', dynamic: true,
+        description: `PARAMETRIC ${prefix} ${f.name}; {0}=period index (loopPeriods)`, exact: false,
+      });
+    }
+
+    // Template flow (17 cols incl. trailing DynamicArgs; NO Seq).
+    const rows: string[] = [];
+    let sid = 10;
+    for (const f of presentFields) {
+      const on = objNameFor(f);
+      const row = (action: string, input: string, skipIf: string, desc: string): string =>
+        [sid, stepGroup, page, action, on, input, '', '', '', '', 10000, 'FALSE', 0, 'never', skipIf, desc, '${runtime.period.n}']
+          .map((v) => csvEscape(String(v)))
+          .join(',');
+      if (f.action === 'fill') {
+        rows.push(row('fill', `\${runtime.period.${f.name}}`, '', `fill ${prefix} ${f.name} for the current looped period (blank/N/A auto-skips)`));
+        sid += 10;
+      } else {
+        rows.push(row('check', '', `\${runtime.period.${f.name}}!=check`, `check this period's ${f.name} when testdata=check`));
+        sid += 10;
+        rows.push(row('uncheck', '', `\${runtime.period.${f.name}}!=uncheck`, `uncheck this period's ${f.name} when testdata=uncheck`));
+        sid += 10;
+      }
+    }
+    flows.push({ rel: flowRel, content: `${STEP_HEADER.replace(/^Seq,/, '')}\n${rows.join('\n')}\n` });
+    log.push(`  loopPeriods: ${prefix} → looped ${presentFields.map((f) => f.name).join(', ')} (${presentFields.length} field(s)); wrote ${flowRel}`);
+  }
+  return { flows, log };
 }
 
 function main(): number {
@@ -1713,7 +2048,20 @@ function main(): number {
 
   const lines = readLines(inputFile);
   const isSim = parsed.args.sim === true;
-  const { selectors, steps, dataColumns, dataValues, sawLogin, blindChoiceWarnings, splitColumns } = parseCodegen(lines, { sim: isSim });
+  const { selectors, steps, dataColumns, dataValues, fieldKeys, sawLogin, blindChoiceWarnings, splitColumns } = parseCodegen(lines, { sim: isSim });
+
+  // AUTO-LOOP period tables (Option C) before the reuse/dedup passes: collapse the
+  // enumerated per-cell fills of the allowlisted fields into a reconcile+loopPeriods
+  // pair + a generated template flow. No-op when no enabled period table is present.
+  const featureSlug = featureName.replace(/^feature_/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+  const periodLoop = applyPeriodLoops({ steps, selectors, parentFile: isSim ? 'simulation' : 'design', featureSlug });
+  for (const fl of periodLoop.flows) {
+    const flowAbs = path.resolve(process.cwd(), fl.rel);
+    ensureDir(path.dirname(flowAbs));
+    fs.writeFileSync(flowAbs, fl.content, 'utf8');
+  }
+  for (const l of periodLoop.log) console.log(l);
+
   // Sim testdata lives in one file (simulation.csv); design splits across three.
   const dataFilesForReuse = isSim ? ['simulation'] : ['inputset', 'project', 'design'];
 
@@ -1757,16 +2105,44 @@ function main(): number {
     const m = /^(.+)\.\d+\.(.+)$/.exec(col);
     return !!m && (childFields.get(m[1] ?? '')?.has(m[2] ?? '') ?? false);
   };
+  // Read every testdata file's header once — used for the per-file reuse below AND for
+  // the cross-file index that follows.
+  const headerCache = new Map<string, string[]>();
+  for (const f of dataFilesForReuse) headerCache.set(f, readCsvGrid(path.join(testDataDir, `${f}.csv`)).header);
+  // Cross-file index: a field is bound to a file by its step's page/group, but the tester
+  // may have authored the column in a DIFFERENT file (a test-card "Select Test" lands in
+  // inputset.csv, not design.csv). This lets the reuse fall back to wherever the column
+  // actually lives. Normalized column -> {file, col}; first file in reuse order wins.
+  const globalByNorm = new Map<string, { file: string; col: string }>();
+  for (const f of dataFilesForReuse)
+    for (const h of headerCache.get(f) ?? []) {
+      const n = normalizeColName(h);
+      if (n && !globalByNorm.has(n)) globalByNorm.set(n, { file: f, col: h });
+    }
+  // Rewrite a data token everywhere it can appear (a select's InputValue, a checkbox's
+  // SkipIf gate, an assertValue's ExpectedValue), so a reused/repointed column stays
+  // consistent across the whole step, not just its InputValue.
+  const rewriteToken = (fromTok: string, toTok: string): void => {
+    for (const step of steps)
+      for (const k of ['InputValue', 'SkipIf', 'ExpectedValue'] as const) {
+        const v = step[k];
+        if (typeof v === 'string' && v.includes(fromTok)) step[k] = v.split(fromTok).join(toTok);
+      }
+  };
   for (const file of dataFilesForReuse) {
     const cols = dataColumns.get(file);
     if (!cols) continue;
     const childFields = childTableFields(file);
-    const { header } = readCsvGrid(path.join(targetRoot, '01_testdata', `${file}.csv`));
+    const header = headerCache.get(file) ?? [];
     const existingByNorm = new Map<string, string>();
     for (const h of header) {
       const n = normalizeColName(h);
       if (n && !existingByNorm.has(n)) existingByNorm.set(n, h);
     }
+    // Whether an unmatched column would actually be CREATED: only under --seed, or
+    // when the file has no header yet (bootstrap). Otherwise it is left UNWIRED, NOT
+    // seeded — the ambiguous-match messages below must say which actually happened.
+    const willSeed = Boolean(parsed.args.seed) || header.length === 0;
     for (const derived of [...cols]) {
       if (derived === 'TC_ID' || derived === 'IterationID') continue;
       // Owned by a `<file>_<table>.csv` child table -> keep it there and let the
@@ -1780,7 +2156,21 @@ function main(): number {
         continue;
       }
       const derivedNorm = normalizeColName(derived);
-      let existing = existingByNorm.get(derivedNorm);
+      // Wire by the field's DOM id OR its on-screen label OR the derived name —
+      // whichever the tester named the existing column after (id is most precise, so
+      // it is tried first). This is what lets a field recorded as input[name="maxPiC"]
+      // bind to a label-named column, and a field recorded via getByText('Efficacy
+      // Boundary Family') bind to an id-named column effBoundaryFam.
+      const keys = fieldKeys.get(`${file}|${derived}`) ?? {};
+      let existing: string | undefined;
+      for (const cand of [keys.id, keys.label, derived]) {
+        if (!cand) continue;
+        const hit = existingByNorm.get(normalizeColName(cand));
+        if (hit) {
+          existing = hit;
+          break;
+        }
+      }
 
       // Codegen TRUNCATES long accessible names, so the recorded field arrives as a
       // PREFIX of the tester's column: "Sample Size" for "Sample Size (n)",
@@ -1809,7 +2199,10 @@ function main(): number {
         if (prefixHits.length === 1) existing = prefixHits[0]?.[1];
         else if (prefixHits.length > 1) {
           reuseLog.push(
-            `${file}.csv: recorded field "${derived}" is an ambiguous prefix of ${prefixHits.length} existing columns (${prefixHits.map(([, c]) => c).join(', ')}) — seeded a NEW column; wire it manually if it duplicates one (e.g. futBoundary -> futBoundaryType).`,
+            `${file}.csv: recorded field "${derived}" is an ambiguous prefix of ${prefixHits.length} existing columns (${prefixHits.map(([, c]) => c).join(', ')}) — ` +
+              (willSeed
+                ? 'seeded a NEW column (--seed/bootstrap); wire it manually if it duplicates one (e.g. futBoundary -> futBoundaryType).'
+                : 'NOT auto-wired (the importer never guesses among several matches) and NOT seeded — it appears in UNWIRED below; point its token at the intended column, or add a distinct column named for its DOM id/label.'),
           );
         }
       }
@@ -1828,19 +2221,33 @@ function main(): number {
         if (suffixHits.length === 1) existing = suffixHits[0]?.[1];
         else if (suffixHits.length > 1) {
           reuseLog.push(
-            `${file}.csv: recorded field "${derived}" ambiguously matches ${suffixHits.length} existing columns by suffix (${suffixHits.map(([, c]) => c).join(', ')}) — seeded a NEW column; wire it manually if it duplicates one.`,
+            `${file}.csv: recorded field "${derived}" ambiguously matches ${suffixHits.length} existing columns by suffix (${suffixHits.map(([, c]) => c).join(', ')}) — ` +
+              (willSeed
+                ? 'seeded a NEW column (--seed/bootstrap); wire it manually if it duplicates one.'
+                : 'NOT auto-wired (the importer never guesses among several matches) and NOT seeded — it appears in UNWIRED below; point its token at the intended column, or add a distinct column named for its DOM id/label.'),
           );
         }
       }
 
-      if (!existing || existing === derived) continue;
-      const from = buildDataToken(file, derived);
-      const to = buildDataToken(file, existing);
-      for (const step of steps) {
-        if (typeof step.InputValue === 'string' && step.InputValue.includes(from)) {
-          step.InputValue = step.InputValue.split(from).join(to);
+      // Cross-file fallback: nothing matched in THIS file, so try every file's columns
+      // and repoint the token to wherever the tester actually authored the column.
+      if (!existing) {
+        for (const cand of [keys.id, keys.label, derived]) {
+          if (!cand) continue;
+          const hit = globalByNorm.get(normalizeColName(cand));
+          if (hit && hit.file !== file) {
+            rewriteToken(buildDataToken(file, derived), buildDataToken(hit.file, hit.col));
+            cols.delete(derived);
+            dataValues.delete(`${file}|${derived}`);
+            reuseLog.push(`${file}.csv: recorded field "${derived}" wired to ${hit.file}.csv column "${hit.col}" (cross-file)`);
+            break;
+          }
         }
+        if (!cols.has(derived)) continue; // wired cross-file
       }
+
+      if (!existing || existing === derived) continue;
+      rewriteToken(buildDataToken(file, derived), buildDataToken(file, existing));
       cols.delete(derived);
       dataValues.delete(`${file}|${derived}`);
       reuseLog.push(`${file}.csv: reused existing column "${existing}" for recorded field "${derived}"`);
@@ -1856,13 +2263,20 @@ function main(): number {
   // deduped (a click may legitimately repeat). A single-path recording has no such
   // duplicates, so this is a NO-OP there and never alters an existing feature.
   {
+    // Identify each value-step by its DOM FIELD, not its ObjectName: the SAME control
+    // recorded two ways (label-first `getByText('Min. πt')`+`input[name="minPiT"]` vs a
+    // bare `input[name="minPiT"]`) yields two ObjectNames but ONE selector id. Keying on
+    // the selector's id collapses those twins; a selector with no id keeps the old
+    // ObjectName identity, so a single-path recording is unaffected.
+    const objSel = new Map(selectors.map((s) => [s.objectName, s.selectorValue]));
     const seenValueStep = new Set<string>();
     const deduped: StepRow[] = [];
     let dropped = 0;
     for (const step of steps) {
       const action = String(step.Action ?? '');
       if (action === 'select' || action === 'check' || action === 'fill') {
-        const key = `${step.Page}|${step.ObjectName}|${action}`;
+        const fid = extractFieldId(objSel.get(String(step.ObjectName)) ?? '');
+        const key = fid ? `${step.Page}|${action}|#${fid}` : `${step.Page}|${action}|${step.ObjectName}`;
         if (seenValueStep.has(key)) {
           dropped++;
           continue;
@@ -1872,6 +2286,29 @@ function main(): number {
       deduped.push(step);
     }
     if (dropped) {
+      // A collapsed twin can leave a derived column that no surviving step references;
+      // prune it so the write pass neither seeds nor warns about a phantom column.
+      const referenced = new Map<string, Set<string>>();
+      const tokenRe = /\$\{data\.([a-z]+)\.([^}]+)\}/g;
+      for (const step of deduped)
+        for (const k of ['InputValue', 'SkipIf', 'ExpectedValue'] as const) {
+          const s = String(step[k] ?? '');
+          let m: RegExpExecArray | null;
+          while ((m = tokenRe.exec(s)) !== null) {
+            const f = m[1] ?? '';
+            const c = m[2] ?? '';
+            if (!referenced.has(f)) referenced.set(f, new Set());
+            referenced.get(f)!.add(c);
+          }
+        }
+      for (const [f, cset] of dataColumns)
+        for (const c of [...cset]) {
+          if (c === 'TC_ID' || c === 'IterationID') continue;
+          if (!referenced.get(f)?.has(c)) {
+            cset.delete(c);
+            dataValues.delete(`${f}|${c}`);
+          }
+        }
       // Close the gaps the removals leave: Seq 1..N, StepID 10,20,30…
       deduped.forEach((step, i) => {
         step.Seq = i + 1;
@@ -1905,6 +2342,13 @@ function main(): number {
   const existingSelectors = readSelectorRows(selectorPath);
   const mergedSelectors = mergeSelectorRows(existingSelectors, selectors);
   const selectorCsv = `${SELECTOR_HEADER}\n${mergedSelectors.map(selectorRowToCsv).join('\n')}${mergedSelectors.length ? '\n' : ''}`;
+  // Close any Seq/StepID gaps left by the period-loop transform (insert/remove) or the
+  // dedup pass, so the emitted order is always 1..N / 10,20,30… (unchanged for a plain
+  // single-path recording, which is already sequential).
+  steps.forEach((st, i) => {
+    st.Seq = i + 1;
+    st.StepID = (i + 1) * 10;
+  });
   const metadataCsv = `${STEP_HEADER}\n${steps.map(stepRowToCsv).join('\n')}${steps.length ? '\n' : ''}`;
 
   fs.writeFileSync(selectorPath, selectorCsv, 'utf8');
@@ -1983,6 +2427,7 @@ function main(): number {
   // Existing columns/values always win; nothing the tester typed is overwritten.
   const tcId = parsed.args.tcId ?? 'TC_01';
   const writtenData: string[] = [];
+  const unwiredFields: { file: string; column: string; id?: string; label?: string; value: string }[] = [];
   for (const file of dataFilesForReuse) {
     const needed = [...(dataColumns.get(file) ?? new Set<string>())].filter((c) => c && c !== 'TC_ID' && c !== 'IterationID');
     const dataPath = path.join(targetRoot, '01_testdata', `${file}.csv`);
@@ -1993,7 +2438,21 @@ function main(): number {
     const base = existingHeader.length ? existingHeader : ['TC_ID', 'IterationID'];
     const finalCols = [...base];
     for (const c of ['TC_ID', 'IterationID']) if (!finalCols.includes(c)) finalCols.unshift(c);
-    const added = needed.filter((c) => !finalCols.includes(c));
+    // A recorded field with no matching existing column is UNWIRED. By default we do
+    // NOT invent a column for it — that is exactly what produced junk/parallel columns
+    // like "input name maxPiC". It is reported as a warning instead so the tester adds
+    // the column (or fixes its name) deliberately. --seed opts back into creating the
+    // columns to bootstrap a feature; a file with NO header yet is always seeded, since
+    // there is nothing to pollute and the first run needs runnable columns.
+    const missing = needed.filter((c) => !finalCols.includes(c));
+    const bootstrap = Boolean(parsed.args.seed) || existingHeader.length === 0;
+    const added = bootstrap ? missing : [];
+    if (!bootstrap) {
+      for (const c of missing) {
+        const k = fieldKeys.get(`${file}|${c}`) ?? {};
+        unwiredFields.push({ file, column: c, id: k.id, label: k.label, value: dataValues.get(`${file}|${c}`) ?? '' });
+      }
+    }
     finalCols.push(...added);
 
     const seedFor = (col: string): string =>
@@ -2041,6 +2500,22 @@ function main(): number {
   for (const r of reuseLog) console.log(`  ${r}`);
   for (const d of writtenData) console.log(`  ${d}`);
   console.log('');
+  if (unwiredFields.length) {
+    console.log(
+      `UNWIRED: ${unwiredFields.length} recorded field(s) had NO matching testdata column and were NOT added ` +
+        `(the importer never invents columns). For EACH, either add a column to the testdata named after its DOM id ` +
+        `OR its label, or rename an existing column to match — then re-run. Bootstrap an empty feature with --seed:`,
+    );
+    for (const u of unwiredFields) {
+      const names = [u.id && `id="${u.id}"`, u.label && `label="${u.label}"`].filter(Boolean).join('  or  ') || `"${u.column}"`;
+      console.log(`  ! ${u.file}.csv <- wire ${names}${u.value ? `  (recorded value: ${u.value})` : ''}  [token: \${data.${u.file}.${u.column}}]`);
+    }
+    console.log('');
+    if (parsed.args.strict) {
+      console.log(`--strict: exiting non-zero because ${unwiredFields.length} field(s) are unwired.`);
+      return 1;
+    }
+  }
   if (blindChoiceWarnings.length) {
     console.log(`SKIPPED ${blindChoiceWarnings.length} radio interaction(s) that could NOT be data-driven:`);
     for (const w of blindChoiceWarnings) console.log(`  ! ${w}`);
@@ -2074,4 +2549,13 @@ function main(): number {
   return 0;
 }
 
-process.exit(main());
+// Run only when invoked directly (npm run import-codegen), NOT when imported by a
+// unit test. On any doubt, run — preserves CLI behavior.
+const invokedDirectly = ((): boolean => {
+  try {
+    return !!process.argv[1] && import.meta.url === url.pathToFileURL(process.argv[1]).href;
+  } catch {
+    return true;
+  }
+})();
+if (invokedDirectly) process.exit(main());

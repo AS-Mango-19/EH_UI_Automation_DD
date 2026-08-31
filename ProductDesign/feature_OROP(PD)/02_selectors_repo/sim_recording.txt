@@ -1,0 +1,126 @@
+import { test, expect } from '@playwright/test';
+
+test('test', async ({ page }) => {
+  await page.goto('https://cytel.okta.com/');
+  await page.getByRole('button', { name: 'Simulate' }).click();
+  await page.locator('#inputId').click();
+  await page.locator('#inputId').fill('Sim 1 new');
+  await page.locator('#credit-alert-primary').click();
+  await page.locator('[id="leftPanel.designs"]').click();
+  await page.getByText('Sample Size (n)').click();
+  await page.locator('#sampleSize').click();
+  await page.locator('#sampleSize').fill('224');
+  await page.getByText('Randomization Method').click();
+  await page.locator('#randomizationMethodSelect').selectOption('3');
+  await page.locator('#randomizationMethodSelect').selectOption('2');
+  await page.getByText('Allocation Ratio (nt/nc)').click();
+  await page.locator('#allocationRatio').click();
+  await page.locator('#allocationRatio').fill('1.23');
+  await page.getByText('Critical Point').click();
+  await page.locator('#criticalPoint').click();
+  await page.locator('#criticalPoint').fill('8.83324');
+  await page.getByText('Noninferiority Margin (ψ0)').click();
+  await page.locator('#nonInferiorityMargin').click();
+  await page.locator('#nonInferiorityMargin').fill('0.3211');
+  await page.locator('#superSuperiorityMargin').click();
+  await page.locator('#superSuperiorityMargin').fill('2.6856');
+  await page.locator('#upperCriticalPoint').click();
+  await page.locator('#upperCriticalPoint').fill('0.3215');
+
+
+
+
+
+  await page.locator('[id="boundarySim.0.analysisSpacingInfo"]').click();
+  await page.locator('[id="boundarySim.0.analysisSpacingInfo"]').fill('24.882629');
+  await page.locator('[id="boundarySim.1.analysisSpacingInfo"]').click();
+  await page.locator('[id="boundarySim.1.analysisSpacingInfo"]').fill('50.234742');
+  await page.locator('[id="boundarySim.0.efficacyZUpper"]').click();
+  await page.locator('[id="boundarySim.0.efficacyZUpper"]').fill('2.326253');
+  await page.locator('[id="boundarySim.0.efficacyZLower"]').click();
+  await page.locator('[id="boundarySim.0.efficacyZLower"]').fill('-2.326253');
+  await page.locator('[id="boundarySim.0.futilityZUpper"]').click();
+  await page.locator('[id="boundarySim.0.futilityZUpper"]').fill('0.000879');
+  await page.locator('[id="boundarySim.0.futilityZLower"]').click();
+  await page.locator('[id="boundarySim.0.futilityZLower"]').fill('-0.000879');
+  await page.locator('input[name="boundarySim.0.cumAlphaSpentUpper"]').click();
+  await page.locator('input[name="boundarySim.0.cumAlphaSpentUpper"]').fill('0.02666');
+  await page.locator('input[name="boundarySim.0.cumAlphaSpentLower"]').click();
+  await page.locator('input[name="boundarySim.0.cumAlphaSpentLower"]').fill('0.019564');
+  await page.locator('input[name="boundarySim.1.cumAlphaSpent"]').click();
+  await page.locator('input[name="boundarySim.1.cumAlphaSpent"]').fill('0.003331');
+  await page.locator('input[name="boundarySim.1.efficacyZ"]').click();
+  await page.locator('input[name="boundarySim.1.efficacyZ"]').fill('2.713292');
+  await page.locator('input[name="boundarySim.0.futilityZ"]').click();
+  await page.locator('input[name="boundarySim.0.futilityZ"]').fill('-1.4445');
+  await page.locator('[id="boundarySim.1.efficacyPValue"]').click();
+  await page.locator('[id="boundarySim.1.efficacyPValue"]').fill('0.00025');
+  await page.locator('input[name="boundarySim.0.futilityCP"]').click();
+  await page.locator('input[name="boundarySim.0.futilityCP"]').fill('0.41111');
+  await page.locator('input[name="boundarySim.0.efficacyZ"]').click();
+  await page.locator('input[name="boundarySim.0.efficacyZ"]').fill('-1.9256');
+  await page.locator('input[name="boundarySim.0.futilityZ"]').click();
+  await page.locator('input[name="boundarySim.0.futilityZ"]').fill('1.2223');
+  await page.locator('[id="boundarySim.0.futilityPValue"]').click();
+  await page.locator('[id="boundarySim.0.futilityPValue"]').fill('0.9188');
+  await page.getByRole('button', { name: 'Recalculate' }).click();
+  await page.getByRole('button', { name: 'Response' }).click();
+  await page.getByText('Distribution', { exact: true }).click();
+  await page.locator('#distributionSelect').selectOption('2');
+  await page.locator('#distributionSelect').selectOption('1');
+  await page.getByText('Proportion Under Control (πc)').click();
+  await page.locator('#propUnderControl').click();
+  await page.locator('#propUnderControl').fill('0.568');
+  await page.getByText('Proportion Under Treatment (π').click();
+  await page.getByText('Odds Ratio of Proportions (ψ = (πt (1 - πc) / πc (1 - πt)))').click();
+  await page.locator('#oddsRatioOfProps').click();
+  await page.locator('#oddsRatioOfProps').fill('0.3545');
+  await page.getByText('Follow-up Time (Month)').click();
+  await page.locator('#followUpTime').click();
+  await page.locator('#followUpTime').fill('6.85');
+  await page.getByText('Dropout Distribution').click();
+  await page.locator('#dropoutDistributionSelect').selectOption('2');
+  await page.locator('#dropoutDistributionSelect').selectOption('1');
+  await page.getByText('Probability of Dropout').click();
+  await page.locator('#probabilityOfDropout').click();
+  await page.locator('#probabilityOfDropout').fill('0.04996');
+  await page.getByRole('button', { name: 'Enrollment' }).click();
+  await page.getByRole('button', { name: 'Add Period' }).click();
+  await page.getByRole('button', { name: 'Add Period' }).click();
+  await page.locator('[id="enrollmentTable.1.startingAtTime"]').click();
+  await page.locator('[id="enrollmentTable.1.startingAtTime"]').fill('1.1');
+  await page.locator('[id="enrollmentTable.2.startingAtTime"]').click();
+  await page.locator('[id="enrollmentTable.2.startingAtTime"]').fill('2.1');
+  await page.locator('[id="enrollmentTable.0.avgSubjectsEnrolled"]').click();
+  await page.locator('[id="enrollmentTable.0.avgSubjectsEnrolled"]').fill('11');
+  await page.locator('[id="enrollmentTable.1.avgSubjectsEnrolled"]').click();
+  await page.locator('[id="enrollmentTable.1.avgSubjectsEnrolled"]').fill('12');
+  await page.locator('[id="enrollmentTable.2.avgSubjectsEnrolled"]').click();
+  await page.locator('[id="enrollmentTable.2.avgSubjectsEnrolled"]').fill('13');
+  await page.getByRole('button', { name: 'Simulation Setup' }).click();
+  await page.getByText('Number of Simulations Run').click();
+  await page.locator('input[name="numOfSimRun"]').click();
+  await page.locator('input[name="numOfSimRun"]').fill('100');
+  await page.getByText('Random Number Seed').click();
+  await page.locator('#randomNumberSeed').selectOption('2');
+  await page.getByText('Fixed Seed').click();
+  await page.locator('#fixedSeed').click();
+  await page.locator('#fixedSeed').fill('100');
+  await page.getByTestId('saveSummaryStats').check();
+  await page.getByTestId('saveSubjectLevelData').check();
+  await page.locator('#subLevelDataSimRuns').click();
+  await page.locator('#subLevelDataSimRuns').fill('100');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Save & Simulate' }).click();
+  await page.locator('#inputId').click();
+  await page.locator('#inputId').fill('Result - Sim 1 new');
+  await page.locator('#credit-alert-primary').click();
+  await page.getByText('Status').click();
+  await page.getByText('Completed').first().click();
+  await page.getByRole('link', { name: 'Result - Sim 1 new' }).click();
+});
+
+
+
+
+

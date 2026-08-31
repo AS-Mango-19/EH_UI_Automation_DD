@@ -84,6 +84,7 @@ register('callReusable', flow.callReusable);
 register('callCustom', flow.callCustom);
 register('ifExists', flow.ifExists);
 register('loopOverData', flow.loopOverData);
+register('loopPeriods', flow.loopPeriods);
 
 // API
 register('apiRequest', apiRequest);

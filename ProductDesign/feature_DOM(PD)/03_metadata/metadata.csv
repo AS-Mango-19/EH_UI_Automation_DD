@@ -1,0 +1,143 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,Log in via the shared login flow (identity-provider steps are shared infrastructure - one callReusable)
+2,20,OpenProject,ProjectsPage,navigate,,/landingpage/projects,,,,domcontentloaded,60000,FALSE,0,always,,Navigate to the projects landing page
+3,30,OpenProject,ProjectsPage,waitForSelector,btn_New_Project,,,,,visible,220000,FALSE,0,always,,Poll for the landing page (app cold-starts slowly and never goes network-idle)
+4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,Open New Project
+5,50,ConfigureDesign,ProjectPage,fill,txt_Project_Name,${data.project.ProjectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,Project name (made unique per run so re-runs are not rejected as duplicates)
+6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.TimeUnit},,,,,15000,FALSE,0,always,,Time Unit
+7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick Start Date in the calendar (shared handler reads project.StartDate; value must be M/d/yyyy or yyyy-MM-dd)
+8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.StudyObjective},,,,,15000,FALSE,0,always,,Study Objective (Two Arm Superiority)
+9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,TRUE,0,always,,Phase (Optional) - tolerant (Optional): this env moved General fields to Program/Indication; Phase is administrative and does not affect the computed design
+10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,Target Population
+11,110,ConfigureDesign,ProjectPage,fill,txt_Treatment_Arm,${data.project.TreatmentArm},,,,,10000,FALSE,0,never,,Treatment Arm name (Control Arm left at the app default - testdata only overrides the treatment arm)
+12,120,ConfigureDesign,ProjectPage,fill,txt_Endpoint_Name,${data.project.EndpointName},,,,,10000,FALSE,0,never,,Endpoint Name
+13,130,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.EndpointType},,,,,15000,FALSE,0,always,,"Endpoint Type is a TABLE-CELL dropdown: open via its value-trigger (role button ""Time to Event"", the fresh-project default) then pick Continuous. GADSD-proven pattern"
+14,140,ConfigureDesign,ProjectPage,select,ddl_Larger_Value,${data.project.BetterResponse},,,,,15000,FALSE,0,always,,"Better Response is a TABLE-CELL dropdown: open via its value-trigger (role button ""Larger Value"", the Continuous default) then pick the direction. MUST run after Endpoint Type=Continuous (its options depend on it)"
+15,150,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,Create Project
+16,160,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,Open Inputs
+17,170,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,New Input Set
+18,180,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.InputSetname},,,,,10000,FALSE,0,never,,Input-set collection name (mapped to the existing InputSetname column - no new column)
+19,190,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,Open the Design (compute/simulate) card
+20,200,ExtractResults,ResultsPage,select,ddl_react_select_input_container,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Pick the statistical test from the inputset SelectTest (Difference of Means) - the react-select test card
+21,210,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,Continue into the design inputs
+22,220,ExtractResults,ResultsPage,select,ddl_Hypothesis,${data.design.hypothesis},,,,,10000,FALSE,0,always,,Hypothesis (Superiority / Noninferiority / Super Superiority) - controls which margin fields render
+23,230,ExtractResults,ResultsPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.allocationRatio},,,,,10000,FALSE,0,never,,Allocation Ratio (nt/nc)
+24,240,ExtractResults,ResultsPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,Computed Parameter radio (Sample Size / Power / Type 1 Error / Difference in Means) - greys out the chosen output
+25,250,ExtractResults,ResultsPage,fill,txt_Sample_Size_n,${data.design.sampleSize},,,,,10000,FALSE,0,never,,Sample Size (skips when Computed - it is the solved-for output that iteration)
+26,260,ExtractResults,ResultsPage,fill,txt_Power,${data.design.power},,,,,10000,FALSE,0,never,,Power (skips when Computed)
+27,270,ExtractResults,ResultsPage,fill,txt_Type_1_Error,${data.design.type1Error},,,,,10000,FALSE,0,never,,Type 1 Error (symmetric). Asymmetric upper/lower alpha are added when ITER_02 is stabilized
+28,280,ExtractResults,ResultsPage,select,ddl_Test_Type,${data.design.testtype},,,,,10000,FALSE,0,always,,Test Type (1-Sided / 2-Sided / 2-Sided Asymmetric) - MUST precede the Type-1-Error fields (asymmetric splits into Upper/Lower)
+28.1,282,ExtractResults,ResultsPage,fill,txt_Upper_Type_1_Error,${data.design.upperType1Error},,,,,10000,FALSE,0,never,,Upper Type 1 Error (2-Sided Asymmetric only; #upperType1Error). N/A for symmetric iterations
+28.2,284,ExtractResults,ResultsPage,fill,txt_Lower_Type_1_Error,${data.design.lowerType1Error},,,,,10000,FALSE,0,never,,Lower Type 1 Error (2-Sided Asymmetric only; #lowerType1Error). N/A for symmetric iterations
+29,290,ExtractResults,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Input Method (Individual Means / Difference of Means / Standardized Diff.) - controls which effect field renders
+30,300,ExtractResults,ResultsPage,fill,txt_Mean_Control_c,${data.design.meanControl},,,,,10000,FALSE,0,never,,Mean Control (Individual Means)
+31,310,ExtractResults,ResultsPage,fill,txt_Mean_Treatment_t,${data.design.meanTreatment},,,,,10000,FALSE,0,never,,Mean Treatment (Individual Means)
+32,320,ExtractResults,ResultsPage,fill,txt_Difference_in_Means_t,${data.design.differenceInMeans},,,,,10000,FALSE,0,never,,Difference in Means (Difference-of-Means input method)
+33,330,ExtractResults,ResultsPage,fill,txt_Standardized_Difference_t,${data.design.standardizedDifference},,,,,10000,FALSE,0,never,,Standardized Difference (Standardized-Diff input method)
+335,335,ExtractResults,ResultsPage,fill,txt_nonInf_Mean_Control,${data.design.nonInf_meanControl},,,,,10000,FALSE,0,never,,Noninferiority Mean Control (editable; was defaulting - correctness fix)
+34,340,ExtractResults,ResultsPage,fill,txt_Noninferiority_Margin_0,${data.design.nonInf_margin},,,,,10000,FALSE,0,never,,Noninferiority Margin (Noninferiority hypothesis only; #nonInf_margin)
+35,350,ExtractResults,ResultsPage,fill,txt_Difference_in_Means_1_t1,${data.design.nonInf_differenceInMeans},,,,,10000,FALSE,0,never,,Noninferiority Difference in Means (#nonInf_differenceInMeans - fixed from the importer's differenceInMeans guess)
+358,358,ExtractResults,ResultsPage,fill,txt_supsup_Mean_Control,${data.design.supsup_meanControl},,,,,10000,FALSE,0,never,,Super Superiority Mean Control (editable)
+36,360,ExtractResults,ResultsPage,fill,txt_Super_Superiority_Margin_0,${data.design.supsup_margin},,,,,10000,FALSE,0,never,,Super Superiority Margin (Super Superiority hypothesis only; #supsup_margin)
+362,362,ExtractResults,ResultsPage,fill,txt_supsup_Difference_in_Means,${data.design.supsup_differenceInMeans},,,,,10000,FALSE,0,never,,Super Superiority alt Difference in Means
+364,364,ExtractResults,ResultsPage,fill,txt_supsup_nh_Mean_Treatment,${data.design.supsup_nhMeanTreatment},,,,,10000,FALSE,0,never,,Super Superiority null Mean Treatment (verify editable vs computed at runtime)
+37,370,ExtractResults,ResultsPage,select,ddl_Test_Statistic,${data.design.testStatistic},,,,,10000,FALSE,0,always,,Test Statistic
+38,380,ExtractResults,ResultsPage,select,ddl_Variance,${data.design.variance},,,,,10000,FALSE,0,always,,Variance (Equal / Unequal) - controls common SD vs per-arm SD
+39,390,ExtractResults,ResultsPage,fill,txt_Standard_Deviation,${data.design.standardDeviation},,,,,10000,FALSE,0,never,,Standard Deviation (common; Equal variance) - #standardDeviation
+40,400,ExtractResults,ResultsPage,fill,txt_Standard_Deviation_Control,${data.design.sdControl},,,,,10000,FALSE,0,never,,SD Control (Unequal variance; #sdControl - fixed from the importer's standardDeviation guess)
+41,410,ExtractResults,ResultsPage,fill,txt_Standard_Deviation_Treatment,${data.design.sdTreatment},,,,,10000,FALSE,0,never,,SD Treatment (Unequal variance; #sdTreatment - fixed from the importer's standardDeviation guess)
+42,420,ExtractResults,ResultsPage,fill,txt_Follow_up_Time_Week,${data.design.followUpTime},,,,,10000,FALSE,0,never,,Follow-up Time (design/dropout section; #followUpTime)
+43,430,ExtractResults,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.probabilityOfDropout},,,,,10000,FALSE,0,never,,Probability of Dropout
+44,440,ExtractResults,ResultsPage,check,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=TRUE,Include Assurance ON (reveals prior distribution + input method); gated per iteration. NOTE: this column uses TRUE/FALSE (not check/uncheck like IncludeEnrollment)
+45,450,ExtractResults,ResultsPage,uncheck,chk_include_Assurance,,,,,,10000,FALSE,0,always,${data.design.includeAssurance}!=FALSE,Include Assurance OFF; gated per iteration (TRUE/FALSE convention). Never fires today - iterations that skip assurance leave it blank (default off)
+46,460,ExtractResults,ResultsPage,select,ddl_Distribution,${data.design.distributionMethod},,,,,10000,FALSE,0,always,,Prior Distribution (Normal / Uniform) - Uniform reveals Min/Max
+47,470,ExtractResults,ResultsPage,fill,txt_Min,${data.design.uniformMin},,,,,10000,FALSE,0,never,,Uniform prior Min (Uniform distribution only)
+48,480,ExtractResults,ResultsPage,fill,txt_Max,${data.design.uniformMax},,,,,10000,FALSE,0,never,,Uniform prior Max (Uniform distribution only)
+49,490,ExtractResults,ResultsPage,select,ddl_assurance_Input_Method,${data.design.assuranceInputMethod},,,,,10000,FALSE,0,always,,Assurance Input Method - controls which prior-elicitation fields render (E/SD vs percentiles)
+50,500,ExtractResults,ResultsPage,fill,txt_E,${data.design.eDelta},,,,,10000,FALSE,0,never,,Prior E(delta) (#eDelta - fixed from the importer's bare-label E guess)
+51,510,ExtractResults,ResultsPage,fill,txt_SD,${data.design.sdDelta},,,,,10000,FALSE,0,never,,Prior SD(delta) (#sdDelta - fixed from the importer's bare-label SD guess)
+52,520,ExtractResults,ResultsPage,select,ddl_perc_Delta1st_Operator,${data.design.percDelta1stOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta 1st operator
+53,530,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Val,${data.design.percDelta1stPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 1st value
+54,540,ExtractResults,ResultsPage,fill,txt_perc_Delta1st_Percentile_Prob,${data.design.percDelta1stPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 1st probability
+55,550,ExtractResults,ResultsPage,select,ddl_perc_Delta2nd_Operator,${data.design.percDelta2ndOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta 2nd operator
+56,560,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Val,${data.design.percDelta2ndPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 2nd value
+57,570,ExtractResults,ResultsPage,fill,txt_perc_Delta2nd_Percentile_Prob,${data.design.percDelta2ndPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta 2nd probability
+58,580,ExtractResults,ResultsPage,select,ddl_perc_Delta_By_Sigma1st_Operator,${data.design.percDeltaBySigma1stOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta/sigma 1st operator
+59,590,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma1st_Percentile_Val,${data.design.percDeltaBySigma1stPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 1st value
+60,600,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma1st_Percentile_Prob,${data.design.percDeltaBySigma1stPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 1st probability
+61,610,ExtractResults,ResultsPage,select,ddl_perc_Delta_By_Sigma2nd_Operator,${data.design.percDeltaBySigma2ndOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta/sigma 2nd operator
+62,620,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Val,${data.design.percDeltaBySigma2ndPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd value
+63,630,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Prob,${data.design.percDeltaBySigma2ndPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd probability
+63.5,638,ExtractResults,ResultsPage,select,ddl_asym_Eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}!=2-Sided (Asymmetric),Asymmetric efficacy boundary family (#asymEffBoundaryFam) - fires ONLY on 2-Sided Asymmetric (Test-Type gated)
+64,640,ExtractResults,ResultsPage,select,ddl_eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}==2-Sided (Asymmetric),Efficacy Boundary Family (#effBoundaryFam) - SYMMETRIC only; asymmetric uses #asymEffBoundaryFam (Test-Type gated)
+65,650,ExtractResults,ResultsPage,select,ddl_eff_Spend_Func,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Efficacy Spending Function - single/symmetric (#effSpendFunc). N/A on asymmetric iterations (they use upper/lower)
+65.1,652,ExtractResults,ResultsPage,select,ddl_upper_Spend_Func,${data.design.upperSpendFunc},,,,,10000,FALSE,0,always,,Upper efficacy spending function (2-Sided Asymmetric only; #upperSpendFunc). N/A for symmetric
+65.2,654,ExtractResults,ResultsPage,select,ddl_lower_Spend_Func,${data.design.lowerSpendFunc},,,,,10000,FALSE,0,always,,Lower efficacy spending function (2-Sided Asymmetric only; #lowerSpendFunc). N/A for symmetric
+66,660,ExtractResults,ResultsPage,select,ddl_Parameter,${data.design.effParam},,,,,10000,FALSE,0,always,,Efficacy spending Parameter select (#effParam)
+67,670,ExtractResults,ResultsPage,fill,txt_Parameter,${data.design.effParamRho},,,,,10000,FALSE,0,never,,Efficacy Rho parameter (#effParamRho - fixed from the importer's Computed-Parameter guess)
+68,680,ExtractResults,ResultsPage,fill,txt_eff_Param_Gamma,${data.design.effParamGamma},,,,,10000,FALSE,0,never,,Efficacy Gamma parameter (#effParamGamma)
+69,690,ExtractResults,ResultsPage,select,ddl_fix,${data.design.fix},,,,,10000,FALSE,0,always,,Boundary fix select (#fix)
+70,700,ExtractResults,ResultsPage,fill,txt_Shape_Parameter,${data.design.shapeParamDelta},,,,,10000,FALSE,0,never,,Efficacy shape parameter (#shapeParamDelta)
+71,710,ExtractResults,ResultsPage,select,ddl_fut_Boundary_Fam,${data.design.futBoundaryFam},,,,,10000,FALSE,0,always,,Futility Boundary Family (#futBoundaryFam) - controls which futility fields render
+72,720,ExtractResults,ResultsPage,select,ddl_fut_Spend_Func,${data.design.futSpendFunc},,,,,10000,FALSE,0,always,,Futility Spending Function (#futSpendFunc)
+73,730,ExtractResults,ResultsPage,select,ddl_fut_Boundary,${data.design.futBoundary},,,,,10000,FALSE,0,always,,Futility boundary select (#futBoundary)
+74,740,ExtractResults,ResultsPage,fill,txt_fut_Param_Rho,${data.design.futParamRho},,,,,10000,FALSE,0,never,,Futility Rho parameter (#futParamRho - hand-added selector; ITER_01 = 4.55)
+75,750,ExtractResults,ResultsPage,fill,txt_Shape_Parameter_2,${data.design.shapeParamDeltaTwo},,,,,10000,FALSE,0,never,,Futility shape parameter (#shapeParamDeltaTwo)
+76,760,ExtractResults,ResultsPage,select,ddl_Compute_CP_Using,${data.design.computeCP},,,,,10000,FALSE,0,always,,Compute CP Using (Conditional-Power futility only; #computeCP)
+77,770,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Boundary Scale (Score / Z / p-value / cp_deltahat ...)
+78,780,ExtractResults,ResultsPage,callCustom,,reconcileBoundaryInterims,,,,,30000,FALSE,0,always,,Reconcile the interim table to the testdata's interim count (clicks Add Interim; fixed designs = no-op). MUST run before the per-period fills
+78.5,785,ExtractResults,ResultsPage,loopPeriods,design,flows/dom_pd_boundary_period.csv,,,boundary|analysisSpacingInfo,,30000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,loopPeriods (Option C): fill boundary analysisSpacingInfo per period from design_boundary — count-agnostic; replaces the enumerated per-period spacing fills. Checks stay enumerated LAST (means-family requirement); reconcile above still sizes the table.
+81.1,812,ExtractResults,ResultsPage,fill,txt_boundary_0_upper_Alpha,${data.design.boundary.0.upperAlpha},,,,,10000,FALSE,0,never,,Interim 0 Upper alpha (2-Sided Asymmetric Interpolated - required per-analysis; N/A on symmetric)
+81.2,813,ExtractResults,ResultsPage,fill,txt_boundary_1_upper_Alpha,${data.design.boundary.1.upperAlpha},,,,,10000,FALSE,0,never,,Interim 1 Upper alpha
+81.3,814,ExtractResults,ResultsPage,fill,txt_boundary_2_upper_Alpha,${data.design.boundary.2.upperAlpha},,,,,10000,FALSE,0,never,,Interim 2 Upper alpha
+81.4,815,ExtractResults,ResultsPage,fill,txt_boundary_0_lower_Alpha,${data.design.boundary.0.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 0 Lower alpha
+81.5,816,ExtractResults,ResultsPage,fill,txt_boundary_1_lower_Alpha,${data.design.boundary.1.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 1 Lower alpha
+81.6,817,ExtractResults,ResultsPage,fill,txt_boundary_2_lower_Alpha,${data.design.boundary.2.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 2 Lower alpha
+82,820,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 0 cumulative alpha spent
+83,830,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 1 cumulative alpha spent
+84,840,ExtractResults,ResultsPage,fill,txt_boundary_2_cum_Alpha_Spent,${data.design.boundary.2.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 2 cumulative alpha spent
+85,850,ExtractResults,ResultsPage,fill,txt_boundary_0_efficacy_PValue,${data.design.boundary.0.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 0 efficacy p-value
+851,851,ExtractResults,ResultsPage,fill,txt_boundary_3_efficacy_PValue,${data.design.boundary.3.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 3 efficacy p-value
+852,852,ExtractResults,ResultsPage,fill,txt_boundary_4_efficacy_PValue,${data.design.boundary.4.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 4 efficacy p-value
+853,853,ExtractResults,ResultsPage,fill,txt_boundary_5_efficacy_PValue,${data.design.boundary.5.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 5 efficacy p-value
+854,854,ExtractResults,ResultsPage,fill,txt_boundary_6_efficacy_PValue,${data.design.boundary.6.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 6 efficacy p-value
+855,855,ExtractResults,ResultsPage,fill,txt_boundary_7_efficacy_PValue,${data.design.boundary.7.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 7 efficacy p-value
+86,860,ExtractResults,ResultsPage,fill,txt_boundary_1_efficacy_PValue,${data.design.boundary.1.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 1 efficacy p-value
+865,865,ExtractResults,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,Interim 2 efficacy p-value
+87,870,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 0 cumulative beta spent
+88,880,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Beta_Spent,${data.design.boundary.1.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 1 cumulative beta spent
+885,885,ExtractResults,ResultsPage,fill,txt_boundary_2_cum_Beta_Spent,${data.design.boundary.2.cumBetaSpent},,,,,10000,FALSE,0,never,,Interim 2 cum beta spent
+89,890,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_PValue,${data.design.boundary.0.futilityPValue},,,,,10000,FALSE,0,never,,Interim 0 futility p-value
+90,900,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_PValue,${data.design.boundary.1.futilityPValue},,,,,10000,FALSE,0,never,,Interim 1 futility p-value
+905,905,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_PValue,${data.design.boundary.2.futilityPValue},,,,,10000,FALSE,0,never,,Interim 2 futility p-value
+91,910,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_CP,${data.design.boundary.0.futilityCP},,,,,10000,FALSE,0,never,,Interim 0 futility conditional power
+92,920,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_CP,${data.design.boundary.1.futilityCP},,,,,10000,FALSE,0,never,,Interim 1 futility conditional power
+925,925,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_CP,${data.design.boundary.2.futilityCP},,,,,10000,FALSE,0,never,,Interim 2 futility CP
+93,930,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_Delta_By_Sigma,${data.design.boundary.0.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 0 futility delta/sigma
+94,940,ExtractResults,ResultsPage,fill,txt_boundary_1_futility_Delta_By_Sigma,${data.design.boundary.1.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 1 futility delta/sigma
+946,946,ExtractResults,ResultsPage,check,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.efficacyCheck}!=check,"Per-analysis boundary.0.efficacyCheck (checks-LAST, before Calculate)"
+947,947,ExtractResults,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.efficacyCheck}!=uncheck,"Per-analysis boundary.0.efficacyCheck (checks-LAST, before Calculate)"
+948,948,ExtractResults,ResultsPage,check,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=check,"Per-analysis boundary.1.efficacyCheck (checks-LAST, before Calculate)"
+949,949,ExtractResults,ResultsPage,uncheck,chk_boundary_1_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.efficacyCheck}!=uncheck,"Per-analysis boundary.1.efficacyCheck (checks-LAST, before Calculate)"
+95,950,ExtractResults,ResultsPage,fill,txt_boundary_2_futility_Delta_By_Sigma,${data.design.boundary.2.futilityDeltaBySigma},,,,,10000,FALSE,0,never,,Interim 2 futility delta/sigma
+951,951,ExtractResults,ResultsPage,check,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=check,"Per-analysis boundary.2.efficacyCheck (checks-LAST, before Calculate)"
+952,952,ExtractResults,ResultsPage,uncheck,chk_boundary_2_efficacy_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.efficacyCheck}!=uncheck,"Per-analysis boundary.2.efficacyCheck (checks-LAST, before Calculate)"
+953,953,ExtractResults,ResultsPage,check,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=check,"Per-analysis boundary.0.futilityCheck (checks-LAST, before Calculate)"
+954,954,ExtractResults,ResultsPage,uncheck,chk_boundary_0_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.0.futilityCheck}!=uncheck,"Per-analysis boundary.0.futilityCheck (checks-LAST, before Calculate)"
+955,955,ExtractResults,ResultsPage,check,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityCheck}!=check,"Per-analysis boundary.1.futilityCheck (checks-LAST, before Calculate)"
+956,956,ExtractResults,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityCheck}!=uncheck,"Per-analysis boundary.1.futilityCheck (checks-LAST, before Calculate)"
+957,957,ExtractResults,ResultsPage,check,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=check,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
+958,958,ExtractResults,ResultsPage,uncheck,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=uncheck,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
+96,960,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,15000,FALSE,0,always,${data.design.effBoundaryFam}==EMPTY,"Calculate the GSD boundary. SKIPPED for FIXED designs (effBoundaryFam empty = no boundary table, so no Calculate button - it would time out). Boundary checkbox toggles go LAST, just before this"
+97,970,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,Open the Enrollment (accrual) section
+98,980,ExtractResults,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=check,Include Enrollment ON (reveals avg subjects enrolled); gated per iteration (maps to IncludeEnrollment)
+99,990,ExtractResults,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=uncheck,Include Enrollment OFF; gated per iteration
+100,1000,ExtractResults,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Average subjects enrolled (design enrollment is a single scalar; #enrollmentTable.0.avgSubjectsEnrolled)
+101,1010,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,Save the design
+102,1020,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,Save & Compute (opens the credit dialog)
+103,1030,ExtractResults,ResultsPage,fill,txt_ResultName,DOM_Result_${iterationId},,,,,10000,FALSE,0,never,,Name the result in the credit dialog (#inputId) - runtime token keeps it unique per iteration with no new testdata column
+104,1040,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,Confirm the credit dialog to start the compute (#credit-alert-primary)
+105,1050,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+106,1060,ExtractResults,ResultsPage,click,lnk_ResultName,DOM_Result_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by its (distinct) name once compute finishes
+107,1070,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page (shared _shared/customSteps.extractAllResultTables)
+108,1080,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells vs 06_baseline/AD/. First run writes the baseline (green but verifies nothing); a second run is a real PASS/FAIL

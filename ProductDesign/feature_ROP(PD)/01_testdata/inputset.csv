@@ -1,0 +1,12 @@
+TC_ID,IterationID,collectionName,SelectTask,Select Test
+TC_21,ITER_01,Set1,Design,Ratio of Proportions
+TC_21,ITER_02,Set2,Design,Ratio of Proportions
+TC_21,ITER_03,Set3,Design,Ratio of Proportions
+TC_21,ITER_04,Set4,Design,Ratio of Proportions
+TC_21,ITER_05,Set5,Design,Ratio of Proportions
+TC_21,ITER_06,Set6,Design,Ratio of Proportions
+TC_21,ITER_07,Set7,Design,Ratio of Proportions
+TC_21,ITER_08,Set8,Design,Ratio of Proportions
+TC_21,ITER_09,Set9,Design,Ratio of Proportions
+TC_21,ITER_10,Set10,Design,Ratio of Proportions
+TC_21,ITER_11,Set11,Design,Ratio of Proportions

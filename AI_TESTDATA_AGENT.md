@@ -110,8 +110,9 @@ row** rather than per column-index:
 - A period an iteration does **not** use is simply **absent** (no row) — or a single placeholder row
   with `PeriodIndex=N/A` and every field `N/A`; both fold to nothing. (This replaces the inline rule
   "an unused period index is all `N/A`".)
-- Not-applicable cells use `N/A`, **never blank** — a blank can slip past a `SkipIf …==N/A`
-  Add-Period gate.
+- Not-applicable cells use `N/A`, **never blank** — for clarity and self-documentation. (Since the
+  isNaCell fix a `SkipIf …==N/A` Add-Period gate treats blank as `N/A` too, so a stray blank no longer
+  silently adds a period — but author `N/A` anyway so the intent is explicit.)
 
 ## The effect-size hypothesis-suffix rule
 

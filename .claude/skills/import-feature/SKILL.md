@@ -19,10 +19,24 @@ Non-negotiables (full detail is in the playbook):
 - **Every `fill`/`select`/`check` must carry a `${data.*}` token** — a blank InputValue is not
   driven by anything, fires every iteration, and silently overrides an earlier data-driven
   choice. Delete it or bind it to a column.
+- **The importer wires to existing columns; it never invents them.** It binds each recorded field
+  to a testdata column **by DOM id or label** and adds no columns by default. Fields it can't
+  match print as `UNWIRED` (with id, label, recorded value) — resolve each by adding the real
+  column (named by its id or label) or renaming an existing one, **never** by re-running with
+  `--seed`. `--seed` is only to bootstrap an empty feature; `--strict` fails on any `UNWIRED`.
+  **Author `01_testdata` first**, then import — the importer conforms to your columns.
+- **Start from the closest existing feature** in the same family and mirror its column
+  names/selectors (means → `feature_DOM(PD)`; survival → `feature_GADAR(PD)`/`feature_GADSD(PD)`;
+  proportions → `feature_RONBR(PD)`/`feature_FishersExact(PD)`; one-arm → `feature_SinglePoissonRate`;
+  multi-scenario → `feature_BOIN`), so id/label wiring matches on the first pass.
 - **A new data combination is one decision per field** — see "What to put in a testdata cell"
   in the playbook. Hidden → `N/A`; editable → the value; greyed showing "Computed" →
   `Computed`; greyed showing a derived number → assert it, never `fill` it.
 - **Screenshot-verify every iteration.** Green ≠ correct.
+- **Self-improving memory — [IMPORT_LESSONS.md](../../../IMPORT_LESSONS.md).** READ it before
+  resolving `UNWIRED`/judgment calls (apply the first matching *Signal→Decision* rule instead of
+  asking); APPEND a rule after any non-obvious decision or user correction, so the agent improves
+  each iteration. Cross-platform (Claude + Copilot share this file).
 - The deterministic importer (`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX`)
   is runnable **standalone**; this skill only adds the judgment layer on top of it.
 - **Simulation flow**: same feature, a second recorded flow that chains after a green design run

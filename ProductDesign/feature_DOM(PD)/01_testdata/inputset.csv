@@ -1,0 +1,11 @@
+TC_ID,IterationID,Run,InputSetname,SelectTask,SelectTest
+TC_03,ITER_01,TRUE,Set1,Design,Difference of Means
+TC_03,ITER_02,TRUE,Set2,Design,Difference of Means
+TC_03,ITER_03,TRUE,Set3,Design,Difference of Means
+TC_03,ITER_04,TRUE,Set4,Design,Difference of Means
+TC_03,ITER_05,TRUE,Set5,Design,Difference of Means
+TC_03,ITER_06,TRUE,Set6,Design,Difference of Means
+TC_03,ITER_07,TRUE,Set7,Design,Difference of Means
+TC_03,ITER_08,TRUE,Set8,Design,Difference of Means
+TC_03,ITER_09,TRUE,Set9,Design,Difference of Means
+TC_03,ITER_10,TRUE,Set10,Design,Difference of Means

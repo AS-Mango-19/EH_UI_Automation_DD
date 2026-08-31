@@ -142,6 +142,9 @@ Resolution steps:
 Recurring pattern:
 - Most impactful hard-failure category in error-level logs.
 
+Cross-note:
+- A sudden burst of 200s+ login/navigation timeouts across MANY iterations right after an `.env` change usually means `.env` now points at a different (flaky) East Horizon instance than the baselines were built on — see category R.
+
 ## D. Browser/context closed during action
 
 How often seen:
@@ -334,6 +337,9 @@ Resolution steps:
 Recurring pattern:
 - Less frequent, but high signal because it directly affects pass/fail outcome.
 
+Cross-note:
+- If VALUE_MISMATCH appears suddenly across MANY iterations at once (not just one), suspect an `.env` change rather than data drift: baselines are environment-specific — see category R.
+
 ## M. Field value normalization mismatch
 
 How often seen:
@@ -387,6 +393,107 @@ Resolution steps:
 2. Reduce force-click dependence where possible.
 3. Add targeted waits before fragile interactions.
 
+## P. Save & Simulate button stays disabled (adaptive sim)
+
+How often seen:
+- New — first documented 2026-08-13 (DOM(PD) TC_03, CHW/CDL adaptive simulation). Only adaptive iterations reach the Sample-Size-Re-Estimation panel, so plain fixed/GSD sims never hit this.
+
+Exact messages seen:
+- `locator.click: ... element is not enabled` targeting `#save-compute` (a `<button disabled id="save-compute">`).
+- `waitAndInspectSaveSimulate: Save & Simulate never enabled within 60000ms` (with a dumped reason block: visible toasts / spinner / `[aria-invalid]` / "Not Saved" / the button `outerHTML`).
+
+Likely root cause:
+- The adaptive design is INVALID, so the app keeps `#save-compute` disabled — it is a CONFIG invalidity, not a timing/flaky bug. The commonest cause is `Include Enrollment=uncheck` on the sim. A second cause is clicking before the app re-enables: the framework's plain `click` auto-waits ~10s then FORCE-clicks, and a force click CANNOT actuate a `disabled` button (force ≠ enable).
+
+Resolution steps:
+1. Set `Include Enrollment=check` on the sim (mirror the design). The app's DEFAULT 1-row accrual is sufficient — no child `simulation_enrollmentTable` rows are needed. Proof: `uncheck` left the button disabled 56s+; `check` enabled it in ~13–21ms.
+2. Wait for `#save-compute` to be ENABLED before clicking — add a custom step (`waitAndInspectSaveSimulate` in `custom/DOM(PD)/customSteps.ts`) that polls `isEnabled()` up to 60s and, on timeout, DUMPS the reason (toasts, spinner, `[aria-invalid]`/error text, button `outerHTML`, any "Not Saved" indicator) then throws.
+3. See point A of the adaptive-sim notes (§5.1 of `FRAMEWORK_KT.md`) and category Q below for the related SSR-panel toast.
+
+## Q. "Unable to convert values. Reverting to defaults." (toast on the adaptive SSR panel)
+
+How often seen:
+- New — first documented 2026-08-13 (DOM(PD) TC_03, adaptive SSR panel).
+
+Exact messages seen:
+- Toast: `Unable to convert values. Reverting to defaults.`
+
+Likely root cause:
+- An SSR dropdown (Adaptation Method, Adapt At, Interim #, Enroll-Rate-After-Adapt, Promising-Zone Scale, CP-Computation-Based-On) was driven faster than the app recomputed. The Promising-Zone Scale select especially CONVERTS the min/max bounds to the new scale; racing it corrupts the design so Save & Simulate never re-enables (see category P).
+
+Resolution steps:
+1. Settle 0.7–1.2s after EACH SSR select so the app finishes recomputing before the next change.
+2. Order the SSR selects deliberately and avoid batch-firing them.
+
+## R. Design VALUE_MISMATCH (or 220s login/nav timeouts) appearing suddenly across many iterations after an `.env` change
+
+How often seen:
+- New — first documented 2026-08-13 (full DOM(PD) suite run on the wrong East Horizon instance).
+
+Exact messages seen:
+- `Compare TC_XX/ITER_YY: FAIL - VALUE_MISMATCH; N value mismatch(es), ...` across several iterations at once.
+- `waitForSelector: locator.waitFor: Timeout 220000ms exceeded.` (login/navigation) and `locator.check: Timeout ... exceeded.` on a flaky instance.
+
+Likely root cause:
+- Baselines are ENVIRONMENT-SPECIFIC. `06_baseline/<env>/` is tied to the ACTUAL East Horizon server the `.env` `BASE_URL` pointed at when it was approved — not just the `AD` label. Switching `.env` to a different instance produces design `VALUE_MISMATCH` on the sensitive designs (2-Sided-Asymmetric boundaries, Wang-Tsiatis) plus login/navigation timeouts if that instance is flaky. Proof: the full DOM suite gave 5 failures on the wrong instance (2× 220s login `waitForSelector` timeouts, 2× complex-boundary value-mismatches, 1× checkbox `check` timeout) and 0 failures on the correct one.
+
+Resolution steps:
+1. When comparisons start failing after any `.env` change, FIRST confirm `.env` points at the instance the baselines were built on. Do NOT "fix" the data.
+2. Repoint `.env` to the correct instance and re-run before re-baselining.
+3. See point B of the adaptive-sim notes (`FRAMEWORK_KT.md` §9.1/§10.1, Trap 26). Cross-refs: categories C (navigation timeout) and L (result comparison mismatch).
+
+## S. Unwanted empty period/interim row, or an Add-Period gate that misfires on a folded child table
+
+How often seen:
+- New — first documented 2026-08-23 (GADAR(PD) TC_12, child-table split + the `skipIf.ts` isNaCell core fix).
+
+Exact messages seen:
+- An extra **blank** period/interim row the iteration doesn't use; the group-sequential design won't compute (`"…is required"`, `"Cum. α Spent should be strictly in increasing order"`).
+- After moving a table to a normalized child CSV (`<phase>_<table>.csv`), an `Add Period`/`Add Interim` step that was correctly gated `SkipIf …==N/A` starts firing (or stops firing) on the wrong iterations.
+
+Likely root cause:
+- A **folded child table** has two different "not applicable" spellings: an **ABSENT period** (no row for that `PeriodIndex`) folds to the **empty string `''`**, while an **unused field** inside a *present* period folds to the **literal `N/A`**. A `SkipIf` that tested only one spelling misfired on the other. (Historically `==N/A` was a literal compare — it missed the empty absent-period; `==EMPTY` missed the present-`N/A` method cell. NEITHER single operator worked for a table with mutually-exclusive methods.)
+
+Resolution steps:
+1. Gate every `Add Period`/`Add Interim` on the period's key column with **`==N/A`**: `SkipIf ${data.<phase>.<table>.<n>.<keycol>}==N/A`. Since the **isNaCell** core fix (`core/runner/skipIf.ts`, 2026-08-23) `==N/A` matches **both** `''` and any `N/A` spelling, so it builds exactly the periods that exist — even for a survival table whose present period carries an `N/A` method cell.
+2. Keep **`==EMPTY`** only for `loopPeriods` / `reconcilePeriodTable` **count-field** gates (strict empty — they must fire whenever period 0 is present).
+3. Author not-applicable cells as the literal **`N/A`**, not blank (self-documenting; `FRAMEWORK_KT.md` §4.5 / §6.3).
+4. `npm run validate` warns on non-contiguous/duplicate `PeriodIndex`, orphan rows, inline+child collisions, and blank child cells — fix those first.
+
+## T. Save & Simulate / Calculate / Recalculate disabled or click intercepted mid-compute (app slowness)
+
+How often seen:
+- Documented across ROP(PD) TC_21 and GADAR(PD) TC_12 (2026-08). Intermittent — passes on a fast run, fails when the server/app is slow.
+
+Exact messages seen:
+- `locator.click: ... element is not enabled` on `#save-compute` / `btn_Save` immediately after a heavy compute.
+- `locator.click: Timeout ... exceeded` on Save, with a `#spinner` / `div_Spinner` overlay intercepting pointer events.
+
+Likely root cause:
+- The app keeps the button disabled (or an in-flight **spinner** overlays and intercepts clicks) while it recomputes; the framework's plain `click` auto-waits ~10s then FORCE-clicks, and **force cannot actuate a disabled button** nor click through a spinner overlay. This is a **transient timing race** — distinct from category P (a CONFIG invalidity that keeps the button *permanently* disabled; check config first).
+
+Resolution steps:
+1. Add a **settle-guard before the action**: `waitForSelector div_Spinner` (or `#spinner`) with `WaitCondition=hidden` at each compute→Save transition (and wait for the design page to render at page transitions).
+2. For a button that is disabled until the design is valid, poll `isEnabled()` before clicking (`waitAndInspectSaveSimulate`, category P). **`check` / `select` lack `click`'s force-retry**, so guard them explicitly.
+3. Leave a gap between full runs; the app can lag on rapid re-runs (one session per user).
+4. If the button NEVER enables, it is category P (config invalid), not slowness — inspect toasts / `[aria-invalid]`.
+
+## U. Design VALUE_MISMATCH from app LABEL DRIFT (result-table labels renamed by the app)
+
+How often seen:
+- New — documented 2026-08 (GADSD/GADAR re-baselines: `Alternative`→`Alt.`, `Null`→`Null.`).
+
+Exact messages seen:
+- `Compare TC_XX/ITER_YY: FAIL - ... VALUE_MISMATCH` or `ROW_COUNT_MISMATCH` where the DIFFERING cells are **row/column LABELS**, not numbers (a baseline row `Alternative` vs actual `Alt.`), often on otherwise-unchanged iterations.
+
+Likely root cause:
+- The East Horizon app **renamed a result-table label** (`Alternative`→`Alt.`, `Null`→`Null.`, …). The numbers are unchanged; only the extracted label text drifted, so the row keys no longer line up with the committed baseline. This is **distinct from category R** (R is an `.env`/instance change that shifts the NUMBERS on sensitive designs).
+
+Resolution steps:
+1. Diff `07_actual_results` vs the baseline and confirm the delta is **label text**, not values.
+2. If the app's new labels are correct, **re-baseline** the affected iterations (`--update-baseline`) after a human review, then re-run for a real PASS.
+3. If numbers ALSO drifted across many iterations at once, suspect an `.env` change first (category R) before re-baselining.
+
 ## 4) Recurring Patterns and Known Issues
 
 - The largest recurring issue is unused testdata columns.
@@ -394,6 +501,9 @@ Resolution steps:
 - Optional assertions hide instability by allowing runs to continue.
 - Some failures are data quality issues (missing rows, wrong combinations).
 - Comparison mismatches are less frequent but critical for release confidence.
+- Baselines are environment-specific: a burst of VALUE_MISMATCH (or 200s+ login/nav timeouts) across many iterations at once usually traces to an `.env` change pointing at a different East Horizon instance, not data drift — confirm `.env` matches the baseline instance before touching data (category R).
+- Period/interim tables are gated by `SkipIf`: use `==N/A` (isNaCell — matches blank OR an `N/A` spelling) for `Add Period`/`Add Interim`; use `==EMPTY` (strict) for `loopPeriods`/`reconcilePeriodTable` count-fields (category S).
+- A VALUE_MISMATCH whose diff is only LABEL text (`Alternative`→`Alt.`), not numbers, is app label drift → re-baseline after review, not a data bug (category U). App-slowness can leave Save/Calculate disabled or spinner-blocked → settle-guard, don't force-click (category T).
 
 ## 5) Recommended Troubleshooting Order (Beginner-friendly)
 

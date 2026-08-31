@@ -1,0 +1,71 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,Simulate,DesignPage,click,btn_Simulate,,,,,,10000,FALSE,0,never,,click Simulate
+2,20,ConfigureDesign,Page,fill,txt_ResultName,ROP_Sim_${iterationId},,,,,10000,FALSE,0,never,,Name the simulation NODE at config stage - MUST be distinct from the post-Save&Simulate RESULT name (step 575) or the result link opens the design/config page (14-char empty capture)
+3,30,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit-alert-primary
+4,40,ConfigureDesign,Page,click,txt_left_Panel_designs,,,,,,10000,FALSE,0,never,,click leftPanel.designs
+5,50,ConfigureDesign,Page,fill,txt_Sample_Size_n,${data.simulation.sampleSize},,,,,10000,FALSE,0,never,,fill Sample Size
+6,60,ConfigureDesign,Page,select,ddl_Randomization_Method,${data.simulation.randomizationMethodSelect},,,,,10000,FALSE,0,always,,Select Randomization Method. Native <select> - select matches by visible label first
+7,70,ConfigureDesign,Page,select,ddl_randomization_Method_Select,${data.simulation.randomizationMethodSelect},,,,,10000,FALSE,0,always,,Select randomizationMethodSelect. Native <select> - select matches by visible label first
+8,80,ConfigureDesign,Page,fill,txt_Allocation_Ratio_nt_nc,${data.simulation.allocationRatio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
+9,90,ConfigureDesign,Page,fill,txt_critical_Point,${data.simulation.criticalPoint},,,,,10000,FALSE,0,never,,fill criticalPoint
+10,100,ConfigureDesign,Page,fill,txt_Noninferiority_Margin_0,${data.simulation.nonInferiorityMargin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin
+11,110,ConfigureDesign,Page,fill,txt_super_Superiority_Margin,${data.simulation.superSuperiorityMargin},,,,,10000,FALSE,0,never,,fill superSuperiorityMargin
+12,120,ConfigureDesign,Page,fill,txt_upper_Critical_Point,${data.simulation.upperCriticalPoint},,,,,10000,FALSE,0,never,,fill upperCriticalPoint
+13,130,ConfigureDesign,Page,fill,txt_boundary_Sim_0_analysis_Spacing_Info,${data.simulation.boundarySim.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.0.analysisSpacingInfo
+14,140,ConfigureDesign,Page,fill,txt_boundary_Sim_1_analysis_Spacing_Info,${data.simulation.boundarySim.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.1.analysisSpacingInfo
+15,150,ConfigureDesign,Page,fill,txt_boundary_Sim_2_analysis_Spacing_Info,${data.simulation.boundarySim.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.2.analysisSpacingInfo
+16,160,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZUpper,${data.simulation.boundarySim.0.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZUpper
+17,170,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZLower,${data.simulation.boundarySim.0.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZLower
+18,180,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_ZUpper,${data.simulation.boundarySim.0.futilityZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZUpper
+19,190,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_ZLower,${data.simulation.boundarySim.0.futilityZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZLower
+20,200,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.0.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentUpper
+21,210,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.0.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentLower
+22,220,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent,${data.simulation.boundarySim.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpent
+23,230,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_Z,${data.simulation.boundarySim.1.efficacyZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZ
+24,240,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_Z,${data.simulation.boundarySim.0.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZ
+25,250,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_CP,${data.simulation.boundarySim.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityCP
+26,260,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_PValue,${data.simulation.boundarySim.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityPValue
+27,270,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.simulation.boundarySim.0.analysisSpacingInfo}==EMPTY,click Recalculate
+28,280,ConfigureDesign,Page,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
+29,290,ConfigureDesign,Page,select,ddl_Distribution,${data.simulation.distributionSelect},,,,,10000,FALSE,0,always,,Select Distribution. Native <select> - select matches by visible label first
+30,300,ConfigureDesign,Page,select,ddl_distribution_Select,${data.simulation.distributionSelect},,,,,10000,FALSE,0,always,,Select distributionSelect. Native <select> - select matches by visible label first
+31,310,ConfigureDesign,Page,fill,txt_Proportion_Under_Control_c,${data.simulation.propUnderControl},,,,,10000,FALSE,0,never,,fill Proportion Under Control
+33,330,ConfigureDesign,Page,fill,txt_Ratio_of_Proportions_t,${data.simulation.ratioOfProps},,,,,10000,FALSE,0,never,,fill Ratio of Proportions (ρ = πt
+34,340,ConfigureDesign,Page,fill,txt_Follow_up_Time_Week,${data.simulation.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
+35,350,ConfigureDesign,Page,select,ddl_Dropout_Distribution,${data.simulation.dropoutDistributionSelect},,,,,10000,FALSE,0,always,,Select Dropout Distribution. Native <select> - select matches by visible label first
+36,360,ConfigureDesign,Page,select,ddl_dropout_Distribution_Select,${data.simulation.dropoutDistributionSelect},,,,,10000,FALSE,0,always,,Select dropoutDistributionSelect. Native <select> - select matches by visible label first
+37,370,ConfigureDesign,Page,fill,txt_Probability_of_Dropout,${data.simulation.probabilityOfDropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
+38,380,ConfigureDesign,Page,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
+39,390,ConfigureDesign,Page,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.1.avgSubjectsEnrolled}==EMPTY,click Add Period
+40,400,ConfigureDesign,Page,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.2.avgSubjectsEnrolled}==EMPTY,click Add Period
+41,410,ConfigureDesign,Page,fill,txt_enrollment_Table_1_starting_At_Time,${data.simulation.enrollmentTable.1.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.startingAtTime
+42,420,ConfigureDesign,Page,fill,txt_enrollment_Table_2_starting_At_Time,${data.simulation.enrollmentTable.2.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.startingAtTime
+43,430,ConfigureDesign,Page,click,txt_enrollment_Table_0_avg_Subjects_Enrolled,,,,,,10000,FALSE,0,never,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled}==EMPTY,click enrollmentTable.0.avgSubjectsEnrolled
+44,440,ConfigureDesign,Page,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.0.avgSubjectsEnrolled
+45,450,ConfigureDesign,Page,fill,txt_enrollment_Table_1_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.1.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.avgSubjectsEnrolled
+46,460,ConfigureDesign,Page,fill,txt_enrollment_Table_2_avg_Subjects_Enrolled,${data.simulation.enrollmentTable.2.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.2.avgSubjectsEnrolled
+47,470,ConfigureDesign,Page,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
+48,480,ConfigureDesign,Page,fill,txt_Number_of_Simulations_Run,${data.simulation.numOfSimRun},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
+49,490,ConfigureDesign,Page,select,ddl_Random_Number_Seed,${data.simulation.randomNumberSeed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
+50,500,ConfigureDesign,Page,fill,txt_Fixed_Seed,${data.simulation.fixedSeed},,,,,10000,FALSE,0,never,,fill Fixed Seed
+51,510,ConfigureDesign,Page,check,chk_save_Summary_Stats,,,,,,10000,FALSE,0,always,${data.simulation.saveSummaryStats}!=check,check saveSummaryStats when testdata saveSummaryStats=check (SkipIf gates it per iteration)
+52,520,ConfigureDesign,Page,uncheck,chk_save_Summary_Stats,,,,,,10000,FALSE,0,always,${data.simulation.saveSummaryStats}!=uncheck,uncheck saveSummaryStats when testdata saveSummaryStats=uncheck (SkipIf gates it per iteration)
+53,530,ConfigureDesign,Page,check,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,always,${data.simulation.saveSubjectLevelData}!=check,check saveSubjectLevelData when testdata saveSubjectLevelData=check (SkipIf gates it per iteration)
+54,540,ConfigureDesign,Page,uncheck,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,always,${data.simulation.saveSubjectLevelData}!=uncheck,uncheck saveSubjectLevelData when testdata saveSubjectLevelData=uncheck (SkipIf gates it per iteration)
+55,550,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
+56,560,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+57,570,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
+57,575,ExtractResults,ResultsPage,fill,txt_ResultName,${data.simulation.Sim Result Name},,,,,10000,FALSE,0,never,,Name the RESULT on the results-list page AFTER Save & Simulate (recording line 107 / DOM step 665). Distinct from the sim-node name (step 20) so the result link opens the completed result, not the design page
+58,580,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit-alert-primary
+59,590,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
+60,600,ExtractResults,ResultsPage,click,lnk_ResultName,${data.simulation.Sim Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
+61,610,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
+62,620,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+45,45,ConfigureDesign,Page,callCustom,,loadResponseTabIntoModel,,,,,15000,FALSE,0,always,,Go to Response tab then back to Design before Recalculate (GADAR prior-too-extreme fix)
+383,383,ConfigureDesign,Page,check,chk_include_Switch,,,,,,10000,FALSE,0,always,${data.simulation.Include Enrollment}!=check,Include Enrollment ON (reveals accrual table) - gated
+384,384,ConfigureDesign,Page,uncheck,chk_include_Switch,,,,,,10000,FALSE,0,always,${data.simulation.Include Enrollment}!=uncheck,Include Enrollment OFF - gated
+22.1,221,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.1.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentUpper
+22.2,222,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.1.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentLower
+22.3,223,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZUpper,${data.simulation.boundarySim.1.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZUpper
+22.4,224,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZLower,${data.simulation.boundarySim.1.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZLower
+22.5,225,ConfigureDesign,Page,fill,txt_boundary_Sim_1_futility_Z,${data.simulation.boundarySim.1.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.futilityZ

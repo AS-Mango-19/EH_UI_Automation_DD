@@ -1,230 +1,346 @@
-# EH UI Automation — Framework KT
+# EH UI Automation — Framework Knowledge Transfer (KT)
 
-A complete working reference for the CSV-driven Playwright regression framework.
-Read this top to bottom once and you will understand how a test runs, how to add
-one, and where the sharp edges are.
+A complete, friendly reference for the **CSV-driven Playwright regression framework** that tests the
+Cytel **East Horizon** clinical-trial design web app. Read this top-to-bottom once and you will
+understand what the framework is, how to run it, how the files fit together, and how to add or fix a
+test — without reading a line of the engine's code.
 
-- **Audience:** QA engineers and developers joining the project.
-- **Reference features (all working end-to-end):**
-  - `feature_ROM(PD)` (`TC_04`) — the canonical single-iteration example. When in
-    doubt, copy it.
-  - `feature_SinglePoissonRate` (`TC_01`) — a **multi-iteration** example (two
-    iterations that compute different parameters), showing the `Computed` rule
-    (§6.2) and per-iteration unique names.
-  - `feature_Simon2Stage` (`TC_02`) — a group-stage design with a native `<select>`.
-  - `feature_MeanofPairedRatios` (`TC_05`) — the **conditional-fields, multi-scenario**
-    example: one metadata, four iterations (Superiority/Non-Inferiority × Ratio-of-Means/
-    Individual-Means), driven entirely by `N/A` cells and disabled-field skips (§6.3, §4.5).
-  - `feature_BOIN` (`TC_14`) — the **repeated-modal / multi-scenario** example: 1..N
-    candidate-model scenarios entered through a single re-opened "Add Scenario" modal (Emax /
-    4PL / Quadratic / Linear / General), driven by a child `01_testdata/scenarios.csv` + a
-    reusable `03_metadata/scenario_block.csv` sub-flow + **one `loopOverData` step** ("Option A").
-    Also shows **data-driven dose entry** (each Add-Dose gated on the iteration's dose count).
-    Full recipe: **`MULTI_SCENARIO_GUIDE.md`**.
-- **Every claim here is code-backed.** File and line references are given so you
-  can verify rather than trust.
+- **Audience:** QA engineers and developers new to the project.
+- **Every claim is code-backed.** File paths (and line numbers where useful) are given so you can
+  verify, e.g. `core/runner/orchestrator.ts`. Paths are relative to the repo root.
+- **The golden idea:** *tests are **data**, not code.* You never hand-write a `.spec.ts`.
 
 ---
 
 ## Contents
 
-**In a hurry?** → [Run a test](#2-quick-start) · [Add a feature](#13-adding-a-new-feature) · [AI import agent](#139-the-ai-agent-path--import-feature) · [All commands](#14-command-reference) · [Share a report](#111-sharing-a-report--use-npm-run-reportshare) · [Something broke](#16-where-to-look-when-something-breaks) · [Traps](#15-traps-and-known-issues)
+**In a hurry?**
+[Run something now](#2-quick-start) ·
+[All commands](#4-command-reference-the-important-one) ·
+[Run one feature / all / one iteration](#how-do-i-run--the-cheat-sheet) ·
+[Add a feature](#16-adding-a-new-feature) ·
+[Something broke](#18-where-to-look-when-something-breaks) ·
+[Traps](#17-traps-and-known-issues)
 
 | § | Section | What's in it |
 | --- | --- | --- |
-| 1 | [The idea in one page](#1-the-idea-in-one-page) | The mental model. Start here. |
-| 2 | [Quick start](#2-quick-start) | The three commands you need on day one. |
-| 3 | [Repository layout](#3-repository-layout) | What every folder is for. |
-| 4 | [The CSV layers](#4-the-csv-layers) | **Reference tables for every column.** |
-| 5 | [How a run executes](#5-how-a-run-executes) | CLI → validation → runner → report. |
-| 6 | [The keyword catalog](#6-the-keyword-catalog) | Every `Action` you can write in a step. |
-| 7 | [Selector resolution](#7-selector-resolution) | How a name becomes a Playwright locator. |
-| 8 | [Variable interpolation](#8-variable-interpolation) | Every `${...}` token that exists. |
-| 9 | [Baseline and compare](#9-baseline-and-compare) | The point of the framework. |
-| 10 | [Environments and auth](#10-environments-and-auth) | How `AD` is chosen, and login. |
-| 11 | [Reports and artifacts](#11-reports-and-artifacts) | What is written where, and sharing. |
-| 12 | [Extension points](#12-extension-points) | Reusable flows and custom steps. |
-| 13 | [Adding a new feature](#13-adding-a-new-feature) | **Two paths — manual importer + the AI agent (§13.9).** Step-by-step. |
-| 14 | [Command reference](#14-command-reference) | Every command and flag. |
-| 15 | [Traps and known issues](#15-traps-and-known-issues) | **Read before debugging.** |
-| 16 | [Where to look when something breaks](#16-where-to-look-when-something-breaks) | Symptom → where to look. |
-| 17 | [Glossary](#17-glossary) | Terms used throughout. |
-
-<details>
-<summary><strong>Full index (every subsection)</strong></summary>
-
-- **[1. The idea in one page](#1-the-idea-in-one-page)**
-- **[2. Quick start](#2-quick-start)**
-- **[3. Repository layout](#3-repository-layout)**
-- **[4. The CSV layers](#4-the-csv-layers)**
-  - [4.1 `master.csv` — the test registry](#41-mastercsv--the-test-registry)
-  - [4.2 `feature.config.json` — feature behaviour](#42-00_configfeatureconfigjson--feature-behaviour)
-  - [4.3 `metadata.csv` — the steps](#43-03_metadatametadatacsv--the-steps) · [`Seq` is documentation only](#431-seq-is-documentation-only) · [the `Screenshot` column does nothing](#432-the-screenshot-column-does-nothing)
-  - [4.4 `selectors.csv` — the locators](#44-02_selectors_reposelectorscsv--the-locators)
-  - [4.5 `01_testdata/*.csv` — the values](#45-01_testdatacsv--the-values)
-  - [4.6 `compare.config.csv` — the compare rules](#46-06_baselinecompareconfigcsv--the-compare-rules)
-- **[5. How a run executes](#5-how-a-run-executes)**
-- **[6. The keyword catalog](#6-the-keyword-catalog)**
-  - [Navigation](#navigation) · [Input](#input) · [Wait](#wait) · [Capture](#capture) · [Assert](#assert) · [Flow](#flow) · [API / Comparison](#api--comparison)
-  - [6.1 `select` — read this before touching a dropdown](#61-select--read-this-before-touching-a-dropdown)
-  - [6.2 `fill` — every value must land, and the `Computed` rule](#62-fill--every-testdata-value-must-land-and-the-computed-rule)
-  - [6.3 Disabled fields, grid cells, and the skip rules at a glance](#63-disabled-fields-grid-cells-and-the-skip-rules-at-a-glance)
-- **[7. Selector resolution](#7-selector-resolution)**
-  - [7.1 Types and priority](#71-types-and-priority)
-  - [7.2 FallbackSelector](#72-fallbackselector)
-  - [7.3 `Exact` — the substring trap](#73-exact--the-substring-trap)
-  - [7.4 `Dynamic` and `{0}`](#74-dynamic-and-0)
-- **[8. Variable interpolation](#8-variable-interpolation)**
-- **[9. Baseline and compare](#9-baseline-and-compare)**
-  - [9.1 Where](#91-where) · [9.2 Lifecycle](#92-lifecycle) · [9.3 Modes](#93-modes)
-  - [9.4 The trap that will fool you](#94-the-trap-that-will-fool-you)
-- **[10. Environments and auth](#10-environments-and-auth)**
-  - [10.1 How the env is chosen](#101-how-the-env-is-chosen)
-  - [10.2 `reuseAuthState`](#102-reuseauthstate)
-- **[11. Reports and artifacts](#11-reports-and-artifacts)**
-  - [11.1 Sharing a report — use `npm run report:share`](#111-sharing-a-report--use-npm-run-reportshare)
-- **[12. Extension points](#12-extension-points)**
-  - [12.1 Reusable flows — `flows/*.csv`](#121-reusable-flows--flowscsv)
-  - [12.2 Custom steps — `custom/<Feature>/customSteps.ts`](#122-custom-steps--customfeaturecustomstepsts)
-- **[13. Adding a new feature](#13-adding-a-new-feature)**
-  - [Step 1 — Record the flow](#step-1--record-the-flow)
-  - [Step 2 — Import](#step-2--import)
-  - [Step 3 — Register the test](#step-3--register-the-test)
-  - [Step 4 — Review testdata](#step-4--review-testdata)
-  - [Step 5 — Validate](#step-5--validate-no-browser-2s)
-  - [Step 6 — First run: create the benchmark](#step-6--first-run-create-the-benchmark)
-  - [Step 7 — Approve the benchmark](#step-7--approve-the-benchmark)
-  - [Step 8 — Real runs](#step-8--real-runs)
-  - [What still needs a human](#what-still-needs-a-human)
-  - [13.9 The AI agent path — `/import-feature`](#139-the-ai-agent-path--import-feature)
-- **[14. Command reference](#14-command-reference)**
-  - [Everyday](#everyday) · [`test` flags](#test-flags-corecliargsts) · [Authoring a feature](#authoring-a-feature) · [Sharing results](#sharing-results-111) · [Maintenance](#maintenance)
-- **[15. Traps and known issues](#15-traps-and-known-issues)**
-- **[16. Where to look when something breaks](#16-where-to-look-when-something-breaks)**
-- **[17. Glossary](#17-glossary)**
-
-</details>
+| 1 | [What this is & why](#1-what-this-is--why) | The mental model. Start here. |
+| 2 | [Quick start](#2-quick-start) | Get a run going in five minutes. |
+| 3 | [Core concepts](#3-core-concepts-the-vocabulary) | The words used everywhere. |
+| 4 | [Command reference](#4-command-reference-the-important-one) | **Every command, with examples.** Run all / one feature / one iteration. |
+| 5 | [Repository layout](#5-repository-layout) | What every folder is for. |
+| 6 | [The CSV layers](#6-the-csv-layers) | Reference tables for every file & column. |
+| 7 | [How a run executes](#7-how-a-run-executes) | CLI → validate → run → compare → report. |
+| 8 | [The keyword catalog](#8-the-keyword-catalog) | Every `Action` you can put in a step (all 43). |
+| 9 | [Selector resolution](#9-selector-resolution) | How a name becomes a Playwright locator. |
+| 10 | [Variable interpolation](#10-variable-interpolation) | Every `${...}` token that exists. |
+| 11 | [Authoring testdata](#11-authoring-testdata) | What to put in each cell; period tables; scenarios. |
+| 12 | [Baseline & compare](#12-baseline--compare) | The point of the framework. |
+| 13 | [Environments & auth](#13-environments--auth) | How the env is chosen, and login. |
+| 14 | [Reports & sharing](#14-reports--sharing) | What is written where, and how to share it. |
+| 15 | [Extension points](#15-extension-points) | Reusable flows and custom steps. |
+| 16 | [Adding a new feature](#16-adding-a-new-feature) | Two paths — importer + AI agent. |
+| 17 | [Traps & known issues](#17-traps-and-known-issues) | **Read before debugging.** |
+| 18 | [Where to look when something breaks](#18-where-to-look-when-something-breaks) | Symptom → where to look. |
+| 19 | [Glossary](#19-glossary) | Terms used throughout. |
 
 ---
 
-## 1. The idea in one page
+## 1. What this is & why
 
-**Tests are data, not code.** A test is a row in `master.csv` plus a few CSVs in a
-feature folder. Nobody writes a `.spec.ts` by hand.
+**A test is data, not code.** One test = a row in `master.csv` plus a handful of CSV files in a
+feature folder. The engine (`core/`) reads those files and drives a browser through the East Horizon
+app: it configures a study design, computes it, optionally runs a simulation, scrapes the result
+tables, and compares them against an approved **baseline**. Nobody writes a Playwright script by hand —
+they are generated from a recording.
+
+The framework is built from **six layers**, each answering one question:
 
 ```
-master.csv            WHICH tests exist, and which run
-   |
-   v
-00_config/feature.config.json    HOW this feature behaves (auth, results, cleanup)
-   |
-   v
-03_metadata/metadata.csv         WHAT the test does — the ordered steps
-   |
-   v
-02_selectors_repo/selectors.csv  WHERE things are — logical name -> locator
-   |
-   v
-01_testdata/*.csv                WHICH values to type
-   |
-   v
-06_baseline/<env>/               WHAT the answer should be (the benchmark)
+master.csv                       WHICH tests exist, and which ones run
+   │
+   ▼
+00_config/feature.config.json     HOW this feature behaves (auth, results, cleanup)
+   │
+   ▼
+03_metadata/metadata.csv          WHAT the test does — the ordered steps
+   │
+   ▼
+02_selectors_repo/selectors.csv   WHERE things are — a logical name → a locator
+   │
+   ▼
+01_testdata/*.csv                 WHICH values to type — one row per iteration
+   │
+   ▼
+06_baseline/<env>/                WHAT the answer should be — the approved benchmark
 ```
 
-The engine reads those five layers and drives the browser. The separation is the
-whole point:
+The **separation** is the whole point:
 
 - A **step** never contains a selector — it names an object (`btn_Save`).
 - A **selector** never contains a value — the step supplies it.
 - A **value** never lives in a step — it comes from testdata (`${data.project.Phase}`).
 
-So when the UI moves, you edit one row of `selectors.csv`. When the data changes,
-you edit `01_testdata/`. Neither touches the framework.
+So when the UI moves, you edit **one row** of `selectors.csv`. When the data changes, you edit
+`01_testdata/`. Neither touches the engine.
 
-**§14, the rule that keeps this honest:** framework core (`core/`) must never
-contain anything app-specific — no selectors, no URLs, no business logic. If you
-need app-specific behaviour, it goes in `custom/<Feature>/customSteps.ts` or the
-CSVs. Core stays generic.
+**The rule that keeps this honest:** the framework core (`core/`) is **generic** — no selectors, no
+URLs, no business logic. Anything app-specific lives in the feature's CSVs or in
+`custom/<Feature>/customSteps.ts`. This is what lets one engine serve every feature.
+
+**Two facts about this particular app that shape everything:**
+
+- **One session per user.** The app allows only one active login at a time; a second login forces the
+  first out ("Forced Log Out"). So iterations of a feature run **serially** (`serial: true`) — see
+  [Trap 15](#17-traps-and-known-issues).
+- **A green run can verify nothing.** The first time a test runs there is no baseline, so it *writes*
+  one and reports `BASELINE_CREATED` — green, but nothing was checked. **Always read the status
+  string, never the exit code** ([§12](#12-baseline--compare)).
 
 ---
 
 ## 2. Quick start
 
+**Prerequisites:** Node.js + `npm install` (the `prepare` script wires up the git hooks). A `.env`
+file at the repo root holds the app URL and credentials (`BASE_URL`, `API_BASE_URL`, `APP_USERNAME`,
+`APP_PASSWORD`) — it is **gitignored** and never committed. See [§13](#13-environments--auth).
+
+**The three commands you need on day one:**
+
 ```bash
-npm run validate                      # check every CSV without opening a browser (~2s)
-npm run test -- --testcase TC_04      # run one test case
-npm run test -- --tags smoke          # run by tag
-npm run test -- --all                 # run everything marked Execute=TRUE
+npm run validate                       # check every CSV without opening a browser (~2s)
+npm run test -- --testcase TC_04       # run ONE test case (feature ROM(PD))
+npm run test -- --all                  # run everything marked Execute=TRUE
 ```
 
-After a run:
+> Flags go **after `--`** so npm passes them through. You can also skip npm:
+> `npx tsx core/cli/index.ts test --testcase TC_04`.
+
+**After a run, look here:**
 
 | Where | What |
 | --- | --- |
-| `ProductDesign/feature_ROM(PD)/09_html_report/index.html` | per-step report with screenshots |
-| `reports/<runId>/results.json` | machine-readable result |
-| `artifacts/<runId>/<TC>_<ITER>/` | screenshots, trace, video |
+| `ProductDesign/feature_<Name>/09_html_report/index.html` | per-step report with screenshots |
+| `reports/<runId>/results.json` | machine-readable result — **the source of truth** |
+| `artifacts/<runId>/<TC>_<ITER>/` | screenshots, `trace.zip`, video |
 
-**Always read the status string, never the exit code.** See §9.4 — a run can exit
-`0` while verifying nothing.
+To send a report to someone, don't email the HTML file directly (its links break) — use
+`npm run report:share` ([§14](#14-reports--sharing)).
 
 ---
 
-## 3. Repository layout
+## 3. Core concepts (the vocabulary)
+
+These words appear on every page — learn them once.
+
+| Term | Meaning |
+| --- | --- |
+| **Feature** | One app workflow under test → a folder `<Module>/feature_<Name>/` (e.g. `ProductDesign/feature_ROM(PD)/`). |
+| **Test case (TC)** | One row in `master.csv`, identified by a `TC_ID` (`TC_04`). What `--testcase` runs. |
+| **Iteration** | One execution of a TC with one testdata row, identified by an `IterationID` (`ITER_01`). A TC with three testdata rows runs three iterations of the *same* steps with different values. |
+| **Step** | One row in `metadata.csv` — one action, e.g. "fill the Sample Size field". |
+| **Keyword / Action** | What a step does: `click`, `fill`, `select`, … ([§8](#8-the-keyword-catalog)). |
+| **Object** | A logical UI-element name (`btn_Save`) that `selectors.csv` maps to a real locator. |
+| **Selector** | The actual locator (`#save-button`, a role, an xpath) behind an object. |
+| **Baseline / benchmark** | The approved expected result for a TC+iteration ([§12](#12-baseline--compare)). |
+| **Flow** | A reusable step CSV in `flows/` (e.g. `flows/login.csv`), inlined via `callReusable` ([§15](#15-extension-points)). |
+| **Custom step** | An app-specific handler in `custom/<Feature>/customSteps.ts`, called via `callCustom`. |
+| **Design flow / Simulation flow** | A feature can have two flows: the **design** (configure + compute) and a chained **simulation** that runs after a green design ([§7](#7-how-a-run-executes)). |
+
+**Two rules that trip everyone up at first:**
+
+1. **Steps run in `StepID` order, not file order.** The loader sorts by the numeric `StepID` column
+   (`core/loaders/featureLoader.ts`). To move a step earlier, **change its StepID** — reordering rows
+   does nothing. StepIDs are gapped (10, 20, 30) so you can insert without renumbering.
+2. **One metadata serves every iteration.** A value-entering step whose testdata cell is **blank** or
+   **`N/A`** is simply *skipped* for that iteration. You never fork the steps per scenario; you
+   data-drive them ([§11](#11-authoring-testdata)).
+
+---
+
+## 4. Command reference (the important one)
+
+Every `npm run <name>` maps to a script in `package.json`. Under the hood each is
+`tsx <script>` — e.g. `npm run test` is `tsx core/cli/index.ts test`. **Flags must come after `--`**
+so npm forwards them: `npm run test -- --testcase TC_03`.
+
+### How do I run …? — the cheat-sheet
+
+| I want to run… | Command | Notes |
+| --- | --- | --- |
+| **Validate everything** (no browser) | `npm run validate` | Checks every `master.csv` row, incl. `Execute=FALSE`. ~2s. |
+| **Validate one feature** | `npm run validate -- --feature DOM(PD)` | Case-insensitive; a `feature_` prefix is tolerated. |
+| **All enabled features** | `npm run test -- --all` | Every row with `Execute=TRUE`. (Bare `npm run test` does the same.) |
+| **One feature** (all its enabled TCs) | `npm run test -- --feature DOM(PD)` | **Exact, case-sensitive** match on the `Feature` column (unlike validate). |
+| **One test case** | `npm run test -- --testcase TC_03` | Alias `--tc TC_03`. **Runs even if `Execute=FALSE`** — the only way to run a disabled row. |
+| **One specific ITERATION** | *(no flag)* — set the `Run` column, then `npm run test -- --testcase TC_03` | See [Running one iteration](#running-one-iteration-there-is-no---iteration-flag). |
+| **By tag** | `npm run test -- --tags smoke` | `,`=OR · `+`=AND · `~`=NOT. Never picks `Execute=FALSE`. |
+| **Watch it (visible browser)** | `npm run test -- --testcase TC_03 --headed` | Default is headless. |
+| **Force serial** | `npm run test -- --testcase TC_03 --workers 1` | Default = 4 workers (auto-serial if any feature is `serial:true`). |
+| **Re-approve the baseline** | `npm run test -- --testcase TC_03 --update-baseline` | Overwrites the benchmark; status = `BASELINE_CREATED`. |
+
+**Selection precedence** (highest wins): `--testcase` > `--tags` > `--all` > default (`Execute=TRUE`).
+Only `--testcase` runs an `Execute=FALSE` row. Source: `core/runner/select.ts`.
+
+### Running one iteration (there is NO `--iteration` flag)
+
+Iteration selection lives in the **testdata**, not the CLI. Set a **`Run` column** in any testdata file
+that has an `IterationID` column (`inputset.csv`, `project.csv`, or `design.csv` — whichever the
+author used), then run the whole test case.
+
+- **ON** = `TRUE` / `1` / `YES` / `Y` / **blank** (blank means run — the column is opt-**out**).
+- **OFF** = `FALSE` (anything not truthy).
+- The iteration list is the **union** across all keyed testdata files; `Run=FALSE` in **any** file is a
+  **veto** that switches that iteration off everywhere, and a file lacking the column can't switch one
+  back on.
+- Source: `RUN_COLUMN` in `core/runner/testdata.schema.ts`; `iterationsFor()` in
+  `core/runner/testDataStore.ts`; unit tests in `tests/unit/testDataStore.test.ts`.
+
+**Example — run only `ITER_03` of `TC_03`:** in one testdata file set `Run=TRUE` on the `ITER_03` row
+and `Run=FALSE` on the others, then `npm run test -- --testcase TC_03`. Back up the file first and
+restore all `Run=TRUE` when you're done.
+
+### The CLI subcommands (`core/cli/index.ts`)
+
+| Command | What it does |
+| --- | --- |
+| `npm run validate` | Schema-check every CSV. No browser, no Playwright loaded. |
+| `npm run test` | **Validates first, then runs** — aborts before opening a browser if validation fails. |
+| `npm run generate` | (Re)generate the POM + spec files only — no run. Does **not** pre-validate. |
+| `npm run cleanup:orphans` | Delete projects left behind by crashed runs (via the API). |
+
+### `test` flags (`core/cli/args.ts` — exactly 9; anything else → "Unknown flag")
+
+| Flag | Value? | Effect |
+| --- | --- | --- |
+| `--testcase` / `--tc <ID>` | yes | Run one TC. **Ignores `Execute`.** |
+| `--tags "<expr>"` | yes | `,`=OR · `+`=AND · `~`=NOT. |
+| `--feature <Name>` | yes | One feature. **Exact match** for `test`/`generate`. |
+| `--all` | no | Every `Execute=TRUE` row. |
+| `--env <name>` | yes | Override env — selects `.env.<env>` AND `06_baseline/<env>/`. Applies to **every** selected row. |
+| `--update-baseline` | no | Overwrite the benchmark. |
+| `--headed` | no | Visible browser (default headless). |
+| `--workers <n>` | yes | Concurrency (default 4). |
+| `--trigger <label>` | yes | Label the run in the report (`local`/`ci`). |
+
+> `--sim`, `--seed`, `--strict` are **not** `test` flags — they belong to `import-codegen` only
+> (below). There is no `--iteration`.
+
+### Authoring a feature
+
+```bash
+npm run codegen                                                   # record a flow (Playwright recorder); save into the feature's 02_selectors_repo/recording.txt
+npm run import-codegen -- ProductDesign DOP(PD) --tc TC_22        # DESIGN flow → metadata.csv (recording auto-discovered)
+npm run import-codegen -- ProductDesign DOP(PD) --tc TC_22 --sim  # SIM flow → sim_metadata.csv (reads sim_recording.txt; tokens → simulation.csv)
+npm run scaffold-feature -- ProductDesign Simon2Stage            # empty feature tree (import-codegen also creates the folder)
+npm run xlsx-to-csv -- path/to/testdata.xlsx 01_testdata/        # Excel → one CSV per sheet
+```
+
+`import-codegen` script-only flags: `--sim` (simulation flow), `--seed` (bootstrap — create columns for
+unmatched recorded fields; empty features only), `--strict` (fail on any unwired field), `--page NAME`,
+`--tc TC_XX`. Full playbook: `AI_IMPORT_AGENT.md`. AI-assisted path: `/import-feature`
+([§16](#16-adding-a-new-feature)).
+
+### Reports
+
+```bash
+npm run report:share                              # newest run → ONE self-contained HTML (~13 MB, screenshots embedded)
+npm run report:share -- --lite                    # ~40 KB, no screenshots (emailable)
+npm run report:share -- 20260717T123816_de4b97    # a specific runId
+npm run report:share -- --list                    # list shareable runs
+```
+
+Every `npm run test` already writes `reports/<runId>/{results.json, combined_report.html, junit.xml}`
+plus each feature's `09_html_report/index.html`. **Never** email the on-disk HTML directly — its links
+break outside the repo; send the `report:share` output. Source: `scripts/share-report.ts`.
+
+### Maintenance / dev
+
+```bash
+npm run check-recordings   # credential guard: scan committed recordings for un-scrubbed creds (also the pre-commit hook)
+npm run cleanup:orphans    # delete leftover projects
+npm run generate           # regenerate POM + specs
+npm run typecheck          # tsc --noEmit
+npm run unit               # unit tests (tests/unit/*.test.ts)
+npm run itest              # integration tests
+npm run pw:test            # DIFFERENT engine — runs the generated specs via Playwright Test (use `npm run test` normally)
+```
+
+### Gotchas that live with the commands
+
+- **`test` pre-validates with a narrowed scope.** A targeted run (`--feature`/`--testcase`) validates
+  only its target; a broad run validates only the **enabled** features — so a broken or disabled
+  *other* feature never blocks the feature you asked for. `generate` does **not** pre-validate.
+- **`--feature` matches differently for `validate` vs `test`/`generate`.** `validate` is
+  case-insensitive and tolerates a `feature_` prefix (`core/schema/validator.ts`); `test`/`generate`
+  need an **exact, case-sensitive** match on the `Feature` column (`core/runner/select.ts`). Use the
+  exact `master.csv` value (`DOM(PD)`) for runs.
+- **Parallel by default (4 workers), auto-serial** when any selected feature is `serial:true` or any
+  row has a non-empty `DependsOn` (`core/runner/orchestrator.ts`). Force serial with `--workers 1`.
+- **Headless by default.** `--headed` shows the browser (`HEADLESS` env, default `true`).
+- **`npm run test` ≠ `npm run pw:test`.** The CLI is the real path; `pw:test` runs the *generated*
+  specs and resolves env differently (its toggles are the env vars `RUN_ALL=1`, `UPDATE_BASELINE=1`).
+  Use `npm run test`.
+
+---
+
+## 5. Repository layout
 
 ```
-master.csv                     the test registry
-.env                           BASE_URL, credentials (gitignored)
-flows/login.csv                reusable step flows (callReusable)
-custom/<Feature>/customSteps.ts app-specific hooks (callCustom)
+master.csv                       the test registry (one row per TC)
+.env                             BASE_URL, API_BASE_URL, credentials (gitignored)
+flows/login.csv                  reusable step flows (callReusable)
+flows/<feature>_<table>_period.csv   generated loopPeriods template flows (§11)
+custom/<Feature>/customSteps.ts  app-specific hooks (callCustom)
+custom/_shared/customSteps.ts    shared hooks every feature inherits
 
 config/
-  framework.config.ts          framework-wide defaults
-  environments.ts              .env loading + env resolution
+  framework.config.ts            framework-wide defaults (timeouts, volatile columns)
+  environments.ts                .env loading + env resolution
 
-core/                          THE ENGINE — generic, never app-specific (§14)
-  cli/          index.ts, args.ts          entry point + flag parsing
-  schema/       *.schema.ts, validator.ts  CSV shapes + pre-flight validation
-  loaders/      featureLoader.ts           reads the CSV layers
-  locators/     resolver.ts                selectors.csv -> Playwright Locator
-  keywords/     catalog.ts, registry.ts, <group>.ts   every Action
-  runner/       orchestrator.ts, iterationRunner.ts, stepRunner.ts, context.ts
-  comparator/   baseline.ts, runCompare.ts  benchmark compare
-  reporters/    featureHtml.ts, combinedHtml.ts
+core/                            THE ENGINE — generic, never app-specific
+  cli/          index.ts, args.ts               entry point + flag parsing
+  schema/       *.schema.ts, validator.ts       CSV shapes + pre-flight validation
+  loaders/      featureLoader.ts                reads + folds the CSV layers
+  locators/     resolver.ts                     selectors.csv → Playwright Locator
+  keywords/     catalog.ts, registry.ts, *.ts   every Action (§8)
+  runner/       orchestrator.ts, iterationRunner.ts, stepRunner.ts, testDataStore.ts, select.ts
+  comparator/   baseline.ts, runCompare.ts, comparator.ts   benchmark compare
+  reporters/    featureHtml.ts, combinedHtml.ts, index.ts
   generators/   pom.generator.ts, spec.generator.ts
 
 scripts/
-  import-codegen.ts            codegen recording -> a working feature
-  scaffold-feature.ts          empty feature tree
-  codegen.ts                   launches Playwright codegen
+  import-codegen.ts              codegen recording → a working feature
+  scaffold-feature.ts            empty feature tree
+  codegen.ts                     launches Playwright's interactive recorder
+  share-report.ts                one self-contained shareable HTML
+  check-recordings.ts            credential guard (pre-commit)
+  xlsx-to-csv.ts                 Excel → CSV
 
 ProductDesign/feature_<Name>/
-  00_config/feature.config.json
-  01_testdata/*.csv
-  02_selectors_repo/selectors.csv
-  03_metadata/metadata.csv
-  04_generated_pom/            generated, do not edit
-  05_generated_scripts/        generated, do not edit
-  06_baseline/<env>/           the approved benchmark
-  06_baseline/compare.config.csv
-  07_actual_results/           what this run captured
-  08_diffs/                    baseline vs actual differences
-  09_html_report/index.html    the report
+  00_config/feature.config.json      how this feature behaves
+  01_testdata/*.csv                  the values (one row per iteration)
+  02_selectors_repo/selectors.csv    the locators   (recording.txt lives here — gitignored)
+  03_metadata/metadata.csv           the steps  (+ sim_metadata.csv for the sim flow)
+  04_generated_pom/                  GENERATED — do not edit
+  05_generated_scripts/              GENERATED — do not edit
+  06_baseline/<env>/                 the approved benchmark  (+ compare.config.csv)
+  07_actual_results/                 what THIS run captured   (gitignored)
+  08_diffs/                          baseline-vs-actual differences (gitignored)
+  09_html_report/index.html          the per-feature report  (gitignored)
 ```
 
-> **Folder numbering:** `02_selectors_repo` and `03_metadata`. The numbers are
-> labels, not load order. Defined in `core/utils/paths.ts:18-36` (`featurePaths`).
+> **The folder numbers are labels, not load order** (`core/utils/paths.ts`). `04_`/`05_` are generated
+> — never edit them by hand; they are regenerated on every run.
 
 ---
 
-## 4. The CSV layers
+## 6. The CSV layers
 
-### 4.1 `master.csv` — the test registry
+### 6.1 `master.csv` — the test registry
 
-One row per test case. Schema: `core/schema/master.schema.ts`. The schema is
-`.passthrough()` (line 46) and every non-required column defaults when blank, so
-**extra columns are safe and column order does not matter** — `core/csv/reader.ts`
-maps by header *name*.
+One row per test case. Schema: `core/schema/master.schema.ts`. The schema is `.passthrough()`, so
+**extra columns are safe and column order does not matter** — everything is mapped by header *name*.
 
 | Column | Required | Default | Meaning |
 | --- | --- | --- | --- |
@@ -233,1438 +349,761 @@ maps by header *name*.
 | `Feature` | **yes** | — | Resolves to `<Module>/feature_<Feature>/`. |
 | `Execute` | no | `FALSE` | Whether `--all` runs it. `--testcase` **ignores** this. |
 | `Tags` | no | `''` | For `--tags`. OR `,` · AND `+` · NOT `~`. |
+| `StudyObjective` | no | `''` | Human label of the study type (e.g. `Two Arm Confirmatory`). |
 | `Browser` | no | `chromium` | `chromium` \| `firefox` \| `webkit`. |
-| `Environment` | no | `''` | Env name. **Selects `.env.<env>` AND `06_baseline/<env>/`.** Currently `AD`. |
-| `BaselineMode` | no | `compare` | `compare` \| `create` \| `update`. |
-| `MetadataFile` | no | `03_metadata/metadata.csv` | Relative to the **feature** dir. Default at `config/framework.config.ts:18`. |
-| `TestDataFile` | no | `''` | The testdata **directory**. Accepts either the folder (`01_testdata`) or a file inside it (`01_testdata/inputset.csv`) — both resolve to the folder, and the whole folder is loaded. Blank → default `01_testdata`. |
-| `ProjectID` | no | `''` | Reuse an existing project instead of creating one. |
-| `StudyObjective`, `Priority`, `IterationID`, `DependsOn`, `Owner`, `Description` | no | `''` | Metadata / gating. |
+| `Environment` | no | `''` | Env name — selects **both** `.env.<env>` and `06_baseline/<env>/`. Currently `AD`. |
+| `TestDataFile` | no | `01_testdata` | The testdata folder (a file inside it also resolves to the folder). |
+| `MetadataFile` | no | `03_metadata/metadata.csv` | Relative to the feature dir. |
+| `ProjectID` | no | `''` | Reuse an existing app project instead of creating one. |
+| `Simulation` | no | `''` | `YES` chains the simulation flow after a green design ([§7](#7-how-a-run-executes)). |
 
-Current contents (one row per working feature):
+**Current registry (excerpt — `master.csv` is the source of truth):**
 
 ```csv
-TC_ID,Module,Tags,StudyObjective,Feature,ProjectID,Browser,TestDataFile,MetadataFile,Execute,Environment
-TC_01,ProductDesign,regression,One Arm Exploratory / Confirmatory,SinglePoissonRate,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
-TC_02,ProductDesign,regression,One Arm Exploratory / Confirmatory,Simon2Stage,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
-TC_03,ProductDesign,regression,Two Arm Superiority,Difference_of_Means,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
-TC_04,ProductDesign,regression,Two Arm Confirmatory,ROM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
+TC_ID,Module,Tags,StudyObjective,Feature,ProjectID,Browser,TestDataFile,MetadataFile,Execute,Environment,Simulation
+TC_03,ProductDesign,regression,Two Arm Confirmatory,DOM(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_12,ProductDesign,regression,Two Arm Confirmatory,GADAR(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_17,ProductDesign,regression,Two Arm Confirmatory,GADSD(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_20,ProductDesign,regression,Two Arm Confirmatory,GADAR_Stratification,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
+TC_21,ProductDesign,regression,Two Arm Confirmatory,ROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_22,ProductDesign,regression,Two Arm Confirmatory,DOP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 ```
 
-> **Trap.** Validation checks **every** row regardless of `Execute`
-> (`core/schema/validator.ts:45` has no filter), and any issue aborts the whole
-> run (`core/cli/index.ts:66-71`). A broken feature you are not running still
-> stops the one you are.
+The registry spans ~21 rows (TC_01–TC_23; there is no TC_14/16). Families: **one-arm** (SinglePoissonRate,
+Simon2Stage, MeanofPairedRatios, BOP2, *OAD), **proportions** (ROP, DOP, OROP, RONBR, FishersExact),
+**means/continuous** (DOM, ROM, ROPR), **survival / group-sequential** (GADAR, GADSD), **dose-escalation**
+(3+3, Rolling6). A few reference features used throughout this doc: `ROM(PD)` (TC_04, the simplest
+design+sim example), `DOM(PD)` (TC_03, means family), `GADAR(PD)` (TC_12, survival), `ROP(PD)` (TC_21,
+the count-agnostic period-table proving feature), `DOP(PD)` (TC_22, imported with today's defaults).
 
-### 4.2 `00_config/feature.config.json` — feature behaviour
+> **Trap.** Validation checks **every** master row's structure regardless of `Execute`, and a broken
+> row can abort a run. (A targeted `npm run test` narrows validation to just its target — see the
+> [command gotchas](#gotchas-that-live-with-the-commands).)
 
-Schema: `core/schema/featureConfig.schema.ts`.
+### 6.2 `00_config/feature.config.json` — feature behaviour
 
-| Key | Meaning |
-| --- | --- |
-| `feature`, `module` | Identity. |
-| `serial` | Run iterations one at a time. **Keep this `true`** — the app allows only **one active session per user**, so two iterations logging in at once force each other out ("another session started from a different location"). The importer now defaults it to `true`. See Trap 15. |
-| `reuseAuthState` | `true` = log in once in a **separate** browser, save `.auth/<env>.json`, reuse it. `false` = one browser, log in inline via a `callReusable` step. Features use **false** — see §10.2. |
-| `testdata.files` | Logical name -> CSV. `{inputset, project, design}` become the `${data.<name>.<Column>}` namespaces. |
-| `testdata.joinKey` | How a testdata row is matched to an iteration — `["TC_ID","IterationID"]`. |
-| `simulation` | `pollObject`, `successText`, `failureText`, `pollIntervalMs`, `maxWaitMs` for `waitForSimulation`. |
-| `resultsExtraction` | Shape of result capture (`mode`, `domTableObject`, `outputFileName`, ...). |
-| `cleanup.deleteCreatedProjects` | Delete projects the run created. |
+Schema: `core/schema/featureConfig.schema.ts`. Loaded by `core/loaders/featureLoader.ts`.
 
-### 4.3 `03_metadata/metadata.csv` — the steps
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `feature`, `module` | — (req) | Identity. |
+| `serial` | `false` (schema) | Run this feature's iterations one at a time. **The importer writes `true`** — the app allows one session per user (Trap 15). Any serial feature makes the whole run serial. |
+| `reuseAuthState` | `true` (schema) | `true` = log in once, save `.auth/<env>.json`, reuse it. **The importer writes `false`** so a single browser logs in inline via `callReusable flows/login.csv` — see [§13](#13-environments--auth). |
+| `testdata.files` | — | Logical name → CSV filename. `{inputset, project, design, simulation}` become the `${data.<name>.<Column>}` namespaces. |
+| `testdata.joinKey` | `["TC_ID","IterationID"]` | How a testdata row is matched to an iteration. |
+| `simulation` | — | `pollObject`, `successText`, `failureText`, `pollIntervalMs`, `maxWaitMs` for `waitForSimulation`. |
+| `resultsExtraction` | — | `mode` (`domTable`\|`download`), `domTableObject`, `outputFileName` (supports `${TC_ID}`/`${IterationID}`), `columnMap` (grid-header → canonical name), `sortBy` (deterministic order). |
+| `cleanup.deleteCreatedProjects` | `true` | Delete projects the run created (API safety-net if no `Cleanup` steps). |
 
-One row per step. Schema: `core/schema/metadata.schema.ts:29`.
+### 6.3 `03_metadata/metadata.csv` — the steps
+
+One row per step. Schema: `core/schema/metadata.schema.ts`.
 
 | Column | Default | Meaning |
 | --- | --- | --- |
-| `Seq` | — | **Documentation only.** Human 1,2,3 ordering. Not in the typed model (§4.3.1). |
-| `StepID` | required, integer | Execution order — rows are **sorted by StepID**, not file order. Gapped (10, 20, 30) so steps can be inserted without renumbering. |
-| `StepGroup` | required | One of `Login`, `CreateProject`, `OpenProject`, `CreateInputSet`, `ConfigureDesign`, `Simulate`, `ExtractResults`, `CompareBaseline`, `Cleanup` (`metadata.schema.ts:10-20`). |
-| `Page` | `-` | Namespaces `ObjectName` in selectors.csv. `(Page, ObjectName)` is the lookup key. |
-| `Action` | required | A keyword — see §6. |
+| `Seq` | — | **Documentation only.** Human 1,2,3 ordering; not in the typed model — `StepID` drives execution. |
+| `StepID` | req, int | **Execution order** — rows are sorted by StepID. Gapped (10, 20, 30) so steps insert without renumbering. |
+| `StepGroup` | req | `Login` \| `CreateProject` \| `OpenProject` \| `CreateInputSet` \| `ConfigureDesign` \| `Simulate` \| `ExtractResults` \| `CompareBaseline` \| `Cleanup`. |
+| `Page` | `-` | Namespaces `ObjectName`. `(Page, ObjectName)` is the selectors.csv lookup key. |
+| `Action` | req | A keyword — see [§8](#8-the-keyword-catalog). |
 | `ObjectName` | `''` | The logical object, resolved via selectors.csv. |
-| `InputValue` | `''` | The value / path / flow name. Supports `${...}` tokens (§8). |
-| `StoreAs` | `''` | Save a captured value under this name. |
+| `InputValue` | `''` | The value / path / flow name. Supports `${...}` tokens ([§10](#10-variable-interpolation)). |
+| `StoreAs` | `''` | Save a captured value under this name (`${runtime.<name>}`). |
 | `AssertType`, `ExpectedValue` | `''` | For assert / wait keywords. |
-| `WaitCondition` | `''` | `visible` \| `hidden` \| `domcontentloaded` \| ... |
-| `Timeout` | `30000` | Per-step timeout in ms (`framework.config.ts:8`). |
-| `Optional` | `FALSE` | `TRUE` = failure does not fail the test. |
+| `WaitCondition` | `''` | `visible` \| `hidden` \| `attached` \| `detached` \| … |
+| `Timeout` | `30000` | Per-step timeout in ms. |
+| `Optional` | `FALSE` | `TRUE` = a failure is downgraded to a warning; the run continues. |
 | `Retry` | `0` | Retries for this step. |
-| `Screenshot` | `never` | **Currently dead — see §4.3.2.** |
-| `SkipIf` | `''` | Skip when the condition holds. |
+| `SkipIf` | `''` | Skip when the condition holds. Grammar `<lhs> (==\|!=) <rhs>`; either side may be the literal `EMPTY`. **`==N/A` matches blank OR any `N/A` spelling (isNaCell); `==EMPTY` is a strict empty-string check** — the two differ ([§8.3](#83-the-skip-rules-blank--na--computed), `core/runner/skipIf.ts`). |
+| `DynamicArgs` | `''` | Optional args for a Dynamic selector's `{0}`/`{1}` when they must differ from `InputValue` — a `loopPeriods` flow passes `${runtime.period.n}` here. Falls back to `InputValue` when blank ([§9](#9-selector-resolution)). |
 | `Description` | `''` | Why. Shown in the report. Keep commas out or quote the field. |
 
-#### 4.3.1 `Seq` is documentation only
+> **`Seq` is cosmetic; `Screenshot` is dead.** `Seq` never reaches the engine (the report renumbers at
+> render time). The `Screenshot` column is parsed and ignored — the runner screenshots **every** step
+> unconditionally. Both are historical; don't rely on them.
 
-`MetadataStepSchema` is a bare `z.object()` with **no** `.strict()`, so zod
-silently strips unknown keys. `Seq` therefore never reaches the typed model and
-**cannot** drive ordering — `StepID` does. Two consequences:
+### 6.4 `02_selectors_repo/selectors.csv` — the locators
 
-- Adding `Seq` is backwards compatible and cannot break parsing.
-- The report's Seq column is numbered at **render time** from the array index
-  (`core/reporters/featureHtml.ts`), not from this column. It must be, because the
-  report also shows steps inlined from `flows/login.csv`, which have no metadata row.
-- **So metadata Seq and report Seq differ.** ROM(PD) metadata Seq 1 (StepID 5) is
-  report Seq 10, because the login flow's 9 child steps render before their parent.
-
-#### 4.3.2 The `Screenshot` column does nothing
-
-`core/runner/stepRunner.ts` screenshots **every** step unconditionally — the only
-guard is `if (!ctx.page)`. It reads `step.StepID` for the filename and never reads
-`step.Screenshot`. Proof: a run captured 60/60 steps while 46 rows said `never`.
-
-The column is parsed (`metadata.schema.ts:46`) and then discarded. All ROM(PD)
-rows are now set to `always` so the data matches reality — if the policy is ever
-implemented, behaviour will not silently change.
-
-### 4.4 `02_selectors_repo/selectors.csv` — the locators
-
-One row per UI object. Schema: `core/schema/selectors.schema.ts`.
+One row per UI object. Schema: `core/schema/selectors.schema.ts`. Resolver:
+`core/locators/resolver.ts`. Full detail in [§9](#9-selector-resolution).
 
 | Column | Default | Meaning |
 | --- | --- | --- |
-| `ObjectName` | required | Logical name. Convention: `btn_`, `txt_`, `ddl_`, `chk_`, `opt_`, `lnk_`, `tbl_`, `lbl_`, `div_`. |
-| `Page` | required | Namespace. `(Page, ObjectName)` must be unique. |
-| `SelectorType` | required | `testid` \| `role` \| `label` \| `placeholder` \| `text` \| `css` \| `xpath`. |
-| `SelectorValue` | required | The selector, or the role for `role` type. |
+| `ObjectName` | req | Logical name. Convention: `btn_`, `txt_`, `ddl_`, `chk_`, `opt_`, `lnk_`, `tbl_`, `lbl_`, `div_`. |
+| `Page` | req | Namespace. `(Page, ObjectName)` must be unique. |
+| `SelectorType` | req | `testid` \| `role` \| `label` \| `placeholder` \| `text` \| `css` \| `xpath`. |
+| `SelectorValue` | req | The selector (or the role name for `role`). |
 | `RoleName` | `''` | Accessible name when `SelectorType=role`. |
 | `FallbackSelector` | `''` | Used if the primary matches 0 elements — **and logs a UI-DRIFT warning**. |
-| `Dynamic` | `FALSE` | Enables `{0}` substitution in **both** SelectorValue and RoleName. |
-| `Description` | `''` | Required in practice for `xpath` (validator warns without it). |
-| `Exact` | `FALSE` | Force exact accessible-name matching. **See §7.3 — this one bites.** |
+| `Dynamic` | `FALSE` | Enables `{0}`/`{1}` substitution in **both** `SelectorValue` and `RoleName`. |
+| `Exact` | `FALSE` | Force exact accessible-name matching. Default is **substring** — this bites ([§9](#9-selector-resolution)). |
+| `Description` | `''` | Why. The validator warns on an unjustified `xpath`. |
 
-### 4.5 `01_testdata/*.csv` — the values
+### 6.5 `01_testdata/*.csv` — the values
 
 Keyed by `joinKey` (`TC_ID` + `IterationID`). Each file becomes a namespace:
-`project.csv` -> `${data.project.<Column>}`. Column names may contain spaces
-(`${data.project.Time Unit}`).
+`project.csv` → `${data.project.<Column>}`. Column names may contain spaces
+(`${data.project.Time Unit}`). One TC runs once per distinct `IterationID` — the iteration list is the
+**union** of `IterationID`s across the files, minus any vetoed by a `Run=FALSE` ([§4](#running-one-iteration-there-is-no---iteration-flag)).
 
-**Multiple iterations.** One TC runs once per distinct `IterationID` in the
-testdata. Two rows (`ITER_01`, `ITER_02`) → two runs of the same steps with
-different values. Iterations are the **union** of `IterationID`s across the files.
+Two validator rules keep a half-authored set honest:
 
-**The `Run` column — switching one iteration off.** An optional `Run` column
-parks an iteration without deleting its data. `TRUE` / `1` / `YES` / `Y` **and
-blank** all mean *run it* — the column is opt-**out**, so a row is on unless you
-explicitly say `FALSE`.
+- **Iteration completeness (ERROR).** If a keyed file has a row for an iteration another keyed file
+  lacks, that would be a guaranteed "No testdata row" at runtime → validation **fails** naming the
+  exact missing `file/TC/iteration`.
+- **Coverage (WARNING).** A column that holds a value but is read by **no** step is flagged: *"column X
+  has a value but no step enters it."* It catches a value that silently never reaches the screen.
 
-You only need the column in **one** file (`project.csv` by convention). Because
-the iteration list is a union, `Run` is a **veto**: `FALSE` anywhere switches that
-iteration off for the whole feature, and a file without the column cannot switch
-it back on. Keeping the flag in one place is the intended usage — you do not
-repeat it across `design.csv` / `inputset.csv`.
+**What to actually put in each cell is a decision per field per iteration — see [§11](#11-authoring-testdata).**
 
-| `project.csv` | result |
-| --- | --- |
-| `TC_05,ITER_02,FALSE,...` | ITER_02 is skipped; the other iterations still run |
-| `TC_05,ITER_02,,...` | blank → ITER_02 **runs** |
-| every row `FALSE` | the test case runs **nothing** (not a phantom `ITER_01`) |
+### 6.6 `06_baseline/compare.config.csv` — the compare rules
 
-Leave the row in place — deleting it instead would trip the iteration-completeness
-error below, because the other keyed files still have a row for that iteration.
-
-Two rules the validator enforces so a half-authored multi-iteration set fails at
-`npm run validate`, not mid-run:
-
-- **Iteration completeness (error).** If a file *keyed* by `TC_ID`+`IterationID`
-  has a row for an iteration another keyed file lacks, that's a guaranteed
-  "No testdata row" at runtime → validation **fails** with the exact missing
-  `file/TC/iteration`. (A file with no `TC_ID`/`IterationID` columns — e.g. a
-  one-row inputset — uses a first-row fallback and is exempt.)
-- **Coverage (warning).** A column that holds a value but is referenced by **no**
-  step is flagged: *"column X has a value but no step enters it."* It's how you
-  catch a testdata value that silently never reaches the screen (columns consumed
-  by a `callCustom` step are recognised and not flagged).
-
-#### What to put in a testdata cell
-
-Adding a new data combination is this decision, per field, per iteration. Look at the
-field **on screen with that combination selected**: is it there, and can you type in it?
-
-| On screen, for THIS combination | Cell value | Result |
-| --- | --- | --- |
-| **Not on the page** (hidden by a controlling option) | `N/A` | step skipped |
-| **Editable**, you choose the input | the real value | entered + read back to verify |
-| **Greyed, literally showing "Computed"** (the parameter being solved for) | `Computed` | step skipped — the app owns it |
-| **Greyed, showing a derived number** | the expected number, wired as `assertValue` | the app's arithmetic is **verified** |
-| Greyed derived number you don't care about | `N/A` | step skipped |
-| Editable but you want the app default | blank | step skipped |
-
-`N/A` and `Computed` both skip, so mixing them up won't fail a run — it just
-mis-documents *why* the field was left alone. `N/A` = not on the page.
-`Computed` = on the page, app-owned.
-
-**Never `fill` a calculated value into a greyed field** — the step hard-fails on a
-disabled field. Put the number in `ExpectedValue` with `assertValue` instead.
-
-**The `Computed` convention.** A cell value of `Computed` means "this field is the
-computed output — leave it blank/greyed." The skip is central in
-`core/runner/stepRunner.ts`, so it holds for `fill` / `select` / `check` / `type` /
-`uncheck` alike — a greyed *dropdown* marked `Computed` is skipped too, rather than
-sending `select` hunting for an option named "Computed" (§6.2).
-
-> **If you know what the app *should* compute, assert it instead of skipping it.**
-> A greyed field can't be filled, but it can be verified: give the column the
-> expected number and use `assertValue` with `ExpectedValue = ${data.<file>.<Column>}`.
-> ROM(PD) does this for the two derived Mean Treatment fields — `μt0 = Mean Control ×
-> NI Margin` and `μt1 = Mean Control × Ratio of Means` — so the testdata checks the
-> app's arithmetic rather than ignoring it. `N/A` still skips the assertion on
-> iterations where the field doesn't exist, so one metadata still serves them all.
->
-> Two fields can share a visible label (both of those read *Mean Treatment*). Name
-> such columns after the **DOM id** (`nonInf_nhMeanTreatment`), not the label —
-> a label-derived name collides, and the importer's reuse deliberately refuses to
-> guess between ambiguous names. For *editable* inputs the importer now splits such
-> collisions for you by DOM id (§ "Null / Alternative paired fields" below); this
-> hand-naming rule is for the **greyed** `assertValue` fields it can't record.
-
-#### Two kinds of greyed field — only one needs you to do anything
-
-The importer can only emit what codegen recorded, and **codegen cannot type into a
-disabled field**. That single fact splits greyed fields in two:
-
-| | Greyed in **some** iterations (the computed *parameter* rotates) | Greyed in **all** iterations (permanently derived) |
-| --- | --- | --- |
-| Example | Sample Size / Power / Type 1 Error | Mean Treatment `μt0`, `μt1` |
-| In the recording? | **yes** — you typed it in the iteration where it was the input | **no** — never typeable, so absent |
-| Importer emits | a normal `fill` step | **nothing** — no selector, no step |
-| You do | **nothing.** Keep the `fill`; put `Computed` in the greyed cells | add the selector + an `assertValue` step **by hand** (optional) |
-
-You never *convert* a `fill` into an `assertValue`. In the right-hand case no step ever
-existed — you are *adding* one, and only if you want that field covered.
-
-**`validate` tells you when one is missing.** Add the column with its expected numbers
-and run `npm run validate`:
-
-```
-column "nonInf_nhMeanTreatment" in design.csv has a value but no step enters it
-  — add a step to apply it or remove the column.
-```
-
-That warning is the prompt to wire the `assertValue` step (or drop the column), so a
-derived field gets noticed without anyone remembering to look for it. The workflow for a
-new data combination is therefore: **import → add testdata → `npm run validate` → wire
-whatever it warns about.**
-
-**Blank / `N/A` = not applicable to this iteration → the step is SKIPPED.** A
-value-entering step (`fill` / `select` / `type` / `check`) whose testdata cell is
-**blank** or **`N/A`** is skipped for that iteration (`core/runner/stepRunner.ts`).
-The field doesn't apply to this data combination — it may not even exist on the
-page (e.g. a Non-Inferiority margin on a Superiority design). The **same** step
-still runs for iterations whose row *does* supply a value.
-
-> **This is the answer to "one metadata or many?" — you keep ONE metadata per test
-> case.** Different iterations switch steps on/off by leaving cells blank; you never
-> fork the metadata. Records the superset of steps once, data-drive the rest.
->
-> Two caveats: (1) skipping only triggers when the cell is fed by a `${data.*}`
-> token, so a static step with a deliberately empty InputValue is never skipped;
-> (2) a cell left blank *by accident* is silently skipped — write `N/A` when you
-> mean "not applicable" so intent is explicit. This also means the rule only helps
-> for fields that are **optional** across scenarios; if two scenarios use
-> *different* fields (different ids), that's a different flow — re-record it.
-
-#### Indexed table cells and multi-period values
-
-Some design inputs are **tables** — one row per analysis period (interim spacing,
-piecewise hazard rates, dropout periods). The app names each cell with a **dotted,
-0-based id**: `inputMethodTable.0.hazardRateControl`, `boundary.2.analysisSpacingInfo`,
-`dropoutTable.1.dropoutHazardRateControl`. **UI "Period 1" is index `0`.**
-
-**Testdata heading = the exact dotted id.** Give each cell its own column named after
-that id — one column per (table, period, field):
-
-| Heading | Fills |
-| --- | --- |
-| `inputMethodTable.0.hazardRateControl` | period-1 control hazard rate |
-| `inputMethodTable.1.hazardRateControl` | period-2 control hazard rate |
-| `boundary.0.analysisSpacingInfo` | interim spacing at look 1 |
-| `boundary.1.analysisSpacingInfo` | interim spacing at look 2 |
-
-**Recording:** click the cell by its real locator so codegen emits the id —
-`page.locator('[id="inputMethodTable.0.hazardRateControl"]')` or
-`input[name="boundary.0.cumAlphaSpent"]`. The importer takes a **dotted** `[id=]` /
-`[name=]` / `#id` **verbatim** as the column (it no longer mangles it into
-`id inputMethodTable 0 …`), so the recording and the heading line up with zero
-hand-editing. A non-dotted id still keeps its readable label column (§4.5 above).
-
-**Multi-period values arrive comma-packed — split them per period.** An API/export cell
-often holds every period in one quoted string: `hazardRateControl = "0.9, 1.2, 1.5"` is
-three periods. Spread it across the indexed columns, **0-based, one value each**:
-
-| Export cell | `…Table.0.hazardRateControl` | `…Table.1.…` | `…Table.2.…` |
-| --- | --- | --- | --- |
-| `"0.9, 1.2, 1.5"` | `0.9` | `1.2` | `1.5` |
-| `"0.03466"` (one period) | `0.03466` | blank | blank |
-
-Interim **spacing is period-wise the same way** — `"25, 50, 75"` becomes
-`boundary.0/1/2.analysisSpacingInfo`. A period a scenario doesn't use is left blank /
-`N/A`, so its fill is skipped (§ blank/`N/A` rule above). Record **as many period rows
-as your deepest scenario needs**: the recording captures a fixed number of periods, so a
-scenario with *more* periods than were recorded needs the extra rows re-recorded.
-
-#### Normalized child-table files (the split alternative)
-
-The indexed columns above may instead live in their **own CSV** — same model, your choice
-of layout. A wide multi-period table that would otherwise sprawl across
-`inputMethodTable.0.… inputMethodTable.1.…` columns of `design.csv` (or the sim's
-`boundarySim.0.…`) can be authored **normalized** — one row per period — in a sibling file,
-and the loader folds it back into exactly the inline shape before anything downstream runs.
-The tester may choose **either** layout.
-
-- **File name `<phase>_<tableName>.csv`** — `<phase>` is the parent basename (`design` or
-  `simulation`), `<tableName>` the table: `design_inputMethodTable.csv`, `design_boundary.csv`,
-  `design_dropoutTable.csv`, `design_enrollmentTable.csv`, `simulation_boundary.csv`,
-  `simulation_accrual.csv`.
-- **Columns `TC_ID, IterationID, PeriodIndex, <field1>, <field2>, …`** — the table's fields
-  become plain columns; the period index is a **column**, not part of the heading.
-- **One row per period** — `PeriodIndex` `0,1,2,…` (0-based, matching the inline `.0/.1/.2`),
-  so a `(TC_ID, IterationID)` spanning three periods is three rows.
-
-**Same model, either way.** `core/loaders/featureLoader.ts` → `foldChildTables()` folds each
-child row back onto its parent's `(TC_ID, IterationID)` row **at load time**: cell
-`(PeriodIndex=n, field=v)` becomes the synthetic column `<tableName>.<n>.<field>=v`, then the
-child file is dropped from the loaded set. So
-`${data.design.inputMethodTable.0.hazardRateControl}` resolves **identically** whether that
-cell was authored inline in `design.csv` **or** as a row in `design_inputMethodTable.csv`.
-Metadata tokens, the runtime blank/`N/A`/`Computed` skip, the importer, and the resolver are
-all **unchanged** — this is purely a load-time reshape.
-
-**Authoring rules (a child table):**
-
-- `PeriodIndex` is **0-based and contiguous** per iteration (`0,1,2,…` — no gaps, no
-  duplicates). A period an iteration doesn't use is simply **absent** (no row), or a single
-  placeholder row `PeriodIndex=N/A` (all fields `N/A`) meaning "table absent this iteration";
-  both fold to nothing.
-- Not-applicable cells are **`N/A`, not blank** (runtime treats blank as N/A for fills, but a
-  literal-comparison `SkipIf …==N/A` Add-Period gate can let a blank slip past and add an empty
-  period — Trap 23).
-- Author each table in **one place only** — inline in the parent **or** the child file, never
-  both (the loader keeps the inline value and the validator warns on the collision).
-- The **hypothesis-suffix rule still applies** to the child's field columns (e.g.
-  `hazardRateTrmt_Null_SS` / `_Alt_SPSS` / `_Null_NI`): exactly one suffix per effect is valued
-  per the row's `Hypothesis`, the rest `N/A` — same as inline (see the box below and
-  `FIELD_WIRING_PATTERNS.md`).
-
-`core/schema/validator.ts` → `validateChildTables` **warns** (never errors) on non-integer /
-non-contiguous / duplicate `PeriodIndex`, orphan rows, an inline+child collision, and blank cells.
-
-#### Null / Alternative (and NI/SP) paired fields — the split is automatic
-
-Forms that show the **same label** under a Null and an Alternative section —
-`Hazard Ratio (Null)` + `Hazard Ratio (Alternative)`, and likewise `Ratio of Medians`
-and `Log Hazard Ratio` — have **distinct DOM ids** (`#hazardRatio_Null_SS`,
-`#hazardRatio_Alt_SS`). The importer gives each its **own** column keyed by that id —
-`${data.design.hazardRatio_Null_SS}` vs `${data.design.hazardRatio_Alt_SS}` — so the
-alternative input never silently mirrors the null one. Your testdata headers are those
-ids, which also match the app's exported field names. This fires **only** for genuinely
-distinct **fill** fields, each with its own id; a field that shares its column with a
-result *link*, and a dropdown recorded two ways, are deliberately left alone.
-
-> **Across hypotheses (`_SP` / `_SS` / `_NI`) — see `FIELD_WIRING_PATTERNS.md`.** The DOM id
-> suffix encodes the hypothesis (Superiority / Super-Superiority / Non-inferiority), so the
-> same effect field renders as `hazardRatio_Alt_SP` / `_SS` / `_NI` depending on the row's
-> `Hypothesis`. The adopted convention (built out in GADAR): **one testdata column per DOM id
-> incl. suffix**, **one prefix selector per side** (`[id^="hazardRatio_Alt_"]` — resolves any
-> suffix), and **one value-driven fill step per hypothesis column** (only the row's-hypothesis
-> column is populated, so exactly one fires). That doc also carries the priors and
-> early-stopping (eff/fut) wiring patterns and the `HazardRatioInputSet` legend.
-
-#### Repeated-modal / multi-scenario records — the `loopOverData` pattern (see `MULTI_SCENARIO_GUIDE.md`)
-
-The rules above cover *conditional* fields on one page. A different shape is a page that adds the
-**same kind of record N times through a re-opened "Add …" modal** — candidate models, scenarios,
-arms, looks — where the modal **reuses the same DOM ids every time** and the count varies per
-iteration. Wide indexed columns (`scenario1_x … scenario10_x`) explode; instead use **"Option A"**:
-
-- **`01_testdata/scenarios.csv`** — a *child* table, **one row per record** (not per iteration),
-  keyed `TC_ID, IterationID, …`. Add a record = add a row. `N/A` in cells that don't apply.
-- **`03_metadata/<name>_block.csv`** — a reusable sub-flow authored **once** (open modal → select
-  the record type → gated fills → commit), reading `${runtime.loop.<Column>}`.
-- **One `loopOverData` step** in `metadata.csv` (§6 Flow) that runs the sub-flow per matching child row.
-
-Because the blank/`N/A` auto-skip is `${data.*}`-only, fills inside the sub-flow must be gated
-**explicitly with `SkipIf`** on the loop columns — a family-tag gate (`SkipIf
-${runtime.loop.curveFamily}!=Emax`) or a value gate (`SkipIf ${runtime.loop.modalDoseN}==N/A`).
-`loopOverData` scopes child rows by `TC_ID`+`IterationID`, and the coverage check skips a
-`loopOverData`-consumed file so its columns don't read as unused.
-
-**The importer does NOT generate this pattern** (§13 / Trap): record the flow, keep the modal
-selectors it captures, then hand-overlay the loop per **`MULTI_SCENARIO_GUIDE.md`**. Reference:
-`feature_BOIN` (TC_14) — including the *delete-app-default-rows* trick and data-driven dose entry.
-
-### 4.6 `06_baseline/compare.config.csv` — the compare rules
+Schema: `core/schema/compareConfig.schema.ts`. One row per result column; it tells the comparator which
+columns identify a row and which are checked.
 
 | Column | Meaning |
 | --- | --- |
-| `ColumnName` | Column in the captured result set. |
-| `IsKey` | `TRUE` = part of the row identity. |
+| `ColumnName` | A column in the captured result set. |
+| `IsKey` | `TRUE` = part of the row identity. **At least one key is required.** |
 | `Compare` | `TRUE` = the value is actually checked. |
-| `DataType` | `string` \| `number` \| ... |
-| `AbsTolerance` / `RelTolerance` / `RoundTo` | Numeric tolerance. |
-| `Normalize` | e.g. `trim`. |
+| `DataType` | `string` \| `numeric` \| `integer` \| `date` \| `bool`. |
+| `AbsTolerance` / `RelTolerance` / `RoundTo` | Numeric tolerance. **A `numeric` compared column with no tolerance is a validation ERROR** — set one (use `0` for exact integers). |
+| `Normalize` | `''` \| `trim` \| `lower` \| `upper` \| `trimlower` \| `collapsews`. |
 | `Notes` | Why. |
 
-Every feature uses the same shape: `TableName`/`RowLabel`/`ColumnName` are keys,
-`Value` is compared, and `RunID`/`ProjectID` are volatile (never compared —
-`framework.config.ts:22`).
-
-> **There is no `Timestamp` column.** It changed on every run, so it could never
-> be compared — it only added noise to the captured CSV. If you are looking at an
-> old baseline that still has one, re-record it with `--update-baseline`; the
-> column list here and the one in `extractAllResultTables` must match exactly or
-> the compare reports `SCHEMA_MISMATCH`.
+Every feature uses the same shape: `TableName` / `RowLabel` / `ColumnName` are keys, `Value` is
+compared, and volatile columns (`RunID` / `Timestamp` / `ProjectID`) are `Compare=FALSE`. The column
+list here must match what `extractTable` captures, or the compare reports `SCHEMA_MISMATCH`.
 
 ---
 
-## 5. How a run executes
+## 7. How a run executes
 
-`npm run test -- --testcase TC_04`:
+Entry point: `core/runner/orchestrator.ts` (`testCommand`). For `npm run test -- --testcase TC_04`:
 
-1. **`core/cli/index.ts`** parses argv via `core/cli/args.ts`.
-2. **Validation runs first.** `core/schema/validator.ts` checks every master row,
-   every metadata row, every selector. Any issue -> abort, exit 1, **no browser**.
-   This is why `[PASS] Validation passed: 4 test case(s), 3 feature(s)` prints
-   before `Selected 1 test case(s): TC_04`.
-3. **Selection.** `core/runner/select.ts` applies `--testcase` / `--tags` /
-   `--feature` / `--all`. `--testcase` **bypasses `Execute`** but never validation.
-4. **Per entry** (`core/runner/orchestrator.ts`): resolve env (§10.1), load the
-   feature (config + metadata + selectors + testdata), regenerate POM + spec.
-5. **Auth setup**, only if `reuseAuthState` is true.
-6. **Tasks** = one per iteration, run across workers (`WORKERS`, default 4;
-   `--workers` overrides).
-7. **`core/runner/iterationRunner.ts`**: launch browser, build `RunContext`,
-   `page.goto(baseUrl, {waitUntil:'domcontentloaded'})`, then execute steps.
-8. **`core/runner/stepRunner.ts`** per step: resolve locator -> dispatch keyword
-   (wrapped in `withRetry`) -> screenshot -> record `StepResult`.
-9. **Comparator** (`compareWithBaseline`), then **reporters**.
+1. **Parse** argv (`core/cli/args.ts`).
+2. **Validate first.** Every selected CSV is schema-checked (`core/schema/validator.ts`). Any issue →
+   abort, exit 1, **no browser**. This is why `[PASS] Validation passed …` prints before the run.
+3. **Select** rows (`core/runner/select.ts`) from `--testcase` / `--tags` / `--feature` / `--all`, then
+   order by `DependsOn`.
+4. **Load the feature** (`core/loaders/featureLoader.ts`): config + metadata + selectors +
+   compare.config + testdata. Steps are de-duplicated and **sorted ascending by StepID**. **Child
+   period tables are folded** into synthetic `<table>.<n>.<field>` columns ([§11](#child-tables-the-split-alternative)).
+5. **Regenerate** the POM + spec (idempotent; skipped if unchanged).
+6. **Establish auth** once per (feature, env, browser) if `reuseAuthState` ([§13](#13-environments--auth)).
+7. **Expand tasks** — one per `(TC_ID, IterationID)`. Run in parallel (default 4 workers) or serially
+   when any feature is `serial:true` or has `DependsOn`.
+8. **Per iteration** (`core/runner/iterationRunner.ts`): new browser context (loads storageState,
+   records video + trace), `page.goto(baseUrl, {waitUntil:'domcontentloaded'})`, build the `RunContext`.
+9. **Per step** (`core/runner/stepRunner.ts`): evaluate `SkipIf` → resolve `${...}` tokens (secrets
+   masked) → **skip if the value is blank / `N/A` / `Computed`** for value-entering & value-asserting
+   actions → dispatch the keyword handler (with `Retry`) → screenshot → record the result.
+   `Optional=TRUE` turns a failure into a warning.
+10. **Extract + compare.** `extractTable` scrapes the result grids + narrative panels into
+    `07_actual_results/…`; `compareWithBaseline` writes/checks the baseline and sets the status.
+11. **Cleanup once**, at the very end (delete the created project unless configured otherwise), then
+    write the reports. Exit code is 1 iff `FAIL + ERROR + SIMULATION_TIMEOUT > 0`.
 
-**Two things worth internalising:**
+> **Two things worth internalising.** (a) The screenshot is taken *after* the action, outside the
+> retry/timeout envelope — it inflates reported durations but never consumes `Timeout`. (b) The
+> `page.goto` sits **outside** the step try/catch: a failure there is *Fatal* with **no report**,
+> which is why it uses `domcontentloaded`, not `networkidle` (this SPA never goes idle — Trap 2).
 
-- The **screenshot is taken *after* the action**, outside the retry/timeout
-  envelope. It never consumes `Timeout`, but it does inflate reported
-  `durationMs` — which is why summed step durations exceed wall-clock.
-- The `page.goto` in `iterationRunner` sits **outside** the step try/catch. A
-  failure there is *Fatal*: the run dies with **no report**. That is why it uses
-  `domcontentloaded` and not `networkidle`.
+### 7.1 The chained simulation flow (`Simulation=YES`)
 
-### 5.1 The chained simulation flow (`Simulation=YES`)
+A feature can run a **second flow** — the simulation — in the **same browser**, on the **same page**,
+right after the design comparison. It drives *design → Simulate → simulation results* as one iteration.
 
-A feature can run a **second flow** — the simulation — in the **same browser**, on
-the **same page**, right after the design comparison. It's how you drive
-*design → Simulate → simulation results* as one iteration.
+- **Turn it on:** set `Simulation=YES` on the master row. Off/blank ⇒ nothing below runs.
+- **It runs only if the design phase is GREEN** (`PASS` or `BASELINE_CREATED`) — a red design **skips**
+  sim. The browser stays open and the sim steps run from `03_metadata/sim_metadata.csv`, with tokens
+  bound to `simulation.csv`. The first sim step is the recorded **Simulate** click.
+- **Per-iteration control:** `simulation.csv` has its own `Run` column. A `Run=FALSE` row skips *only*
+  the sim phase; a **missing** `simulation.csv` row skips sim there too (reason "no simulation.csv
+  row"). So design-only and design+sim iterations coexist under one master `Simulation=YES`.
+- **Artifacts are prefixed `sim_`** so they never overwrite the design's:
+  `sim_baseline_<TC>_<ITER>.csv`, `sim_results_…`, `sim_diff_…`. The compare rules
+  (`compare.config.csv`) are **reused**.
+- **`waitForSimulation`** polls the results-list status cell every `pollIntervalMs` up to the step's
+  `Timeout` (a sim is a real Monte-Carlo run): `Completed` → pass; `Failed` → `FAIL`; ceiling reached →
+  the distinct status `SIMULATION_TIMEOUT`.
+- **Status = worst-of** design and sim; **cleanup fires once**, after both phases.
 
-**Turn it on:** set `Simulation` to `YES` on the master row. Off/blank ⇒ the design
-flow is byte-for-byte unchanged; nothing below runs.
-
-**What runs, per iteration:**
-
-1. The design flow executes as normal and ends in `compareWithBaseline`.
-2. **Only if the design phase is GREEN** (`PASS` or `BASELINE_CREATED`) — a red
-   design **skips** sim — the browser stays open and the sim flow runs:
-   `03_metadata/sim_metadata.csv`, on the same `page`, tokens bound to
-   `simulation.csv`. Its first step is the recorded **Simulate** click.
-3. The sim flow ends in its own `extractAllResultTables` + `compareWithBaseline`,
-   written under a `sim_` prefix.
-4. **Cleanup is deferred** to after sim (the design phase created the project;
-   deleting it before sim would break the flow).
-
-**The two phases never collide** — a `ctx.resultPrefix` flips to `sim_` for the
-second phase:
-
-| | Design | Simulation |
-| --- | --- | --- |
-| captured | `07_actual_results/results_<TC>_<ITER>.csv` | `07_actual_results/sim_results_<TC>_<ITER>.csv` |
-| baseline | `06_baseline/<env>/baseline_<TC>_<ITER>.csv` | `06_baseline/<env>/sim_baseline_<TC>_<ITER>.csv` |
-| diff | `08_diffs/diff_<TC>_<ITER>.*` | `08_diffs/sim_diff_<TC>_<ITER>.*` |
-| metadata | `metadata.csv` | `sim_metadata.csv` |
-| testdata | inputset/project/design | `simulation.csv` |
-| compare rules | `compare.config.csv` | **the same** `compare.config.csv` (reused) |
-
-**Per-iteration control.** `simulation.csv` has its own `Run` column (same veto as
-§4.5): `Run=FALSE` on a row skips *only the sim phase* for that iteration; the
-design phase still runs. A missing `simulation.csv` row for an iteration skips sim
-there too.
-
-**Status.** The iteration's reported status is the **worst of** design and sim, and
-the report tags the sim phase (`+SIM PASS` / `SIM skipped`). `sim_metadata` is
-validated up front too — `Simulation=YES` with a missing/broken `sim_metadata.csv`
-fails `npm run validate` before a browser opens.
-
-#### The sim flow shape, end to end
-
-The `sim_metadata.csv` walks the whole simulation and ends by opening its result —
-exactly like design, but the result opens from the **Results list**, not inline:
-
-1. **Simulate** — the first step clicks the `Simulate` button on the design result.
-2. **Fill the input tabs** — the sim input page is multi-tab (Design / Response /
-   Enrollment / Simulation Setup). Navigate each with a `click` on its tab button,
-   then fill/select its fields. Controls that a controlling option already fixed
-   are `select`ed and skip as *"disabled, already correct"*; greyed **derived**
-   fields are `assertValue` (below).
-3. **Save & Simulate** — `click btn_Save`, then `click btn_Save_Simulate`, then
-   confirm any credit alert. The app navigates to the **Results list** page.
-4. **Wait for Completed** — `waitForSimulation lbl_RunStatus` polls the status cell
-   on the Results list until it reads `Completed` (a simulation is a Monte-Carlo run
-   and takes real time; that is why the status is polled, not assumed).
-5. **Open the result** — `click lnk_ResultName ${data.simulation.Result Name}` opens
-   the simulation result **detail** (the same view design produces).
-6. **Extract + compare** — `callCustom extractAllResultTables` captures every table
-   and narrative panel on the result page, then `compareWithBaseline` writes/checks
-   `sim_baseline_<TC>_<ITER>.csv`.
-
-#### Consolidating a sim recording (the judgment pass)
-
-A `--sim` import is a **flat superset** and needs the same on-screen consolidation
-the design flow does (§13), walking the input tabs one at a time. The recurring
-sim-specific shapes, all seen on ROM(PD):
-
-| On the sim page | Do this |
-| --- | --- |
-| A control the recording only **label-clicked** (Hypothesis, Randomization Method, Test Type) — no data-driven step exists | Add a `select` with `${data.simulation.<Col>}`. If a prior choice fixes it, it skips as *disabled, already correct*; otherwise it sets it. |
-| A **greyed / derived** field with a testdata value (Critical Point Lower = −Upper; a mirrored value) | `assertValue`, `ExpectedValue = ${data.simulation.<Col>}` — never `fill` (disabled fields hard-fail). §6.3. |
-| A **checkbox that reveals or frees** a field ("Common Coefficient of Variation" greys Treatment; "Include" hides the enrollment grid; "Save Subject-Level Data" reveals its runs field) | Add a `check`/`uncheck` step (no InputValue needed — its selector is fixed, not `{0}`-parameterised). Order it **before** the fields it controls. |
-| A field only present under one option combination | Leave the cell `N/A` for the iterations where it is absent — the step skips (§4.5). |
-
-**Status cell / result name are app-specific** — verify `lbl_RunStatus` (its
-`col-id`) and the `Result Name` value against your app, exactly as for design.
-
-#### The Save & Simulate result flow (learned the hard way on ROM(PD))
-
-After **Save & Simulate** the app opens a *"Name your result before simulating"*
-modal, runs the simulation, and lands on the **Results list** where a new row
-(Run Type **"Simulation"**) goes *In-progress → Completed*. Four things that are
-not obvious and cost real debugging:
-
-- **Do NOT fill the result-name field.** The modal pre-fills a valid name, and a
-  programmatic `fill` corrupts the controlled-input's React state so the confirm
-  button silently does nothing. Leave it — the app auto-names the result
-  (`Result - <input set>`). If you must set a name, `type` it key-by-key.
-- **The confirm button is inside an `aria-hidden` modal**, so `getByRole('button')`
-  can't see it and a synthetic click can be swallowed by the backdrop. ROM(PD)
-  uses a tiny custom step (`confirmSimulateModal`) that fires a **native DOM click**
-  on the last `.modal.show #credit-alert-primary`.
-- **No explicit navigate.** Confirming the modal navigates to the Results list on
-  its own — an added `navigate` step races it and loses the run.
-- **Scope the wait AND the open to the Simulation row.** `waitForSimulation` must
-  poll the *simulation* row's status (an xpath scoped to the row whose Run Type is
-  "Simulation"), not the design result that is already "Completed"; open the result
-  via that same row's name link. Otherwise you match the design result and try to
-  open a sim result that does not exist yet.
-
-Proven on ROM(PD) TC_04 ITER_01: design PASS (79 cells) → sim runs → **9 tables /
-77 cells** (Simulation Summary, Simulation Boundaries, Overall Simulation Results,
-Enrollment, Plan) → `sim_baseline` written, and a second run compares **PASS 77/77**.
-
-> **Importing the sim flow:** `npm run import-codegen -- <Module> <Feature> --tc TC_XX --sim`
-> (§13, §14). It reuses selectors and compare.config, adds no login/navigate, and
-> writes `sim_metadata.csv`. The generated Playwright specs (`npm run pw:test`) run
-> the design flow only; the chained sim runs under `npm run test`.
-
-#### End-to-end walkthrough (design + simulation for one feature)
-
-```bash
-# 1. Record BOTH flows in the app (npm run codegen), saved into the feature's
-#    02_selectors_repo/ as recording.txt (design) and sim_recording.txt (sim,
-#    starting on the design result at the Simulate click).
-
-# 2. Import each flow (design writes metadata.csv; --sim writes sim_metadata.csv,
-#    sharing selectors.csv + compare.config.csv):
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_09
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_09 --sim
-
-# 3. In master.csv set Execute=TRUE and Simulation=YES for the row.
-
-# 4. Consolidate metadata.csv AND sim_metadata.csv against the live pages (§13),
-#    then validate (no browser):
-npm run validate
-
-# 5. Run — design then, if green, the chained simulation, one browser:
-npm run test -- --testcase TC_09
-
-# 6. Screenshot-verify BOTH phases, review the baseline + sim_baseline, run again
-#    to turn BASELINE_CREATED into a real PASS.
-```
+Import the sim flow with `--sim` ([§4](#authoring-a-feature)); consolidate `sim_metadata.csv` the same
+way as design, walking the input tabs (Design / Response / Enrollment / Simulation Setup) one at a time.
 
 ---
 
-## 6. The keyword catalog
+## 8. The keyword catalog
 
-`core/keywords/catalog.ts` is the single source of truth for **both** the
-validator and the runtime registry. If an Action is not in this list, validation
-rejects it.
+The `Action` column of a step is a **keyword**. The catalog is declared in `core/keywords/catalog.ts`
+and wired to handlers in `core/keywords/registry.ts` (which self-checks that the two never drift).
+There are **43 keywords in 8 groups**. "req" = required non-blank columns; "locator" = `ObjectName`
+must resolve in selectors.csv.
 
 ### Navigation
 | Keyword | Required | Notes |
 | --- | --- | --- |
-| `navigate` | InputValue | `WaitCondition` sets `waitUntil`. **Use `domcontentloaded`** (§13.1). |
-| `goBack`, `reload` | — | |
-| `switchTab` | InputValue | |
-| `switchFrame` | ObjectName | |
+| `navigate` | InputValue | Goto a URL/path. |
+| `goBack` / `reload` | — | Browser back / reload. |
+| `switchTab` | InputValue | Switch to a tab/page by index or name. |
+| `switchFrame` | ObjectName · locator | Enter an iframe. |
 
 ### Input
 | Keyword | Required | Notes |
 | --- | --- | --- |
-| `click` | ObjectName | Walks a `label` selector to the real control. |
-| **`fill`** | ObjectName, InputValue | **Enters the value and verifies it landed — see §6.2.** |
-| `type` | ObjectName, InputValue | Types key-by-key. |
-| `clear` | ObjectName | |
-| **`select`** | ObjectName, InputValue | **Does the whole dropdown — see §6.1.** |
-| `check` / `uncheck` | ObjectName | |
-| `hover`, `press`, `upload`, `dragAndDrop`, `doubleClick`, `rightClick` | varies | `upload` InputValue is a path. |
+| `click` / `doubleClick` / `rightClick` | ObjectName · locator | Mouse clicks. |
+| `fill` | ObjectName, InputValue · locator | Set a field's value, then **read it back** to verify it landed; auto-escalates to type+Tab in stubborn grid cells ([§8.2](#82-fill--and-the-computed-rule)). |
+| `type` | ObjectName, InputValue · locator | Key-by-key typing (for inputs a `fill` corrupts). |
+| `clear` | ObjectName · locator | Empty a field. |
+| `select` | ObjectName, InputValue · locator | One step for native **and** custom dropdowns + radios ([§8.1](#81-select--read-this-before-touching-a-dropdown)). |
+| `check` / `uncheck` | ObjectName · locator | Tick/untick. **When the selector is `{0}`-parameterised (a radio group), `InputValue` becomes required** — it picks which option. |
+| `upload` | ObjectName, InputValue(path) · locator | Set a file input. |
+| `hover` | ObjectName · locator | Hover. |
+| `press` | ObjectName, InputValue · locator | Press a keyboard key. |
+| `dragAndDrop` | ObjectName, InputValue · locator | Drag source → target. |
 
 ### Wait
 | Keyword | Required | Notes |
 | --- | --- | --- |
-| `waitForSelector` | ObjectName | `WaitCondition`: `visible` / `hidden`. **The workhorse.** |
-| `waitForText` | ObjectName, ExpectedValue | |
-| `waitForSimulation` | ObjectName | Polls until `successText`; throws on `failureText`. |
-| `waitForNetworkIdle` | — | **Avoid** — this SPA never goes idle (§13.1). |
-| `waitForDownload` | — | |
-| `sleep` | InputValue | **Every use is flagged by the validator.** Poll instead. |
+| `waitForSelector` | ObjectName · locator | Wait for a state (`WaitCondition`: attached/detached/visible/hidden). |
+| `waitForText` | ObjectName, ExpectedValue · locator | Poll `textContent` until it contains the value. |
+| `waitForNetworkIdle` / `waitForDownload` | — | Wait for network idle / a download. |
+| `waitForSimulation` | ObjectName · locator | Poll a status cell until `Completed` / `Failed` / timeout ([§7.1](#71-the-chained-simulation-flow-simulationyes)). |
+| `sleep` | InputValue | **Last resort — the validator warns on every use. Poll a condition instead.** |
 
-### Capture
-`storeText`, `storeAttribute` (ObjectName = `"object\|attr"`), `storeValue`,
-`storeUrl`, `extractTable`, `downloadFile`.
+### Capture (each stores a string under `StoreAs`, read back as `${runtime.<StoreAs>}`)
+| Keyword | Required | Notes |
+| --- | --- | --- |
+| `storeText` | ObjectName, StoreAs · locator | Store an element's text. |
+| `storeAttribute` | ObjectName(`obj\|attr`), StoreAs · locator | Store an attribute. |
+| `storeValue` | ObjectName, StoreAs · locator | Store an input's value. |
+| `storeUrl` | StoreAs | Store the current URL. |
+| `extractTable` | ObjectName · locator | Scrape a grid → normalized actual-results CSV; caches rows for the comparator. |
+| `downloadFile` | ObjectName · locator | Download a file. |
 
-### Assert
-`assertVisible`, `assertHidden`, `assertText`, `assertContains`, `assertValue`,
-`assertCount`, `assertEnabled`, `assertUrl` — each with a `softAssert*` variant
-that records the failure and continues.
+### Assert (hard-throw; each has a `soft*` mirror that records and continues)
+| Keyword | Required | Notes |
+| --- | --- | --- |
+| `assertVisible` / `assertHidden` / `assertEnabled` | ObjectName · locator | Element state. |
+| `assertText` | ObjectName, ExpectedValue · locator | Exact text equality. |
+| `assertContains` | ObjectName, ExpectedValue · locator | Substring. |
+| `assertValue` | ObjectName, ExpectedValue · locator | Input value equality (used for greyed *derived* fields — [§11](#11-authoring-testdata)). |
+| `assertCount` | ObjectName, ExpectedValue · locator | Element count. |
+| `assertUrl` | ExpectedValue | URL check. |
+| `softAssert…` (8 mirrors) | as above | Record the failure and continue, instead of throwing. |
 
 ### Flow
 | Keyword | Required | Notes |
 | --- | --- | --- |
-| `callReusable` | InputValue (path) | Inline a flow CSV, e.g. `flows/login.csv`. |
-| `callCustom` | InputValue | Call an exported handler from `custom/<Feature>/customSteps.ts`. |
-| `ifExists` | ObjectName, InputValue | Conditional sub-flow. |
-| `loopOverData` | ObjectName, InputValue | **Runs a reusable sub-flow once per row of a child testdata file.** `ObjectName` = the child CSV's basename (e.g. `scenarios`); `InputValue` = the sub-flow CSV path (e.g. `ProductDesign/feature_BOIN/03_metadata/scenario_block.csv`). Rows are scoped to the current `TC_ID`+`IterationID`; each row's columns are exposed as `${runtime.loop.<Column>}` inside the sub-flow. This is the engine of the **multi-scenario / repeated-modal** pattern — see §4.5 and `MULTI_SCENARIO_GUIDE.md`. |
+| `callReusable` | InputValue(path) | Inline another metadata CSV (e.g. `flows/login.csv`). |
+| `callCustom` | InputValue | Call an exported handler from `custom/<Feature>/customSteps.ts`, falling back to `custom/_shared/`. |
+| `ifExists` | ObjectName, InputValue(path) · locator | Run a sub-flow only if the object is present. |
+| `loopOverData` | ObjectName, InputValue(path) | Run a sub-flow once **per child-testdata row** (scoped to TC+iteration); exposes `${runtime.loop.<Column>}`. The engine of the multi-scenario pattern ([§11](#multi-scenario-repeated-modal-records)). |
+| `loopPeriods` | ObjectName, InputValue(path), ExpectedValue | Run a template flow once **per PERIOD** of a folded period table. `ExpectedValue = <table>\|<countField>`; exposes `${runtime.period.<field>}` + `${runtime.period.n}`. The count-agnostic period-table engine and the importer default ([§11](#child-tables-the-split-alternative)). |
 
 ### API / Comparison
-`apiRequest` · `compareWithBaseline`.
-
-### 6.1 `select` — read this before touching a dropdown
-
-`select` is **one step that does everything**, for native *and* custom dropdowns
-(`core/keywords/input.ts`):
-
-1. Resolves the target — if `SelectorType=label`, walks from the label text to the
-   adjacent interactive control (`input, textarea, select, button, [role=combobox], ...`).
-2. Detects a native `<select>` by evaluating `tagName`.
-3. **Native** → resolves the option **by `value` attribute first, then exact visible text, then text substring**, and commits with `selectOption({value})` (`core/keywords/input.ts:387-403`). On no match it **fails loudly and prints the option list** (`value=text`) — read it before guessing. So a numeric sub-method code in testdata (e.g. `hazardRatioInputMethod=2`) matches `<option value="2">` **directly** — you do **not** need the label text. See `FIELD_WIRING_PATTERNS.md` for the `HazardRatioInputSet` code legend.
-4. **Custom** -> clicks to open the menu, then commits the option in this order:
-   1. **grouped** match — `clickOptionInGroup(label, group)`,
-   2. `role=option` exact,
-   3. exact text,
-   4. keyboard type + Enter.
-
-**Never** write "click the dropdown, then click the option" as two steps. One
-`select` step is correct and far more robust.
-
-**Grouped dropdowns.** When option names repeat across groups, the option is only
-unique as *(group, label)*. Testdata carries the combined form the control
-displays:
-
-```
-${data.inputset.SelectTest}  ->  "Ratio of Means (Parallel Design)"
-                                  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
-                                  option          group
-```
-Matching on the label alone and taking `.first()` silently picks whichever group
-renders first — a **wrong-value PASS**, which is worse than a failure.
-
-### 6.2 `fill` — every testdata value must land, and the `Computed` rule
-
-A value that sits in the testdata but never reaches the screen is a silent bug.
-So `fill` (`core/keywords/input.ts`) is strict:
-
-1. **Field missing** → the step **fails** with `field "X" not found`, not a vague
-   timeout.
-2. **Field disabled** with a real value to enter → **fails** (`field "X" is
-   disabled but testdata requires a value`). The app disabled a field you needed.
-3. **Value entered, then read back** to confirm it actually took. If the field
-   didn't accept it → **fails**.
-4. **The one exception — `"Computed"`.** If the testdata value is the literal
-   `Computed`, the field is skipped. In these design tools the *computed* parameter
-   is greyed out (you can't type into it), and `"Computed"` is how the testdata
-   says "this one is the output, not an input."
-
-**Why this matters for multi-iteration.** The same field can be an input in one
-iteration and the computed output in another — the metadata has **one** `fill`
-step; the testdata decides per iteration:
-
-```
-design.csv:
-  IterationID  Computed Parameter  Sample Size  Power
-  ITER_01      Sample Size         Computed     0.88     <- Sample Size skipped, Power=0.88 entered
-  ITER_02      Power               155          Computed  <- Power skipped, Sample Size=155 entered
-```
-
-One `fill txt_Power ${data.design.Power}` step handles both: 0.88 is typed for
-ITER_01, and `"Computed"` is skipped for ITER_02. (Radios use `check`, and a
-radio value drives which field becomes `"Computed"`.)
-
-> **Corollary:** a recording can only capture fields that were *editable* when you
-> recorded. If Power was the computed field during recording, codegen never typed
-> it, so the importer emits no Power step. For the *other* iteration (where Power
-> is an input) you must **add the `fill` step by hand** — see the worked example in
-> §13 "What still needs a human". `npm run validate` will warn you: *"column
-> `Power` has a value but no step enters it."*
-
-### 6.3 Disabled fields, grid cells, and the skip rules at a glance
-
-The framework handles these app behaviours the **same** way across `fill` / `select`
-/ `check`, which is what lets **one metadata serve many data-combination iterations**
-(§4.5). Per iteration, the resolved testdata value decides:
-
-| Situation | `fill` | `select` |
+| Keyword | Required | Notes |
 | --- | --- | --- |
-| a real value | enter it, then **read back to verify it landed** | pick the option |
-| **blank / `N/A`** | **skip** — field not applicable to this iteration | **skip** |
-| **blank / `N/A`** in a data-driven `ExpectedValue` | **skip** — same rule for `assertText` / `assertContains` / `assertValue` / `assertCount`: a field that doesn't exist for this data combination can't be *asserted* either | — |
-| `"Computed"` | **skip** — greyed computed-output field | — |
-| field **disabled but already shows the intended value** — *fixed by another control* (e.g. Test Type forced to "1-Sided" for Non-Inferiority; Input Method fixed to "Ratio of Means" when computing the ratio) | — | **skip** — intent already met |
-| field **disabled, shows something else** | **fail** | **fail** |
-| field **not found** but a value is required | **fail** (`field not found`) | **fail** |
-| **grid cell** that discards a one-shot fill and reverts | auto-escalates to **type key-by-key + Tab** to commit | — |
+| `apiRequest` | InputValue(`METHOD /path`) | Fire an API call (a `DELETE` 404 is treated as already-gone). |
+| `compareWithBaseline` | — | Compare the captured results to the baseline ([§12](#12-baseline--compare)). |
 
-The disabled-and-fixed skip (`select`) and the grid escalation (`fill`) fire **only**
-when the plain path fails, so ordinary fields are never affected. All of these are in
-`core/keywords/input.ts`; the blank/`N/A` skip is central in `core/runner/stepRunner.ts`.
+### 8.1 `select` — read this before touching a dropdown
 
-> **Every one of these rules assumes the step is driven by the testdata.** A step with a
-> **blank InputValue** has nothing to resolve, so none of the rows above apply: it can't be
-> skipped for an iteration, it can't be verified, it just fires. `validate` therefore
-> **rejects a blank `InputValue` on `fill` / `type` / `select` / `check` / `uncheck`**
-> (`core/keywords/catalog.ts`), and the importer refuses to emit one.
+`select` is **one step that does everything** (`core/keywords/input.ts`), for native `<select>` and
+custom dropdowns and radios:
+
+1. Resolves the target (a `label` selector walks from the label to the adjacent control).
+2. Detects a native `<select>` by tag name.
+3. **Native** → matches the option by **`value` first, then exact text, then substring** and commits.
+   On no match it **fails loudly and prints every real option** (`value=text`) — read that list before
+   guessing. A numeric sub-method code in testdata (`hazardRatioInputMethod=2`) matches
+   `<option value="2">` directly — no label needed.
+4. **Custom** → opens the menu and clicks the option.
+
+> **Grouped options repeat.** The same label can appear under two groups; a label-only match +
+> `.first()` silently picks the wrong one (a wrong-value PASS). Disambiguate with `"Option (Group)"`.
+
+### 8.2 `fill` — and the `Computed` rule
+
+`fill` enters a value and **reads it back** to confirm it landed; if a grid cell discards the one-shot
+value it escalates to typing key-by-key + Tab. It presses **Tab** after every value so controls that
+only enable on blur (e.g. an enrollment **Calculate** button) activate.
+
+A field the app computes is **greyed**. Never `fill` a greyed field — the step hard-fails on a disabled
+input. Put `Computed` in the cell (it skips), or, if you know the number the app *should* show,
+`assertValue` it instead ([§11](#what-to-put-in-a-cell)).
+
+### 8.3 The skip rules (blank / `N/A` / `Computed`)
+
+This is what lets **one** metadata serve **many** iterations. Per step, the resolved testdata value
+decides (`core/runner/stepRunner.ts`):
+
+| Situation | `fill` / `select` / `check` / `type` | `assertText` / `assertValue` / … |
+| --- | --- | --- |
+| a real value | enter it (read back to verify) | assert it |
+| **blank / `N/A`** | **skip** — not applicable to this iteration | **skip** |
+| **`Computed`** | **skip** — greyed, app-owned output | — |
+
+> **Every value-entering step MUST carry a `${data.*}` token.** A blank `InputValue` has nothing to
+> resolve, so it can never skip — it just fires every iteration and can silently override an earlier
+> data-driven choice. `validate` rejects a blank `InputValue` on `fill`/`type`/`select`/`check`/`uncheck`.
 >
-> `check` needs the value even though the handler only calls `.check()` — the value
-> parameterises the selector's `{0}`, so it is what picks **which** radio in the group.
-> A blank one is a blind click that re-asserts whatever the recording happened to select.
-> This is not theoretical: ROM(PD)'s `check radio_Type_1_Error` (blank) silently undid the
-> `Computed Parameter = Power` that the previous step had set from the testdata, greying out
-> the α just typed and leaving a stale `0.9` Power. The app rejected the design and the
-> simulation returned `"Failed"` — six steps later, with nothing in the log pointing at the
-> cause. To tick a plain checkbox, data-drive it (`${data.project.Include}`); blank/`N/A`
-> then skips it per iteration, which is the behaviour you actually want.
+> **`SkipIf` semantics.** `==N/A` matches an empty string **OR** any `N/A` spelling (`isNaCell`);
+> `==EMPTY` is a **strict** empty check. Add-Period/Add-Interim gates use `==N/A` (skip an absent period
+> *and* a present-`N/A` method cell); `loopPeriods` count-field gates use `==EMPTY`
+> ([§11](#child-tables-the-split-alternative), `core/runner/skipIf.ts`).
 
 ---
 
-## 7. Selector resolution
+## 9. Selector resolution
 
-`core/locators/resolver.ts`.
+`core/locators/resolver.ts` turns a `(Page, ObjectName)` into a Playwright `Locator`.
 
-### 7.1 Types and priority
-Priority is `testid` > `role` > `label` > `text` > `css` > `xpath`. Prefer the top
-of that list: `testid` and `role` survive redesigns; `xpath` does not (and the
-validator warns unless you justify it in `Description`).
+**Each row carries exactly one `SelectorType`**, mapped to a Playwright builder:
 
-### 7.2 FallbackSelector
-If the primary matches **0** elements and a fallback exists, the fallback is used
-and a `UI-DRIFT` warning is logged. **That warning is a signal, not noise** — the
-markup moved and `selectors.csv` needs updating.
+| `SelectorType` | Playwright | Note |
+| --- | --- | --- |
+| `testid` | `getByTestId` | |
+| `role` | `getByRole(SelectorValue, {name: RoleName, exact})` | Accessible role + name. |
+| `label` | `getByLabel` | Walks from a form label to its control. |
+| `placeholder` | `getByPlaceholder` | |
+| `text` | `getByText` | |
+| `css` | `locator` | Any CSS. |
+| `xpath` | `locator` (auto-prefixes `xpath=`) | The validator warns on an unjustified xpath. |
 
-### 7.3 `Exact` — the substring trap
+> **There is no runtime "priority" fallback chain.** A `SELECTOR_PRIORITY` list exists in the schema as
+> *authoring guidance* (prefer testid/role/label over xpath) and the only enforcement is the xpath
+> warning — resolution simply uses the one type on the row.
 
-**Playwright matches accessible names by SUBSTRING by default.** So:
-
-```
-getByRole('button', { name: 'Save' })     ALSO matches "Save & Compute"
-```
-
-This is a real bug we hit. `Exact=TRUE` opts a row into exact matching. It applies
-to `role`, `label`, `placeholder` and `text`. When Playwright codegen emits
-`exact: true`, it is telling you the name is ambiguous — the importer now carries
-that through automatically.
-
-### 7.4 `Dynamic` and `{0}`
-
-With `Dynamic=TRUE`, `{0}`, `{1}`... are substituted from the step's dynamic args.
-**Substitution happens in BOTH `SelectorValue` and `RoleName`** (`buildLocator`),
-so this is valid and correct:
-
-```csv
-lnk_ResultName,ResultsPage,role,link,{0},,TRUE,Open a result by name,TRUE
-```
-
-> Historical note: the validator used to warn only if `SelectorValue` lacked
-> `{0}`, which flagged every legitimate `role` selector. Fixed — it now accepts
-> `{0}` in either field.
+- **`FallbackSelector`** — if set, the resolver counts the primary's matches, and on **0** it logs
+  `UI-DRIFT: … matched 0 elements; using FallbackSelector …; Update selectors.csv.` and uses the
+  fallback. That warning is your signal the markup moved. (Only the async path checks the fallback.)
+- **`Exact`** — default **FALSE** = Playwright substring matching, so `"Two Arm Confirmatory"` also
+  matches `"Two Arm Confirmatory - Multiple Endpoints"` (a strict-mode violation waiting to happen).
+  Set `Exact=TRUE` to force exact accessible-name matching. This one bites (Trap 3).
+- **`Dynamic` + `{0}`/`{1}`** — when `Dynamic=TRUE`, `{0}`, `{1}`, … in **both** `SelectorValue` and
+  `RoleName` are replaced by args. Args come from the step's `DynamicArgs` column (pipe-split,
+  `${...}`-resolved) if present, else from splitting `InputValue` on `|`. This is how one parametric
+  selector `[id="boundary.{0}.efficacyCheck"]` serves every period in a `loopPeriods` flow
+  ([§11](#child-tables-the-split-alternative)). The validator warns if `Dynamic=TRUE` but no `{d}`
+  placeholder is present.
 
 ---
 
-## 8. Variable interpolation
+## 10. Variable interpolation
 
-`core/runner/resolver.ts`. Applies to **`InputValue` and `ExpectedValue`**
-(`stepRunner.ts:32-33`). The regex is `/\$\{([^}]+)\}/g`, and literal text between
-tokens is preserved — so `Proj_${runId}` works.
-
-**Every supported namespace** (`resolveToken`, `resolver.ts:42-89`):
+`core/runner/resolver.ts` expands `${...}` tokens in **`InputValue`** and **`ExpectedValue`**. Literal
+text between tokens is preserved (`Proj_${runId}` works).
 
 | Token | Resolves to | Example |
 | --- | --- | --- |
 | `${data.<file>.<col>}` | A testdata cell for this TC + iteration. | `${data.project.Time Unit}` |
-| `${env.<VAR>}` | A key from `.env`. | `${env.APP_USERNAME}` |
+| `${env.<VAR>}` | A key from the loaded `.env`. | `${env.APP_USERNAME}` |
 | `${master.<Column>}` | A column of this test's `master.csv` row. | `${master.ProjectID}` |
 | `${runtime.<name>}` | A value captured earlier via **`StoreAs`**. | `${runtime.projectId}` |
-| `${config.<dotted.path>}` | A scalar from `feature.config.json`. | `${config.simulation.successText}` |
-| `${runId}` | This run's id — unique across **runs**. | `${runId}` |
-| `${iterationId}` | This iteration's id (`ITER_01`, `ITER_02`) — unique across **iterations within a run**. | `${iterationId}` |
-| `${tcId}` | This test case's id. | `${tcId}` |
-| `${timestamp}` | Run timestamp. | `${timestamp}` |
-| `${today}`, `${today+30d}`, `${today-7d}`, `${Now}` | Date tokens (`core/utils/dates.ts`). | `${today+30d}` |
-| `${faker.<method>}` | Random data. Supported: `uuid`, `company`, `firstName`, `lastName`, `email`, `word`, `number`. | `${faker.email}` |
-
-Combine freely:
+| `${runtime.loop.<Column>}` | Inside a `loopOverData` sub-flow: the current child row's column. | `${runtime.loop.curveFamily}` |
+| `${runtime.period.<field>}` | Inside a `loopPeriods` template flow: the current period's cell; `${runtime.period.n}` is its 0-based index. | `${runtime.period.analysisSpacingInfo}` |
+| `${config.<dotted.path>}` | A scalar from `feature.config.json`. | `${config.simulation.maxWaitMs}` |
+| `${runId}` / `${iterationId}` / `${tcId}` / `${timestamp}` | Run/iteration identity. | `${runId}` |
+| `${today}`, `${today+30d}`, `${today-7d}`, `${Now}` | Date tokens (`yyyy-MM-dd`; units `d`/`w`/`m`/`y`). | `${today+30d}` |
+| `${faker.<method>}` | Random data. Methods: `uuid`, `company`, `firstName`, `lastName`, `email`, `word`, `number`. | `${faker.email}` |
 
 ```
-${data.project.projectName}_${runId}                 ->  MyProject_20260717T012349_c9c5be
-${data.project.projectName}_${runId}_${iterationId}  ->  MyProject_20260717T012349_c9c5be_ITER_02
+${data.project.projectName}_${runId}                 →  MyProject_20260717T012349_c9c5be
+${data.project.projectName}_${runId}_${iterationId}  →  MyProject_20260717T012349_c9c5be_ITER_02
 ```
 
-> **For a globally-unique name across a multi-iteration run, use BOTH `${runId}`
-> and `${iterationId}`.** `runId` alone is shared by every iteration of a run, so
-> the 2nd iteration would try the same name and the app rejects it as a duplicate.
-> The importer already appends both to project-name fields.
-
-> **Hard rule: an unresolvable token THROWS.** It is never silently replaced with
-> an empty string. `resolver.ts:7` says why — *"a blank form field costs a day to
-> debug"*. The error names the file, row and column. So a typo in
-> `${data.projct.Phase}` fails loudly and immediately.
-
-Secrets are masked in logs — `${env.APP_PASSWORD}` prints as `***MASKED***`
-(`core/utils/logger.ts:12`).
+> **For a name that must be unique across a multi-iteration run, use BOTH `${runId}` and
+> `${iterationId}`** — `runId` alone is shared by every iteration, so the app would reject the 2nd as a
+> duplicate. The importer already appends both to project-name fields.
+>
+> **An unresolvable token THROWS** (naming the file/row/column) — it is never silently replaced with
+> `''`, because "a blank form field costs a day to debug." A typo in `${data.projct.Phase}` fails loud
+> and immediately. Secrets are masked in logs (`${env.APP_PASSWORD}` prints `***MASKED***`).
 
 ---
 
-## 9. Baseline and compare
+## 11. Authoring testdata
 
-This is the point of the framework: prove the numbers did not move.
+Everything the test types comes from `01_testdata/*.csv`. Adding a new design combination is really
+just a per-field decision, repeated. This section is the whole art of it.
 
-### 9.1 Where
-```
-06_baseline/<env>/baseline_<TC_ID>_<IterationID>.csv       the approved benchmark
-06_baseline/<env>/baseline_<TC_ID>_<IterationID>.csv.meta.json   provenance
-```
-Today: `06_baseline/AD/baseline_TC_04_ITER_01.csv` (124 rows).
+### What to put in a cell
 
-The `.meta.json` sidecar records runId/env/approver/hash. It is **write-only** —
-nothing reads it at runtime. It is for humans.
+Look at the field **on screen with that combination selected** — is it there, and can you type in it?
 
-### 9.2 Lifecycle
-1. **First run** — no baseline. The run captures results, **writes** the baseline,
-   reports `BASELINE_CREATED`. Nothing was verified.
-2. **A human reviews the baseline.** This is the real approval gate.
-3. **Every later run** — capture, compare, `PASS` / `FAIL`.
+| On screen, for THIS combination | Cell value | What happens |
+| --- | --- | --- |
+| **Not on the page** (hidden by a controlling option) | `N/A` | step **skipped** |
+| **Editable** — you choose the input | the real value | entered, then **read back** to verify |
+| **Greyed, literally showing "Computed"** (the parameter being solved for) | `Computed` | step **skipped** — the app owns it |
+| **Greyed, showing a derived number** | the expected number, wired as `assertValue` | the app's arithmetic is **verified** |
+| Greyed number you don't care about | `N/A` | step skipped |
+| Editable, but you want the app default | blank | step skipped |
 
-### 9.3 Modes
-- `--update-baseline` / `BaselineMode=update` — overwrite the benchmark.
-- `BaselineMode=create` — write if missing.
-- `BaselineMode=compare` (default) — compare.
+`N/A` and `Computed` both skip, so a mix-up won't fail a run — it just mis-documents *why* a field was
+left alone. Keep them meaningful: **`N/A` = not on the page; `Computed` = on the page, app-owned.**
+Never `fill` a calculated value into a greyed field — it hard-fails; use `assertValue` with the number
+in `ExpectedValue` instead (e.g. ROM(PD) verifies `μt0 = Mean Control × NI Margin`).
 
-### 9.4 The trap that will fool you
+> **`validate` tells you when a derived field needs wiring.** Add the column with its expected numbers
+> and run `npm run validate`: *"column X has a value but no step enters it — add a step or remove the
+> column."* That warning is the prompt to add the `assertValue` step (or drop the column).
 
-`BASELINE_CREATED` is **excluded** from the failure count:
-`bad = FAIL + ERROR + SIMULATION_TIMEOUT` (`core/runner/orchestrator.ts`).
+### Two fields that share a label
 
-So if the baseline is missing — wrong env, moved folder, renamed TC — the run:
-- captures results,
-- **overwrites your approved benchmark with an unreviewed capture**,
-- reports `BASELINE_CREATED`,
-- and **exits 0**.
+When two fields show the **same label** but have distinct DOM ids (both read *"Mean Treatment"*;
+`Hazard Ratio (Null)` vs `(Alternative)`), name the columns after the **DOM id**, not the label — a
+label-derived name collides. For *editable* fills the importer splits these for you automatically
+(one column per id, e.g. `hazardRatio_Null_SS` vs `hazardRatio_Alt_SS`); the hand-naming rule is for
+the **greyed** `assertValue` fields it can't record. Across hypotheses the id suffix encodes the
+hypothesis (`_SP`/`_SS`/`_NI`) — see `FIELD_WIRING_PATTERNS.md`.
 
-Green. Verifying nothing.
+### Period tables (indexed, multi-period values)
 
-> **Rule: assert on the status string in `reports/<runId>/results.json`, never on
-> the exit code.** A real pass says `"status": "PASS"` and
-> `"summary": "PASS — 124 row(s), 124 cell(s) within tolerance."`
+Some inputs are **tables** — one row per analysis period (interim spacing, piecewise hazard rates,
+dropout periods). The app names each cell with a **dotted, 0-based id** — **UI "Period 1" is index
+`0`**:
+
+| Heading (the exact dotted id) | Fills |
+| --- | --- |
+| `boundary.0.analysisSpacingInfo` | interim spacing at look 1 |
+| `boundary.1.analysisSpacingInfo` | interim spacing at look 2 |
+| `inputMethodTable.0.hazardRateControl` | period-1 control hazard rate |
+
+An export cell often packs every period into one quoted string (`"0.9, 1.2, 1.5"` = three periods) —
+spread it across the indexed columns, **0-based, one value each**. A period a scenario doesn't use is
+left `N/A` so its fill skips.
+
+### Child tables (the split alternative)
+
+Those indexed columns may instead live in **their own CSV**, one row per period — often much cleaner:
+
+- **File `<phase>_<tableName>.csv`** — `<phase>` is the parent basename (`design`/`simulation`):
+  `design_boundary.csv`, `design_dropoutTable.csv`, `simulation_enrollmentTable.csv`, …
+- **Columns `TC_ID, IterationID, PeriodIndex, <field1>, <field2>, …`** — the period index is a
+  **column**, one row per period.
+- At load time `foldChildTables()` (`core/loaders/featureLoader.ts`) folds each row back to the
+  synthetic `<table>.<n>.<field>` column, so `${data.design.boundary.0.efficacyPValue}` resolves
+  **identically** whether authored inline or split. Author a table in **one** place only.
+
+**How these tables get filled *count-agnostically*: `loopPeriods` — the importer default.** Instead of
+one metadata row + one selector *per field per period* (capped at a hand-written ceiling), the importer
+emits, for the allowlisted tables (`boundary` / `enrollmentTable` / `dropoutTable`):
+
+- one **parametric selector** per field (`[id="boundary.{0}.efficacyCheck"]`, `Dynamic=TRUE`),
+- a **template flow** `flows/<slug>_<table>_period.csv` driven by `${runtime.period.<field>}` (with
+  `DynamicArgs=${runtime.period.n}`),
+- a `callCustom reconcilePeriodTable` (adds the rows) + a `loopPeriods` step (fills them), both gated
+  `SkipIf ${data.<file>.<table>.0.<countField>}==EMPTY`.
+
+So adding a period becomes a **data-only** edit. The allowlist is `PERIOD_LOOP_CONFIG` in
+`scripts/import-codegen.ts`; numeric/computed boundary fields deliberately stay enumerated (a blind
+loop would type into a greyed cell). Proven on `feature_ROP(PD)` TC_21. Full recipe:
+`AI_IMPORT_AGENT.md` §9.1. Author not-applicable cells as `N/A`, not blank, so the CSV stays
+self-documenting.
+
+### Multi-scenario (repeated-modal) records
+
+A different shape: a page that adds the **same kind of record N times through one re-opened "Add …"
+modal** (candidate models, scenarios, arms), where the modal **reuses the same DOM ids** and the count
+varies per iteration. Wide `scenario1_x … scenario10_x` columns explode — use **`loopOverData`**
+instead:
+
+- **`01_testdata/scenarios.csv`** — a *child* table, **one row per record** (not per iteration).
+- **`03_metadata/<name>_block.csv`** — a reusable sub-flow (open modal → pick type → gated fills →
+  commit) reading `${runtime.loop.<Column>}`.
+- **one `loopOverData` step** that runs the sub-flow per matching child row.
+
+Fills inside the sub-flow gate **explicitly** with `SkipIf` on the loop columns (the blank/`N/A`
+auto-skip is `${data.*}`-only). The importer does **not** generate this — hand-overlay it per
+`MULTI_SCENARIO_GUIDE.md` (reference: `feature_BOIN`).
 
 ---
 
-## 10. Environments and auth
+## 12. Baseline & compare
 
-### 10.1 How the env is chosen
+This is the point of the framework: **prove the numbers did not move.**
 
-`orchestrator.ts` `envNameFor`, highest priority first:
+### Where
+
+```
+06_baseline/<env>/baseline_<TC_ID>_<IterationID>.csv          the approved benchmark
+06_baseline/<env>/baseline_<TC_ID>_<IterationID>.csv.meta.json   provenance (write-only)
+06_baseline/<env>/sim_baseline_<TC>_<ITER>.csv                the simulation phase's benchmark
+```
+
+The `.meta.json` sidecar records `runId`/`env`/`approver`/`sourceDataHash`. It is **write-only** —
+nothing reads it at runtime (the `sourceDataHash` is recorded for humans, never enforced).
+
+### Lifecycle
+
+1. **First run** — no baseline. The run captures results, **writes** the baseline, reports
+   `BASELINE_CREATED`. **Nothing was verified.**
+2. **A human reviews the baseline numbers.** This is the real approval gate.
+3. **Every later run** — capture, compare → `PASS` / `FAIL`.
+
+Re-approve with `--update-baseline` (or `BaselineMode=update`); `create` writes only if missing.
+
+### How the compare works
+
+Rows are matched by their **key** columns (`IsKey=TRUE`), never by position. Per cell: strings/dates
+match exactly after `Normalize`; numbers pass iff within `AbsTolerance` **or** `RelTolerance` (a
+`numeric` compared column **must** declare a tolerance — use `0` for exact integers). Mismatches are
+reported by class: `SCHEMA_MISMATCH`, `ROW_COUNT_MISMATCH`, `MISSING_ROW`, `EXTRA_ROW`, `VALUE_MISMATCH`
+— cell-level detail lands in `08_diffs/`.
+
+### The trap that will fool you
+
+`BASELINE_CREATED` is **excluded** from the failure count. So if the baseline is missing — wrong env,
+moved folder, renamed TC — the run captures results, **overwrites your approved benchmark with an
+unreviewed capture**, reports `BASELINE_CREATED`, and **exits 0**. Green, verifying nothing.
+
+> **Rule: assert on the status string in `reports/<runId>/results.json`, never on the exit code.** A
+> real pass says `"status": "PASS"`.
+
+> **Baselines are ENVIRONMENT-SPECIFIC** — tied to the actual East Horizon *server* the `.env`
+> `BASE_URL` pointed at when approved, not just the `AD` label. An `.env` swap to a different instance
+> gives `VALUE_MISMATCH` on sensitive designs. When compares fail after an `.env` change, confirm
+> `.env` matches the baseline instance **before** touching data (Trap 26). A mismatch that differs only
+> in *label text* (`Alternative`→`Alt.`), not numbers, is app label drift → re-baseline after review.
+
+---
+
+## 13. Environments & auth
+
+### How the env is chosen
+
+Precedence (highest first), `core/runner/orchestrator.ts`:
 
 ```
 --env  >  master.csv Environment  >  process.env.ENV  >  'qa'
 ```
 
-**The env name selects two things:** the `.env.<env>` file *and* the baseline
-folder `06_baseline/<env>/`. They are the same knob — you cannot rename the
-baseline folder without renaming the env.
+The env name selects **two** things: the `.env.<env>` file *and* the baseline folder
+`06_baseline/<env>/`. `.env.<env>` falls back to `.env` when absent (there is no `.env.AD` on disk — the
+real `BASE_URL`/credentials live in `.env`, and `AD` is a label that scopes the baseline).
 
-`.env.<env>` falls back to `.env` when absent (`config/environments.ts`). There is
-**no `.env.AD` on disk** — the real `BASE_URL` / credentials live in `.env`, so
-`AD` is a label that scopes the baseline. That is by design.
+**Env vars** (`config/environments.ts`, from `.env.<env>` then `.env`; `process.env` overrides so CI
+can inject secrets): `BASE_URL`, `API_BASE_URL`, `APP_USERNAME`, `APP_PASSWORD` (masked in logs),
+`HEADLESS` (default `true`), `WORKERS` (default 4), `DEFAULT_TIMEOUT_MS` (default 60000), `ENV`.
 
-> **Do not use `--env`** to scope one test. It is highest priority and applies to
-> **every** selected row, dragging other features' baselines with it. Use the
-> `Environment` column.
+> **Do not use `--env` to scope one test.** It is highest priority and applies to **every** selected
+> row, dragging other features' baselines with it. Use the `Environment` column.
 
-> **Trap:** `.env` contains `ENV=beta`, which does **not** reach `process.env` on
-> the `npm run test` path (`environments.ts` uses `dotenv.parse`, not
-> `dotenv.config`). Do not "fix" that — adding `dotenv.config()` would silently
-> move the whole suite to env `beta` and orphan every baseline.
+### `reuseAuthState`
 
-### 10.2 `reuseAuthState`
+- **`true`** — a separate browser logs in once, saves `.auth/<env>.json`, and every iteration reuses
+  the cookie (the `Login` step group is dropped). Worth it for many iterations.
+- **`false`** (what the importer writes) — one browser; the first step is `callReusable flows/login.csv`,
+  logging in inline. Strictly better for a single iteration: one window, no redundant browser.
 
-- **`true`** — a separate browser logs in, saves `.auth/<env>.json`, closes; each
-  iteration reuses the cookie. Worth it for many iterations across workers.
-- **`false`** (ROM(PD)) — one browser; the first step is
-  `callReusable flows/login.csv`, logging in inline. For a single iteration this
-  is strictly better: one window, no redundant browser.
+Either way, remember **one session per user** — parallel logins force each other out, which is why
+serial execution is the norm (Trap 15).
 
 ---
 
-## 11. Reports and artifacts
+## 14. Reports & sharing
 
 | Path | Contents |
 | --- | --- |
-| `09_html_report/index.html` | Per-feature. Step table: **Seq**, StepID, Group, Action, Object, resolved input (masked), Status, Time, **Description**, **screenshot thumbnail**, Notes. Plus baseline-vs-actual diff. |
+| `09_html_report/index.html` | Per-feature step table (Seq, StepID, Group, Action, Object, masked input, Status, Time, Description, screenshot thumbnail) + the baseline-vs-actual diff. |
 | `reports/<runId>/results.json` | Machine-readable. **The source of truth.** |
-| `reports/<runId>/combined_report.html` | Feature x TC matrix. **No step table.** |
-| `artifacts/<runId>/<TC>_<ITER>/` | `step_<StepID>_<ok\|fail>_<seq>.png`, trace, video. |
-| `07_actual_results/` | What this run captured. |
-| `08_diffs/` | Cell-level differences on FAIL. |
+| `reports/<runId>/combined_report.html` | Feature × TC matrix (no step table). |
+| `reports/<runId>/junit.xml` | For CI. |
+| `artifacts/<runId>/<TC>_<ITER>/` | `step_<StepID>_<ok\|fail>_<seq>.png`, `trace.zip`, video. |
 
-Screenshots are captured for **every** step (§4.3.2) at viewport size, and land in:
+Screenshots are captured for **every** step. The trailing `<seq>` (not the StepID) is what makes
+filenames unique — `flows/login.csv` and your metadata both have steps 10, 20, 30.
 
-```
-artifacts/<runId>/<TC_ID>_<IterationID>/step_<StepID>_<ok|fail>_<seq>.png
-```
+> **Neither on-disk HTML can be sent on its own** — the per-feature report links screenshots by
+> relative path into `artifacts/` (recipient sees broken images), and the combined report's drill-down
+> is a relative path out of `reports/` (404). Both `artifacts/` and `reports/` are gitignored.
 
-The trailing `<seq>` is what makes filenames unique, **not** the StepID: StepIDs
-collide, because `flows/login.csv` and your metadata both have steps 10, 20, 30.
-`step_10_ok_0.png` is login's step 10; `step_10_ok_10.png` is metadata's.
-`trace.zip` and the `.webm` video sit in the same folder.
-
-> **Trap:** the report links artifacts by **relative path** into
-> `artifacts/<runId>/`. Deleting old artifacts silently breaks the images in any
-> report you kept. The report is overwritten each run; the artifacts it points at
-> are not. Nothing prunes `artifacts/` — it grows without limit (~10 MB of PNGs
-> per run). Both `artifacts/` and `reports/` are gitignored.
-
-### 11.1 Sharing a report — use `npm run report:share`
-
-**Neither report on disk can be sent on its own.** Do not try:
-
-| File | Why it breaks when sent alone |
-| --- | --- |
-| `09_html_report/index.html` | Screenshots are relative links into `artifacts/`. Recipient sees ~60 broken images. |
-| `combined_report.html` | Its Drill-down link is a relative path *out of* `reports/` into the feature folder. Recipient gets a 404. |
-
-**The answer:**
-
-```bash
-npm run report:share                 # ~13 MB — everything, screenshots embedded
-npm run report:share -- --lite       # ~25 KB — everything except screenshots
-npm run report:share -- <runId>      # a specific run
-npm run report:share -- --list       # what is available to share
-```
-
-Writes `reports/<runId>/run_<runId>_shareable.html` — **one file containing the
-whole run**: status tiles, run metadata, the Feature × TC matrix, every step with
-its Description, and the baseline-vs-actual comparison. Drill-down is an
-**in-page anchor**, so there is no link to break. Send just that file; the
-recipient opens it in any browser, offline.
-
-**Which to send**
-
-- **Default** when it can travel (Teams / Slack / Drive / a shared folder). ~1.35×
-  the run's PNG bytes — base64 overhead. Near the 25 MB limit for email.
-- **`--lite`** when it must be small or go by email. ~25 KB, and the recipient
-  still reads **every step, description, status, timing and the full compare
-  table** — only the screenshots are gone. It *omits* them rather than linking
-  them, precisely so no broken images appear.
-
-Both re-render from `reports/<runId>/results.json`, so they work on **any past
-run** — nothing is re-executed. If artifacts were pruned, the full version reports
-how many screenshots it could not embed instead of silently shipping dead images.
-
-The on-disk report stays **linked** (~37 KB) because it is rewritten every run;
-only `report:share` embeds.
+**To share, use `npm run report:share`** ([§4](#reports)) — it writes one self-contained
+`run_<runId>_shareable.html` (status tiles, the Feature × TC matrix, every step with its Description,
+and the full compare table; drill-down is an in-page anchor). Send just that file; it opens in any
+browser, offline. `--lite` drops the screenshots for a ~40 KB emailable version. Both re-render from
+`results.json`, so they work on any past run.
 
 ---
 
-## 12. Extension points
+## 15. Extension points
 
-### 12.1 Reusable flows — `flows/*.csv`
-A normal metadata CSV, inlined by `callReusable`:
+### 15.1 Reusable flows — `flows/*.csv`
 
-```csv
-Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,...
-1,10,Login,-,navigate,,/,...
-```
-```csv
-5,Login,-,callReusable,,flows/login.csv,,,,,300000,FALSE,0,always,,Log in inline
-```
+A normal metadata CSV, inlined by `callReusable` (e.g. `flows/login.csv`). Its steps run **before** the
+parent `callReusable` row is recorded, so the report shows the children first.
 
-The flow's steps run **before** the parent step is recorded, so the report shows
-children first, then the `callReusable` row.
+> Flow CSVs are parsed by the **same schema** as metadata, but only at **runtime** — `npm run validate`
+> does **not** parse them. A column the schema needs but the flow omits breaks login at runtime, not at
+> validate time.
 
-> Flow CSVs are parsed by the **same schema** as metadata. A column that is
-> required in the schema but missing from `flows/login.csv` breaks login at
-> runtime — and `npm run validate` will **not** catch it, because flows are only
-> parsed at runtime.
+### 15.2 Custom steps — `custom/<Feature>/customSteps.ts`
 
-### 12.2 Custom steps — `custom/<Feature>/customSteps.ts`
-For anything genuinely app-specific (§14 keeps it out of core):
+For anything genuinely app-specific (the engine stays generic). A `callCustom` step names an exported
+handler:
 
 ```ts
 export const extractAllResultTables: KeywordHandler = async (page, ctx, step) => {
-  // ... returns a value; may set ctx.lastActualRows for the comparator
+  // ... discover the result page, return normalized rows for the comparator
 };
 ```
-```csv
-480,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,...
-```
 
-ROM(PD) exports `selectStartDate`, `uniqueProjectName`, `selectTestOption`
-(currently unused — the generic keywords cover those cases now). It used to carry
-its **own copy** of `extractAllResultTables`; the copies drifted, so fixes landed
-on one and not the other. That copy is gone — ROM(PD) now inherits the shared one.
+`callCustom` resolves the feature's own module **first**, then falls back to
+`custom/_shared/customSteps.ts`. Generic helpers (`selectStartDate`, `extractAllResultTables`,
+`reconcilePeriodTable`) live in `_shared`, so a new feature gets them for free.
 
-> **Shared fallback — `custom/_shared/customSteps.ts`.** `callCustom` resolves a
-> handler from the feature's own module **first**, then falls back to
-> `custom/_shared/`. Generic helpers (`selectStartDate`, `extractAllResultTables`)
-> live in `_shared`, so a new feature gets them for free without its own file. A
-> feature can still override by exporting its own handler of the same name.
->
-> Prefer **not** to override `extractAllResultTables`. It is feature-agnostic on
-> purpose, and a per-feature copy is how the ROM(PD) drift happened.
-
-#### What `extractAllResultTables` captures
-
-It discovers the result page rather than assuming a fixed set of tables, and
-flattens everything to one cell per row (`TableName | RowLabel | ColumnName |
-Value`) so any table shape fits the schema `compare.config.csv` describes once.
-
-| It handles | Why it has to |
-| --- | --- |
-| **Leaf grids only** | AG Grid wraps a nested `.ag-root` for grouped views. Reading every `.ag-root` captured each cell **twice** — once flat, once through the wrapper, whose blank first column produced `row_1`-style placeholder keys. |
-| **Scrolls each grid** | AG Grid only keeps *visible* rows in the DOM. A tall table silently truncated; it now scrolls the body viewport and merges rows until it has the `aria-rowcount` the grid claims, and warns if it still falls short. |
-| **Cells keyed by `col-id`/`row-index`** | Pinned columns emit one `[role=row]` per container; positional binding would silently bind cells to the wrong headers. |
-| **Narrative panels** | The headline numbers live in prose ("a total of **571** pairs … power of **88.02%**"), not in any grid. A heading with no grid/table of its own is captured as a single `Narrative` cell. |
-| **Skips hidden + chrome panels** | A single-page app keeps hidden dialogs mounted (the "Sign Out" confirmation) and toolbars read as panel text (`RenameDeleteHomeDetails`). Panels must be **visible**, and their text is measured with buttons/links/tabs/icons stripped out. |
-
-Grids that share a heading are numbered in document order (`Design Summary #1`,
-`#2`). Those names are **baseline keys** — if the app reorders the panels, expect
-a diff and re-record.
+> **Prefer not to override `extractAllResultTables`.** It is feature-agnostic on purpose — it discovers
+> the result grids + narrative panels itself and flattens everything to `TableName | RowLabel |
+> ColumnName | Value` so one `compare.config.csv` fits any table shape. A per-feature copy is how bugs
+> get fixed in one place and not the other.
 
 ---
 
-## 13. Adding a new feature
+## 16. Adding a new feature
 
-**You supply a recording + testdata; the tooling turns it into a runnable test.**
-There are **two ways** to do the turning — pick by how much judgment the feature needs:
+**You supply a recording + testdata; the tooling turns it into a runnable test.** There are **two
+paths** — pick by how much judgment the feature needs:
 
 | Path | What runs | Use it when |
 | --- | --- | --- |
-| **A — Manual importer** (`npm run import-codegen`) | A deterministic CLI: captures selectors, generates steps + `${data.*}` tokens, dedups a superset recording, derives clean column names. | A straightforward single-path feature, or you want full control and will wire the details yourself. |
-| **B — AI agent** (`/import-feature`) | The importer **plus** a judgment layer: consolidates conditional fields, sets/verifies `N/A` per iteration, screenshot-verifies each run, fixes quirks — scoped to that one feature. | A feature with conditional fields / multiple scenarios, or when you want it wired *and verified* end-to-end. Works with **Claude Code and GitHub Copilot** — see §13.9. |
+| **A — Manual importer** (`npm run import-codegen`) | A deterministic CLI: captures selectors, generates steps + `${data.*}` tokens, dedups a superset recording, wires fields to your existing columns, and now emits `loopPeriods` for period tables by default. | A straightforward, single-path feature, or you want full control. |
+| **B — AI agent** (`/import-feature`) | The importer **plus** a judgment layer: consolidates conditional fields, decides `N/A` per iteration, screenshot-verifies each run, fixes quirks — scoped to that one feature. Works in **Claude Code and GitHub Copilot**. | Conditional fields / multiple scenarios, or when you want it wired *and verified* end-to-end. |
 
-Both use the **same importer** and the **same recording** — the agent just does the
-steps a deterministic parser can't (understanding intent, seeing the page). Steps 1-8
-are Path A in full; **§13.9** is Path B. Either way you start by recording (Step 1),
-and the golden rule holds for both: **follow the testdata** — a value must land
-(verified), blank/`N/A` skips, and a valued field that isn't found fails the test.
+Both use the **same importer** and the **same recording**. The full, authoritative playbook is
+[`AI_IMPORT_AGENT.md`](AI_IMPORT_AGENT.md); the testdata-authoring companion is
+[`AI_TESTDATA_AGENT.md`](AI_TESTDATA_AGENT.md). The short version:
 
-### Step 1 — Record the flow, and save it INTO the feature folder
-```bash
-npm run codegen
-```
-Walk the app exactly as the test should. Then **save the recording inside the
-feature's `02_selectors_repo/` folder** as `recording.txt` (or `recording.ts`):
+1. **Record** the flow (`npm run codegen`) and save it into the feature's `02_selectors_repo/` as
+   `recording.txt`. **Click each field's LABEL before touching it** — the importer names the testdata
+   column after the label you clicked, so this is what makes columns line up (and it's gitignored, so
+   the recorded password never enters the repo — scrub-and-commit policy in `AI_IMPORT_AGENT.md`).
+2. **Author `01_testdata/*.csv` first**, then **import** (`npm run import-codegen -- <Module>
+   <Feature> --tc TC_XX`). The importer **wires each recorded field to an existing column by DOM id or
+   label** and adds none; unmatched fields print as `UNWIRED` for you to resolve.
+3. **Register** the row it prints in `master.csv` (set `Execute=TRUE`, and `Simulation=YES` if there's
+   a sim flow).
+4. **`npm run validate`** and fix what it reports.
+5. **First run** (`npm run test -- --testcase TC_XX`) → `BASELINE_CREATED`. **Review the baseline
+   numbers** — this human check is the whole value.
+6. **Run again** → a real `PASS`. Screenshot-verify every iteration (green ≠ correct).
 
-```
-ProductDesign/feature_MyFeature/02_selectors_repo/recording.txt
-```
-
-Why there: the recording lives *with* the feature it produces, and the importer
-**auto-discovers it** from that folder (Step 2) — you never pass a file path.
-
-> **The recording is gitignored and never committed.** Playwright codegen writes
-> the login steps verbatim, including the typed **password**, so recordings hold
-> real credentials. `.gitignore` **allowlists** this folder — everything under
-> `**/02_selectors_repo/` is ignored except `selectors.csv` and `locators.json` —
-> so a recording is excluded whatever it is named or however it is saved. Share
-> recordings out-of-band, not through the repo.
-
-> **⭐ The single most important recording habit: click a field's LABEL before you
-> touch it — for EVERY field, not just dropdowns.**
->
-> ```
-> getByText('Sample Size (n)').click();   // 1. click the label
-> #sampleSize.fill('100');                //  2. then fill/select
-> ```
->
-> The importer names each testdata column after the **label** you clicked. So if
-> you click "Sample Size (n)" first, the column becomes `Sample Size (n)` and
-> **merges with the column you already have**. If you skip the label and only do
-> `#sampleSize.fill(...)`, the importer can only name the column after the field
-> **id** (`sampleSize`) — which won't match your `Sample Size (n)` column, so it
-> **adds a duplicate**. (The reuse logic bridges case/spacing/punctuation, not
-> id-vs-human-name differences like `sampleSize` ↔ `Sample Size (n)`.)
->
-> For dropdowns the pattern also collapses the label + option into one `select`
-> step. Two rules of thumb: **click the label first**, and **don't click stray
-> labels** between fields — a stray `getByText('Test Type').click()` right before a
-> different field's fill makes the importer mis-name that field's column.
-
-### Step 2 — Import (auto-discovers the recording)
-```bash
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05
-```
-No recording path — it finds `recording.txt`/`recording.ts` in the feature's
-`02_selectors_repo/`. (You *may* still pass an explicit path as a 3rd argument,
-but it must be relative to the repo root, e.g.
-`ProductDesign/feature_MyFeature/02_selectors_repo/recording.txt`.)
-
-This creates the whole feature (no separate scaffold needed):
-
-| Created | Contents |
-| --- | --- |
-| `00_config/feature.config.json` | skeleton (`serial:true`, `reuseAuthState:false`) |
-| `01_testdata/*.csv` | columns **and values seeded from the recording** |
-| `02_selectors_repo/selectors.csv` | locators, with `Exact` carried from codegen |
-| `03_metadata/metadata.csv` | ordered steps with `Seq` |
-| `06_baseline/compare.config.csv` | compare-rules skeleton |
-
-What it does for you:
-- Okta/login -> one `callReusable flows/login.csv` step, placed **first**.
-- `navigate` with `domcontentloaded` + a polled readiness `waitForSelector`.
-- **Dropdowns -> one `select` step each** (custom, native `<select>`, radios).
-- Codegen's `exact: true` -> the `Exact` column.
-- A result tail (`waitForSimulation` -> `callCustom` -> `compareWithBaseline`)
-  when the recording shows a compute.
-- **`serial: true`** in the config — the app allows one session per user, so
-  iterations must run one at a time (see §4.2 / Trap 15).
-- **Reuses your existing testdata columns.** If you already made a column
-  `TestType`, a recorded field "Test Type" is matched to it (case/spacing
-  ignored) instead of adding a duplicate. Only genuinely-new fields are added.
-- **Clean column names from labels** — a field you clicked the label for becomes
-  `Sample Size (n)`, `Target Population`, etc. (not the id `sampleSize`). It even
-  reads `getByText('Power').nth(1).click()` labels (codegen adds `.nth()` when the
-  text repeats on the page). Only a field recorded with **no** label falls back to
-  its id name.
-- **Dedups a superset recording.** If you toggled a control to reveal conditional
-  fields (Input Method 1→2→1, Hypothesis 2→1), the repeated `select`/`check`/`fill`
-  on the same object collapse into one data-driven step. Single-path recordings are
-  untouched. *(The one case where this collapse is **unwanted** is a repeated **modal**
-  filled once per record — see "What still needs a human" → repeated-modal, and
-  `MULTI_SCENARIO_GUIDE.md`. The importer now warns when it detects it.)*
-- **Project name made unique per iteration** — `..._${runId}_${iterationId}` — so
-  two iterations don't collide on "name already exists".
-- **Backfills blank `TC_ID`/`IterationID`** in the seeded rows so they resolve.
-
-### Step 3 — Register the test
-Add the row the importer prints to `master.csv`:
-```csv
-TC_05,ProductDesign,regression,,MyFeature,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD
-```
-
-### Step 4 — Review testdata
-```bash
-# 01_testdata/*.csv is seeded from the recording — check the column names.
-# Make values unique where the app demands it:
-#   ${data.project.Project Name}_${runId}
-```
-
-### Step 5 — Validate (no browser, ~2s)
-```bash
-npm run validate
-```
-Fix anything it reports before spending a browser run.
-
-### Step 6 — First run: create the benchmark
-```bash
-npm run test -- --testcase TC_05
-```
-Expect **`BASELINE_CREATED`**. This is correct — it is green but has verified
-**nothing**.
-
-### Step 7 — Approve the benchmark
-Open `06_baseline/AD/baseline_TC_05_ITER_01.csv` and **check the numbers are
-right**. This human review is the entire value of the framework. Everything after
-this is compared against it.
-
-### Step 8 — Real runs
-```bash
-npm run test -- --testcase TC_05     # now a true PASS/FAIL
-```
-
-### What still needs a human
-
-The importer cannot infer these from a recording — it prints them as NEXT STEPS:
-
-| Thing | Why | Fix |
-| --- | --- | --- |
-| **Date pickers** | A date must be *picked*, not typed. The import clicks the recorded day cell, pinned to the recorded month. | Data-drive it, or use a `callCustom` hook. |
-| **A label-less field's name** | If you *don't* click a field's label while recording, the importer can only name the column after the field id (`sampleSize`, `type 0`). | Click the label when recording (Step 1) → clean name. Otherwise rename the column and I'll repoint the token. |
-| **A computed field that is an input elsewhere** | If a parameter was *computed* (greyed) while recording, codegen never typed it → no `fill` step. In another iteration it's an input. | Add a `fill` step + selector by hand (§6.2). `validate` warns which column. |
-| **A permanently derived field** (e.g. Mean Treatment `μt0` = Mean Control × NI Margin) | Never typeable, so it is absent from the recording entirely — the importer emits **no** selector and **no** step. | Optional: add the selector + an **`assertValue`** step so the testdata verifies the app's arithmetic (§4.5). Never `fill` it — that hard-fails on a disabled field. `validate` warns if the column has values but no step. |
-| **Unique names** | The recording used one literal name. | Project names are auto-suffixed `_${runId}_${iterationId}`. For other must-be-unique fields, append the same. |
-| **`extractAllResultTables`** | Nothing — it is feature-agnostic and lives in `custom/_shared/`. | Nothing to write. It discovers the tables and narrative panels itself (§12.2). Only override it if this app's result page is genuinely unlike the others. |
-| **`lbl_RunStatus` col-id** | Grid internals differ per app. | Verify the selector. |
-| **Tolerances** | Only you know what "close enough" means. | Edit `compare.config.csv`. |
-| **A repeated-modal / multi-scenario flow** (N records added via one re-opened "Add …" modal — candidate models, scenarios, arms) | The modal reuses the **same** DOM ids each time, so the dedup (below) collapses its fills to **one** occurrence and leaves N ungated open/commit clicks — a garbled, non-looping block. The importer now **prints a WARNING** when it detects this fingerprint. | Delete the recorded modal block and hand-build the **`loopOverData` (Option A)** pattern: child `01_testdata/scenarios.csv` (one row per record) + reusable `03_metadata/<name>_block.csv` sub-flow + one `loopOverData` step (§4.5, §6 Flow). Recipe: **`MULTI_SCENARIO_GUIDE.md`**; reference `feature_BOIN` (TC_14). |
-
-### 13.9 The AI agent path — `/import-feature`
-
-Path A (the importer) does the deterministic ~80%. The **AI agent** does the
-judgment ~20% the importer can't — and it is **tool-agnostic**: the whole workflow
-lives in one playbook, [`AI_IMPORT_AGENT.md`](AI_IMPORT_AGENT.md), that any AI
-assistant follows. The importer still runs on its own (Path A); the agent sits on
-top of it.
-
-**Invoke it** — both entry points load the same playbook:
-
-| Tool | Command | Entry file |
-| --- | --- | --- |
-| **Claude Code** | `/import-feature` | `.claude/skills/import-feature/SKILL.md` |
-| **GitHub Copilot** | `/import-feature` | `.github/prompts/import-feature.prompt.md` |
-
-Then name the feature (Module, feature folder, TC id), e.g.
-`ProductDesign feature_MeanofPairedRatios TC_05`. Adding another AI tool later = one
-more small pointer to the same playbook.
-
-**What the agent does** (detail is in the playbook):
-1. Runs `npm run import-codegen` — the **same** manual importer.
-2. **Consolidates** a superset recording — one data-driven step per control,
-   ordered controls-before-dependent-fields.
-3. **Reconciles columns** and adds steps the recording couldn't capture (a computed
-   field that is an input in another iteration; mutually-exclusive `_NI`/`_SP`
-   variants).
-4. `npm run validate`.
-5. Runs the test and **screenshot-verifies every iteration** — confirms `N/A`
-   cells skip, valued fields land, and the right conditional fields are present.
-6. Fixes quirks (grid cells, disabled-fixed selects, wrong ids) and reports.
-
-**Guardrail:** the agent edits **only that feature's folder + its `master.csv`
-row** — never `core/` or another feature. If a genuine framework bug forces a
-`core/` change, it tests on a throwaway feature and re-runs `npm run validate` to
-prove every committed feature still passes.
-
-**Manual vs agent — the split that keeps this scalable:**
-
-| Deterministic → the **importer** (Path A) | Judgment → the **agent** (Path B) |
-| --- | --- |
-| selectors, steps, tokens, dedup, clean names | consolidate a toggling superset recording |
-| reuse columns, unique names, `serial: true` | decide `N/A` per iteration; check scenario consistency |
-| validate structure | screenshot-verify; fix disabled/grid/id quirks |
-
-Use the importer alone for a simple, single-path feature. Add the agent when the
-feature has conditional fields, multiple data-combination iterations, or you want it
-wired **and verified** end-to-end.
+Import the **simulation** flow with `--sim` and set `Simulation=YES` ([§7.1](#71-the-chained-simulation-flow-simulationyes)).
 
 ---
 
-## 14. Command reference
-
-### Everyday
-```bash
-npm run validate                          # check every CSV, no browser (~2s)
-npm run test -- --testcase TC_04          # one test case (ignores Execute)
-npm run test -- --tc TC_04                # same, short form
-npm run test -- --all                     # everything with Execute=TRUE
-npm run test -- --tags smoke              # by tag
-npm run test -- --tags "smoke+regression" # AND
-npm run test -- --tags "smoke,regression" # OR
-npm run test -- --tags "~slow"            # NOT
-npm run test -- --feature ROM(PD)         # one feature
-npm run test -- --testcase TC_04 --headed # watch it run
-npm run test -- --testcase TC_04 --workers 1
-npm run test -- --testcase TC_04 --update-baseline   # re-approve the benchmark
-```
-
-### `test` flags (`core/cli/args.ts`)
-| Flag | Effect |
-| --- | --- |
-| `--testcase` / `--tc <ID>` | Run one TC. **Ignores `Execute`.** |
-| `--tags <expr>` | OR `,` · AND `+` · NOT `~`. |
-| `--feature <Name>` | Restrict to a feature. |
-| `--env <name>` | Override env. **Applies to every row — see §10.1.** |
-| `--all` | Ignore `Execute`. |
-| `--update-baseline` | Overwrite benchmarks. |
-| `--headed` | Show the browser. |
-| `--workers <n>` | Concurrency (default 4 / `WORKERS`). |
-| `--trigger <name>` | Label the run (`local` / `ci`). |
-
-### Authoring a feature
-
-**Path A — manual importer** (deterministic, runnable on its own):
-```bash
-npm run codegen                                              # record; save into the feature's 02_selectors_repo/ as recording.txt
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05          # design flow; recording auto-discovered
-npm run import-codegen -- ProductDesign feature_MyFeature --tc TC_05 --sim    # SIM flow; reads sim_recording.txt -> sim_metadata.csv
-npm run scaffold-feature -- <Module> <Feature>               # empty tree (import does this too)
-npm run xlsx-to-csv -- <file.xlsx>                           # Excel -> CSV
-```
-
-> **Design vs simulation import** (§5.1). The `--sim` flag reads
-> `02_selectors_repo/sim_recording.txt` → `03_metadata/sim_metadata.csv`, binds
-> tokens to `simulation.csv`, adds **no** login/navigate (the flow starts on the
-> results page at the Simulate click), and **shares** `selectors.csv` +
-> `compare.config.csv`. Then set `Simulation=YES` in master.csv and the sim chains
-> after a green design run — `npm run test -- --testcase TC_05` runs **both**.
-
-**Path B — the AI agent** (importer + judgment + screenshot verification, §13.9):
-```text
-/import-feature ProductDesign feature_MyFeature TC_05
-```
-Same command in **Claude Code** and **GitHub Copilot** — both follow
-`AI_IMPORT_AGENT.md`. It runs the importer above, then consolidates the metadata,
-validates, runs, and screenshot-verifies each iteration — scoped to that one feature.
-
-> The recording is **auto-discovered** from `feature_MyFeature/02_selectors_repo/`
-> (`recording.txt`/`recording.ts`) — do not pass a path. If you must, it is a 3rd
-> positional arg **relative to the repo root**, not the feature folder.
-
-### Sharing results (§11.1)
-```bash
-npm run report:share                # ~13MB — one file, screenshots embedded
-npm run report:share -- --lite      # ~25KB — one file, no screenshots (emailable)
-npm run report:share -- <runId>     # a specific run
-npm run report:share -- --list      # list shareable runs
-```
-Never send `09_html_report/index.html` or `combined_report.html` on their own —
-their links break outside the repo. Always send the `report:share` output.
-
-### Maintenance
-```bash
-npm run generate            # regenerate POM + specs
-npm run cleanup:orphans     # delete projects left behind by runs
-npm run typecheck           # tsc --noEmit
-npm run unit                # unit tests
-npm run itest               # integration tests
-npm run pw:test             # raw Playwright runner (DIFFERENT path — see below)
-```
-
-> `npm run test` and `npm run pw:test` are **not** the same. The CLI (`npm run
-> test`) is the real path; it calls the runner directly and never executes
-> `05_generated_scripts/`. `pw:test` runs those generated specs and resolves env
-> differently. Use `npm run test`.
-
----
-
-## 15. Traps and known issues
+## 17. Traps and known issues
 
 Ordered by how much time they will cost you.
 
-1. **A green run can verify nothing.** Missing baseline -> `BASELINE_CREATED` ->
-   exit 0. **Check the status string, not the exit code** (§9.4).
-2. **`networkidle` never fires.** This SPA streams telemetry beacons, so it never
-   goes idle. Use `domcontentloaded` + a polled `waitForSelector`. In
-   `iterationRunner` the `goto` is outside the try/catch, so a `networkidle`
-   timeout there is fatal with **no report**.
-3. **Accessible names match by substring.** `Save` matches `Save & Compute`. Use
-   `Exact=TRUE` (§7.3).
-4. **Grouped dropdown options repeat.** Label-only matching + `.first()` silently
-   picks the wrong group — a wrong-value PASS. Use `"Option (Group)"` (§6.1).
-5. **Validation covers every master row.** A broken feature you are not running
-   still aborts your run (§4.1).
-6. **AG Grid header cells carry the same `col-id` as data cells.** `div[col-id=x]`
-   + `.first()` matches the *header* and polls the literal word "Status" forever.
-   Scope with `div[role=gridcell][col-id=x]`.
+1. **A green run can verify nothing.** Missing baseline → `BASELINE_CREATED` → exit 0. **Check the
+   status string, not the exit code** ([§12](#12-baseline--compare)).
+2. **`networkidle` never fires.** This SPA streams telemetry, so it never goes idle. Use
+   `domcontentloaded` + a polled `waitForSelector`. In `iterationRunner` the `goto` is outside the
+   try/catch, so a `networkidle` timeout there is fatal with **no report**.
+3. **Accessible names match by substring.** `Save` matches `Save & Compute`. Use `Exact=TRUE`
+   ([§9](#9-selector-resolution)).
+4. **Grouped dropdown options repeat.** Label-only + `.first()` silently picks the wrong group — a
+   wrong-value PASS. Use `"Option (Group)"` ([§8.1](#81-select--read-this-before-touching-a-dropdown)).
+5. **Validation covers every master row.** A broken feature can abort your run (a targeted `test`
+   narrows validation — [§4](#gotchas-that-live-with-the-commands)).
+6. **AG Grid header cells share the data cells' `col-id`.** `div[col-id=x]` + `.first()` matches the
+   *header*. Scope with `div[role=gridcell][col-id=x]`.
 7. **Immediate re-runs can crash the app.** Leave a gap between runs.
-8. **The `Screenshot` column does nothing** (§4.3.2).
-9. **Metadata `Seq` != report Seq** (§4.3.1).
-10. **`sleep` is always wrong.** The validator flags every use. Poll a condition.
-11. **`maxWaitMs` in `feature.config.json` is unreachable** — `waitForSimulation`
-    uses `step.timeout || sim.maxWaitMs`, and `Timeout` defaults to `30000`, never
-    `0`. Set the ceiling in the step's `Timeout`.
-12. **`npm run typecheck` is currently red** — pre-existing type-signature errors
-    in `core/keywords/input.ts` and `scripts/scaffold-feature.ts`. They do not
-    affect execution (`npm run test` runs through tsx, which strips types without
-    checking them).
-13. **Excel locks CSVs.** Close the file or writes fail with `EPERM`.
-14. **CSV commas.** An unquoted comma in `Description` shifts every later column.
-    Keep descriptions comma-free or quote the field.
-15. **One session per user (Forced Log Out).** The app kills all but the newest
-    session for a login. So iterations must run **serially** — `serial: true` in
-    the feature config (now the importer default). With `serial: false`, two
-    iterations log in at once and you get a spurious login failure / "Forced Log
-    Out" screen. Note: `serial: true` on *any* selected feature makes the whole
-    run serial.
-16. **A recording can't capture a computed field.** If a parameter was the
-    *computed* (greyed) field while you recorded, codegen never typed it, so the
-    importer emits no `fill` for it. When that field is an **input** in another
-    iteration, add the `fill` step by hand (§6.2 / §13). A re-import wipes manual
-    additions — re-add them.
-17. **Steps execute in `StepID` order, not row/`Seq` order.** The loader sorts by
-    `StepID` (`core/loaders/featureLoader.ts`). To reorder a step, change its
-    **StepID** — moving the row or editing `Seq` does nothing. This is the single
-    biggest time-sink when a controlling `select` "won't run early enough": its row
-    was moved, but its StepID wasn't.
-18. **A controlling `select` can be *reset* by a later `fill`.** Filling the
-    input-method table reverts the effect sub-method (`#hazardRatioInputMethod`) to
-    "None", which disables its effect field. Give the select a StepID **after** the
-    table it depends on and **just before** the field it enables. Symptom:
-    `… is disabled but testdata requires a value` on a field you did populate.
-19. **`select` prints its options on a mismatch; `fill` tabs out after every value.**
-    A no-match `select` error now lists every `value=text` — map your testdata value
-    to one (§6.1). `fill` presses **Tab** after a value lands, so controls that only
-    enable on blur (e.g. the enrollment **Calculate** button) activate.
-20. **Recover a real DOM id from `trace.zip`.** `field "X" not found` means the id is
-    wrong. `unzip` the run's `artifacts/<runId>/<TC>_<ITER>/trace.zip` and grep the
-    DOM snapshots for `["SELECT",{…"id":"…"}]` (or `INPUT` / `BUTTON`) — that is the
-    true id, no live browser needed.
-21. **Duplicate ids, and `SkipIf` is single-condition.** Several controls can share
-    one id (`id="addButton"` on *every* "Add Period"); `.first()` grabs the wrong one
-    — disambiguate with a Playwright CSS `:nth-match(button:has-text("Add Period"), 2)`.
-    `SkipIf` is one `lhs (==|!=) rhs` with no AND/OR — gate a not-applicable field
-    (checkbox absent because Futility=None; effect field computed by a different
-    sub-method) by setting its testdata cell to **`N/A`**, not a compound expression.
-22. **Dialogs block the flow.** "Unsaved Changes" on navigation → **Save first,
-    never click "Leave"** (Leave discards the design and hides a real validation
-    error). The **Compute** credit dialog needs its primary button
-    (`#credit-alert-primary`) *and* a **Result Name** (the result link is keyed on
-    it). Dialog buttons are often not semantic `role=button` — target by `text`/`#id`.
-23. **An ungated Add-Period/Add-Interim click adds a blank row.** It makes the design
-    invalid so it won't compute. Gate every period/interim-add on the new period's
-    key column: `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. The recording may
-    **mis-name** the button (captured `role=button "Add Period"`, named after a nearby
-    label) — trust the *selector*, not the ObjectName. This token/gate is **unchanged**
-    when the table is authored as a normalized child file (§4.5) — the fold reconstructs the
-    same `<table>.<idx>.<col>` column — but there the not-applicable cell must be `N/A`, **not
-    blank**, or the literal `==N/A` compare misses it and the blank row is added anyway.
+8. **`Seq` and `Screenshot` columns do nothing** — `StepID` drives order; every step is screenshotted.
+9. **`sleep` is almost always wrong.** The validator warns on every use. Poll a condition.
+10. **`maxWaitMs` in the config is unreachable for `waitForSimulation`** — it uses the step's `Timeout`
+    (which defaults to 30000, never 0). Set the ceiling in the step's `Timeout`.
+11. **Excel locks CSVs.** Close the file or writes fail with `EPERM`. Edit CSVs in a text editor
+    (UTF-8, no BOM) — a non-ASCII glyph (`π`, `δ`) corrupts on an ANSI Excel save.
+12. **CSV commas.** An unquoted comma in `Description` shifts every later column. Keep it comma-free or
+    quote the field.
+13. **`npm run test` ≠ `npm run pw:test`.** Use the CLI path ([§4](#maintenance--dev)).
+14. **The env `--env` flag is global.** It drags every selected feature's baseline. Use the
+    `Environment` column ([§13](#13-environments--auth)).
+15. **One session per user (Forced Log Out).** The app kills all but the newest session, so iterations
+    must run **serially** — `serial: true` (the importer default). `serial:true` on *any* selected
+    feature makes the whole run serial.
+16. **A recording can't capture a computed field.** If a parameter was greyed (computed) while
+    recording, codegen never typed it, so there's no `fill`. When it's an input in another iteration,
+    add the `fill` by hand — and re-imports wipe manual additions, so re-add them.
+17. **Steps execute in `StepID` order, not row/`Seq` order.** To reorder, change the **StepID**. The
+    single biggest time-sink when a controlling `select` "won't run early enough."
+18. **A controlling `select` can be reset by a later `fill`.** Filling a dependent table can revert a
+    sub-method select to "None", disabling its field. Give the select a StepID **after** the table and
+    **just before** the field it enables. Symptom: *"… is disabled but testdata requires a value."*
+19. **`select` prints its options on a mismatch; `fill` tabs out after every value.** Read the printed
+    `value=text` list before guessing an option.
+20. **Recover a real DOM id from `trace.zip`.** `field "X" not found` means the id is wrong. `unzip` the
+    run's `artifacts/<runId>/<TC>_<ITER>/trace.zip` and grep the DOM snapshots for
+    `["SELECT",{…"id":"…"}]` (or `INPUT`/`BUTTON`).
+21. **Duplicate ids; `SkipIf` is single-condition.** Several controls can share one id (`id="addButton"`
+    on every "Add Period"); disambiguate with `:nth-match(button:has-text("Add Period"), 2)`. `SkipIf`
+    has no AND/OR — gate a not-applicable field by setting its cell to `N/A`, not a compound expression.
+22. **Dialogs block the flow.** "Unsaved Changes" → **Save first, never "Leave"** (Leave discards the
+    design and hides a real error). The Compute credit dialog needs its primary button
+    (`#credit-alert-primary`) **and** a Result Name. Dialog buttons are often not `role=button` —
+    target by `text`/`#id`.
+23. **An ungated Add-Period/Add-Interim click adds a blank row** and the design won't compute. Gate
+    every one: `SkipIf ${data.design.<table>.<idx>.<col>}==N/A`. Trust the *selector*, not a mis-named
+    ObjectName. (Since the isNaCell fix, `==N/A` also skips a blank absent-period, so the old
+    blank-slips-past bug is gone — but still author `N/A`, not blank.)
+24. **Adaptive "Save & Simulate" stays disabled unless `Include Enrollment` is checked.** On a CHW/CDL
+    sample-size-re-estimation sim, `#save-compute` never enables while the design is invalid, and the
+    commonest invalidity is `Include Enrollment=uncheck`. Mirror the design's enrollment, and **wait for
+    the button to be enabled** before clicking (a plain `click` force-clicks after ~10s and force can't
+    actuate a disabled button — use `waitAndInspectSaveSimulate`).
+25. **App-slowness leaves Save/Calculate disabled or spinner-blocked mid-compute.** `click` force-retries
+    but `check`/`select` do not — add a `waitForSelector div_Spinner` (hidden) settle-guard at
+    compute→save transitions.
+26. **Baselines are environment-specific — an `.env` swap invalidates them.** Confirm `.env` matches the
+    baseline instance before "fixing" data ([§12](#12-baseline--compare)).
 
 ---
 
-## 16. Where to look when something breaks
+## 18. Where to look when something breaks
 
 | Symptom | Look at |
 | --- | --- |
-| Exit 1, no browser | Validation output — a CSV is malformed *somewhere*, maybe another feature. |
+| Exit 1, no browser | Validation output — a CSV is malformed somewhere (maybe another feature). |
 | `Locator not found: Page=X ObjectName=Y` | `selectors.csv` — is `(Page, ObjectName)` right? |
-| `UI-DRIFT` warning | The primary selector matched 0 elements. The markup moved. |
-| Step times out on a dropdown | Is it one `select` step? Is the group in the value (§6.1)? |
-| Wrong value silently selected | Substring match (§7.3) or grouped options (§6.1). |
-| `BASELINE_CREATED` when you expected PASS | Baseline is not where the env points (§9.4/§10.1). |
-| Compare FAIL | `08_diffs/` — cell-level differences. |
-| "Forced Log Out" / bounced to the login page | Iterations ran in parallel against a one-session app. Set `serial: true` (Trap 15). |
-| `field "X" not found` / `... is disabled but testdata requires a value` | The `fill` value can't land — wrong selector (recover the real id from `trace.zip`, Trap 20), the controlling `select` ran too late / was reset (Traps 17-18), or the field is greyed (should its value be `Computed`?). §6.2. |
-| `select … has no option matching "V"` | The error now lists every real option (`value=text`) — map your value to one, or the value belongs in a different field (§6.1 / Trap 19). |
-| a `check`/`uncheck` step **times out** | The checkbox isn't rendered for this option combination (e.g. efficacy/futility checks exist only with a futility boundary) → set the cell to `N/A` (Trap 21). |
-| a **blank period/interim row** appears / design won't compute | An ungated Add-Period/Add-Interim click (Trap 23) — gate it on the new period's data column. |
-| `No testdata row for TC/ITER` | A keyed testdata file is missing that iteration's row. `validate` now catches this first (§4.5). |
+| `UI-DRIFT` warning | The primary selector matched 0 elements — the markup moved. |
+| Step times out on a dropdown | Is it one `select` step? Is the group in the value? ([§8.1](#81-select--read-this-before-touching-a-dropdown)) |
+| Wrong value silently selected | Substring match (Trap 3) or grouped options (Trap 4). |
+| `BASELINE_CREATED` when you expected PASS | Baseline isn't where the env points ([§12](#12-baseline--compare) / [§13](#13-environments--auth)). |
+| Compare `FAIL` | `08_diffs/` — cell-level differences. If only *labels* differ, it's app label drift → re-baseline. |
+| "Forced Log Out" / bounced to login | Iterations ran in parallel against a one-session app. Set `serial: true` (Trap 15). |
+| `field "X" not found` / `… is disabled but testdata requires a value` | Wrong selector (recover the id from `trace.zip`, Trap 20), the controlling `select` ran too late / was reset (Traps 17–18), or the field is greyed (should the cell be `Computed`?). |
+| `select … has no option matching "V"` | The error lists every real option — map your value to one, or it belongs in a different field (Trap 19). |
+| a `check`/`uncheck` step **times out** | The checkbox isn't rendered for this combination → set the cell to `N/A` (Trap 21). |
+| a **blank period/interim row** appears / design won't compute | An ungated Add-Period/Add-Interim click (Trap 23). |
+| a period gate misfires on a split child table | `==N/A` vs `==EMPTY` — see [§8.3](#83-the-skip-rules-blank--na--computed) and `Error_Reference_Guide.md` category S. |
+| `No testdata row for TC/ITER` | A keyed testdata file is missing that iteration's row (`validate` catches this first). |
 | Nothing obvious | `artifacts/<runId>/<TC>_<ITER>/` — the screenshots show the actual screen at the failing step. |
+
+**Related docs:** `AI_IMPORT_AGENT.md` (import + wire a feature), `AI_TESTDATA_AGENT.md` (prepare
+testdata), `FIELD_WIRING_PATTERNS.md` (effect-size / priors / early-stopping wiring),
+`MULTI_SCENARIO_GUIDE.md` (`loopOverData`), `IMPORT_LESSONS.md` (the running lessons ledger),
+`Error_Reference_Guide.md` (categorized runtime errors A–U).
 
 ---
 
-## 17. Glossary
+## 19. Glossary
 
 | Term | Meaning |
 | --- | --- |
-| **Feature** | One app workflow under test -> `<Module>/feature_<Name>/`. |
+| **Feature** | One app workflow under test → `<Module>/feature_<Name>/`. |
 | **Test case (TC)** | A row in `master.csv`. |
 | **Iteration** | One execution of a TC with one testdata row (`ITER_01`). |
 | **Step** | One row in `metadata.csv`. |
-| **Keyword / Action** | What a step does (`click`, `select`, ...). §6. |
+| **Keyword / Action** | What a step does (`click`, `select`, …) — [§8](#8-the-keyword-catalog). |
 | **Object** | A logical UI element name (`btn_Save`) resolved via `selectors.csv`. |
-| **Baseline / benchmark** | The approved expected result. §9. |
-| **Flow** | A reusable step CSV in `flows/`. §12.1. |
-| **Custom step** | An app-specific handler in `custom/`. §12.2. |
-| **§14** | The rule: framework core is never app-specific. |
+| **Selector** | The concrete locator behind an object. |
+| **Baseline / benchmark** | The approved expected result — [§12](#12-baseline--compare). |
+| **Flow** | A reusable step CSV in `flows/` — [§15](#15-extension-points). |
+| **Custom step** | An app-specific handler in `custom/` — [§15](#15-extension-points). |
+| **Design flow / Simulation flow** | The two chained flows of one feature — [§7.1](#71-the-chained-simulation-flow-simulationyes). |
+| **Period table / child table** | A per-analysis-period grid, authored inline or split into `<phase>_<table>.csv` and filled count-agnostically by `loopPeriods` — [§11](#child-tables-the-split-alternative). |
+| **BASELINE_CREATED** | A run that *wrote* a baseline and verified nothing — never `PASS`. |

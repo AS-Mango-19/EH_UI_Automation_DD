@@ -3,7 +3,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 2,20,ConfigureDesign,Page,fill,txt_ResultName,${data.simulation.CreateInputSet},,,,,10000,FALSE,0,never,,fill Simulation Input set name,
 3,30,ConfigureDesign,Page,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary,
 4,40,ConfigureDesign,Page,click,txt_left_Panel_designs,,,,,,10000,FALSE,0,never,,click leftPanel.designs,
-5,50,ConfigureDesign,Page,callCustom,,enterDesignHeader,,,,,20000,FALSE,0,never,,enter design header via fill-if-changed custom step (selects before texts so Harrington-Fleming p/q render; only touches fields whose live value differs to avoid over-constraining the group-sequential solver -> no spurious "prior too extreme"),
+5,50,ConfigureDesign,Page,callCustom,,enterDesignHeader,,,,,20000,FALSE,0,never,,enter design header via fill-if-changed custom step (selects before texts so Harrington-Fleming p/q render; only touches fields whose live value differs to avoid over-constraining the group-sequential solver -> no spurious prior too extreme),
 6,100,ConfigureDesign,Page,callCustom,,enterBoundaryTable,,,,,20000,FALSE,0,never,,enter boundary-table overrides (analysis spacing / cum-alpha / efficacy / futility) after the header and before Recalculate; data-driven fill-if-changed over boundarySim.<n>.<field>,
 18,180,ConfigureDesign,Page,callCustom,,clickRecalculate,,,,,20000,FALSE,0,never,${data.simulation.sampleSize}==N/A,click Recalculate (only when enabled) after re-entering the design header,
 25,250,ConfigureDesign,Page,select,ddl_Adaptation_Method,${data.simulation.adaptationMethod},,,,,10000,FALSE,0,always,,Select Adaptation Method. Native <select> - select matches by visible label first,

@@ -22,11 +22,23 @@ Non-negotiables:
   cell" in the playbook. Hidden → `N/A`; editable → the value; greyed showing "Computed" →
   `Computed`; greyed showing a derived number → assert it, never `fill` it.
 - **Screenshot-verify every iteration** (open `artifacts/<runId>/<TC>_<ITER>/…`). Green ≠ correct.
+- **The importer wires to your existing columns; it never invents them.** It binds each recorded
+  field to a testdata column by **DOM id or label**, adds **no** columns, and prints any it
+  couldn't match as `UNWIRED` (with the field's id, label, and recorded value). Fix each by
+  adding that column (named by its id or label) or renaming an existing one — **never** by
+  re-running with `--seed` (that reintroduces junk columns). `--seed` is only for bootstrapping a
+  feature whose `01_testdata` is still empty; `--strict` fails the import on any `UNWIRED`.
+- **Start from the closest existing feature** in the same family (means→`feature_DOM(PD)`,
+  survival→`feature_GADAR(PD)`/`feature_GADSD(PD)`, proportions→`feature_RONBR(PD)`/`feature_FishersExact(PD)`,
+  one-arm→`feature_SinglePoissonRate`, multi-scenario→`feature_BOIN`): reuse its testdata column
+  names so the id/label wiring matches on the first pass.
 
-Steps (detail in the playbook): run `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX`
-(standalone-capable) → consolidate the superset metadata (one data-driven step per control,
-controls before dependent fields) → reconcile columns / add computed & label-only field steps →
-`npm run validate` → `npm run test -- --testcase TC_XX` → screenshot-verify each iteration → fix.
+Steps (detail in the playbook): pick the reference feature → **author `01_testdata` first** → run
+`npm run import-codegen -- <Module> feature_<Name> --tc TC_XX` (standalone-capable) → **resolve
+every `UNWIRED` line** (add the real column by id/label, gate it, or drop noise) and consolidate
+the superset metadata (one data-driven step per control, controls before dependent fields) → add
+computed & label-only field steps → `npm run validate` → `npm run test -- --testcase TC_XX` →
+screenshot-verify each iteration → fix.
 
 **Simulation flow** (optional second flow on the same feature): import with
 `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX --sim` — reads `sim_recording.txt`
