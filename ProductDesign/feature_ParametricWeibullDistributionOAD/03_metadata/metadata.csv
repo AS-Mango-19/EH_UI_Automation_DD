@@ -27,12 +27,14 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 26,260,ConfigureDesign,ResultsPage,select,ddl_Input_Method,${data.design.Input Method},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
 27,270,ConfigureDesign,ResultsPage,fill,txt_median_Survival_Time_Null,${data.design.medianSurvivalTimeNull},,,,,10000,FALSE,0,never,,fill medianSurvivalTimeNull
 28,280,ConfigureDesign,ResultsPage,fill,txt_Median_Survival_Time_under_Alternative_m1,${data.design.Median Survival Time under Alternative},,,,,10000,FALSE,0,never,,fill Median Survival Time under Alternative
+28.3,285,ConfigureDesign,ResultsPage,fill,txt_Hazard_Rate_under_Null_0,${data.design.Hazard Rate under Null},,,,,10000,FALSE,0,never,,fill Hazard Rate under Null (only the Hazard-Rates iteration has a value; others N/A -> skip)
+28.6,287,ConfigureDesign,ResultsPage,fill,txt_Hazard_Rate_under_Alternative,${data.design.Hazard Rate under Alternative},,,,,10000,FALSE,0,never,,fill Hazard Rate under Alternative (only the Hazard-Rates iteration has a value; others N/A -> skip)
 29,290,ConfigureDesign,ResultsPage,fill,txt_Weibull_Shape_Parameter_k,${data.design.Weibull Shape Parameter},,,,,10000,FALSE,0,never,,fill Weibull Shape Parameter
 30,300,ConfigureDesign,ResultsPage,select,ddl_input_Method,${data.design.Input Method},,,,,10000,FALSE,0,always,,Select inputMethod. Native <select> - select matches by visible label first
 31,310,ConfigureDesign,ResultsPage,fill,txt_by_Time,${data.design.By Time},,,,,10000,FALSE,0,never,,fill byTime
 32,320,ConfigureDesign,ResultsPage,fill,txt_Cumulative_Survival_under_Null_s0,${data.design.Cumulative % Survival under Null},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Null
 33,330,ConfigureDesign,ResultsPage,fill,txt_Cumulative_Survival_under_Alternative_s1,${data.design.Cumulative % Survival under Alternative},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Alternative
-34,340,ConfigureDesign,ResultsPage,click,txt_sample_Size,,,,,,10000,FALSE,0,never,,click sampleSize
+34,340,ConfigureDesign,ResultsPage,fill,txt_Sample_Size_n,${data.design.Sample Size},,,,,10000,FALSE,0,never,,fill Sample Size (input when Computed Parameter is Power/Type 1 Error; N/A -> skip when Sample Size is itself the computed parameter)
 35,350,ConfigureDesign,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
 36,360,ConfigureDesign,ResultsPage,fill,txt_Accrual_Duration_Year,${data.design.Accrual Duration},,,,,10000,FALSE,0,never,,fill Accrual Duration
 37,370,ConfigureDesign,ResultsPage,fill,txt_Study_Duration_Year,${data.design.Study Duration},,,,,10000,FALSE,0,never,,fill Study Duration
