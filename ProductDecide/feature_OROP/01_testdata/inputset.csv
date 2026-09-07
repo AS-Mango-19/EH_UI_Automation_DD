@@ -1,0 +1,5 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_33,ITER_01,Set1,Decide,Odds Ratio of Proportions
+TC_33,ITER_02,Set2,Decide,Odds Ratio of Proportions
+TC_33,ITER_03,Set3,Decide,Odds Ratio of Proportions
+TC_33,ITER_04,Set4,Decide,Odds Ratio of Proportions

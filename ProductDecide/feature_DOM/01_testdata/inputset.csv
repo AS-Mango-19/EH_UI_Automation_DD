@@ -1,0 +1,12 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_29,ITER_01,Set1,Decide,Difference of Means
+TC_29,ITER_02,Set2,Decide,Difference of Means
+TC_29,ITER_03,Set3,Decide,Difference of Means
+TC_29,ITER_04,Set4,Decide,Difference of Means
+TC_29,ITER_05,Set5,Decide,Difference of Means
+TC_29,ITER_06,Set6,Decide,Difference of Means
+TC_29,ITER_07,Set7,Decide,Difference of Means
+TC_29,ITER_08,Set8,Decide,Difference of Means
+TC_29,ITER_09,Set9,Decide,Difference of Means
+TC_29,ITER_10,Set10,Decide,Difference of Means
+TC_29,ITER_11,Set11,Decide,Difference of Means

@@ -80,7 +80,7 @@ jobs:
           path: |
             reports/**
             artifacts/**
-            ProductDesign/**/08_diffs/**
-            ProductDesign/**/09_html_report/**
+            */**/08_diffs/**
+            */**/09_html_report/**
           retention-days: 14
           if-no-files-found: warn

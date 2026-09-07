@@ -1,0 +1,79 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Control_Arm,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Longer Duration,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+chk_Variable,ProjectPage,role,checkbox,Variable,,FALSE,checkbox from codegen,FALSE
+txt_follow_Up_Time_0_0,ProjectPage,css,#followUpTime-0_0,,,FALSE,textbox from codegen,FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Decide Go/No-Go based,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+ddl_Input_Method,DesignPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Control_Median_Time_Week,DesignPage,css,#controlMedianTime,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Median_Time_TV,DesignPage,css,#treatmentMedianTimeTV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Median_Time_LRV,DesignPage,css,#treatmentMedianTimeLRV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Median_Time_UIV,DesignPage,css,#treatmentMedianTimeUIV,,,FALSE,textbox from codegen,FALSE
+txt_Control_Event_Rate,DesignPage,css,#controlEventRate,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Event_Rate_TV,DesignPage,css,#treatmentEventRateTV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Event_Rate_LRV,DesignPage,css,#treatmentEventRateLRV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Event_Rate_UIV,DesignPage,css,#treatmentEventRateUIV,,,FALSE,textbox from codegen,FALSE
+txt_target_Value,DesignPage,css,#targetValue,,,FALSE,textbox from codegen,FALSE
+txt_lower_Ref_Val,DesignPage,css,#lowerRefVal,,,FALSE,textbox from codegen,FALSE
+txt_User_Interest_Value_UIV,DesignPage,css,#userInterestVal,,,FALSE,textbox from codegen,FALSE
+txt_Events,DesignPage,css,#events,,,FALSE,textbox from codegen,FALSE
+txt_Maturity,DesignPage,css,#maturity,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_R_n_n,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+ddl_desired_Confidence_Select,DesignPage,css,#desiredConfidenceSelect,,,FALSE,native <select> from codegen,FALSE
+txt_desired_Confidence_Input,DesignPage,css,#desiredConfidenceInput,,,FALSE,textbox from codegen,FALSE
+txt_acceptable_Risk_Input,DesignPage,css,#acceptableRiskInput,,,FALSE,textbox from codegen,FALSE
+ddl_Method,DesignPage,css,#framework,,,FALSE,native <select> from codegen,FALSE
+txt_Hazard_Ratio_hr,DesignPage,css,#priorHazardRatio,,,FALSE,textbox from codegen,FALSE
+txt_Events_e,DesignPage,css,#priorEvents,,,FALSE,textbox from codegen,FALSE
+ddl_Interim_Type,DesignPage,css,#interimType,,,FALSE,native <select> from codegen,FALSE
+ddl_Stop_Rule,DesignPage,css,#stopRule,,,FALSE,native <select> from codegen,FALSE
+ddl_Go_Rule,DesignPage,css,#goRule,,,FALSE,native <select> from codegen,FALSE
+btn_Add_Interim,DesignPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_decide_Interim_Table_0_analysis_Spacing_Info,DesignPage,css,"[id=""decideInterimTable.0.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_1_analysis_Spacing_Info,DesignPage,css,"[id=""decideInterimTable.1.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_2_analysis_Spacing_Info,DesignPage,css,"[id=""decideInterimTable.2.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_stop_Cutoff,DesignPage,css,"[id=""decideInterimTable.0.stopCutoff""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_interim_ARTV,DesignPage,css,"[id=""decideInterimTable.0.interimARTV""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_max_Stop_PP,DesignPage,css,"input[name=""decideInterimTable.0.maxStopPP""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_interim_DCLRV,DesignPage,css,"[id=""decideInterimTable.0.interimDCLRV""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_go_Cutoff,DesignPage,css,"[id=""decideInterimTable.0.goCutoff""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_0_min_Go_PP,DesignPage,css,"input[name=""decideInterimTable.0.minGoPP""]",,,FALSE,textbox from codegen,FALSE
+txt_decide_Interim_Table_1_stop_Cutoff,DesignPage,css,"[id=""decideInterimTable.1.stopCutoff""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_stop_Cutoff,DesignPage,css,"[id=""decideInterimTable.2.stopCutoff""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_1_interim_ARTV,DesignPage,css,"[id=""decideInterimTable.1.interimARTV""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_interim_ARTV,DesignPage,css,"[id=""decideInterimTable.2.interimARTV""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_1_max_Stop_PP,DesignPage,css,"input[name=""decideInterimTable.1.maxStopPP""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_max_Stop_PP,DesignPage,css,"input[name=""decideInterimTable.2.maxStopPP""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_1_go_Cutoff,DesignPage,css,"[id=""decideInterimTable.1.goCutoff""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_go_Cutoff,DesignPage,css,"[id=""decideInterimTable.2.goCutoff""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_1_interim_DCLRV,DesignPage,css,"[id=""decideInterimTable.1.interimDCLRV""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_interim_DCLRV,DesignPage,css,"[id=""decideInterimTable.2.interimDCLRV""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_1_min_Go_PP,DesignPage,css,"input[name=""decideInterimTable.1.minGoPP""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+txt_decide_Interim_Table_2_min_Go_PP,DesignPage,css,"input[name=""decideInterimTable.2.minGoPP""]",,,FALSE,textbox mirrored from period 0 (table-completeness),FALSE
+btn_Save,DesignPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE

@@ -1,0 +1,12 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_28,ITER_01,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_02,TRUE,Decide_SingleMean,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_03,TRUE,Decide_SingleMean,Year,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_04,TRUE,Decide_SingleMean,Day,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Smaller Value
+TC_28,ITER_05,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_06,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_07,TRUE,Decide_SingleMean,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Smaller Value
+TC_28,ITER_08,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_09,TRUE,Decide_SingleMean,Day,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value
+TC_28,ITER_10,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Smaller Value
+TC_28,ITER_11,TRUE,Decide_SingleMean,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPCont,Continuous,Larger Value

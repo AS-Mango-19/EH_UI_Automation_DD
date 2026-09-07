@@ -1,0 +1,5 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_32,ITER_01,Set1,Decide,Ratio of Proportions
+TC_32,ITER_02,Set2,Decide,Ratio of Proportions
+TC_32,ITER_03,Set3,Decide,Ratio of Proportions
+TC_32,ITER_04,Set4,Decide,Ratio of Proportions

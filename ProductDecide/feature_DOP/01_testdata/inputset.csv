@@ -1,0 +1,8 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_31,ITER_01,Set1,Decide,Difference of Proportions
+TC_31,ITER_02,Set2,Decide,Difference of Proportions
+TC_31,ITER_03,Set3,Decide,Difference of Proportions
+TC_31,ITER_04,Set4,Decide,Difference of Proportions
+TC_31,ITER_05,Set5,Decide,Difference of Proportions
+TC_31,ITER_06,Set6,Decide,Difference of Proportions
+TC_31,ITER_07,Set7,Decide,Difference of Proportions

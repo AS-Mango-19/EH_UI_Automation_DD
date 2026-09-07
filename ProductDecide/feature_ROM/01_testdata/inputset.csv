@@ -1,0 +1,5 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_30,ITER_01,Set1,Decide,Ratio of Means
+TC_30,ITER_02,Set2,Decide,Ratio of Means
+TC_30,ITER_03,Set3,Decide,Ratio of Means
+TC_30,ITER_04,Set4,Decide,Ratio of Means

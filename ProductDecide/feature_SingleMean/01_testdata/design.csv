@@ -1,0 +1,12 @@
+TC_ID,IterationID,treatmentMeanTV,treatmentMeanLRV,treatmentMeanUIV,stdDev,sampleSize,desiredConfidenceSelect,desiredConfidenceInput,acceptableRiskInput,Method,priorMeanTreatment,priorSDTreatment,interimType,stopRule,goRule,Result Name
+TC_28,ITER_01,8.888,6.3256,0.2315,22.698565,111,Lower Ref. Value (LRV),90,15.6528,Frequentist,,,,,,Result-Set01
+TC_28,ITER_02,7.79658,7.3256,0.288632,25,123,Lower Ref. Value (LRV),88,12,Bayesian,6.8852,521,,,,Result-Set02
+TC_28,ITER_03,9.33658,5.5869,0.321,26.3256,92,Target Value (TV),55,18,Bayesian,7.77856,555,,,,Result-Set03
+TC_28,ITER_04,8.753,7.9632,0.44562,30,108,Lower Ref. Value (LRV),85,20,Frequentist,,,Admin,Observed Treatment Effect (Fixed),Probability (Lalonde),Result-Set04
+TC_28,ITER_05,7.555,5.58,0.4586,28,88,Lower Ref. Value (LRV),86.5,14.56,Frequentist,,,Admin,Probability (Lalonde),Predictive Probability (Green),Result-Set05
+TC_28,ITER_06,9.6325,8.658,0.558,30,150,Lower Ref. Value (LRV),84,25,Frequentist,,,Admin,Predictive Probability (Green),Predictive Probability (Green-Amber),Result-Set06
+TC_28,ITER_07,7.856,7.777,0.6548,26.852,100,Lower Ref. Value (LRV),90,20,Frequentist,,,Admin,Predictive Probability (Green-Amber),Observed Treatment Effect (Fixed),Result-Set07
+TC_28,ITER_08,10.321,8.525,2,35,188,Lower Ref. Value (LRV),91.56,18.6325,Frequentist,,,Futility,Probability (Lalonde),,Result-Set08
+TC_28,ITER_09,8.963,6.6658,3.321,20,123,Target Value (TV),83,22,Frequentist,,,Futility,Observed Treatment Effect (Fixed),,Result-Set09
+TC_28,ITER_10,7.555,5.555,0.222,27.6586,135,Lower Ref. Value (LRV),85.55,25,Frequentist,,,Futility,Predictive Probability (Green),,Result-Set10
+TC_28,ITER_11,7,5,0,20,60,Lower Ref. Value (LRV),80,10,Frequentist,,,Futility,Predictive Probability (Green-Amber),,Result-Set11

@@ -1,0 +1,5 @@
+TC_ID,IterationID,inputMethod,medianTargetValue,medianLowerRefVal,medianUserInterestVal,targetValue,lowerRefVal,userInterestVal,events,maturity,desiredConfidenceSelect,desiredConfidenceInput,acceptableRiskInput,Method,priorEventRate,priorMedian,priorEvents,Result Name
+TC_27,ITER_01,Median Survival Times,25,20.32156,6.3215,,,,55,72.658,Lower Ref. Value (LRV),82,15.85,Frequentist,,,,Result-Set01
+TC_27,ITER_02,Event Rates,,,,0.056895,0.068956,0.23156,58,77,Target Value (TV),88,23,Bayesian,0.086523,,2.85,Result-Set02
+TC_27,ITER_03,Median Survival Times,30,28.6325,10.32568,,,,61,71.35628,Lower Ref. Value (LRV),90,22,Bayesian,,21.99658,4.88,Result-Set03
+TC_27,ITER_04,Event Rates,,,,0.068562,0.05582,0.22136,65,73,Target Value (TV),87.777,28.321,Frequentist,,,,Result-Set04

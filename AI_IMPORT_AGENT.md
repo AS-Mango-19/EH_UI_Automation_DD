@@ -101,6 +101,28 @@ exact fix, so little judgment is needed to get to a wired feature.
    matching *Signal→Decision* rule instead of asking; when you make a new judgment call or the user
    corrects you, **append it as a rule** so the next feature is easier. The ledger is the agent's
    memory — keep it accurate and it compounds.
+7. **Stop and ask at two checkpoints.** (a) Once wiring is done and `npm run validate` passes
+   clean for the target TC, **ask the user before running `npm run test`** — confirm whether to
+   run all iterations or go one iteration at a time to stabilize (see "Stabilizing after a clean
+   validate" below). (b) **Any testdata edit beyond the wiring itself** (a value that looks wrong,
+   a cell that needs to change to get an iteration green, a new/renamed column) **needs the user's
+   confirmation before you write it** — state the exact file, column, and value(s), then wait.
+   Never silently patch `01_testdata/*.csv` to force a pass.
+
+---
+
+## Stabilizing after a clean validate
+
+Once `npm run validate -- --testcase TC_XX` passes with zero errors, **don't jump straight to a
+full run.** Ask the user how they want to proceed, e.g.:
+
+- Run **one iteration at a time** (`Run=TRUE` on a single row, others `FALSE`, across every
+  testdata file that carries the column — the veto is global, see IMPORT_LESSONS.md rule S13) —
+  screenshot-verify each (`artifacts/<runId>/<TC>_<ITER>/`) before moving to the next.
+- Run **all iterations at once** and triage failures together.
+
+Either way: if a run needs a testdata change to go green, **propose it and wait for approval**
+before editing the CSV — don't unilaterally tweak values to force a pass.
 
 ---
 
@@ -180,11 +202,25 @@ same custom steps. **Find it, read it, mirror it**, then adapt values. Pick by f
 | Two-arm **binomial / proportions** (ROP, RONBR, FishersExact) | `feature_RONBR(PD)`, `feature_FishersExact(PD)` |
 | **One-arm** (SinglePoissonRate, Simon2Stage, BOP2, *OAD) | `feature_SinglePoissonRate`, `feature_Simon2Stage` |
 | **Repeated-modal / multi-scenario** (BOIN, dose-response, arms) | `feature_BOIN` (TC_14) + `MULTI_SCENARIO_GUIDE.md` |
+| `ProductDecide` **"Go/No-Go" decision family** (DOM, ROM, DOP, ROP, and any new `feature_<Name>` under `ProductDecide`) | `ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an interim table) — see the dedicated "Worked family reference — ProductDecide" section below, it's a fixed 6-item checklist |
 
 Concretely: `diff` the reference feature's `01_testdata/*.csv` **headers**, skim its
 `03_metadata/*.csv` and any `custom/<Feature>/customSteps.ts`, and reuse its column names so the
 importer's id/label wiring matches on the first pass. The survival and means families share
 almost the entire `design.csv` column set — a straight retarget (see `AI_TESTDATA_AGENT.md`).
+
+> **`Module` is generic — mirror by FAMILY, not by module.** The `<Module>/feature_<Feature>/`
+> convention and everything the importer/runner do are keyed off whatever `Module` value the
+> master.csv row carries; nothing in `core/` hardcodes `ProductDesign`. Proven on
+> `ProductDecide/feature_DOM` (TC_29, a Go/No-Go "Difference of Means" decision design,
+> stabilized 2026-09-02) — imported and wired exactly like any `ProductDesign` feature, mirroring
+> `ProductDesign/feature_DOM(PD)` (a different module, same statistical family) for its field/
+> selector patterns. When the table above points you at a reference feature, its module doesn't
+> have to match your new feature's module. Adding a whole new module folder needs no code change
+> — just `npm run scaffold-feature -- <NewModule> <Feature>` and a master.csv row; the one thing
+> to sanity-check is `.github/workflows/ci.yml`'s artifact-upload glob still covers it (it's
+> `*/**/08_diffs/**` / `*/**/09_html_report/**`, module-agnostic as of this fix — don't re-narrow
+> it to a literal module name).
 
 ### 1 — Run the deterministic importer (standalone-capable)
 ```bash
@@ -542,6 +578,13 @@ result flow; only the effect section differs (means + variance/SD instead of haz
 means/continuous feature the same way and expect every note below. A lesser model can follow this section
 verbatim.*
 
+*Also proven across a DIFFERENT MODULE on `ProductDecide/feature_DOM` TC_29 (a Go/No-Go decision-analysis
+variant of the same "Difference of Means" test, stabilized 2026-09-02: all 11 iterations BASELINE_CREATED
+on the first stabilization pass after one metadata fix). The `collectionName`→`InputSetname` mapping below
+applied unchanged; the only new field family was its own `decideInterimTable` (see the child-table rules
+below — same `Add Interim`-gating pattern as S8/S6, just a new button name). This is the confirming case for
+the module-genericity note in §0 above: the family reference transfers across modules with zero adaptation.*
+
 **1. Config coupling (settle it first).** The importer ends the design flow with `callCustom
 extractAllResultTables` + `compareWithBaseline` (GENERIC shape `TableName/RowLabel/ColumnName/Value`) and
 OVERWRITES `00_config/feature.config.json` to a skeleton. Keep the three coupled: generic tail ⇄ generic
@@ -668,6 +711,65 @@ checkbox timeout; the identical suite on the correct env = 0 fails). When compar
 `.env` change, confirm `.env` points to the env the baselines were built on BEFORE touching data or selectors.
 The sim chains only for iterations that have a `simulation.csv` row with `Run=TRUE`; a row-less iteration
 auto-skips ("no simulation.csv row"), so design-only and sim iterations coexist under one master `Simulation=YES`.
+
+## Worked family reference — `ProductDecide` "Go/No-Go" decision family (DOM / ROM / DOP / ROP)
+
+*Proven on 4 features in a row, 2026-09-02: `ProductDecide/feature_DOM` TC_29, `feature_ROM` TC_30,
+`feature_DOP` TC_31, `feature_ROP` TC_32 — every one taken from raw testdata + recording to a
+stable, all-iterations-green baseline. This is the SAME statistical family as the "Difference of
+Means"/proportions reference above (`DOM(PD)`, `ROP(PD)`, `DOP(PD)`) — just wired for the app's
+"Decide" (Go/No-Go decision-analysis) workflow instead of "Design". By the 4th feature (`ROP`),
+applying this checklist up front took `validate` to 0 issues on the FIRST run and every iteration
+to `BASELINE_CREATED` with zero live-run surprises. A lesser model can follow this verbatim.*
+
+**Apply ALL of these BEFORE running `npm run validate`, not one at a time as errors appear:**
+
+1. **Check `IterationID` casing across every testdata file FIRST**, before importing anything.
+   `project.csv`/`inputset.csv` are always typed `ITER_01`, `ITER_02`, … Hand-authored `design.csv`
+   (and any `design_decideInterimTable.csv` child) drifts to `Iter_01` about half the time — this
+   breaks the row join/fold silently (see the ledger's rule 13) and produces a wall of "no row for
+   TC_XX/Iter_0N" / "unknown column" validate errors that all trace back to one typo. Quick check:
+   `cut -d, -f2 01_testdata/*.csv | sort -u` per file, or just diff them by eye. Fix any mismatch
+   before running the importer.
+2. **`npm run import-codegen -- ProductDecide <Feature> --tc TC_XX`** — same command shape as any
+   other module. Expect exactly **one `UNWIRED` field: `collectionName`**, every time — the Decide
+   flow's Input Set page records `id="collectionName"` but the testdata column is named
+   `InputSetname`. **Always repoint the token, never add a new column:**
+   `${data.inputset.collectionName}` → `${data.inputset.InputSetname}` on the
+   `fill txt_collection_Name` step.
+3. **`SelectTask` in `inputset.csv` will validate-warn as unused.** The recording captures
+   `click btn_Select_Task` with no token — bind it: set the step's `InputValue` to
+   `${data.inputset.SelectTask}` (it's still a fixed click at runtime; this just satisfies the
+   "column has a value but no step enters it" check and documents what's actually being clicked).
+4. **`tbl_Results`/`btn_ExportResults` selectors are always missing.** `feature.config.json`'s
+   `resultsExtraction` references them by default, but nothing in a fresh Decide feature's
+   `selectors.csv` defines them yet. They're a shared, generic results-grid UI (not
+   feature-specific) — mirror verbatim from any working sibling
+   (`ProductDesign/feature_DOM(PD)` or a stabilized `ProductDecide` feature):
+   ```
+   tbl_Results,ResultsPage,testid,results-grid,,table.results,FALSE,<note>,FALSE
+   btn_ExportResults,ResultsPage,testid,export-results,,"button:has-text(""Export"")",FALSE,<note>,FALSE
+   ```
+5. **If the feature has a `decideInterimTable` child** (seen on `DOM`/`DOP`; not every Decide
+   feature has an interim/group-sequential option — `ROM`/`ROP` didn't): the recording always
+   captures `click btn_Add_Interim` (usually twice, to build periods 1 and 2) as an
+   **unconditional** click — it will time out on every fixed-design iteration. Gate it per period,
+   the same S8 pattern used elsewhere in this playbook:
+   `SkipIf ${data.design.decideInterimTable.1.analysisSpacingInfo}==EMPTY` (1st click, builds
+   period 1), `…2…==EMPTY` (2nd click, builds period 2). Then extend every other period-0-only
+   field the recording captured (`stopCutoff`/`interimARTV`/`maxStopPP`/`goCutoff`/
+   `interimDCLRV`/`minGoPP` or whichever subset applies) to periods 1 and 2, mirroring period 0's
+   exact selector pattern — **copy the attribute, not just the value**, some fields key on `id`,
+   others on `name`. Extend even a field whose current testdata doesn't reach period 2, for
+   symmetry with the table's depth (S12).
+6. **CSV gotcha, easy to trip doing step 5:** never put an unquoted comma in a `Description`/
+   `Notes` column when adding the mirrored rows — it silently shifts every column after it (breaks
+   the `Exact` boolean) and shows up as a confusing `Exact: Expected boolean, received string` +
+   a follow-on `locator not found` on an unrelated StepID. Use a semicolon instead, or quote the
+   field.
+
+Then `npm run validate -- --testcase TC_XX` (scopes the check to just this one row — see
+`FRAMEWORK_KT.md` §4) and `npm run test -- --testcase TC_XX` per the normal §5a protocol.
 
 ## What is deterministic vs. judgment (why this split scales)
 

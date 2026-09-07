@@ -268,9 +268,11 @@ function buildSummary(identity: RunIdentity, results: IterationResult[], filters
   // master.csv's Environment column, which this filters/process.env fallback
   // cannot see — without this the header claims "qa" for a run that ran as AD.
   const ranEnvs = [...new Set(safeResults.map((r) => r.env).filter(Boolean))];
+  const baseUrls = ranEnvs.map((env) => loadEnv(env).baseUrl).filter(Boolean);
   return {
     runId: identity.runId,
     env: ranEnvs.join(', ') || filters.env || process.env.ENV || 'qa',
+    baseUrl: [...new Set(baseUrls)].join(', '),
     startedAt: identity.timestamp,
     durationMs: Date.now() - identity.startedAt.toMillis(),
     trigger: filters.trigger || (process.env.CI ? 'ci' : 'local'),

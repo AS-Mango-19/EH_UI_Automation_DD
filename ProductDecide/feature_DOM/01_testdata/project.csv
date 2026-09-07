@@ -1,0 +1,12 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,controlArm,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,followUpTime
+TC_29,ITER_01,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,2
+TC_29,ITER_02,TRUE,Decide_DOM,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1.5
+TC_29,ITER_03,TRUE,Decide_DOM,Year,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,0.3256
+TC_29,ITER_04,TRUE,Decide_DOM,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,15
+TC_29,ITER_05,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,3.1
+TC_29,ITER_06,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,3.33
+TC_29,ITER_07,TRUE,Decide_DOM,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,2.22
+TC_29,ITER_08,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1.1156
+TC_29,ITER_09,TRUE,Decide_DOM,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,20
+TC_29,ITER_10,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,1.115
+TC_29,ITER_11,TRUE,Decide_DOM,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,3.2156

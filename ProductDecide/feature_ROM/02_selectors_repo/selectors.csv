@@ -1,0 +1,49 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Control_Arm,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Follow_up_Time_Week,ProjectPage,css,#followUpTime-0,,,FALSE,textbox from codegen,FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Decide Go/No-Go based,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Control_Mean,DesignPage,css,#controlMean,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Mean_TV,DesignPage,css,#treatmentMeanTV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Mean_LRV,DesignPage,css,#treatmentMeanLRV,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Mean_UIV,DesignPage,css,#treatmentMeanUIV,,,FALSE,textbox from codegen,FALSE
+txt_Standard_Deviation,DesignPage,css,#stdDev,,,FALSE,textbox from codegen,FALSE
+txt_Sample_Size_n,DesignPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_R_nt_nc,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+ddl_desired_Confidence_Select,DesignPage,css,#desiredConfidenceSelect,,,FALSE,native <select> from codegen,FALSE
+txt_desired_Confidence_Input,DesignPage,css,#desiredConfidenceInput,,,FALSE,textbox from codegen,FALSE
+txt_acceptable_Risk_Input,DesignPage,css,#acceptableRiskInput,,,FALSE,textbox from codegen,FALSE
+ddl_Method,DesignPage,css,#framework,,,FALSE,native <select> from codegen,FALSE
+txt_Mean,DesignPage,css,#priorMeanControl,,,FALSE,textbox from codegen,FALSE
+txt_prior_SDControl,DesignPage,css,#priorSDControl,,,FALSE,textbox from codegen,FALSE
+txt_prior_Mean_Treatment,DesignPage,css,#priorMeanTreatment,,,FALSE,textbox from codegen,FALSE
+txt_prior_SDTreatment,DesignPage,css,#priorSDTreatment,,,FALSE,textbox from codegen,FALSE
+btn_Save,DesignPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+tbl_Results,ResultsPage,testid,results-grid,,table.results,FALSE,Results grid to extract (mirrored from DOM(PD)/ProductDecide.DOM - shared results-grid UI),FALSE
+btn_ExportResults,ResultsPage,testid,export-results,,"button:has-text(""Export"")",FALSE,Export results download trigger (mirrored from DOM(PD)/ProductDecide.DOM),FALSE
