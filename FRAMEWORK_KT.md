@@ -170,6 +170,7 @@ so npm forwards them: `npm run test -- --testcase TC_03`.
 | --- | --- | --- |
 | **Validate everything** (no browser) | `npm run validate` | Checks every `master.csv` row, incl. `Execute=FALSE`. ~2s. |
 | **Validate one feature** | `npm run validate -- --feature DOM(PD)` | Case-insensitive; a `feature_` prefix is tolerated. |
+| **Validate one test case** | `npm run validate -- --testcase TC_03` | Alias `--tc`. Scopes the check to **exactly that one `TC_ID` row** — the output only reports on that test case, nothing else in `master.csv`. Prefer this over `--feature` when you want zero ambiguity: `TC_ID` is unique, a `Feature` name can collide (`DOM` vs `DOM(PD)`). |
 | **All enabled features** | `npm run test -- --all` | Every row with `Execute=TRUE`. (Bare `npm run test` does the same.) |
 | **One feature** (all its enabled TCs) | `npm run test -- --feature DOM(PD)` | **Exact, case-sensitive** match on the `Feature` column (unlike validate). |
 | **One test case** | `npm run test -- --testcase TC_03` | Alias `--tc TC_03`. **Runs even if `Execute=FALSE`** — the only way to run a disabled row. |
@@ -181,6 +182,31 @@ so npm forwards them: `npm run test -- --testcase TC_03`.
 
 **Selection precedence** (highest wins): `--testcase` > `--tags` > `--all` > default (`Execute=TRUE`).
 Only `--testcase` runs an `Execute=FALSE` row. Source: `core/runner/select.ts`.
+
+### Same commands, any module — worked example on `ProductDecide`
+
+`Module` is just the top-level folder name in `<Module>/feature_<Name>/` — nothing is hardcoded to
+`ProductDesign`. `ProductDecide` (the "Go/No-Go" decision-analysis features: `DOM`, `ROM`, `DOP`,
+`ROP`) uses the **exact same commands**, no different flags, no separate tooling. Worked example,
+`ProductDecide/feature_DOP` (`TC_31`):
+
+```bash
+# 1. Import a recorded Decide feature — same shape as any ProductDesign import
+npm run import-codegen -- ProductDecide DOP --tc TC_31
+
+# 2. Validate ONLY that one test case — not the whole suite
+npm run validate -- --testcase TC_31
+# → "[PASS] Validation passed: 1 test case(s), 1 feature(s), 0 warning(s)."
+#   (bare `npm run validate` would check every row in master.csv and report everything at once)
+
+# 3. Run ONLY that one test case
+npm run test -- --testcase TC_31
+```
+
+That's the whole recipe — swap `ProductDecide DOP TC_31` for `ProductDesign DOM(PD) TC_03` (or any
+other Module/Feature/TC_ID) and every command works identically. See `AI_IMPORT_AGENT.md`'s "Worked
+family reference — ProductDecide 'Go/No-Go' decision family" for the specific wiring quirks this
+family always hits (and how to fix them in one pass).
 
 ### Running one iteration (there is NO `--iteration` flag)
 

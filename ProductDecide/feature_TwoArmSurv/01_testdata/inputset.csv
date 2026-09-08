@@ -1,0 +1,12 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_34,ITER_01,Set1,Decide,Two Arms Survival
+TC_34,ITER_02,Set2,Decide,Two Arms Survival
+TC_34,ITER_03,Set3,Decide,Two Arms Survival
+TC_34,ITER_04,Set4,Decide,Two Arms Survival
+TC_34,ITER_05,Set5,Decide,Two Arms Survival
+TC_34,ITER_06,Set6,Decide,Two Arms Survival
+TC_34,ITER_07,Set7,Decide,Two Arms Survival
+TC_34,ITER_08,Set8,Decide,Two Arms Survival
+TC_34,ITER_09,Set9,Decide,Two Arms Survival
+TC_34,ITER_10,Set10,Decide,Two Arms Survival
+TC_34,ITER_11,Set11,Decide,Two Arms Survival

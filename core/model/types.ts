@@ -81,6 +81,7 @@ export interface SimPhaseResult {
 export interface RunSummary {
   runId: string;
   env: string;
+  baseUrl: string;
   startedAt: string;
   durationMs: number;
   trigger: string;

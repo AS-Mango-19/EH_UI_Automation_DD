@@ -10,7 +10,9 @@ feature; the runner (`npm run test`) executes it; `npm run validate` checks stru
 browser.
 
 **The playbooks are the source of truth — follow them, don't improvise:**
-- Import & wire a recorded feature → **`AI_IMPORT_AGENT.md`** (also the `/import-feature` prompt).
+- Import & wire a recorded feature → **`AI_IMPORT_AGENT.md`** — invoke via the `/import-feature`
+  prompt, or select the **"Import Feature"** custom agent from the Copilot Chat mode dropdown
+  (`.github/agents/import-feature.agent.md`) to stay in that persona for the whole session.
 - Prepare a feature's testdata from its API export → **`AI_TESTDATA_AGENT.md`**.
 - Framework reference (keywords, selectors, tokens, baselines, traps) → **`FRAMEWORK_KT.md`**.
 - **Self-improving memory → `IMPORT_LESSONS.md`** — READ it before resolving a feature's `UNWIRED`/
@@ -27,7 +29,10 @@ browser.
    match print as `UNWIRED` (with the field's id, label, and recorded value). Resolve each by
    **adding the real column (named by its id or label)** or renaming an existing one — **never**
    by re-running with `--seed`. `--seed` is only to bootstrap a feature whose `01_testdata` is
-   empty; `--strict` fails the import on any `UNWIRED`.
+   empty; `--strict` fails the import on any `UNWIRED`. **Never add or rename a column
+   silently** — check for an existing column first, then tell the user exactly what you propose
+   (file, column name, per-iteration value) and wait for approval before writing it
+   (`AI_IMPORT_AGENT.md` §3/§5a).
 3. **Author testdata first, then import.** The importer conforms to your columns and leaves
    `01_testdata/*.csv` byte-for-byte unchanged (bar a blank-identity backfill).
 4. **Follow the testdata.** A valued cell must land (verified by read-back); blank/`N/A` skips; a
@@ -42,7 +47,11 @@ browser.
 6. **Start from the closest existing feature** (same family) and mirror its column names/selectors:
    means → `feature_DOM(PD)`; survival/group-sequential → `feature_GADAR(PD)`, `feature_GADSD(PD)`;
    proportions/binomial → `feature_RONBR(PD)`, `feature_FishersExact(PD)`; one-arm →
-   `feature_SinglePoissonRate`, `feature_Simon2Stage`; multi-scenario → `feature_BOIN`.
+   `feature_SinglePoissonRate`, `feature_Simon2Stage`; multi-scenario → `feature_BOIN`;
+   **`ProductDecide` "Go/No-Go" features** (any module isn't just `ProductDesign` — see
+   `AI_IMPORT_AGENT.md` §0) → `ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an
+   interim table) — follow the dedicated Decide-family checklist there, it always needs the same
+   6 fixes.
 7. **Verify with your eyes.** Screenshot-verify every iteration — green ≠ correct (a missing
    baseline is green and proves nothing).
 8. **Never commit secrets.** `.env`, `.auth/`, and raw credentials in recordings stay out of git.

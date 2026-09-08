@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_27,ITER_01,TRUE,Decide_SingleArmSurv,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPTTE,Time to Event,Longer Duration
+TC_27,ITER_02,TRUE,Decide_SingleArmSurv,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPTTE,Time to Event,Longer Duration
+TC_27,ITER_03,TRUE,Decide_SingleArmSurv,Year,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPTTE,Time to Event,Longer Duration
+TC_27,ITER_04,TRUE,Decide_SingleArmSurv,Day,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EPTTE,Time to Event,Shorter Duration

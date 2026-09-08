@@ -1,0 +1,5 @@
+TC_ID,IterationID,controlProportion,treatmentProportionTV,treatmentProportionLRV,treatmentProportionUIV,sampleSize,allocationRatio,desiredConfidenceSelect,desiredConfidenceInput,acceptableRiskInput,Method,priorAlphaControl,priorBetaControl,priorAlphaTreatment,priorBetaTreatment,Result Name
+TC_32,ITER_01,22,65,55.3256,42.85623,92,1.112,Lower Ref. Value (LRV),82.652355,31.65285,Frequentist,,,,,Result-Set01
+TC_32,ITER_02,28.658666,68.856321,60.25648,45.32586,100,1.325648,Lower Ref. Value (LRV),88,24.55,Bayesian,1.6235,1.22356,1.43256,1.555865,Result-Set02
+TC_32,ITER_03,30,70.32658,63.48652,55.3215,112,1,Target Value (TV),85.63259,22.321456,Bayesian,1.258,2.32156,1.96523,2.222,Result-Set03
+TC_32,ITER_04,32.1568,71.12356,68.852,50.12856,123,1.22321,Lower Ref. Value (LRV),86,21.3256,Frequentist,,,,,Result-Set04

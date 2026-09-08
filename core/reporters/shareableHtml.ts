@@ -70,8 +70,11 @@ export interface ShareableOptions {
 export function renderShareableRunReport(summary: RunSummary, opts: ShareableOptions = {}): string {
   const lite = opts.lite === true;
   const iterations = (summary.iterations ?? []).filter(Boolean);
+  const baseUrl = /^https?:\/\//i.test(summary.baseUrl ?? '')
+    ? `<a href="${escapeHtml(summary.baseUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(summary.baseUrl)}</a>`
+    : 'Unavailable';
   const meta = `<table class="meta tl">
-    <tr><th>Run ID</th><td>${escapeHtml(summary.runId)}</td><th>Environment</th><td>${escapeHtml(summary.env)}</td></tr>
+    <tr><th>Run ID</th><td>${escapeHtml(summary.runId)}</td><th>Base URL</th><td>${baseUrl}</td></tr>
     <tr><th>Started</th><td>${escapeHtml(summary.startedAt)}</td><th>Duration</th><td>${fmtDuration(summary.durationMs)}</td></tr>
     <tr><th>Trigger</th><td>${escapeHtml(summary.trigger)}</td><th>Total</th><td>${summary.total}</td></tr>
   </table>`;

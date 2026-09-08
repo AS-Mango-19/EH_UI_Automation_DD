@@ -21,4 +21,15 @@ TC_19,ProductDesign,regression,Dose Escalation,Rolling6,,chromium,01_testdata/in
 TC_20,ProductDesign,regression,Two Arm Confirmatory,GADAR_Stratification,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
 TC_21,ProductDesign,regression,Two Arm Confirmatory,ROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_22,ProductDesign,regression,Two Arm Confirmatory,DOP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
-TC_23,ProductDesign,regression,Two Arm Confirmatory,OROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,YES
+TC_23,ProductDesign,regression,Two Arm Confirmatory,OROP(PD),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_24,ProductDesign,regression,One Arm Exploratory / Confirmatory,SingleMean,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_25,ProductDesign,regression,One Arm Exploratory / Confirmatory,SingleProportion,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_26,ProductDesign,regression,One Arm Exploratory / Confirmatory,MeanofPairedDiff,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,FALSE,AD,
+TC_27,ProductDecide,regression,One Arm Exploratory / Confirmatory,SingleArmSurv,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_28,ProductDecide,regression,One Arm Exploratory / Confirmatory,SingleMean,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_29,ProductDecide,regression,Two Arm Confirmatory,DOM,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_30,ProductDecide,regression,Two Arm Confirmatory,ROM,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_31,ProductDecide,regression,Two Arm Confirmatory,DOP,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_32,ProductDecide,regression,Two Arm Confirmatory,ROP,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_33,ProductDecide,regression,Two Arm Confirmatory,OROP,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_34,ProductDecide,regression,Two Arm Confirmatory,TwoArmSurv,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,

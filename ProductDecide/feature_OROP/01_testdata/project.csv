@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,ControlArm,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,followUpTime
+TC_33,ITER_01,TRUE,Decide_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPBin,Binary,Larger Value,2.12
+TC_33,ITER_02,TRUE,Decide_OROP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPBin,Binary,Larger Value,1.32
+TC_33,ITER_03,TRUE,Decide_OROP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPBin,Binary,Larger Value,0.321
+TC_33,ITER_04,TRUE,Decide_OROP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPBin,Binary,Smaller Value,15

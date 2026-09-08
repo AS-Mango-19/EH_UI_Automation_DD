@@ -54,7 +54,7 @@ function summary(): RunSummary {
     failureReason: 'Attained_Power moved',
   };
   return {
-    runId: 'RUN_REPORT_TEST', env: 'qa', startedAt: '2026-07-14T00:00:00.000Z',
+    runId: 'RUN_REPORT_TEST', env: 'qa', baseUrl: 'https://qa.example.test', startedAt: '2026-07-14T00:00:00.000Z',
     durationMs: 4600, trigger: 'local', counts, total: 2, iterations: [pass, fail],
   };
 }

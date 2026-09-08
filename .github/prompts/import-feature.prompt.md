@@ -28,9 +28,15 @@ Non-negotiables:
   adding that column (named by its id or label) or renaming an existing one — **never** by
   re-running with `--seed` (that reintroduces junk columns). `--seed` is only for bootstrapping a
   feature whose `01_testdata` is still empty; `--strict` fails the import on any `UNWIRED`.
+- **Never add or rename a testdata column without asking first.** Check for an existing column
+  it should map to, then tell the user the proposed column name, file, and per-iteration value,
+  and wait for approval before writing anything — during `UNWIRED` resolution too, not only
+  during a live run (`AI_IMPORT_AGENT.md` §3/§5a).
 - **Start from the closest existing feature** in the same family (means→`feature_DOM(PD)`,
   survival→`feature_GADAR(PD)`/`feature_GADSD(PD)`, proportions→`feature_RONBR(PD)`/`feature_FishersExact(PD)`,
-  one-arm→`feature_SinglePoissonRate`, multi-scenario→`feature_BOIN`): reuse its testdata column
+  one-arm→`feature_SinglePoissonRate`, multi-scenario→`feature_BOIN`, `ProductDecide` "Go/No-Go"
+  features→`ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an interim table) — see
+  `AI_IMPORT_AGENT.md`'s dedicated Decide-family checklist): reuse its testdata column
   names so the id/label wiring matches on the first pass.
 
 Steps (detail in the playbook): pick the reference feature → **author `01_testdata` first** → run

@@ -1,0 +1,12 @@
+TC_ID,IterationID,inputMethod,controlMedianTime,controlEventRate,treatmentMedianTimeTV,treatmentEventRateTV,treatmentMedianTimeLRV,treatmentEventRateLRV,treatmentMedianTimeUIV,treatmentEventRateUIV,targetValue,lowerRefVal,userInterestVal,events,maturity,allocationRatio,desiredConfidenceSelect,desiredConfidenceInput,acceptableRiskInput,Method,priorHazardRatio,priorEvents,interimType,stopRule,goRule,Result Name
+TC_34,ITER_01,Median Survival Times,10.56,,18.965,,12.8658,,10.8659,,,,,80,70,1.23,Lower Ref. Value (LRV),90,22,Frequentist,,,,,,Result-Set01
+TC_34,ITER_02,Event Rates,,0.08856,,0.058658,,0.079658,,0.088852,,,,82,75,1.321,Lower Ref. Value (LRV),85,15.8856,Bayesian,0.8595,3.658,,,,Result-Set02
+TC_34,ITER_03,Hazard Ratio,,,,,,,,,0.63856,0.83859,1.3356,78,72.63589,1,Target Value (TV),89.7564,22,Bayesian,0.899652,4.8896,,,,Result-Set03
+TC_34,ITER_04,Median Survival Times,11.66,,20.88875,,15.668,,11.886321,,,,,88,75.888,1.321,Lower Ref. Value (LRV),90.3286,18.9635,Frequentist,,,Admin,Observed Treatment Effect (Fixed),Probability (Lalonde),Result-Set04
+TC_34,ITER_05,Event Rates,,0.11111,,0.13568,,0.145685,,0.12443,,,,85,80.63258,1.321456,Lower Ref. Value (LRV),91,25,Frequentist,,,Admin,Probability (Lalonde),Predictive Probability (Green),Result-Set05
+TC_34,ITER_06,Hazard Ratio,,,,,,,,,0.753252,0.8563,1.4423,75,81.32568,1.2264,Lower Ref. Value (LRV),88,24.321,Frequentist,,,Admin,Predictive Probability (Green),Predictive Probability (Green-Amber),Result-Set06
+TC_34,ITER_07,Median Survival Times,12.88,,20,,16.999,,15.6325,,,,,90,70.321456,1.321,Lower Ref. Value (LRV),84,20,Frequentist,,,Admin,Predictive Probability (Green-Amber),Observed Treatment Effect (Fixed),Result-Set07
+TC_34,ITER_08,Event Rates,,0.098632,,0.073256,,0.069999,,0.132756,,,,76,83,2.211,Lower Ref. Value (LRV),91.56,18.6325,Frequentist,,,Futility,Probability (Lalonde),,Result-Set08
+TC_34,ITER_09,Hazard Ratio,,,,,,,,,0.73215,0.8888,1,82,74.321,1,Target Value (TV),83,22,Frequentist,,,Futility,Observed Treatment Effect (Fixed),,Result-Set09
+TC_34,ITER_10,Median Survival Times,11,,23.6895,,18.8856,,11.32156,,,,,92,88.88654,1.1136,Lower Ref. Value (LRV),85.55,25,Frequentist,,,Futility,Predictive Probability (Green),,Result-Set10
+TC_34,ITER_11,Event Rates,,0.123456,,0.132658,,0.151325,,0.074125,,,,76,89.3214,1,Lower Ref. Value (LRV),88,,Frequentist,,,Futility,Predictive Probability (Green-Amber),,Result-Set11

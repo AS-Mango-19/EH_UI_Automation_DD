@@ -25,10 +25,16 @@ Non-negotiables (full detail is in the playbook):
   column (named by its id or label) or renaming an existing one, **never** by re-running with
   `--seed`. `--seed` is only to bootstrap an empty feature; `--strict` fails on any `UNWIRED`.
   **Author `01_testdata` first**, then import — the importer conforms to your columns.
+- **Never add or rename a testdata column without asking first** — check for an existing column
+  it should map to, then tell the user the proposed column name, file, and per-iteration value,
+  and wait for approval before writing it. Applies while resolving `UNWIRED` too, not only
+  during a live run (`AI_IMPORT_AGENT.md` §3/§5a).
 - **Start from the closest existing feature** in the same family and mirror its column
   names/selectors (means → `feature_DOM(PD)`; survival → `feature_GADAR(PD)`/`feature_GADSD(PD)`;
   proportions → `feature_RONBR(PD)`/`feature_FishersExact(PD)`; one-arm → `feature_SinglePoissonRate`;
-  multi-scenario → `feature_BOIN`), so id/label wiring matches on the first pass.
+  multi-scenario → `feature_BOIN`; `ProductDecide` "Go/No-Go" features → `ProductDecide/feature_DOM`
+  (TC_29) or `feature_DOP` (TC_31, has an interim table) — see `AI_IMPORT_AGENT.md`'s dedicated
+  Decide-family checklist), so id/label wiring matches on the first pass.
 - **A new data combination is one decision per field** — see "What to put in a testdata cell"
   in the playbook. Hidden → `N/A`; editable → the value; greyed showing "Computed" →
   `Computed`; greyed showing a derived number → assert it, never `fill` it.

@@ -1,11 +1,11 @@
-TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
-TC_23,ITER_01,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_02,TRUE,AutoProj_OROP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_03,TRUE,AutoProj_OROP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_04,TRUE,AutoProj_OROP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Smaller Value
-TC_23,ITER_05,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_06,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_07,TRUE,AutoProj_OROP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_08,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_09,TRUE,AutoProj_OROP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
-TC_23,ITER_10,TRUE,AutoProj_OROP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,Control Arm
+TC_23,ITER_01,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_02,TRUE,AutoProj_OROP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_03,TRUE,AutoProj_OROP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_04,TRUE,AutoProj_OROP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Smaller Value,Ctrl
+TC_23,ITER_05,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_06,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_07,TRUE,AutoProj_OROP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_08,TRUE,AutoProj_OROP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_09,TRUE,AutoProj_OROP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl
+TC_23,ITER_10,TRUE,AutoProj_OROP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,EXP,Primary,EPBin,Binary,Larger Value,Ctrl

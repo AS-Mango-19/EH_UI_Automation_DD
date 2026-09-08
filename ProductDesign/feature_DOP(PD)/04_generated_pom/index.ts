@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f24f11e088377f229c1b9ed36dd5b340cdf6099d3d4f0f3fb99cef0b6da76875)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 275dc57bd9038b4ca5d2b502bdc37c2a78ee438b6eea51a0542f5f7051d45114)
 import type { Page as PlaywrightPage } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { LoginPage } from './LoginPage.page.js';

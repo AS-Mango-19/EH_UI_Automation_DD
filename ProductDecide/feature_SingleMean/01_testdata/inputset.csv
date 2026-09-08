@@ -1,0 +1,12 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_28,ITER_01,Set1,Decide,Single Mean
+TC_28,ITER_02,Set2,Decide,Single Mean
+TC_28,ITER_03,Set3,Decide,Single Mean
+TC_28,ITER_04,Set4,Decide,Single Mean
+TC_28,ITER_05,Set5,Decide,Single Mean
+TC_28,ITER_06,Set6,Decide,Single Mean
+TC_28,ITER_07,Set7,Decide,Single Mean
+TC_28,ITER_08,Set8,Decide,Single Mean
+TC_28,ITER_09,Set9,Decide,Single Mean
+TC_28,ITER_10,Set10,Decide,Single Mean
+TC_28,ITER_11,Set11,Decide,Single Mean

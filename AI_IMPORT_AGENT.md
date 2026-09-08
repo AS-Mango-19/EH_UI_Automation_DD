@@ -101,6 +101,28 @@ exact fix, so little judgment is needed to get to a wired feature.
    matching *Signal→Decision* rule instead of asking; when you make a new judgment call or the user
    corrects you, **append it as a rule** so the next feature is easier. The ledger is the agent's
    memory — keep it accurate and it compounds.
+7. **Stop and ask at two checkpoints.** (a) Once wiring is done and `npm run validate` passes
+   clean for the target TC, **ask the user before running `npm run test`** — confirm whether to
+   run all iterations or go one iteration at a time to stabilize (see "Stabilizing after a clean
+   validate" below). (b) **Any testdata edit beyond the wiring itself** (a value that looks wrong,
+   a cell that needs to change to get an iteration green, a new/renamed column) **needs the user's
+   confirmation before you write it** — state the exact file, column, and value(s), then wait.
+   Never silently patch `01_testdata/*.csv` to force a pass.
+
+---
+
+## Stabilizing after a clean validate
+
+Once `npm run validate -- --testcase TC_XX` passes with zero errors, **don't jump straight to a
+full run.** Ask the user how they want to proceed, e.g.:
+
+- Run **one iteration at a time** (`Run=TRUE` on a single row, others `FALSE`, across every
+  testdata file that carries the column — the veto is global, see IMPORT_LESSONS.md rule S13) —
+  screenshot-verify each (`artifacts/<runId>/<TC>_<ITER>/`) before moving to the next.
+- Run **all iterations at once** and triage failures together.
+
+Either way: if a run needs a testdata change to go green, **propose it and wait for approval**
+before editing the CSV — don't unilaterally tweak values to force a pass.
 
 ---
 
@@ -180,11 +202,25 @@ same custom steps. **Find it, read it, mirror it**, then adapt values. Pick by f
 | Two-arm **binomial / proportions** (ROP, RONBR, FishersExact) | `feature_RONBR(PD)`, `feature_FishersExact(PD)` |
 | **One-arm** (SinglePoissonRate, Simon2Stage, BOP2, *OAD) | `feature_SinglePoissonRate`, `feature_Simon2Stage` |
 | **Repeated-modal / multi-scenario** (BOIN, dose-response, arms) | `feature_BOIN` (TC_14) + `MULTI_SCENARIO_GUIDE.md` |
+| `ProductDecide` **"Go/No-Go" decision family** (DOM, ROM, DOP, ROP, and any new `feature_<Name>` under `ProductDecide`) | `ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an interim table) — see the dedicated "Worked family reference — ProductDecide" section below, it's a fixed 6-item checklist |
 
 Concretely: `diff` the reference feature's `01_testdata/*.csv` **headers**, skim its
 `03_metadata/*.csv` and any `custom/<Feature>/customSteps.ts`, and reuse its column names so the
 importer's id/label wiring matches on the first pass. The survival and means families share
 almost the entire `design.csv` column set — a straight retarget (see `AI_TESTDATA_AGENT.md`).
+
+> **`Module` is generic — mirror by FAMILY, not by module.** The `<Module>/feature_<Feature>/`
+> convention and everything the importer/runner do are keyed off whatever `Module` value the
+> master.csv row carries; nothing in `core/` hardcodes `ProductDesign`. Proven on
+> `ProductDecide/feature_DOM` (TC_29, a Go/No-Go "Difference of Means" decision design,
+> stabilized 2026-09-02) — imported and wired exactly like any `ProductDesign` feature, mirroring
+> `ProductDesign/feature_DOM(PD)` (a different module, same statistical family) for its field/
+> selector patterns. When the table above points you at a reference feature, its module doesn't
+> have to match your new feature's module. Adding a whole new module folder needs no code change
+> — just `npm run scaffold-feature -- <NewModule> <Feature>` and a master.csv row; the one thing
+> to sanity-check is `.github/workflows/ci.yml`'s artifact-upload glob still covers it (it's
+> `*/**/08_diffs/**` / `*/**/09_html_report/**`, module-agnostic as of this fix — don't re-narrow
+> it to a literal module name).
 
 ### 1 — Run the deterministic importer (standalone-capable)
 ```bash
@@ -212,6 +248,23 @@ can run this alone** — the agent's job is steps 2-6.
 > Turn it on with `Simulation=YES` in the master row. At run time, **after a GREEN design
 > comparison**, the same browser stays open, clicks Simulate, runs the sim steps, and captures
 > `sim_results_<TC>_<ITER>.csv` / `sim_baseline_<TC>_<ITER>.csv`. A red design skips sim.
+>
+> **`[promoted from IMPORT_LESSONS.md S13, core-behavior finding, 2026-08-25]` `simulation.csv`'s
+> own `Run` column is a GLOBAL veto, not a sim-only skip — this contradicts `FRAMEWORK_KT.md` §5.1's
+> stated "Run=FALSE on a simulation.csv row skips only the sim phase; design still runs."** In
+> reality `core/loaders/featureLoader.ts` `loadTestData` reads **every** `.csv` in `01_testdata/`
+> (not just `feature.config.json`'s `testdata.files` whitelist) into one iteration-selection store,
+> and `core/runner/testDataStore.ts` `iterationsFor()` excludes an iteration from the WHOLE run
+> (design included) if **any** file has an explicit `Run=FALSE` row for it — it does not know or
+> care which file the veto came from. Symptom: `npm run test --testcase TC_XX` reports "Executing 0
+> iteration(s)" for an iteration whose `project.csv` `Run=TRUE`, with no error. A **missing**
+> `simulation.csv` row for an iteration IS safe (matches the docs — sim-only skip, confirmed
+> behavior). An **explicit `Run=FALSE` row** is not. **Practical rule: when toggling which
+> iteration runs, set `Run` in lockstep across EVERY testdata CSV that carries the column for that
+> iteration (`project.csv` AND `simulation.csv` AND any others) — never assume `project.csv` alone
+> controls it.** This is a `core/` behavior gap, not fixed as of this writing (flagged, not
+> patched — out of scope for a single-feature session per golden rule 1). Proven on `OROP(PD)`
+> TC_23 ITER_02.
 
 ### 2 — Consolidate a superset recording *(judgment)*
 A superset recording toggles controls, so the raw metadata has **duplicated, self-cancelling**
@@ -226,15 +279,29 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
 - **Order = controls before their dependent fields**, e.g.
   `Hypothesis → Test Type → Computed Parameter → Input Method → (the fills) → Test Statistic`.
   A controlling select must run **before** the fields it reveals, or the fill hits a
-  not-yet-visible field.
+  not-yet-visible field. `[promoted from IMPORT_LESSONS.md rule 11, ≥2 features]` This bites
+  hardest on **spending-function selects** — `select ddl_eff_Spend_Func` / `ddl_fut_Spend_Func`
+  must have a **lower StepID** than every param field it unlocks (`effParamRho`/`futParamGamma`/…),
+  and the recording's row order can be the opposite of the correct StepID order even though the
+  rows *look* sequential. Symptom: `fill txt_fut_Param_Rho` fails `not found` with the spending-
+  function `select` sitting right above it in the file — check StepIDs, not rows. Proven on
+  `DOP(PD)` and `OROP(PD)`.
 
 ### 3 — Wire `UNWIRED` fields & add missing steps *(judgment)*
 - **Resolve every `UNWIRED` line.** The importer already wired each field it could match to an
   existing column by **id or label**; what remains is the `UNWIRED` list. For each one it prints
   the field's **id**, **label**, and **recorded value**. Decide, per field:
-  - **A field you meant to drive** → add exactly one column, named after the printed **DOM id or
-    label**, and give it the value (or `N/A`/`Computed` per the cell-decision table). Re-run;
-    the line disappears.
+  - **First look for an existing column this field should map to** (a near-miss name, a rename
+    candidate) before concluding a new one is needed — renaming still counts as a testdata change
+    below, it isn't free just because no column is created.
+  - **A field you meant to drive** → **do not write to any testdata CSV yet.** Tell the user the
+    proposed column name (from the printed DOM id or label), which file(s) it lands in
+    (`design`/`simulation`/`inputset`/a child table), and the value (or `N/A`/`Computed` per the
+    cell-decision table) for each iteration — then **wait for approval**. Only after the user
+    approves, add exactly the one column and give it the value. Re-run; the line disappears.
+    **Never add or rename a testdata column silently** — not for a single field, not when the
+    naming looks obvious. (Mirrors the same approval gate in §5a for testdata changes found
+    during a live run — it applies here too, during initial wiring.)
   - **A field this iteration doesn't use** (a hidden/greyed/branch field) → it needs no column;
     remove or gate its step, or set the cell `N/A` on the iterations that don't apply.
   - **Recording noise** (a stray label click, a `1`, a computed-parameter mirror) → delete the step.
@@ -299,6 +366,18 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   FRAMEWORK_KT.md §4.5 "Indexed table cells and multi-period values". **For the allowlisted
   tables (boundary / enrollment / dropout) the importer now emits ONE count-agnostic `loopPeriods`
   block instead of per-cell fills — see §9.1.**
+  > **`[promoted from IMPORT_LESSONS.md, ≥3 features — ROP/DOP/OROP]` A single-period DESIGN
+  > enrollment table must be a SCALAR `fill`, never `loopPeriods`.** The importer's loopPeriods
+  > default loops the design enrollment too, but the enrollment sub-flow is shared with the sim,
+  > and the sim's `simulation_enrollmentTable.csv` adds a `startingAtTime` column the design table
+  > doesn't have (design enrollment is single-period). Result: `${runtime.period.startingAtTime}
+  > was never captured` — an **absent** per-period field throws, it does not silently skip the way
+  > an `N/A` cell does. Fix: replace the design-side `reconcilePeriodTable`+`loopPeriods` pair with
+  > one `fill txt_enrollment_Table_0_avg_Subjects_Enrolled
+  > ${data.design.enrollmentTable.0.avgSubjectsEnrolled}` against a non-parametric
+  > `[id="enrollmentTable.0.avgSubjectsEnrolled"]` selector; leave the sim's loop untouched (sim
+  > enrollment genuinely is multi-period). This is a two-arm-proportions-family trait (ROP/DOP/OROP
+  > all share it), not universal — survival features' design enrollment can be genuinely multi-period.
 - **Checkbox toggles** (`getByTestId('variable')`, a role/id checkbox) import as a data-driven
   `check` **and** `uncheck` pair, each `SkipIf`-gated on the column value (`…!=check` / `…!=uncheck`),
   so one testdata cell drives the box on or off per iteration.
@@ -417,6 +496,7 @@ resolved), follow this protocol exactly:
 | a field's value is ignored (app computes it) | set that cell to `Computed` |
 | "Forced Log Out" / login bounce | parallel logins — ensure `serial: true` (importer default) |
 | duplicate testdata columns | reconcile to the human-named column (step 3) |
+| `npm run test --testcase TC_XX` reports **"Executing 0 iteration(s)"** though `project.csv` `Run=TRUE` | another testdata CSV (usually `simulation.csv`) has an **explicit `Run=FALSE` row** for that iteration — `Run` is a GLOBAL veto across every `01_testdata/*.csv`, not per-file (S13 above). Set `Run=TRUE` in lockstep across every file that carries the column. |
 | `select … has no option matching "V"` | the error now **prints every real option** (`value=text`); map your testdata value to one — or the value belongs in a *different* field (a `select` recorded onto a text input; delete the bogus select) |
 | `field "X" is disabled but testdata requires a value` | X's **controlling `select` isn't active** — either it never ran, or a later `fill` **reset** it. Order that select **after** the table X depends on and **immediately before** X. Execution is by **StepID**, not row order (§7 below) |
 | a `check`/`uncheck` step **times out** | the checkbox isn't rendered for this combination (e.g. the efficacy/futility checkboxes exist only when a **futility boundary** does) → set the cell to **`N/A`** |
@@ -497,6 +577,13 @@ survival family (GADAR/GADSD) — the SAME project → input-set → design → 
 result flow; only the effect section differs (means + variance/SD instead of hazard ratios). Import a new
 means/continuous feature the same way and expect every note below. A lesser model can follow this section
 verbatim.*
+
+*Also proven across a DIFFERENT MODULE on `ProductDecide/feature_DOM` TC_29 (a Go/No-Go decision-analysis
+variant of the same "Difference of Means" test, stabilized 2026-09-02: all 11 iterations BASELINE_CREATED
+on the first stabilization pass after one metadata fix). The `collectionName`→`InputSetname` mapping below
+applied unchanged; the only new field family was its own `decideInterimTable` (see the child-table rules
+below — same `Add Interim`-gating pattern as S8/S6, just a new button name). This is the confirming case for
+the module-genericity note in §0 above: the family reference transfers across modules with zero adaptation.*
 
 **1. Config coupling (settle it first).** The importer ends the design flow with `callCustom
 extractAllResultTables` + `compareWithBaseline` (GENERIC shape `TableName/RowLabel/ColumnName/Value`) and
@@ -625,6 +712,65 @@ checkbox timeout; the identical suite on the correct env = 0 fails). When compar
 The sim chains only for iterations that have a `simulation.csv` row with `Run=TRUE`; a row-less iteration
 auto-skips ("no simulation.csv row"), so design-only and sim iterations coexist under one master `Simulation=YES`.
 
+## Worked family reference — `ProductDecide` "Go/No-Go" decision family (DOM / ROM / DOP / ROP)
+
+*Proven on 4 features in a row, 2026-09-02: `ProductDecide/feature_DOM` TC_29, `feature_ROM` TC_30,
+`feature_DOP` TC_31, `feature_ROP` TC_32 — every one taken from raw testdata + recording to a
+stable, all-iterations-green baseline. This is the SAME statistical family as the "Difference of
+Means"/proportions reference above (`DOM(PD)`, `ROP(PD)`, `DOP(PD)`) — just wired for the app's
+"Decide" (Go/No-Go decision-analysis) workflow instead of "Design". By the 4th feature (`ROP`),
+applying this checklist up front took `validate` to 0 issues on the FIRST run and every iteration
+to `BASELINE_CREATED` with zero live-run surprises. A lesser model can follow this verbatim.*
+
+**Apply ALL of these BEFORE running `npm run validate`, not one at a time as errors appear:**
+
+1. **Check `IterationID` casing across every testdata file FIRST**, before importing anything.
+   `project.csv`/`inputset.csv` are always typed `ITER_01`, `ITER_02`, … Hand-authored `design.csv`
+   (and any `design_decideInterimTable.csv` child) drifts to `Iter_01` about half the time — this
+   breaks the row join/fold silently (see the ledger's rule 13) and produces a wall of "no row for
+   TC_XX/Iter_0N" / "unknown column" validate errors that all trace back to one typo. Quick check:
+   `cut -d, -f2 01_testdata/*.csv | sort -u` per file, or just diff them by eye. Fix any mismatch
+   before running the importer.
+2. **`npm run import-codegen -- ProductDecide <Feature> --tc TC_XX`** — same command shape as any
+   other module. Expect exactly **one `UNWIRED` field: `collectionName`**, every time — the Decide
+   flow's Input Set page records `id="collectionName"` but the testdata column is named
+   `InputSetname`. **Always repoint the token, never add a new column:**
+   `${data.inputset.collectionName}` → `${data.inputset.InputSetname}` on the
+   `fill txt_collection_Name` step.
+3. **`SelectTask` in `inputset.csv` will validate-warn as unused.** The recording captures
+   `click btn_Select_Task` with no token — bind it: set the step's `InputValue` to
+   `${data.inputset.SelectTask}` (it's still a fixed click at runtime; this just satisfies the
+   "column has a value but no step enters it" check and documents what's actually being clicked).
+4. **`tbl_Results`/`btn_ExportResults` selectors are always missing.** `feature.config.json`'s
+   `resultsExtraction` references them by default, but nothing in a fresh Decide feature's
+   `selectors.csv` defines them yet. They're a shared, generic results-grid UI (not
+   feature-specific) — mirror verbatim from any working sibling
+   (`ProductDesign/feature_DOM(PD)` or a stabilized `ProductDecide` feature):
+   ```
+   tbl_Results,ResultsPage,testid,results-grid,,table.results,FALSE,<note>,FALSE
+   btn_ExportResults,ResultsPage,testid,export-results,,"button:has-text(""Export"")",FALSE,<note>,FALSE
+   ```
+5. **If the feature has a `decideInterimTable` child** (seen on `DOM`/`DOP`; not every Decide
+   feature has an interim/group-sequential option — `ROM`/`ROP` didn't): the recording always
+   captures `click btn_Add_Interim` (usually twice, to build periods 1 and 2) as an
+   **unconditional** click — it will time out on every fixed-design iteration. Gate it per period,
+   the same S8 pattern used elsewhere in this playbook:
+   `SkipIf ${data.design.decideInterimTable.1.analysisSpacingInfo}==EMPTY` (1st click, builds
+   period 1), `…2…==EMPTY` (2nd click, builds period 2). Then extend every other period-0-only
+   field the recording captured (`stopCutoff`/`interimARTV`/`maxStopPP`/`goCutoff`/
+   `interimDCLRV`/`minGoPP` or whichever subset applies) to periods 1 and 2, mirroring period 0's
+   exact selector pattern — **copy the attribute, not just the value**, some fields key on `id`,
+   others on `name`. Extend even a field whose current testdata doesn't reach period 2, for
+   symmetry with the table's depth (S12).
+6. **CSV gotcha, easy to trip doing step 5:** never put an unquoted comma in a `Description`/
+   `Notes` column when adding the mirrored rows — it silently shifts every column after it (breaks
+   the `Exact` boolean) and shows up as a confusing `Exact: Expected boolean, received string` +
+   a follow-on `locator not found` on an unrelated StepID. Use a semicolon instead, or quote the
+   field.
+
+Then `npm run validate -- --testcase TC_XX` (scopes the check to just this one row — see
+`FRAMEWORK_KT.md` §4) and `npm run test -- --testcase TC_XX` per the normal §5a protocol.
+
 ## What is deterministic vs. judgment (why this split scales)
 
 | Deterministic — the **importer** does it | Judgment — the **agent/QA** does it |
@@ -644,6 +790,9 @@ what lets it handle a new feature **without destabilising the ones already commi
 - [ ] Only the target feature's files + its `master.csv` row changed.
 - [ ] **No `UNWIRED` fields remain** in the last import run (or each was deliberately dropped/gated).
 - [ ] Testdata columns are the ones **you authored** — the import added none (no `--seed` over real data).
+- [ ] **Every new/renamed testdata column was proposed to the user (name, file, per-iteration
+  value) and approved BEFORE being written** (§3) — the agent never adds or renames a column
+  silently, including while resolving `UNWIRED`.
 - [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] **User approval obtained before any live run**; iterations run **one at a time**; on error, analyse then fix by tier — minor metadata/selector fixes **autonomously** (reported), but **testdata** edits and **major/other-file** changes only **with user approval** (§5a).
