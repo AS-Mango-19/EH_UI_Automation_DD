@@ -1,0 +1,9 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,controlArm,treatmentArm,priority-0,endpointName-0,type-0,betterResponse-0,variable-0_0,followUpTime-0_0,priority-1,endpointName-1,type-1,betterResponse-1,followUpTime-1_0
+TC_35,ITER_01,TRUE,Logrank-DOP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Primary,EP1_TTE,Time to Event,Longer Duration,uncheck,2.5,Primary,EP2_BIN,Binary,Larger Value,2.8
+TC_35,ITER_02,TRUE,Logrank-DOP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Primary,EP1_TTE,Time to Event,Shorter Duration,uncheck,1.1156,Secondary,EP2_BIN,Binary,Smaller Value,2.5
+TC_35,ITER_03,TRUE,Logrank-DOP,Year,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Secondary,EP1_TTE,Time to Event,Longer Duration,check,,Primary,EP2_BIN,Binary,Smaller Value,0.321
+TC_35,ITER_04,TRUE,Logrank-DOP,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Secondary,EP1_TTE,Time to Event,Shorter Duration,check,,Secondary,EP2_BIN,Binary,Larger Value,12.3025
+TC_35,ITER_05,TRUE,Logrank-DOP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Primary,EP1_TTE,Time to Event,Longer Duration,uncheck,3.852,Primary,EP2_BIN,Binary,Larger Value,3
+TC_35,ITER_06,TRUE,Logrank-DOP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Primary,EP1_TTE,Time to Event,Shorter Duration,uncheck,4.63256,Secondary,EP2_BIN,Binary,Smaller Value,2.5555
+TC_35,ITER_07,TRUE,Logrank-DOP,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Secondary,EP1_TTE,Time to Event,Longer Duration,check,,Primary,EP2_BIN,Binary,Smaller Value,3.215
+TC_35,ITER_08,TRUE,Logrank-DOP,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,Exp,Secondary,EP1_TTE,Time to Event,Shorter Duration,check,,Secondary,EP2_BIN,Binary,Larger Value,1.58

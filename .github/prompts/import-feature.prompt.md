@@ -38,6 +38,13 @@ Non-negotiables:
   features→`ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an interim table) — see
   `AI_IMPORT_AGENT.md`'s dedicated Decide-family checklist): reuse its testdata column
   names so the id/label wiring matches on the first pass.
+- **Verify the mirroring held — right before you finish, not just when you start.** An auto-bound
+  field (no `UNWIRED`) is NOT proof its selector is correct. `grep` the reference feature's
+  `selectors.csv`/`metadata.csv` for `confirmed live|VERIFY selector|renamed from|collided|Never
+  recorded|mislabeled` and confirm your feature resolved each matching field the same way, not just
+  structurally-similarly. `feature_MCPMod_Con` shipped with two bugs `feature_MCPMod` had already
+  fixed this way — neither tripped `UNWIRED` or `validate` (`AI_IMPORT_AGENT.md` §0, `IMPORT_LESSONS.md`
+  rule 17).
 
 Steps (detail in the playbook): pick the reference feature → **author `01_testdata` first** → run
 `npm run import-codegen -- <Module> feature_<Name> --tc TC_XX` (standalone-capable) → **resolve

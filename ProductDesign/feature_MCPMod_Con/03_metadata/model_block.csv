@@ -1,0 +1,13 @@
+Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
+1,10,ConfigureDesign,ResultsPage,select,ddl_model_Family,${runtime.loop.modelFamily},,,,,10000,FALSE,0,always,${runtime.loop.modelFamily}==N/A,Select this row's Model Family,
+2,20,ConfigureDesign,ResultsPage,fill,txt_ED50,${runtime.loop.ed50},,,,,10000,FALSE,0,never,${runtime.loop.ed50}==N/A,fill ED50,
+3,30,ConfigureDesign,ResultsPage,fill,txt_h,${runtime.loop.h},,,,,10000,FALSE,0,never,${runtime.loop.h}==N/A,fill h,
+4,40,ConfigureDesign,ResultsPage,fill,txt_delta_Enabled,${runtime.loop.deltaEnabled},,,,,10000,FALSE,0,never,${runtime.loop.deltaEnabled}==N/A,fill deltaEnabled,
+5,50,ConfigureDesign,ResultsPage,fill,txt_delta1,${runtime.loop.delta1},,,,,10000,FALSE,0,never,${runtime.loop.delta1}==N/A,fill delta1,
+6,60,ConfigureDesign,ResultsPage,fill,txt_delta2,${runtime.loop.delta2},,,,,10000,FALSE,0,never,${runtime.loop.delta2}==N/A,fill delta2,
+7,70,ConfigureDesign,ResultsPage,fill,txt_placebo_Effect,${runtime.loop.placeboEffect},,,,,10000,FALSE,0,never,${runtime.loop.placeboEffect}==N/A,fill placeboEffect,
+8,80,ConfigureDesign,ResultsPage,fill,txt_max_Effect,${runtime.loop.maxEffect},,,,,10000,FALSE,0,never,${runtime.loop.maxEffect}==N/A,fill maxEffect,
+9,85,ConfigureDesign,ResultsPage,sleep,,1000,,,,,10000,FALSE,0,never,,"Settle before committing - the modal's chart re-renders on each field change (debounced); confirmed live on feature_MCPMod TC_35 the commit click can silently no-op if fired before that settles",
+10,90,ConfigureDesign,ResultsPage,click,txt_add_Model_But,,,,,,10000,FALSE,0,always,,Commit this model then loop to the next row,
+11,95,ConfigureDesign,ResultsPage,waitForSelector,modal_Add_Model,,,,,hidden,15000,TRUE,0,never,,"Wait for the Add Model modal's close animation to finish before continuing - confirmed live (feature_MCPMod TC_35) it can stay open/intercepting pointer events for a moment after the commit click (Optional since a fast close means it's already gone by the time we check)",
+12,100,ConfigureDesign,ResultsPage,click,txt_btn_delete0,,,,,,10000,TRUE,0,never,,"Delete the app's default placeholder row (Optional - mirrors feature_BOIN's documented default-row gotcha; only ever present once, harmless no-op on later loop passes)",

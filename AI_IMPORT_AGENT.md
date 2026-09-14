@@ -222,6 +222,35 @@ almost the entire `design.csv` column set — a straight retarget (see `AI_TESTD
 > `*/**/08_diffs/**` / `*/**/09_html_report/**`, module-agnostic as of this fix — don't re-narrow
 > it to a literal module name).
 
+> **Mirroring is not a one-time skim — verify it held, right before you finish.** `feature_MCPMod_Con`
+> (TC_36, imported after `feature_MCPMod` TC_35 was already stable) re-shipped **two bugs TC_35 had
+> already fixed and documented** — a `label` selector on the react-select "Select Test" field (the
+> fix was sitting in this very file's UNWIRED-resolution table, § below), and a leftover `assertValue`
+> on the mislabeled "Test Type" field (TC_35's metadata.csv had already merged it into the real fill
+> and dropped the assert). **Neither printed as `UNWIRED`, neither failed `npm run validate`** — which
+> is exactly why they're dangerous:
+> - **A field can auto-bind "successfully"** to an existing column by id/label match — no `UNWIRED`
+>   line, nothing to prompt a second look — while the *selector strategy* the importer captured is
+>   still wrong (a plain `label` on a custom react-select control, say). Auto-bound proves the column
+>   is right, not that the selector is.
+> - **A field can get the generic `assertValue … "VERIFY selector"` fallback** and the import resolves
+>   it with a fresh, independent guess instead of reusing the reference's already-proven resolution for
+>   the identical recorded id/label — because the deterministic importer has no memory between
+>   features; it regenerates its own default every run even when a sibling already solved this exact
+>   field.
+>
+> So the mirroring in the table above has to be checked, not assumed. **Before you finish** (not just
+> when you start), diff every field against the reference:
+> ```bash
+> grep -n "confirmed live\|VERIFY selector\|renamed from\|collided\|Never recorded\|mislabeled" \
+>   <Module>/feature_<Reference>/02_selectors_repo/selectors.csv \
+>   <Module>/feature_<Reference>/03_metadata/*.csv
+> ```
+> Each hit is a judgment call the reference already made for a specific recorded id/label. For each
+> one, find your new feature's step targeting that same id/label and confirm it got the **same
+> resolution** — not merely a structurally-similar step. This is a mechanical check, not a judgment
+> call, so it isn't optional and doesn't need to be asked about — just run it.
+
 ### 1 — Run the deterministic importer (standalone-capable)
 ```bash
 npm run import-codegen -- <Module> feature_<Name> --tc TC_XX
@@ -288,6 +317,10 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   `DOP(PD)` and `OROP(PD)`.
 
 ### 3 — Wire `UNWIRED` fields & add missing steps *(judgment)*
+- **A reference feature's fix applies even to fields that never show up here.** This section is
+  about the `UNWIRED` list, but a field that auto-binds cleanly (so it's NOT on that list) can still
+  be carrying the wrong selector strategy. If a reference feature exists (§0), the §0 verification
+  pass covers those fields too — don't limit the reference-diff to just the `UNWIRED` lines below.
 - **Resolve every `UNWIRED` line.** The importer already wired each field it could match to an
   existing column by **id or label**; what remains is the `UNWIRED` list. For each one it prints
   the field's **id**, **label**, and **recorded value**. Decide, per field:
@@ -506,6 +539,10 @@ resolved), follow this protocol exactly:
 | a `select` logs **OK** but the field still shows the placeholder ("Select"), then every dependent field reports **"unable to resolve"** | the value matched **no option**, so the type+Enter fallback fired — it logs OK but commits **nothing**, and a wrong **controlling** value silently starves every field it should reveal. Fix the value to a real option; the **recording** is authoritative (e.g. Study Objective is `Two Arm Confirmatory`, not the master's "…Superiority" — that is the design-page *hypothesis*) |
 | a `check`/`uncheck` **never fires** though its column has a value | the `SkipIf` convention doesn't match the column's values. Checkbox columns in the SAME testdata can differ — one `TRUE`/`FALSE`, another `check`/`uncheck`. Gate each on its own convention (`…!=TRUE` vs `…!=check`), or the section it reveals never renders and the next field is "unable to resolve" |
 | an administrative field (`Phase`, Program, Indication) is **absent on this app version** | the project page is app-version-dependent (fields move between General and the post-Study-Objective Plan section). Fields with **no effect on the computed design** should be `Optional=TRUE` so a missing one warns instead of failing the run |
+| a `loopOverData` sub-flow field reports **`field not found`** even though its testdata cell is blank/`N/A` for this row | `${runtime.loop.*}` tokens do **NOT** auto-skip on blank/`N/A` the way `${data.*}` tokens do — gate every field explicitly (§9 below). Proven on `feature_MCPMod` TC_35. |
+| **`Save`/`Save & Compute` stay disabled**, no metadata error, nothing obviously wrong | a **required action was never recorded** — not a wiring gap, a genuinely missing step. Screenshot the live page: the app may show its own banner naming exactly what's missing (e.g. *"Please click 'Calculate' to generate…"*). A recording completing without visible errors does NOT mean every required action was captured — the tester may have skipped one. Proven on `feature_MCPMod` TC_35 (an unrecorded "Calculate" button). |
+| a click **reports success** (no retry warning, no error) but **visibly nothing happens** afterward | before assuming a wiring bug, compare `trace.network` between this run and a PASSING iteration of the same feature (below) — the click may be landing correctly while the app silently blocks on an unrelated async precondition. |
+| a field is wired (no `UNWIRED`, `validate` clean) but behaves like an untouched importer default — a plain `label` selector on a custom control, an unresolved `assertValue … "VERIFY selector"` — on a field a **reference/sibling feature already solved** | the §0 reference-diff wasn't run, or was only run at the start instead of again right before finishing. Auto-bound-by-name is not proof the selector is right. Run §0's `grep` against the reference and compare resolutions field-by-field. Proven on `feature_MCPMod_Con` TC_36 (re-shipped two `feature_MCPMod` TC_35 fixes). |
 
 ### 7 — Scenario-conditional wiring, dialogs & recovering a real `#id` *(judgment — the GADAR cases)*
 
@@ -527,6 +564,13 @@ grep -rohE '\["SELECT",\{[^}]*"id":"[^"]+"' /tmp/tr | grep -oE '"id":"[^"]+"' | 
 ```
 Swap `SELECT` for `INPUT` / `BUTTON` for other controls. This is how `#piecewiseInputMethod`, `#shapeParamDelta`, and `ratioOfPercSurv_Alt_SP` were found with no live browser. The hardened `select` also **prints the option list** on a mismatch — read it before guessing.
 
+**Diagnosing a click that "succeeds" but does nothing** (no retry warning, no error, yet the UI never advances — e.g. a modal that never closes). Same `trace.zip`, but the network log instead of the DOM snapshots. Unzip it, then filter `trace.network` for the app's API domain around the click's timestamp:
+```bash
+unzip -o trace.zip -d /tmp/tr
+grep -o '"url":"[^"]*apis\.[a-z.]*\.com[^"]*"' /tmp/tr/trace.network | sort -u
+```
+Compare a **failing** iteration's trace against a **passing** one of the same feature. If the passing run shows a `POST`/save call right after the click and the failing run shows **none at all**, the click isn't reaching the app's submit handler — it's not a selector problem. Look at what loaded just *before* the click on the failing run: a `GET` returning a `4xx` on some prerequisite resource, followed by nothing, often means the app is silently blocked on a background retry that hasn't finished yet (see the next paragraph). Proven on `feature_MCPMod` TC_35 — an "Add Model" modal that never closed traced back to a `GET 400` on the design's models list, which the app **silently retries and self-heals after ~25s in the background**; iterations that reached "Add Model" before that window closed failed even though the click itself was fine. Fix: a flat `sleep` early in the flow (right after the page that fires the background fetch), long enough to cover the observed retry window, applied unconditionally so it helps regardless of how many steps a given iteration has before reaching the affected action — no DOM signal exists to poll on instead.
+
 ### 8 — Simulation import — the hard cases *(judgment — the GADAR sim)*
 
 The sim runs on the **same page after a green design**, so its Design tab **inherits the computed design**. The recording captures a full re-configuration, but most of it must become *inheritance*, not re-entry. Hard-won rules (proven on GADAR(PD) TC_12, sim green end-to-end; deep detail in memory `gadar-simulation-flow`):
@@ -540,7 +584,11 @@ The sim runs on the **same page after a green design**, so its Design tab **inhe
 
 ### 9 — Repeated-modal / multi-scenario records (`loopOverData`) *(judgment)*
 
-When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`) + a reusable `03_metadata/<name>_block.csv` sub-flow (fills gated `SkipIf ${runtime.loop.<col>}…`, since the blank/`N/A` auto-skip is `${data.*}`-only) + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN`, TC_14).
+When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`, or just `TC_ID`+`IterationID` if the feature only ever adds one record per iteration) + a reusable `03_metadata/<name>_block.csv` sub-flow + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN` TC_14, and `feature_MCPMod` TC_35 for the single-record-per-iteration variant).
+
+> **Two rules that are easy to skip past reading quickly (both bit `feature_MCPMod`):**
+> 1. **`${runtime.loop.<col>}` fields do NOT auto-skip on blank/`N/A`** the way `${data.*}` tokens do. Gate every field yourself — either a type-gate (`SkipIf ${runtime.loop.<typeColumn>}!=<Type>`, when fields are exclusive to one record type) or a value-gate (`SkipIf ${runtime.loop.<col>}==N/A`, when a field is simply optional/shared across types). Skipping this produces `field "X" not found` for whichever fields a given row leaves blank — it looks exactly like a selector bug.
+> 2. **The `loopOverData` step's `ObjectName` must equal the child CSV's own basename** (filename minus `.csv`), not a name you pick or register in `feature.config.json`. `core/loaders/featureLoader.ts`'s `loadTestData` reads **every** CSV in `01_testdata/` and keys `testDataParsed` by basename regardless of `feature.config.json`'s `testdata.files` map — registering the child file there does nothing for this purpose and can mislead you into using the wrong `ObjectName`.
 
 ### 9.1 — Count-agnostic period-table FILLS (`loopPeriods`) — now the importer DEFAULT
 
@@ -794,6 +842,10 @@ what lets it handle a new feature **without destabilising the ones already commi
   value) and approved BEFORE being written** (§3) — the agent never adds or renames a column
   silently, including while resolving `UNWIRED`.
 - [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
+- [ ] **If a reference/sibling feature exists, its judgment-call resolutions were diffed against
+  this feature's — not just structure, the actual resolution** (§0: `grep` the reference for
+  `confirmed live|VERIFY selector|renamed from|collided|Never recorded|mislabeled` and check each
+  hit's field landed the same way here). Run this again right before finishing, not only at the start.
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] **User approval obtained before any live run**; iterations run **one at a time**; on error, analyse then fix by tier — minor metadata/selector fixes **autonomously** (reported), but **testdata** edits and **major/other-file** changes only **with user approval** (§5a).
 - [ ] Each iteration screenshot-verified; blank/`N/A` skipped, valued fields landed.

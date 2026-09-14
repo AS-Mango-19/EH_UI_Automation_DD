@@ -51,7 +51,12 @@ browser.
    **`ProductDecide` "Go/No-Go" features** (any module isn't just `ProductDesign` — see
    `AI_IMPORT_AGENT.md` §0) → `ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an
    interim table) — follow the dedicated Decide-family checklist there, it always needs the same
-   6 fixes.
+   6 fixes. **Then verify the mirroring held, right before you finish** — an auto-bound field (no
+   `UNWIRED`) is NOT proof its selector is correct; `grep` the reference's `selectors.csv`/
+   `metadata.csv` for `confirmed live|VERIFY selector|renamed from|collided|Never recorded|mislabeled`
+   and check your feature resolved each matching field the same way. `feature_MCPMod_Con` shipped
+   with two bugs `feature_MCPMod` had already fixed this way — neither tripped `UNWIRED` or
+   `validate` (`AI_IMPORT_AGENT.md` §0, `IMPORT_LESSONS.md` rule 17).
 7. **Verify with your eyes.** Screenshot-verify every iteration — green ≠ correct (a missing
    baseline is green and proves nothing).
 8. **Never commit secrets.** `.env`, `.auth/`, and raw credentials in recordings stay out of git.

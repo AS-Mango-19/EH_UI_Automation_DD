@@ -71,6 +71,7 @@ judgment. These are the calls that remain.*
 | 14 | **`validate` reports `metadata StepID: StepID must be an integer`** after inserting a new row between two existing StepIDs | **Decimals are only valid in the `Seq` column**, never `StepID` (unlike `Seq`, which can be `53.1`, `53.2`, … to insert without renumbering). To insert metadata rows between e.g. StepID 530 and 540 with no free integer left, renumber the block: use plain integers for the new rows and bump the next existing StepID (and only that one, if there's room after it) rather than giving `StepID` a decimal. | `Seq` is a cosmetic ordering label with no schema check; `StepID` is what the runner sorts and executes by, and its schema requires an integer. Proven on `ProductDecide/feature_DOM` TC_29 — a first-pass insert used `539.2`/`539.4`/`539.6` as StepIDs and validate rejected all three; fixed by using plain 540-542 and moving the pre-existing `click btn_Save` from StepID 540→545. | No |
 | 15 | **`UNWIRED … wire id="collectionName"` on an input-set page** (`inputset.csv <- wire id="collectionName" (recorded value: "Input Set N")`) | Repoint the step's token to the existing `InputSetname` column (`${data.inputset.InputSetname}`) instead of adding a `collectionName` column — **only if `InputSetname` already exists and `collectionName` does not**. If neither exists, ask before adding either. | `collectionName` is the app's DOM id for the input-set-name field; feature testdata in this framework already names that column `InputSetname` by convention (see `ProductDecide/feature_DOM`, `feature_ROP`, etc.) — same field, different header, so it's a rename-the-token fix, not a new-column one. Proven on `ProductDecide/feature_SingleArmSurv` TC_27. | No (once `InputSetname` is confirmed present) |
 | 16 | **`validate` reports `selectors Exact: Expected boolean, received string`** on a row you just hand-added, with NO change to the `Exact` cell itself | Check every hand-typed `Description` cell added in the same edit for an **unquoted internal comma** (e.g. `textbox (period 1, table-completeness)`) — it splits into two CSV fields and shifts every column after it (`Exact` ends up holding the description's tail text instead of a boolean). Fix: remove the comma (use `-` or a space) rather than quoting, to match the file's existing plain-CSV style. | A comma inside an unquoted CSV field is column-shifting, not a schema violation of the field you're being told about — the error surfaces on `Exact` (the last column) but the real defect is upstream in `Description`. Proven on `ProductDecide/feature_SingleMean` TC_28 — 9 hand-added table-completeness selector rows all used a comma in their description and all 9 threw this error simultaneously. | No |
+| 17 [promoted — `AI_IMPORT_AGENT.md` §0/§3/§6, proven on `feature_MCPMod_Con` TC_36] | **A field auto-binds cleanly (no `UNWIRED`) or gets the generic `assertValue … "VERIFY selector"` fallback, AND a stable sibling/reference feature exists for the same family** | Before accepting the importer's default, `grep` the reference's `selectors.csv`/`metadata.csv` for `confirmed live\|VERIFY selector\|renamed from\|collided\|Never recorded\|mislabeled`. If the reference already resolved a step on the same recorded id/label (a non-boilerplate Description), copy **that resolution**, don't re-derive one. Run this diff again right before declaring the import done — not only when you first pick the reference feature. | The deterministic importer has no memory between features: it regenerates its own default every run even when a sibling's judgment layer already solved the identical field, and neither `UNWIRED` nor `validate` will flag it because the field looks fully wired. Auto-bound-by-name proves the *column* is right, not that the *selector* is. Proven on `feature_MCPMod_Con` TC_36: shipped a `label` selector on the react-select "Select Test" field and a leftover `assertValue` on the mislabeled "Test Type" field — both already fixed and documented from `feature_MCPMod` TC_35 one folder over, neither caught by `UNWIRED` or `validate`. | No (mechanical diff, not a judgment call) |
 
 **Runtime (page-behavior) traps** — dropdown-resets-dependent, ungated Add-Period/Add-Interim,
 Unsaved-Changes/credit dialogs, execution-by-StepID ordering, sim "prior parameters too extreme"
@@ -157,6 +158,68 @@ must still complete per-iteration coverage the single recording could not captur
 ---
 
 ## Feature log *(append-only; newest first)*
+
+- **2026-09-14 · `ProductDesign/feature_MCPMod_Con` TC_36 — audited after user report "repeating the same errors we fixed for TC 35"; ITER_01 re-verified green.**
+  A `_Con` (Continuous-endpoint) sibling of `feature_MCPMod` TC_35, imported by mirroring it per §0 —
+  structurally the mirroring worked well (the `loopOverData` SkipIf gating, the `ObjectName`-basename
+  rule, and the 25s background-retry `sleep` all carried over correctly, because those fixes live
+  behind prominent callout boxes in `AI_IMPORT_AGENT.md`/`MULTI_SCENARIO_GUIDE.md`). **But two TC_35
+  fixes that were NOT given the same visual prominence got silently re-broken**, invisible to both
+  `UNWIRED` and `npm run validate`:
+  **(1)** StepID 370 ("Select Test") used a plain `label` selector — the exact pre-TC_35 default —
+  instead of TC_35's `.react-select__input-container` fix (documented, but buried in §3's
+  UNWIRED-resolution reference table, never called out as a standalone rule).
+  **(2)** a leftover `assertValue obj_Test_Type` step (StepID 420) re-appeared, asserting a
+  never-verified `label:has-text("Test Type")` selector against `design.csv`'s `testtype` column —
+  the exact importer default TC_35 had already concluded was a mislabeled duplicate of the real
+  `#type1Error` field and removed. Also found (cosmetic, no functional impact): a dead `btn_Yes` row
+  from the same importer selector-naming-collision pattern TC_35 hit, and a dead duplicate
+  `txt_ResultName,Page,...` row — both orphaned, never referenced by any metadata step, left over
+  from raw codegen output.
+  **[PROMOTED] New standing rule 17 + `AI_IMPORT_AGENT.md` §0/§3/§6/Guardrails**: mirroring a
+  reference feature must be **verified, not assumed** — right before finishing, `grep` the
+  reference's selectors/metadata for judgment-call markers (`confirmed live`, `VERIFY selector`,
+  `renamed from`, `collided`, `Never recorded`, `mislabeled`) and diff each hit's resolution against
+  the new feature's equivalent field, even fields that auto-bound cleanly. **Meta-lesson for how this
+  ledger and the playbook get written**: the fixes that transferred cleanly were the ones with a
+  visible callout box; the ones that silently regressed were correct-but-buried in prose/tables.
+  Prefer callouts/standalone rules over reference-table rows for anything that must survive into a
+  sibling import.
+  Fixed in place: StepID 370 repointed to `ddl_react_select_input_container` (+ new selectors.csv
+  row), StepID 420 removed, `obj_Test_Type`/`btn_Yes`/duplicate-`txt_ResultName` selector rows
+  removed, `btn_Calculate_Allocations` added alongside `btn_Calculate` to match TC_35's naming, and
+  the carried-over fixes' terse descriptions enriched to match TC_35's rationale (self-documentation
+  for the next reader). Re-validated clean (`[PASS]`, 8 warnings — one new expected "testtype unused"
+  warning, matching TC_35's own documented pattern) and re-ran ITER_01 live: StepID 370 passed with no
+  fallback warning, StepID 420 no longer present, `BASELINE_CREATED`, 11 result tables / 133 cells
+  captured. ITER_02-08 remain untouched/unrun (out of scope for this audit — `project.csv` still has
+  `Run=TRUE` on ITER_01 only, as found).
+
+- **2026-09-14 · `ProductDesign/feature_MCPMod` TC_35 — imported + all 8 iterations stabilized (dose-finding, candidate models via `loopOverData`).**
+  A genuinely different shape from every prior import this ledger covers: multiple-comparison-procedure dose-finding,
+  with a growing Arms table (flat `armName-N`/`doseLevel-N` columns in `project.csv`, same convention as `feature_BOIN`'s
+  dose table) AND a repeated candidate-model "Add Model" modal (one model per iteration here, so `design_model.csv` is
+  one row per iteration — the `loopOverData` single-record variant of `MULTI_SCENARIO_GUIDE.md`'s pattern).
+  **[PROMOTED] Two corrections copied straight into the durable docs** (not just this ledger) since they're
+  general-purpose, not MCPMod-specific: `AI_IMPORT_AGENT.md` §9's callout box and `MULTI_SCENARIO_GUIDE.md` §4/§7 —
+  **(1)** `${runtime.loop.*}` tokens never auto-skip on blank/`N/A` the way `${data.*}` tokens do (every field needs
+  its own `SkipIf`, type- or value-gated) — this was already implied by the guide's own BOIN example but not stated
+  as a standalone rule, and cost a full debug cycle here. **(2)** a `loopOverData` step's `ObjectName` must equal the
+  child CSV's own basename — `loadTestData` keys `testDataParsed` by filename regardless of `feature.config.json`
+  registration, so a "logical" name like `model` (vs the real `design_model`) silently finds 0 rows.
+  **Two real app-behavior discoveries, not wiring bugs** (now in `AI_IMPORT_AGENT.md` §6/§7's diagnose material):
+  **(3)** an entire required action (a "Calculate" button for the Optimized-Allocations path) was absent from the
+  recording — Save/Save & Compute stayed disabled with no metadata error until it was added by hand, discovered from
+  the app's own on-screen banner, not from any log. **(4)** a background models-list fetch 400s on page load and
+  silently self-heals ~25s later; iterations reaching "Add Model" before that window closed had the click land
+  correctly (confirmed via Playwright's own actionability checks — no retry warning) yet produce **zero** network
+  activity — diagnosed by comparing `trace.network` between a passing and a failing iteration for the same feature
+  (new technique, now documented in `AI_IMPORT_AGENT.md` §7), not by guessing. Fixed with an unconditional `sleep`
+  early in the flow (no pollable DOM signal exists for this one). Also fixed: an importer selector-naming collision
+  (two different recorded interactions auto-named `btn_Yes`, and the LATER one's selector silently won — the real
+  "Add Model" button, not a "Yes" confirm — leaving the actual "Yes" dialog-confirm with no selector at all) and a
+  duplicate `ed50` testdata header (two model families' fields both auto-named `ed50`; safe to merge since no row
+  ever populated both).
 
 - **[PROMOTED] The whole `ProductDecide` "Decide" checklist (casing check → `collectionName` →
   `SelectTask` → results-grid mirror → `Add_Interim` gating → CSV-comma gotcha) is now copied into
