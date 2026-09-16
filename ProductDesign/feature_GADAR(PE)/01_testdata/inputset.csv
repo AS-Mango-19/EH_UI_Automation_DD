@@ -1,0 +1,8 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_12,ITER_01,Set 1,Design,
+TC_12,ITER_02,Set 2,Design,
+TC_12,ITER_03,Set 3,Design,
+TC_12,ITER_04,Set 4,Design,
+TC_12,ITER_05,Set 5,Design,
+TC_12,ITER_06,Set 6,Design,
+TC_12,ITER_07,Set 7,Design,

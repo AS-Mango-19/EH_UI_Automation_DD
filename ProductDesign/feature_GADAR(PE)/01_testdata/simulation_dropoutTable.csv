@@ -1,0 +1,11 @@
+TC_ID,IterationID,PeriodIndex,dropoutHazardRateControl,dropoutHazardRateTreatment,dropoutStartingAtTime,dropoutByTime,probOfdropoutControl,probOfdropoutTreatment
+TC_12,ITER_01,0,0.0325,0.088,,N/A,N/A,N/A
+TC_12,ITER_01,1,0.0588,0.105,1.2,N/A,N/A,N/A
+TC_12,ITER_02,0,N/A,N/A,,2.5,0.6558,0.811
+TC_12,ITER_02,1,N/A,N/A,N/A,6.25,0.9458,0.9888
+TC_12,ITER_03,0,0.711,0.755,,N/A,N/A,N/A
+TC_12,ITER_03,1,0.625,0.711111,2.5,N/A,N/A,N/A
+TC_12,ITER_04,0,N/A,N/A,,3.2,0.68565,0.81253
+TC_12,ITER_04,1,N/A,N/A,N/A,6.6,0.948194,0.98654
+TC_12,ITER_06,0,0.06325,0.096325,,N/A,N/A,N/A
+TC_12,ITER_06,1,0.08965,0.05568,3.25,N/A,N/A,N/A

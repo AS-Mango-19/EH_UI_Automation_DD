@@ -1,0 +1,36 @@
+{
+  "feature": "DOM(PD)",
+  "module": "ProductDesign",
+  "serial": true,
+  "reuseAuthState": false,
+  "testdata": {
+    "format": "csv",
+    "files": {
+      "inputset": "inputset.csv",
+      "project": "project.csv",
+      "design": "design.csv"
+    },
+    "joinKey": [
+      "TC_ID",
+      "IterationID"
+    ]
+  },
+  "simulation": {
+    "pollObject": "lbl_RunStatus",
+    "successText": "Completed",
+    "failureText": "Failed",
+    "pollIntervalMs": 5000,
+    "maxWaitMs": 900000
+  },
+  "resultsExtraction": {
+    "mode": "domTable",
+    "domTableObject": "tbl_Results",
+    "downloadTrigger": "btn_ExportResults",
+    "outputFileName": "results_${TC_ID}_${IterationID}.csv",
+    "columnMap": {},
+    "sortBy": []
+  },
+  "cleanup": {
+    "deleteCreatedProjects": true
+  }
+}

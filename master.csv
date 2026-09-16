@@ -35,3 +35,5 @@ TC_34,ProductDecide,regression,Two Arm Confirmatory,TwoArmSurv,,chromium,01_test
 TC_35,ProductDesign,regression,Dose Finding,MCPMod,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_36,ProductDesign,regression,Dose Finding,MCPMod_Con,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_37,ProductDesign,regression,Two Arm Confirmatory,Dual_LogrankLogrank,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_38,ProductDesign,regression,Two Arm Confirmatory,Dual_LogrankDOP,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_39,ProductDesign,regression,Two Arm Confirmatory,Dual_DOPLogrank,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
