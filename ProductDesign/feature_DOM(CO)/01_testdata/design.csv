@@ -1,0 +1,5 @@
+TC_ID,IterationID,Hypothesis,allocationRatio,Computed Parameter,Sample Size,Power,Test Type,type1Error,inputMethod,lowerEquivalenceLimit,upperEquivalenceLimit,nonInf_margin,nonInf_differenceOfMeans,meanControl,meanTreatment,equi_differenceOfMeans,standardDeviationType,standardDeviationDiff,sqrtMSE,testStatistic,ResultName
+TC_40,ITER_01,Superiority,1.1,Power,101,Computed,2-Sided,0.026,Individual Means,N/A,N/A,N/A,N/A,2.1,2.7,N/A,2,1.1,N/A,t,Result - Set1
+TC_40,ITER_02,Noninferiority,1.2,Sample Size,Computed,0.88,1-Sided,0.027,Difference of Means,N/A,N/A,1.8,0.77,N/A,N/A,N/A,1,N/A,1.1,t,Result - Set2
+TC_40,ITER_03,Equivalence,1.32,Type 1 Error,102,0.9,2-Sided,Computed,Difference of Means,0.45,4.6,N/A,N/A,N/A,N/A,0.76,1,N/A,N/A,t,Result - Set3
+TC_40,ITER_04,Equivalence,1,Difference of Means,100,0.9,2-Sided,0.025,Difference of Means,0.4,4.5,N/A,N/A,N/A,N/A,Computed,1,N/A,1,t,Result - Set4
