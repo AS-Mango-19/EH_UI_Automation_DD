@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,CreateInputSet,sampleSize,randomizationMethod,Allocation Ratio�,Noninferiority Margin,criticalPoint,lowerEquivalenceLimit,upperEquivalenceLimit,upperCriticalPoint,lowerCriticalPoint,meanControl,meanTreatment,sqrtOfMseLog,Number of Simulations Run,Random Number Seed,Fixed Seed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Sim Result Name
+TC_41,ITER_01,TRUE,Sim 1,102,Complete Randomized Design,1.1,N/A,N/A,N/A,N/A,2.26019,Computed,2.12,2.75,0.6,10000,Fixed,101,checked,checked,2,Result - Sim 1
+TC_41,ITER_02,TRUE,Sim 2,19,Fixed Allocation,1.2,1.77,2.079607,N/A,N/A,N/A,N/A,1,0.76,0.65,10000,Fixed,101,checked,checked,2,Result - Sim 2
+TC_41,ITER_03,TRUE,Sim 3,103,Complete Randomized Design,1.23,N/A,N/A,0.46,2.55,2.03555,Computed,1.1,0.77,0.68,10000,Fixed,101,checked,unchecked,N/A,Result - Sim 3
+TC_41,ITER_04,TRUE,Sim 4,100,Fixed Allocation,1,N/A,N/A,0.4,1.88,1.984467,Computed,1,1.4204019,0.6,10000,Fixed,101,checked,checked,2,Result - Sim 4

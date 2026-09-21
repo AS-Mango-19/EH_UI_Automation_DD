@@ -1,0 +1,5 @@
+TC_ID,IterationID,Hypothesis,allocationRatio,Computed Parameter,Sample Size,Power,Test Type,type1Error,inputMethod,lowerEquivalenceLimit,upperEquivalenceLimit,nonInf_margin,nonInf_ratioOfMeans,equi_ratioOfMeans,meanControl,meanTreatment,sqrtOfMseLog,testStatistic,ResultName
+TC_41,ITER_01,Superiority,1.1,Power,101,Computed,2-Sided,0.026,Individual Means,N/A,N/A,N/A,N/A,N/A,2.1,2.7,0.6,t,Result - Set1
+TC_41,ITER_02,Noninferiority,1.2,Sample Size,Computed,0.88,1-Sided,0.027,Ratio of Means,N/A,N/A,0.4,0.77,N/A,N/A,N/A,0.55,t,Result - Set2
+TC_41,ITER_03,Equivalence,1.32,Type 1 Error,102,0.9,2-Sided,Computed,Ratio of Means,0.55,1.33,N/A,N/A,N/A,N/A,N/A,0.66,t,Result - Set3
+TC_41,ITER_04,Equivalence,1,Type 1 Error,100,0.9,2-Sided,Computed,Ratio of Means,0.4,1.88,N/A,N/A,N/A,N/A,N/A,0.6,t,Result - Set4
