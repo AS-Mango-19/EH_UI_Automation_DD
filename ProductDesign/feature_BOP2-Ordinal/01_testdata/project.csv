@@ -1,0 +1,7 @@
+TC_ID,IterationID,Run,Project Name,Time Unit,Start Date,Study Objective,Phase,Target Population,Treatment Arm,Priority,Endpoint Name,Endpoint Type
+TC_42,ITER_01,TRUE,Project BOP2,Day,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
+TC_42,ITER_02,TRUE,Project BOP2,Week,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
+TC_42,ITER_03,TRUE,Project BOP2,Day,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
+TC_42,ITER_04,TRUE,Project BOP2,Week,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
+TC_42,ITER_05,TRUE,Project BOP2,Day,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
+TC_42,ITER_06,TRUE,Project BOP2,Day,9/23/2026,One Arm Exploratory /,2,Adult,EXP,Primary,EP1,Categorical
