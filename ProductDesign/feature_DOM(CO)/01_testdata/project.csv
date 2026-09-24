@@ -1,5 +1,5 @@
 TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,Control Arm,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,Follow-up Time
-TC_40,ITER_01,FALSE,AutoProj_DOM(CO),Week,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
+TC_40,ITER_01,TRUE,AutoProj_DOM(CO),Week,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
 TC_40,ITER_02,TRUE,AutoProj_DOM(CO),Month,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
-TC_40,ITER_03,FALSE,AutoProj_DOM(CO),Year,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
-TC_40,ITER_04,FALSE,AutoProj_DOM(CO),Day,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,1
+TC_40,ITER_03,TRUE,AutoProj_DOM(CO),Year,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
+TC_40,ITER_04,TRUE,AutoProj_DOM(CO),Day,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,1

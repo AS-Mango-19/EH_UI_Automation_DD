@@ -1,8 +1,8 @@
 {
   "feature": "BOP2-Eff-Tox",
   "module": "ProductDesign",
-  "serial": false,
-  "reuseAuthState": true,
+  "serial": true,
+  "reuseAuthState": false,
   "testdata": {
     "format": "csv",
     "files": {

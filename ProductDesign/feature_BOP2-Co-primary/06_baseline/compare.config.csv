@@ -1,1 +1,8 @@
 ColumnName,IsKey,Compare,DataType,AbsTolerance,RelTolerance,RoundTo,Normalize,Notes
+TableName,TRUE,FALSE,string,,,,trim,Row identity
+RowLabel,TRUE,FALSE,string,,,,trim,Row identity
+ColumnName,TRUE,FALSE,string,,,,trim,Row identity
+Value,FALSE,TRUE,string,,,,trim,The compared cell
+RunID,FALSE,FALSE,string,,,,,Volatile
+Timestamp,FALSE,FALSE,string,,,,,Volatile
+ProjectID,FALSE,FALSE,string,,,,,Volatile

@@ -40,7 +40,7 @@ ddl_Input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codeg
 txt_Mean_Control_c,ResultsPage,css,#meanControl,,,FALSE,textbox from codegen,FALSE
 txt_Mean_Treatment_t,ResultsPage,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
 ddl_input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
-txt_Ratio_of_Means_t_c,ResultsPage,css,#ratioOfMeans,,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Means_t_c,ResultsPage,css,#equi_ratioOfMeans,,,FALSE,textbox from codegen,FALSE
 ddl_hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
 txt_Noninferiority_Margin_0,ResultsPage,css,#nonInf_margin,,,FALSE,textbox from codegen,FALSE
 txt_non_Inf_ratio_Of_Means,ResultsPage,css,#nonInf_ratioOfMeans,,,FALSE,textbox from codegen,FALSE
