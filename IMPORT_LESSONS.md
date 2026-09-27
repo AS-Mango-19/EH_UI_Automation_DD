@@ -72,6 +72,8 @@ judgment. These are the calls that remain.*
 | 15 | **`UNWIRED … wire id="collectionName"` on an input-set page** (`inputset.csv <- wire id="collectionName" (recorded value: "Input Set N")`) | Repoint the step's token to the existing `InputSetname` column (`${data.inputset.InputSetname}`) instead of adding a `collectionName` column — **only if `InputSetname` already exists and `collectionName` does not**. If neither exists, ask before adding either. | `collectionName` is the app's DOM id for the input-set-name field; feature testdata in this framework already names that column `InputSetname` by convention (see `ProductDecide/feature_DOM`, `feature_ROP`, etc.) — same field, different header, so it's a rename-the-token fix, not a new-column one. Proven on `ProductDecide/feature_SingleArmSurv` TC_27. | No (once `InputSetname` is confirmed present) |
 | 16 | **`validate` reports `selectors Exact: Expected boolean, received string`** on a row you just hand-added, with NO change to the `Exact` cell itself | Check every hand-typed `Description` cell added in the same edit for an **unquoted internal comma** (e.g. `textbox (period 1, table-completeness)`) — it splits into two CSV fields and shifts every column after it (`Exact` ends up holding the description's tail text instead of a boolean). Fix: remove the comma (use `-` or a space) rather than quoting, to match the file's existing plain-CSV style. | A comma inside an unquoted CSV field is column-shifting, not a schema violation of the field you're being told about — the error surfaces on `Exact` (the last column) but the real defect is upstream in `Description`. Proven on `ProductDecide/feature_SingleMean` TC_28 — 9 hand-added table-completeness selector rows all used a comma in their description and all 9 threw this error simultaneously. | No |
 | 17 [promoted — `AI_IMPORT_AGENT.md` §0/§3/§6, proven on `feature_MCPMod_Con` TC_36] | **A field auto-binds cleanly (no `UNWIRED`) or gets the generic `assertValue … "VERIFY selector"` fallback, AND a stable sibling/reference feature exists for the same family** | Before accepting the importer's default, `grep` the reference's `selectors.csv`/`metadata.csv` for `confirmed live\|VERIFY selector\|renamed from\|collided\|Never recorded\|mislabeled`. If the reference already resolved a step on the same recorded id/label (a non-boilerplate Description), copy **that resolution**, don't re-derive one. Run this diff again right before declaring the import done — not only when you first pick the reference feature. | The deterministic importer has no memory between features: it regenerates its own default every run even when a sibling's judgment layer already solved the identical field, and neither `UNWIRED` nor `validate` will flag it because the field looks fully wired. Auto-bound-by-name proves the *column* is right, not that the *selector* is. Proven on `feature_MCPMod_Con` TC_36: shipped a `label` selector on the react-select "Select Test" field and a leftover `assertValue` on the mislabeled "Test Type" field — both already fixed and documented from `feature_MCPMod` TC_35 one folder over, neither caught by `UNWIRED` or `validate`. | No (mechanical diff, not a judgment call) |
+| 18 [promoted — `AI_IMPORT_AGENT.md` §9.2, proven on `feature_Dual_LogrankLogrank` TC_37 and `feature_Dual_LogrankDOP` TC_38] | **A dual-endpoint interim/boundary table renders as ONE table with two visual columns sharing a single row-index namespace** (`boundary.<n>.ep1*`/`ep2*`), with a "Synchronize Interims" (or similar) select deciding which endpoint is primary/editable vs secondary/`Determined` — and that select can be **blank** in testdata, silently defaulting live from a derived "Winning Condition" field you can't reliably predict from other testdata codes | Screenshot-verify the live default mode per iteration rather than inferring it. Wire the row-growth `reconcilePeriodTable` calls' **button label** and **countField** per mode — the secondary-side Add button's label flips with the primary endpoint (`Add Interim to EP2` under EP1-primary vs `Add Interim to EP1` under EP2-primary; no such button exists for the currently-primary side). For countField: **don't pick one field across every iteration sharing the metadata** — a single Winning Condition can suppress a checkbox column entirely (all-`N/A`) for exactly one iteration while every other iteration needs that same checkbox as its countField, and swapping to a different field to fix that one breaks the others (proven on TC_38, where `ep1EfficacyCheck` worked for 5 of 6 EP1-primary iterations but was `N/A` everywhere on the 6th, and switching to `AnalysisSpacingInfo` broke a different, previously-fine iteration whose `AnalysisSpacingInfo` is genuinely `N/A`). Instead **run two `reconcilePeriodTable` calls back-to-back on the same gate, one per candidate countField** — the tool no-ops once its own target is met, so whichever field is actually populated for a given iteration does the growing and the other call is a guaranteed no-op. The secondary-only Add button **appends a new row, it does not convert an existing `Determined` row** — don't assume the extra value lands at the next sequential `PeriodIndex`; screenshot-verify which row actually went editable. Two "keep Analysis Info same as other endpoint" checkboxes can exist with **different DOM ids** depending on which endpoint is primary, and neither renders at all when the Winning Condition is a "both endpoints" style value (not single-endpoint) — gate both as separate `check`/`uncheck` pairs and let testdata's `N/A` pick the right one. **Gate the DEFAULT-mode reconcile call on `SkipIf …==Based on EP2` (skip only when EXPLICITLY the other mode), never on `!=Based on EP1`** — a testdata cell that means "not explicitly set" can be an empty string OR the literal string `N/A` (both seen across iterations of the SAME feature), and `!=Based on EP1` demands an exact string match that neither blank nor `"N/A"` satisfies, silently skipping the reconcile for every iteration relying on the live default. Proven on TC_39 ITER_01: `syncInterims="N/A"` (literal), the metadata's only EP1-primary reconcile call was gated `!=Based on EP1`, so it never fired and the boundary table stayed at its default 1 row against a testdata target of 3 — passed `validate` and even passed on OTHER iterations (ITER_06 happened to only need 1 row, masking the gap) until an iteration needing more than the default surfaced it. Fixed by adding a second, idempotent call on the safe `==Based on EP2` gate. **Also: per-period checkbox `check`/`uncheck` steps must be value-gated on their OWN field (`SkipIf ${data...fieldName}!=check`/`!=uncheck`), never on a Winning-Condition/mode field alone** — a mode-only gate can correctly decide an iteration's checkbox SHOULD be interacted with in general, while that specific PERIOD still has no data at all for it (e.g. an iteration with no boundary row whatsoever), producing a `locator.check: Timeout` instead of a clean skip. Proven on TC_39 ITER_08 (no boundary row at all): steps gated only on `${winning-condition-select}!=At least EP2` tried to check a period-1/2 checkbox that doesn't exist; fixed by switching to the field's own value gate, matching every other checkbox step in the same file. | Every one of these was a genuine live-app discovery, not a guessable convention, and each one produced a distinct, confusing failure (`field is disabled but testdata requires a value`, `locator.check: Timeout … waiting for #keep…`, `no "Add Interim to EP2" button found`, an orphan unfilled row after reconcile, a default row count silently never reconciled). Proven across 8 iterations of `feature_Dual_LogrankLogrank` TC_37, 2026-09-22; re-proven (countField refinement) across 8 iterations of `feature_Dual_LogrankDOP` TC_38, 2026-09-23; and re-proven again (blank-vs-`"N/A"` gate + checkbox value-gating refinements) across 8 iterations of `feature_Dual_DOPLogrank` TC_39, 2026-09-27 — see feature log entries for the full diagnostic trails. | Yes — every testdata correction in this family (which field owns a row, which value moves where) was confirmed with the user against a live screenshot/DevTools capture before editing, never guessed. |
+| 19 [promoted — `AI_IMPORT_AGENT.md` §9.2, proven on `feature_Dual_LogrankDOP` TC_38] | **(a)** An iteration fails at a step unrelated to anything you changed, immediately after a DIFFERENT iteration failed in the same serial run. **(b)** A `compareWithBaseline` step reports `VALUE_MISMATCH` FAIL against an iteration's EXISTING (not freshly-created) baseline, right after you fixed a real bug in shared metadata | **(a)** Don't debug the later iteration's own steps first — fix the earlier iteration's failure, then re-run the two together in isolation (`Run=TRUE` on just that pair) to confirm the later one was only a cascade (a crashed iteration can leave the shared browser session in a state that breaks the next iteration's fresh start, e.g. `field not found` on its very first fill). **(b)** Don't assume the mismatch means your fix is wrong — screenshot-verify the current run's live design state against testdata directly first. If it now correctly matches testdata (it usually does, when the fix was for a real bug), the OLD baseline was captured from a broken prior state and is simply stale: delete `06_baseline/<env>/baseline_<TC>_<ITER>.csv` + its `.meta.json` and re-run to regenerate it. | **(a)** Proven on TC_38: ITER_04 failed with `field "txt_collection_Name" not found` at StepID 310 (the very first input-set fill) in a full-suite run, but had passed cleanly seconds earlier on its own — the true cause was ITER_03 crashing on the countField bug (rule 18) immediately before it; fixing ITER_03 and re-running the pair together made both pass. **(b)** Proven on TC_38 ITER_01/ITER_02: after fixing the boundary reconcile, both failed against baselines captured before this session (5 and 1 value mismatches) — the diff showed the old baseline was missing a real testdata value entirely (`HR (1.25, 1)` expected vs the testdata-correct `HR (1.25, 1.658)` actual) confirming the baseline, not the fix, was wrong. | **(b)** Yes — deleting/regenerating a baseline discards the previous regression reference, so confirm with the user before doing it, same as any other baseline change. **(a)** No — re-running an isolated pair is non-destructive. |
 
 **Runtime (page-behavior) traps** — dropdown-resets-dependent, ungated Add-Period/Add-Interim,
 Unsaved-Changes/credit dialogs, execution-by-StepID ordering, sim "prior parameters too extreme"
@@ -158,6 +160,128 @@ must still complete per-iteration coverage the single recording could not captur
 ---
 
 ## Feature log *(append-only; newest first)*
+
+- **2026-09-27 · `ProductDesign/feature_Dual_DOPLogrank` TC_39 — Copilot handoff resumed and stabilized end-to-end; all 8 iterations PASS.**
+  A third dual-endpoint sibling (EP1=Difference of Proportions, EP2=Logrank — the mirror of TC_38's
+  EP1/EP2 assignment), continued from ITER_01–04 a teammate had stabilized in Copilot. Copilot's
+  metadata for this feature was noticeably more elaborate than TC_38's handoff (multiple
+  `reconcilePeriodTable` calls already combining `syncInterims`- and `winning-condition-select`-based
+  gates, evidently drawing on the by-then-updated `AI_IMPORT_AGENT.md` §9.2), but two gate-direction
+  bugs remained, both invisible to `npm run validate` and to ITER_01–04/05/06 (which didn't happen to
+  exercise them) until a broader iteration set did:
+  1. **The EP1-primary DEFAULT reconcile call was gated on the wrong string.** It used
+     `SkipIf ${syncInterims}!=Based on EP1` (only fires when `syncInterims` is the EXACT string
+     `"Based on EP1"`), but a "not explicitly set" cell in this testdata could be either an empty
+     string OR the literal string `"N/A"` — neither satisfies that exact match. ITER_01
+     (`syncInterims="N/A"`) silently never grew its boundary table past the default 1 row (target 3);
+     ITER_06 (`syncInterims=""`, blank) happened to only need 1 row, masking the same gap until ITER_01
+     exposed it. Fixed by adding a second, idempotent reconcile call gated the proven-safe way
+     (`SkipIf …==Based on EP2` — skip only when EXPLICITLY the other mode), matching the TC_37/TC_38
+     pattern exactly.
+  2. **Per-period checkbox steps gated on Winning Condition alone, not the field's own value.** Several
+     `check`/`uncheck` pairs were gated only on `${winning-condition-select}!=At least EP2`, with no
+     fallback to the period's own data. ITER_08 (a fixed/no-interim design with NO boundary row at
+     all, same shape as TC_38's ITER_08) has `winning-condition-select=At least EP2`, so the gate let
+     the step through — straight into a `locator.check: Timeout` on a checkbox that doesn't exist for
+     an iteration with zero boundary periods. Fixed by switching to the field's own value gate
+     (`SkipIf ${data...}!=check`/`!=uncheck`), matching every other checkbox step already in the file.
+  Also reused the already-known TC_38-ITER_07-style fix directly (a reconcile call using
+  `ep2AnalysisSpacingInfo` for the explicit-`Based on EP2` case, since that mode's boundary checkboxes
+  are all `N/A` here too) — no rediscovery needed, applied from the ledger on the first pass.
+  Two full-suite runs were interrupted by the user closing the browser mid-run (HEADLESS=false, watched
+  runs) — both times produced a cascade of `page.goto: Target page, context or browser has been closed`
+  across every iteration after the closure point; correctly recognized as operator interruption, not a
+  regression, confirmed by simply re-running.
+  **[PROMOTED] `IMPORT_LESSONS.md` rule 18 extended (2 new refinements)**: the blank-vs-literal-`"N/A"`
+  gate-string trap, and the checkbox-steps-need-their-own-value-gate rule — both written generally
+  enough to apply to any dual-endpoint feature's boundary metadata, not just this one.
+
+- **2026-09-23 · `ProductDesign/feature_Dual_LogrankDOP` TC_38 — Copilot handoff resumed and stabilized end-to-end; all 8 iterations PASS.**
+  A sibling of `feature_Dual_LogrankLogrank` TC_37 (same dual-endpoint shared-row-index boundary
+  table, EP1=Logrank/EP2=Difference of Proportions instead of EP1/EP2 both Logrank), continued from
+  a partial import a teammate had started in GitHub Copilot but couldn't finish there (ITER_01/02
+  were reported "already stabilized" with existing baselines; the rest were untouched).
+  **Auditing the handed-off metadata against `npm run validate` and the TC_37 §9.2 pattern surfaced
+  gaps the prior session had missed** (none of these tripped `validate` as hard errors, only WARNs):
+  a whole missing checkbox variant (`keepAnalysisInfoForEP2SameAsEP1` had no step at all — only its
+  EP2-primary counterpart was wired), an un-tokened `click btn_Select_Task` (fires but selects
+  nothing without `${data.inputset.SelectTask}`), a blank enrollment cell that should have been
+  `N/A`, and `ep1InputMethodTable` wired only through period 2 via a single hand-counted `Add Piece`
+  click (same bug class as TC_37 — one iteration needed period 4, another period 6) — replaced with
+  the proven mode-gated `reconcilePeriodTable` pair, extended through period 6.
+  **New bug class not seen on TC_37 — same shared boundary-reconcile metadata needed OPPOSITE
+  countFields for different iterations:** `ep1EfficacyCheck` (the field that worked for
+  5 of 6 EP1-primary iterations, since it stays real even when EP1 is the `Determined` side) was
+  `N/A` on every row for exactly one iteration, because that iteration's Winning Condition ("At
+  least EP1") renders no EP1 efficacy/futility checkboxes at all. The straightforward "swap the
+  countField" fix (proven on TC_37 ITER_07) broke a DIFFERENT, previously-working iteration whose
+  `AnalysisSpacingInfo` is genuinely `N/A` instead. Resolved by running BOTH candidate-countField
+  `reconcilePeriodTable` calls back-to-back on the same gate rather than choosing one —
+  `reconcilePeriodTable` no-ops once its own target is met, so this needed no per-iteration branching.
+  Same fix applied a second time to the EP2-primary "Both" call for a different iteration whose
+  boundary checkboxes were ALL `N/A` (only `AnalysisSpacingInfo` carried real values), mirroring
+  TC_37 ITER_07's exact bug.
+  Two straightforward data-entry corrections (same class as a TC_37 finding): a value in
+  `ep1HazardRateControl` instead of `ep1CumPercSurvivalControl` for a Cumulative % Survival
+  iteration, twice (once flagged mid-run, once pre-emptively recognized from the TC_37 precedent and
+  confirmed in one round-trip).
+  **Two full-suite runs surfaced process lessons, not feature bugs** — a cascading failure (a crashed
+  iteration broke the very next iteration's fresh start in the same serial run; fixed the real bug
+  and re-ran the pair to confirm) and two stale pre-existing baselines (captured before this
+  session's fixes, missing real testdata values; screenshot-verified the corrected design was right,
+  then deleted and regenerated both baselines with the user's confirmation).
+  **[PROMOTED] Standing rule 19 (new) + rule 18 extended + `AI_IMPORT_AGENT.md` §9.2**: the
+  idempotent-dual-countField-call technique, and the two full-suite diagnostic patterns
+  (cascading failures, stale-baseline mismatches).
+
+- **2026-09-22 · `ProductDesign/feature_Dual_LogrankLogrank` TC_37 — imported, wired, and stabilized end-to-end; all 8 iterations PASS.**
+  A structurally novel "Dual Endpoint" Logrank-Logrank design: two endpoints (EP1, EP2), each with its
+  own boundary/interim setup, sharing ONE physical boundary table via a shared row-index namespace
+  (`boundary.<n>.ep1*`/`ep2*`) — see **[PROMOTED] standing rule 18 + `AI_IMPORT_AGENT.md` §9.2** for
+  the full reusable pattern. Also two InputMethodTable sections (`ep1InputMethodTable`/
+  `ep2InputMethodTable`), each rendering a different field set per the shared `inputMethod` column
+  (Hazard Rate / Median Survival Times / Cumulative % Survival) — handled with two mode-gated
+  `reconcilePeriodTable` calls per endpoint (`SkipIf ${data.design.inputMethod}!=<mode>`), same
+  mechanism as the boundary table.
+  **Chain of real bugs found and fixed, in order:**
+  (1) Hand-counted "click Add-X N times" gating (an `interimSource`=`Both`/`EP2Only` testdata column,
+  devised early because `SkipIf` can't express compound conditions) assumed a fixed default row count
+  that turned out wrong on more than one iteration — replaced entirely with `reconcilePeriodTable`
+  (already proven on `enrollmentTable`), which reconciles live-vs-target and needs no default-count
+  assumption. The `interimSource` column became obsolete and was removed once the boundary table also
+  moved to this mechanism.
+  (2) The boundary table's `Final` row shares the same disabled-checkbox id pattern as real interim
+  rows, inflating `reconcilePeriodTable`'s live count by 1 and causing under-click (one iteration never
+  grew past its first row) — fixed with the already-documented `excludeDisabled=true` flag
+  (`customSteps.ts` literally names "the East-Horizon GSD boundary table" in its own doc comment for
+  this exact case).
+  (3) Two DIFFERENT "keep Analysis Info same as other endpoint" checkboxes exist
+  (`#keepAnalysisInfoForEP2SameAsEP1` vs `#keepAnalysisInfoForEP1SameAsEP2`) depending on which
+  endpoint the (sometimes-blank, live-defaulted) "Synchronize Interims" select resolves to as primary
+  — confirmed via user DevTools screenshots on two different iterations landing in each mode.
+  (4) The secondary-side "Add Interim to `<X>`" button's label flips with the primary endpoint
+  (`…to EP2` vs `…to EP1`) and simply doesn't exist for the currently-primary side — a hand-picked
+  button label that worked for EP1-primary mode threw `no "Add Interim to EP2" button found` under
+  EP2-primary mode.
+  (5) On the one iteration needing an EP1-side extra row (EP2-primary + `Planned End of Trial=Full Info
+  for both endpoints` — confirmed live to be the mirror of the already-known EP1-primary+Full-Info-both
+  → EP2-gets-the-extra-row case), the checkbox-based `reconcilePeriodTable` countField couldn't
+  distinguish "EP2's own row" from "EP1's extra row" because EP2's checkbox stayed real/checked on
+  BOTH — switched countField to `AnalysisSpacingInfo` itself (`excludeDisabled=true`), which genuinely
+  reads `N/A` wherever a side doesn't own the row.
+  (6) `Add Interim to EP1` turned out to APPEND a brand-new row rather than convert an existing
+  `Determined` row to editable — the testdata's `PeriodIndex` for the extra value had to move to match
+  where the click actually landed (index 4, a genuinely new 5th row, not index 3 as first assumed),
+  confirmed by reading the failure screenshot directly rather than continuing to reason from the log
+  alone.
+  Two unrelated, smaller data-typo fixes along the way: a value in the wrong `InputMethodTable` field
+  for one iteration's `inputMethod` mode (`ep1HazardRateControl` instead of `ep1CumPercSurvivalControl`
+  for a `Cumulative % Survival` iteration), and dead `boundary.4.*` metadata rows left over from an
+  earlier testdata restructuring, caught by `validate`'s `unknown column` errors.
+  **[PROMOTED] New standing rule 18 + `AI_IMPORT_AGENT.md` §9.2**: the full dual-endpoint
+  shared-row-index pattern, written so the next dual-endpoint feature (including a GitHub Copilot
+  session) starts from the discovered mode/button/countField rules instead of re-deriving them from
+  scratch through the same failure chain.
 
 - **2026-09-14 · `ProductDesign/feature_MCPMod_Con` TC_36 — audited after user report "repeating the same errors we fixed for TC 35"; ITER_01 re-verified green.**
   A `_Con` (Continuous-endpoint) sibling of `feature_MCPMod` TC_35, imported by mirroring it per §0 —

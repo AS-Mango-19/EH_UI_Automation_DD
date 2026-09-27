@@ -1,9 +1,9 @@
 TC_ID,IterationID,InputSetname,SelectTask,SelectTest,winning-condition-select
-TC_38,ITER_01,Set1,Design,Logrank - Difference of Proportion,At least EP1
-TC_38,ITER_02,Set2,Design,Logrank - Difference of Proportion,Both endpoints
-TC_38,ITER_03,Set3,Design,Logrank - Difference of Proportion,At least EP2
-TC_38,ITER_04,Set4,Design,Logrank - Difference of Proportion,At least one endpoint
-TC_38,ITER_05,Set5,Design,Logrank - Difference of Proportion,Both endpoints
-TC_38,ITER_06,Set6,Design,Logrank - Difference of Proportion,At least EP1
-TC_38,ITER_07,Set7,Design,Logrank - Difference of Proportion,Both endpoints
-TC_38,ITER_08,Set8,Design,Logrank - Difference of Proportion,At least EP2
+TC_39,ITER_01,Set1,Design,Difference of Proportion - Logrank ,At least EP1
+TC_39,ITER_02,Set2,Design,Difference of Proportion - Logrank ,Both endpoints
+TC_39,ITER_03,Set3,Design,Difference of Proportion - Logrank ,At least EP2
+TC_39,ITER_04,Set4,Design,Difference of Proportion - Logrank ,At least one endpoint
+TC_39,ITER_05,Set5,Design,Difference of Proportion - Logrank ,Both endpoints
+TC_39,ITER_06,Set6,Design,Difference of Proportion - Logrank ,At least EP1
+TC_39,ITER_07,Set7,Design,Difference of Proportion - Logrank ,Both endpoints
+TC_39,ITER_08,Set8,Design,Difference of Proportion - Logrank ,At least EP2

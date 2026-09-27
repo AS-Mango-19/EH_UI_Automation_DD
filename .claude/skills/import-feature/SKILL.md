@@ -34,7 +34,24 @@ Non-negotiables (full detail is in the playbook):
   proportions → `feature_RONBR(PD)`/`feature_FishersExact(PD)`; one-arm → `feature_SinglePoissonRate`;
   multi-scenario → `feature_BOIN`; `ProductDecide` "Go/No-Go" features → `ProductDecide/feature_DOM`
   (TC_29) or `feature_DOP` (TC_31, has an interim table) — see `AI_IMPORT_AGENT.md`'s dedicated
-  Decide-family checklist), so id/label wiring matches on the first pass.
+  Decide-family checklist; dual-endpoint (two-endpoint boundary table) → `feature_Dual_LogrankLogrank`
+  (TC_37) or `feature_Dual_LogrankDOP` (TC_38) — see `AI_IMPORT_AGENT.md` §9.2, non-negotiable below),
+  so id/label wiring matches on the first pass.
+- **Dual-endpoint boundary tables need §9.2, not ad-hoc wiring.** If the feature has TWO endpoints
+  (EP1/EP2) each with its own interim-analysis boundary, it almost certainly renders as ONE table
+  sharing a row-index namespace (`boundary.<n>.ep1*`/`ep2*`), not two independent tables. Read
+  `AI_IMPORT_AGENT.md` §9.2 in full before wiring the boundary section — it has the proven rules for:
+  which endpoint is primary (a "Synchronize Interims" select that can be **blank** in testdata and
+  silently default live — screenshot-verify per iteration, don't infer it from other columns); the
+  secondary-side Add-Interim button's label flipping with the primary endpoint (`Add Interim to EP2`
+  vs `Add Interim to EP1`, with NO such button for whichever side is currently primary); two
+  differently-`id`'d `keepAnalysisInfoFor<X>SameAs<Y>` checkboxes that don't render at all for a
+  "Both endpoints" Winning Condition; and — the fix most likely to be needed even on a feature that
+  looks like TC_37/TC_38 — that the SAME shared reconcile metadata can need DIFFERENT `countField`s
+  for different iterations (one Winning Condition can suppress a checkbox to all-`N/A` for exactly
+  one iteration while every other iteration needs that checkbox). Never just swap the countField to
+  fix one iteration — run TWO `reconcilePeriodTable` calls back-to-back on the same gate, one per
+  candidate field; it no-ops once its target is met, so this needs no per-iteration branching.
 - **Verify the mirroring held — right before you finish, not just when you start.** An auto-bound
   field (no `UNWIRED`) is NOT proof its selector is correct. `grep` the reference feature's
   `selectors.csv`/`metadata.csv` for `confirmed live|VERIFY selector|renamed from|collided|Never
@@ -58,3 +75,16 @@ Non-negotiables (full detail is in the playbook):
   `sim_recording.txt` → `sim_metadata.csv`, binds tokens to `simulation.csv`, adds no
   login/navigate (starts at the Simulate click), and shares selectors + compare.config. Turn it
   on with `Simulation=YES` in master.csv. Consolidate `sim_metadata.csv` exactly like design.
+- **Toggling which iteration runs.** `Run` is a GLOBAL veto across *every* testdata CSV that
+  carries the column (`project.csv`, `simulation.csv`, …), not a per-file switch — set it in
+  lockstep, or a `Run=FALSE` sim row will silently drop the whole iteration, design included
+  (`IMPORT_LESSONS.md` rule S13).
+- **Two full-suite diagnostic traps (`IMPORT_LESSONS.md` rule 19):** **(a)** A cascading failure —
+  if an iteration fails at a step unrelated to anything you changed, and a DIFFERENT iteration
+  failed immediately before it in the same serial run, fix the earlier one first and re-run the two
+  together in isolation before debugging the later iteration's own steps. **(b)** A stale baseline —
+  a `compareWithBaseline` `VALUE_MISMATCH` FAIL against an iteration's EXISTING baseline, right
+  after fixing a real bug, doesn't necessarily mean the fix is wrong; screenshot-verify the live
+  design against testdata first, and if it's now correct, delete the stale baseline
+  (`06_baseline/<env>/baseline_<TC>_<ITER>.csv` + `.meta.json`) and re-run to regenerate it —
+  confirm with the user before deleting, since it discards the previous regression reference.

@@ -140,6 +140,7 @@ btn_Calculate,ResultsPage,role,button,Calculate,,FALSE,button from codegen,FALSE
 btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
 chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen,FALSE
 txt_enrollment_Table_0_avg_Subjects_Enrolled,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
+txt_enrollment_Table_0_avg_Subjects_Enrolled_DesignPage,DesignPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,Enrollment table render wait selector,FALSE
 btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
 btn_Save_Compute,ResultsPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
 txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
@@ -266,3 +267,149 @@ txt_boundary_7_efficacy_PValue,ResultsPage,css,"[id=""boundary.7.efficacyPValue"
 txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
 txt_enrollmentTable_startingAtTime,Page,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC sim enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
 txt_enrollmentTable_avgSubjectsEnrolled,Page,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC sim enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
+btn_Add_Endpoint,ProjectPage,role,button,Add Endpoint,,FALSE,button from codegen,FALSE
+ddl_priority_0,ProjectPage,css,#priority-0,,,FALSE,native <select> from codegen,FALSE
+txt_endpoint_Name_0,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_type_0,ProjectPage,css,#type-0,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_better_Response_0,ProjectPage,css,#betterResponse-0,,,FALSE,textbox from codegen,FALSE
+ddl_Binary,ProjectPage,role,button,Binary,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_better_Response_0,ProjectPage,css,#betterResponse-0,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+chk_Variable,ProjectPage,label,Variable,,,FALSE,checkbox from codegen,FALSE
+ep1Variable_Row,ProjectPage,css,#variable-0_0,,,FALSE,EP1 Variable checkbox,FALSE
+txt_follow_Up_Time_0_0,ProjectPage,css,#followUpTime-0_0,,,FALSE,textbox from codegen,FALSE
+ddl_priority_1,ProjectPage,css,#priority-1,,,FALSE,native <select> from codegen,FALSE
+txt_endpoint_Name_1,ProjectPage,css,#endpointName-1,,,FALSE,textbox from codegen,FALSE
+ddl_type_1,ProjectPage,css,#type-1,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_follow_Up_Time_1,ProjectPage,css,#followUpTime-1,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Winning_Condition,InputSetPage,css,#winning-condition-select,,,FALSE,native <select> from codegen,FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Sample_Size_n,DesignPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Type_1_Error,DesignPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+ddl_Multiple_Comparison_Procedure,DesignPage,css,#mcpMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_Planned_End_of_Trial,DesignPage,css,#plannedEOT,,,FALSE,native <select> from codegen,FALSE
+ddl_Testing_Order,DesignPage,css,#testingOrder,,,FALSE,native <select> from codegen,FALSE
+ddl_Hypothesis,DesignPage,css,#ep1Hypothesis,,,FALSE,native <select> from codegen,FALSE
+ddl_Test_Statistic,DesignPage,css,#ep1TestStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_p,DesignPage,css,"input[name=""ep1P""]",,,FALSE,textbox from codegen,FALSE
+txt_q,DesignPage,css,"input[name=""ep1Q""]",,,FALSE,textbox from codegen,FALSE
+txt_Target_Number_of_Events,DesignPage,css,"input[name=""ep1TargetNumOfEvents""]",,,FALSE,textbox from codegen,FALSE
+txt_Type_1_Error_Allocation,DesignPage,css,#ep1Type1ErrorAllocation,,,FALSE,textbox from codegen,FALSE
+txt_Noninferiority_Margin_ln_HR0,DesignPage,css,"input[name=""ep1NonInfMargin""]",,,FALSE,textbox from codegen,FALSE
+chk_ep1Variable,DesignPage,testid,ep1Variable,,,FALSE,checkbox from codegen,FALSE
+txt_input_name_ep1Follow_Up_Time,DesignPage,css,"input[name=""ep1FollowUpTime""]",,,FALSE,textbox from codegen,FALSE
+ddl_Variance,DesignPage,css,#ep2Variance,,,FALSE,native <select> from codegen,FALSE
+txt_Noninferiority_Margin_0,DesignPage,css,"input[name=""ep2NonInfMargin""]",,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,DesignPage,css,"input[name=""ep2FollowUpTime""]",,,FALSE,textbox from codegen,FALSE
+txt_Target_Sample_Size_Final,DesignPage,css,#ep2TargetSampleSize,,,FALSE,textbox from codegen,FALSE
+ddl_ep2Hypothesis,DesignPage,css,#ep2Hypothesis,,,FALSE,EP2 hypothesis select,FALSE
+ddl_ep2Test_Statistic,DesignPage,css,#ep2TestStatistic,,,FALSE,EP2 test statistic select,FALSE
+ddl_Efficacy_Boundary_Family,DesignPage,css,#ep1EffBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_Spending_Function,DesignPage,css,"select[name=""ep1EffSpendFunc""]",,,FALSE,native <select> from codegen,FALSE
+ddl_Parameter,DesignPage,css,"select[name=""ep1EffParam""]",,,FALSE,native <select> from codegen,FALSE
+txt_ep1Eff_Param_Gamma,DesignPage,css,"input[name=""ep1EffParamGamma""]",,,FALSE,textbox from codegen,FALSE
+ddl_Futility_Boundary_Family,DesignPage,css,#ep1FutBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_Threshold,DesignPage,css,#ep1ThresholdSelect,,,FALSE,native <select> from codegen,FALSE
+txt_ep1Threshold_Input,DesignPage,css,#ep1ThresholdInput,,,FALSE,textbox from codegen,FALSE
+txt_ep2Eff_Param_Gamma,DesignPage,css,"input[name=""ep2EffParamGamma""]",,,FALSE,textbox from codegen,FALSE
+ddl_ep2Eff_Boundary_Family,DesignPage,css,#ep2EffBoundaryFam,,,FALSE,EP2 efficacy boundary family select,FALSE
+ddl_ep2Eff_Spend_Func,DesignPage,css,"select[name=""ep2EffSpendFunc""]",,,FALSE,EP2 efficacy spending function select,FALSE
+ddl_ep2Eff_Param,DesignPage,css,"select[name=""ep2EffParam""]",,,FALSE,EP2 efficacy parameter select,FALSE
+ddl_ep2Fut_Boundary_Family,DesignPage,css,#ep2FutBoundaryFam,,,FALSE,EP2 futility boundary family select,FALSE
+ddl_ep2Fut_Spend_Func,DesignPage,css,"select[name=""ep2FutSpendFunc""]",,,FALSE,EP2 futility spending function select,FALSE
+ddl_ep2Fut_Param,DesignPage,css,"select[name=""ep2FutParam""]",,,FALSE,EP2 futility parameter select,FALSE
+ddl_ep2Threshold_Select,DesignPage,css,#ep2ThresholdSelect,,,FALSE,native <select> from codegen,FALSE
+txt_ep2Threshold_Input,DesignPage,css,#ep2ThresholdInput,,,FALSE,textbox from codegen,FALSE
+ddl_Synchronize_Interims,DesignPage,css,#syncInterims,,,FALSE,native <select> from codegen,FALSE
+chk_keep_Analysis_Info_EP1,DesignPage,css,#keepAnalysisInfoForEP1SameAsEP2,,,FALSE,EP2-primary checkbox: keep analysis spacing info for EP1 same as EP2,FALSE
+chk_keep_Analysis_Info,DesignPage,css,#keepAnalysisInfoForEP2SameAsEP1,,,FALSE,"EP1-primary checkbox: keep analysis spacing info for EP2 same as EP1 - DIFFERENT DOM id than chk_keep_Analysis_Info_EP1, same pattern proven on feature_Dual_LogrankLogrank TC_37 (AI_IMPORT_AGENT.md section 9.2 / IMPORT_LESSONS.md rule 18)",FALSE
+btn_Add_Interim_to_Both,DesignPage,role,button,Add Interim to Both,,FALSE,button from codegen,FALSE
+btn_Add_Interim_to_EP2,DesignPage,role,button,Add Interim to EP2,,FALSE,button from codegen,FALSE
+txt_boundary_0_ep1Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.0.ep1AnalysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_ep1Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.1.ep1AnalysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_ep1Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.2.ep1AnalysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+chk_boundary_0_ep1Efficacy_Check,DesignPage,css,"input[name=""boundary.0.ep1EfficacyCheck""]",,,FALSE,checkbox from codegen,FALSE
+chk_boundary_1_ep1Efficacy_Check,DesignPage,css,"input[name=""boundary.1.ep1EfficacyCheck""]",,,FALSE,EP1 period 1 efficacy checkbox,FALSE
+chk_boundary_0_ep1Futility_Check,DesignPage,css,"input[name=""boundary.0.ep1FutilityCheck""]",,,FALSE,EP1 period 0 futility checkbox,FALSE
+chk_boundary_1_ep1Futility_Check,DesignPage,css,"input[name=""boundary.1.ep1FutilityCheck""]",,,FALSE,checkbox from codegen,FALSE
+txt_boundary_0_ep1Threshold_Per_Interim,DesignPage,css,"[id=""boundary.0.ep1ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_ep1Threshold_Per_Interim,DesignPage,css,"[id=""boundary.1.ep1ThresholdPerInterim""]",,,FALSE,EP1 period 1 threshold textbox,FALSE
+txt_boundary_2_ep1Threshold_Per_Interim,DesignPage,css,"[id=""boundary.2.ep1ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_4_ep2Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.4.ep2AnalysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_ep2Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.0.ep2AnalysisSpacingInfo""]",,,FALSE,EP2 analysis spacing period 0,FALSE
+txt_boundary_1_ep2Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.1.ep2AnalysisSpacingInfo""]",,,FALSE,EP2 analysis spacing period 1,FALSE
+txt_boundary_2_ep2Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.2.ep2AnalysisSpacingInfo""]",,,FALSE,EP2 analysis spacing period 2,FALSE
+txt_boundary_3_ep2Analysis_Spacing_Info,DesignPage,css,"[id=""boundary.3.ep2AnalysisSpacingInfo""]",,,FALSE,EP2 analysis spacing period 3,FALSE
+chk_boundary_0_ep2Efficacy_Check,DesignPage,css,"input[name=""boundary.0.ep2EfficacyCheck""]",,,FALSE,checkbox from codegen,FALSE
+chk_boundary_1_ep2Efficacy_Check,DesignPage,css,"input[name=""boundary.1.ep2EfficacyCheck""]",,,FALSE,checkbox mirrored from period 0,FALSE
+chk_boundary_2_ep2Efficacy_Check,DesignPage,css,"input[name=""boundary.2.ep2EfficacyCheck""]",,,FALSE,checkbox mirrored from period 0,FALSE
+chk_boundary_3_ep2Efficacy_Check,DesignPage,css,"input[name=""boundary.3.ep2EfficacyCheck""]",,,FALSE,checkbox mirrored from period 0,FALSE
+chk_boundary_0_ep2Futility_Check,DesignPage,css,"input[name=""boundary.0.ep2FutilityCheck""]",,,FALSE,checkbox mirrored from period 1,FALSE
+chk_boundary_1_ep2Futility_Check,DesignPage,css,"input[name=""boundary.1.ep2FutilityCheck""]",,,FALSE,checkbox from codegen,FALSE
+chk_boundary_2_ep2Futility_Check,DesignPage,css,"input[name=""boundary.2.ep2FutilityCheck""]",,,FALSE,checkbox mirrored from period 1,FALSE
+chk_boundary_3_ep2Futility_Check,DesignPage,css,"input[name=""boundary.3.ep2FutilityCheck""]",,,FALSE,checkbox mirrored from period 1,FALSE
+txt_boundary_0_ep2Threshold_Per_Interim,DesignPage,css,"[id=""boundary.0.ep2ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_ep2Threshold_Per_Interim,DesignPage,css,"[id=""boundary.1.ep2ThresholdPerInterim""]",,,FALSE,textbox mirrored from period 0,FALSE
+txt_boundary_2_ep2Threshold_Per_Interim,DesignPage,css,"[id=""boundary.2.ep2ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_ep2Threshold_Per_Interim,DesignPage,css,"[id=""boundary.3.ep2ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_4_ep2Threshold_Per_Interim,DesignPage,css,"[id=""boundary.4.ep2ThresholdPerInterim""]",,,FALSE,textbox from codegen,FALSE
+btn_Response,DesignPage,role,button,Response,,FALSE,button from codegen,FALSE
+ddl_Endpoint_Rules,DesignPage,css,#endpointRules,,,FALSE,native <select> from codegen,FALSE
+ddl_react_select_input_container,DesignPage,css,.react-select__input-container,,,FALSE,dropdown from codegen,FALSE
+ddl_endpoint_Sub_Rules,DesignPage,css,#endpointSubRules,,,FALSE,native <select> from codegen,FALSE
+ddl_Correlation,DesignPage,label,Correlation,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Input_Method,DesignPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_Distribution,DesignPage,css,#ep1Distribution,,,FALSE,native <select> from codegen,FALSE
+ddl_Hazard_Ratio_Modifier,DesignPage,css,#ep1HazardRatioModifierSelect,,,FALSE,native <select> from codegen,FALSE
+txt_ep1Hazard_Ratio_Modifier_Input,DesignPage,css,#ep1HazardRatioModifierInput,,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_0_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.0.ep1HazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_0_ep1Hazard_Ratio,DesignPage,css,"input[name=""ep1InputMethodTable.0.ep1HazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_0_ep1By_Time,DesignPage,css,"input[name=""ep1InputMethodTable.0.ep1ByTime""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_0_ep1Cum_Perc_Survival_Control,DesignPage,css,"input[name=""ep1InputMethodTable.0.ep1CumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_1_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.1.ep1StartingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_1_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.1.ep1HazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_1_ep1Hazard_Ratio,DesignPage,css,"input[name=""ep1InputMethodTable.1.ep1HazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_0_ep1Median_Survival_Time_Control,DesignPage,css,"input[name=""ep1InputMethodTable.0.ep1MedianSurvivalTimeControl""]",,,FALSE,textbox from codegen,FALSE
+btn_Add_Piece,DesignPage,css,"div.card-body:has(input[name^=""ep1InputMethodTable""]) button:has-text(""Add Piece"")",,,FALSE,EP1 Add Piece scoped to the card containing EP1 input-method fields,FALSE
+txt_ep1Input_Method_Table_2_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.2.ep1StartingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_2_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.2.ep1HazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_2_ep1Hazard_Ratio,DesignPage,css,"input[name=""ep1InputMethodTable.2.ep1HazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_ep1Input_Method_Table_1_ep1By_Time,DesignPage,css,"input[name=""ep1InputMethodTable.1.ep1ByTime""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode, proven pattern from feature_Dual_LogrankLogrank TC_37)",FALSE
+txt_ep1Input_Method_Table_1_ep1Cum_Perc_Survival_Control,DesignPage,css,"input[name=""ep1InputMethodTable.1.ep1CumPercSurvivalControl""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode)",FALSE
+txt_ep1Input_Method_Table_2_ep1By_Time,DesignPage,css,"input[name=""ep1InputMethodTable.2.ep1ByTime""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode)",FALSE
+txt_ep1Input_Method_Table_2_ep1Cum_Perc_Survival_Control,DesignPage,css,"input[name=""ep1InputMethodTable.2.ep1CumPercSurvivalControl""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode)",FALSE
+txt_ep1Input_Method_Table_3_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.3.ep1StartingAtTime""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode, ITER_04)",FALSE
+txt_ep1Input_Method_Table_3_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.3.ep1HazardRateControl""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode)",FALSE
+txt_ep1Input_Method_Table_3_ep1Hazard_Ratio,DesignPage,css,"input[name=""ep1InputMethodTable.3.ep1HazardRatio""]",,,FALSE,"boundary cell (table-completeness)",FALSE
+txt_ep1Input_Method_Table_3_ep1By_Time,DesignPage,css,"input[name=""ep1InputMethodTable.3.ep1ByTime""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode, ITER_03)",FALSE
+txt_ep1Input_Method_Table_3_ep1Cum_Perc_Survival_Control,DesignPage,css,"input[name=""ep1InputMethodTable.3.ep1CumPercSurvivalControl""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode)",FALSE
+txt_ep1Input_Method_Table_4_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.4.ep1StartingAtTime""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode)",FALSE
+txt_ep1Input_Method_Table_4_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.4.ep1HazardRateControl""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode)",FALSE
+txt_ep1Input_Method_Table_4_ep1Hazard_Ratio,DesignPage,css,"input[name=""ep1InputMethodTable.4.ep1HazardRatio""]",,,FALSE,"boundary cell (table-completeness)",FALSE
+txt_ep1Input_Method_Table_4_ep1By_Time,DesignPage,css,"input[name=""ep1InputMethodTable.4.ep1ByTime""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode, ITER_03)",FALSE
+txt_ep1Input_Method_Table_4_ep1Cum_Perc_Survival_Control,DesignPage,css,"input[name=""ep1InputMethodTable.4.ep1CumPercSurvivalControl""]",,,FALSE,"boundary cell (table-completeness - Cumulative % Survival mode)",FALSE
+txt_ep1Input_Method_Table_5_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.5.ep1StartingAtTime""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode, ITER_04)",FALSE
+txt_ep1Input_Method_Table_5_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.5.ep1HazardRateControl""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode)",FALSE
+txt_ep1Input_Method_Table_6_ep1Starting_At_Time,DesignPage,css,"input[name=""ep1InputMethodTable.6.ep1StartingAtTime""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode, ITER_04)",FALSE
+txt_ep1Input_Method_Table_6_ep1Hazard_Rate_Control,DesignPage,css,"input[name=""ep1InputMethodTable.6.ep1HazardRateControl""]",,,FALSE,"boundary cell (table-completeness - Hazard Rate mode)",FALSE
+txt_Control_Proportion,DesignPage,css,#ep2ControlProp,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Proportion,DesignPage,css,#ep2TreatmentProp,,,FALSE,textbox from codegen,FALSE
+txt_By_Time_Week,DesignPage,css,#dropoutByTime,,,FALSE,textbox from codegen,FALSE
+txt_dropout_Control,DesignPage,css,#dropoutControl,,,FALSE,textbox from codegen,FALSE
+txt_dropout_Treatment,DesignPage,css,#dropoutTreatment,,,FALSE,textbox from codegen,FALSE
+btn_Enrollment,DesignPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+btn_Add_Period,DesignPage,role,button,Add Period,,FALSE,button from codegen,FALSE
+btn_Simulation_Setup,DesignPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,DesignPage,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,DesignPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,DesignPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,DesignPage,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,DesignPage,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,DesignPage,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,DesignPage,role,button,Save,,FALSE,button from codegen,TRUE
+txt_ResultName,DesignPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,DesignPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_enrollmentTable_startingAtTime,DesignPage,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,DesignPage,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
