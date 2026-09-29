@@ -38,3 +38,6 @@ TC_41,ProductDesign,regression,Two Arm Confirmatory,ROM(CO),,chromium,01_testdat
 TC_42,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2-Ordinal,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_43,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2-Eff-Tox,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_44,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2-Co-Primary,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_52,ProductDesign,regression,Dose Escalation,RTPI,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_53,ProductDesign,regression,Dose Escalation,PoD-TPI,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_54,ProductDesign,regression,Dose Escalation,UBOIN,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
