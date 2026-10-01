@@ -1,0 +1,4 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,Page,doubleClick,sel_weights_cell,,,,,,10000,FALSE,0,always,${runtime.period.weights}==N/A,double-click this stratum's Weights cell in the individualAllocStratTable panel,${runtime.period.StratumIndex}
+20,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.weights}==N/A,wait for the AG-grid inline editor to render,
+30,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.weights},,,,,10000,FALSE,0,always,${runtime.period.weights}==N/A,fill this stratum's weight value,

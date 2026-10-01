@@ -1,0 +1,2 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ExtractResults,ResultsPage,fill,txt_boundary_efficacyPValue,${runtime.period.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary efficacyPValue for the current looped period (blank/N/A auto-skips),${runtime.period.n}
