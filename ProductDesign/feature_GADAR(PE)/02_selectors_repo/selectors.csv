@@ -434,3 +434,107 @@ txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from c
 btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
 btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
 div_Spinner,ResultsPage,css,#spinner,,,FALSE,loading overlay on the design/results page (settle-guard),FALSE
+btn_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,button from codegen,FALSE
+btn_Less_Events,ProjectPage,role,button,Less Events,,FALSE,button from codegen,FALSE
+txt_follow_Up_Time_0_0,ProjectPage,css,#followUpTime-0_0,,,FALSE,textbox from codegen,FALSE
+txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+btn_Enrollment,DesignPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+txt_enrollment_Table_0_avg_Subjects_Enrolled_DesignPage,DesignPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,Enrollment table render wait selector,FALSE
+txt_time_Lag_For_Cohort,DesignPage,css,#timeLagForCohort,,,FALSE,textbox from codegen,FALSE
+txt_Subpopulation_Prevalence,DesignPage,css,#subPopPrevalence,,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_designs,DesignPage,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_Type_1_Error,DesignPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+ddl_Rejection_Region,DesignPage,css,#rejectionRegion,,,FALSE,native <select> from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,DesignPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+txt_initial_Sample_Size_Table_0_sample_Size,DesignPage,css,"[id=""initialSampleSizeTable.0.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_initial_Sample_Size_Table_0_total_Number_Of_Events,DesignPage,css,"[id=""initialSampleSizeTable.0.totalNumberOfEvents""]",,,FALSE,textbox from codegen,FALSE
+txt_initial_Sample_Size_Table_0_number_Of_Events_At_IA,DesignPage,css,"input[name=""initialSampleSizeTable.0.numberOfEventsAtIA""]",,,FALSE,textbox from codegen,FALSE
+txt_initial_Sample_Size_Table_1_sample_Size,DesignPage,css,"[id=""initialSampleSizeTable.1.sampleSize""]",,,FALSE,textbox from codegen,FALSE
+txt_initial_Sample_Size_Table_1_total_Number_Of_Events,DesignPage,css,"[id=""initialSampleSizeTable.1.totalNumberOfEvents""]",,,FALSE,textbox from codegen,FALSE
+txt_Total,DesignPage,css,#maxSSTotal,,,FALSE,textbox from codegen,FALSE
+txt_Cohort,DesignPage,css,#maxSSCohort2,,,FALSE,textbox from codegen,FALSE
+txt_max_Events_Total,DesignPage,css,#maxEventsTotal,,,FALSE,textbox from codegen,FALSE
+txt_max_Events_Cohort2,DesignPage,css,#maxEventsCohort2,,,FALSE,textbox from codegen,FALSE
+txt_Lower_CP,DesignPage,css,#lowerCP,,,FALSE,textbox from codegen,FALSE
+txt_Upper_CP,DesignPage,css,#upperCP,,,FALSE,textbox from codegen,FALSE
+txt_Target_CP_for_Re_Estimating_Number_of_Events,DesignPage,css,#promisingZoneTargetCP,,,FALSE,textbox from codegen,FALSE
+ddl_Enrollment_Rate_After_Adaptation,DesignPage,css,#promisingZoneEnrollment,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Enrollment_Rate_after,DesignPage,css,#promisingZoneFixed,,,FALSE,textbox from codegen,FALSE
+txt_max_SSTotal_Enrich,DesignPage,css,#maxSSTotalEnrich,,,FALSE,textbox from codegen,FALSE
+txt_max_SSCohort2Enrich,DesignPage,css,#maxSSCohort2Enrich,,,FALSE,textbox from codegen,FALSE
+txt_max_Events_Total_Enrich,DesignPage,css,#maxEventsTotalEnrich,,,FALSE,textbox from codegen,FALSE
+txt_enrich_If_CPFAnd_CPS,DesignPage,css,#enrichIfCPFAndCPS,,,FALSE,textbox from codegen,FALSE
+txt_terminate_For_Futility,DesignPage,css,#terminateForFutility,,,FALSE,textbox from codegen,FALSE
+obj_Charts_Type_1_Error,DesignPage,label,ChartsType 1 Error (α),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Target_CP_for_Re_Estimating_Events,DesignPage,css,#enrichZoneTargetCP,,,FALSE,textbox from codegen,FALSE
+ddl_Enrollment_Rate_After_Enrichment,DesignPage,css,#enrichZoneEnrollment,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Enrollment_Rate_after_Enrichment_Week,DesignPage,css,#enrichZoneFixed,,,FALSE,textbox from codegen,FALSE
+btn_Response,DesignPage,role,button,Response,,FALSE,button from codegen,FALSE
+btn_Add_Piece,DesignPage,role,button,Add Piece,,FALSE,Response table period-row control,FALSE
+ddl_Input_Method,DesignPage,css,#survInputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_sub_Population_Table_0_by_Time,DesignPage,css,"input[name=""subPopulationTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_0_cum_Perc_Survival_Control,DesignPage,css,"[id=""subPopulationTable.0.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_0_hazard_Ratio,DesignPage,css,"[id=""subPopulationTable.0.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_1_by_Time,DesignPage,css,"input[name=""subPopulationTable.1.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_1_cum_Perc_Survival_Control,DesignPage,css,"[id=""subPopulationTable.1.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_1_hazard_Ratio,DesignPage,css,"[id=""subPopulationTable.1.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_2_by_Time,DesignPage,css,"input[name=""subPopulationTable.2.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_2_cum_Perc_Survival_Control,DesignPage,css,"[id=""subPopulationTable.2.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_1_starting_At_Time,DesignPage,css,"[id=""subPopulationTable.1.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_2_hazard_Ratio,DesignPage,css,"[id=""subPopulationTable.2.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_0_hazard_Rate_Control,DesignPage,css,"[id=""subPopulationTable.0.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_sub_Population_Table_0_median_Survival_Time_Control,DesignPage,css,"[id=""subPopulationTable.0.medianSurvivalTimeControl""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_0_hazard_Rate_Control,DesignPage,css,"[id=""complementTable.0.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_0_hazard_Ratio,DesignPage,css,"[id=""complementTable.0.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_1_starting_At_Time,DesignPage,css,"[id=""complementTable.1.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_1_hazard_Rate_Control,DesignPage,css,"[id=""complementTable.1.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_1_hazard_Ratio,DesignPage,css,"[id=""complementTable.1.hazardRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_0_by_Time,DesignPage,css,"input[name=""complementTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_0_cum_Perc_Survival_Control,DesignPage,css,"[id=""complementTable.0.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_0_median_Survival_Time_Control,DesignPage,css,"[id=""complementTable.0.medianSurvivalTimeControl""]",,,FALSE,textbox from codegen,FALSE
+txt_complement_Table_1_by_Time,DesignPage,css,"input[name=""complementTable.1.byTime""]",,,FALSE,textbox period 1,FALSE
+txt_complement_Table_1_cum_Perc_Survival_Control,DesignPage,css,"[id=""complementTable.1.cumPercSurvivalControl""]",,,FALSE,textbox period 1,FALSE
+txt_complement_Table_2_starting_At_Time,DesignPage,css,"[id=""complementTable.2.startingAtTime""]",,,FALSE,textbox period 2,FALSE
+txt_complement_Table_2_by_Time,DesignPage,css,"input[name=""complementTable.2.byTime""]",,,FALSE,textbox period 2,FALSE
+txt_complement_Table_2_cum_Perc_Survival_Control,DesignPage,css,"[id=""complementTable.2.cumPercSurvivalControl""]",,,FALSE,textbox period 2,FALSE
+txt_complement_Table_2_hazard_Rate_Control,DesignPage,css,"[id=""complementTable.2.hazardRateControl""]",,,FALSE,textbox period 2,FALSE
+txt_complement_Table_2_hazard_Ratio,DesignPage,css,"[id=""complementTable.2.hazardRatio""]",,,FALSE,textbox period 2,FALSE
+txt_complement_Table_3_starting_At_Time,DesignPage,css,"[id=""complementTable.3.startingAtTime""]",,,FALSE,textbox period 3,FALSE
+txt_complement_Table_3_by_Time,DesignPage,css,"input[name=""complementTable.3.byTime""]",,,FALSE,textbox period 3,FALSE
+txt_complement_Table_3_cum_Perc_Survival_Control,DesignPage,css,"[id=""complementTable.3.cumPercSurvivalControl""]",,,FALSE,textbox period 3,FALSE
+txt_complement_Table_3_hazard_Rate_Control,DesignPage,css,"[id=""complementTable.3.hazardRateControl""]",,,FALSE,textbox period 3,FALSE
+txt_complement_Table_3_hazard_Ratio,DesignPage,css,"[id=""complementTable.3.hazardRatio""]",,,FALSE,textbox period 3,FALSE
+txt_complement_Table_4_by_Time,DesignPage,css,"input[name=""complementTable.4.byTime""]",,,FALSE,textbox period 4,FALSE
+txt_complement_Table_4_cum_Perc_Survival_Control,DesignPage,css,"[id=""complementTable.4.cumPercSurvivalControl""]",,,FALSE,textbox period 4,FALSE
+txt_complement_Table_4_hazard_Ratio,DesignPage,css,"[id=""complementTable.4.hazardRatio""]",,,FALSE,textbox period 4,FALSE
+txt_sub_Population_Table_3_by_Time,DesignPage,css,"input[name=""subPopulationTable.3.byTime""]",,,FALSE,textbox period 3,FALSE
+txt_sub_Population_Table_3_cum_Perc_Survival_Control,DesignPage,css,"[id=""subPopulationTable.3.cumPercSurvivalControl""]",,,FALSE,textbox period 3,FALSE
+txt_sub_Population_Table_3_hazard_Ratio,DesignPage,css,"[id=""subPopulationTable.3.hazardRatio""]",,,FALSE,textbox period 3,FALSE
+txt_sub_Population_Table_4_by_Time,DesignPage,css,"input[name=""subPopulationTable.4.byTime""]",,,FALSE,textbox period 4,FALSE
+txt_sub_Population_Table_4_cum_Perc_Survival_Control,DesignPage,css,"[id=""subPopulationTable.4.cumPercSurvivalControl""]",,,FALSE,textbox period 4,FALSE
+txt_sub_Population_Table_4_hazard_Ratio,DesignPage,css,"[id=""subPopulationTable.4.hazardRatio""]",,,FALSE,textbox period 4,FALSE
+txt_sub_Population_Table_1_hazard_Rate_Control,DesignPage,css,"[id=""subPopulationTable.1.hazardRateControl""]",,,FALSE,textbox period 1,FALSE
+txt_sub_Population_Table_2_hazard_Rate_Control,DesignPage,css,"[id=""subPopulationTable.2.hazardRateControl""]",,,FALSE,textbox period 2,FALSE
+txt_sub_Population_Table_2_starting_At_Time,DesignPage,css,"[id=""subPopulationTable.2.startingAtTime""]",,,FALSE,textbox period 2,FALSE
+ddl_dropout_Input_Method,DesignPage,css,#dropoutInputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_dropout_By_Time,DesignPage,css,#dropoutByTime,,,FALSE,textbox from codegen,FALSE
+txt_prob_Ofdropout_Control,DesignPage,css,#probOfdropoutControl,,,FALSE,textbox from codegen,FALSE
+txt_prob_Ofdropout_Treatment,DesignPage,css,#probOfdropoutTreatment,,,FALSE,textbox from codegen,FALSE
+txt_dropout_Hazard_Rate_Control,DesignPage,css,#dropoutHazardRateControl,,,FALSE,textbox from codegen,FALSE
+txt_dropout_Hazard_Rate_Treatment,DesignPage,css,#dropoutHazardRateTreatment,,,FALSE,textbox from codegen,FALSE
+btn_Add_Period,DesignPage,role,button,Add Period,,FALSE,button from codegen,FALSE
+btn_Simulation_Setup,DesignPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_input_name_num_Of_Sim_Run,DesignPage,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,DesignPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,DesignPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,DesignPage,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,DesignPage,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,DesignPage,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,DesignPage,role,button,Save,,FALSE,button from codegen,TRUE
+txt_ResultName,DesignPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,DesignPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_enrollmentTable_startingAtTime,DesignPage,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,DesignPage,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE

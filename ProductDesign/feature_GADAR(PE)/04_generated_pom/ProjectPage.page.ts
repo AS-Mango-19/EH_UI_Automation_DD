@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 97cfee0108ba52ecec2f002aa6cfa3321c1c698526b99de194ecd3c59dafbf32)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 0a0a8357ad3f413e8040cba659fe331ce4d561f12e086fc72c77d7250ceab670)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -92,5 +92,20 @@ export class ProjectPage {
   /** dropdown (opener+option collapsed into one select step) */
   ddl_Better_Response(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Endpoint_Type(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Endpoint_Type', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Less_Events(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Less_Events', { dynamicArgs });
+  }
+
+  /** textbox from codegen */
+  txt_follow_Up_Time_0_0(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_follow_Up_Time_0_0', { dynamicArgs });
   }
 }
