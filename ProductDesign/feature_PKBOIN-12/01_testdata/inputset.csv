@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
+TC_60,ITER_01,Set 1,Design,Pharmacokinetic-based Bayesian Optimal Interval Design (PKBOIN-12) ,Set 1 C
+TC_60,ITER_02,Set 2,Design,Pharmacokinetic-based Bayesian Optimal Interval Design (PKBOIN-12) ,Set 2 C
+TC_60,ITER_03,Set 3,Design,Pharmacokinetic-based Bayesian Optimal Interval Design (PKBOIN-12) ,Set 3 C
+TC_60,ITER_04,Set 4,Design,Pharmacokinetic-based Bayesian Optimal Interval Design (PKBOIN-12) ,Set 4 C
+TC_60,ITER_05,Set 5,Design,Pharmacokinetic-based Bayesian Optimal Interval Design (PKBOIN-12) ,Set 5 C

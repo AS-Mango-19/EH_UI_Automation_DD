@@ -41,3 +41,4 @@ TC_44,ProductDesign,regression,One Arm Exploratory / Confirmatory,BOP2-Co-Primar
 TC_52,ProductDesign,regression,Dose Escalation,RTPI,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_53,ProductDesign,regression,Dose Escalation,PoD-TPI,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_54,ProductDesign,regression,Dose Escalation,UBOIN,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_60,ProductDesign,regression,Dose Escalation,PKBOIN-12,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
