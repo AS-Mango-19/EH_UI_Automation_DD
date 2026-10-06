@@ -1,0 +1,6 @@
+TC_ID,IterationID,maxSampleSize,Cohort Size,n,doseExplorationThreshold,targetProbOfToxicity,probThresholdSafetyRule,minAcceptableEffRate,probThresholdEffRule,targetPKMean,probThresholdPKRule,participantNoRespNoDLTInput,participantRespDLTInput,pkCoeffOfVariation,ratioOfPkWithToxAndEff,startingDose,pkValueForScenarios,Number of Simulations Run,Random Number Seed,Fixed Seed,Result Name,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns
+TC_60,ITER_01,31,4,7,8,0.33,0.987,0.256,0.985,2001,0.985,0.33,0.55,0.11,1.5,Dose 1,Common,1001,Fixed,101,Result - set1,check,check,2
+TC_60,ITER_02,31,4,7,8,0.33,0.987,0.256,0.985,2001,0.985,0.33,0.55,0.11,1.5,Dose 2,Per Scenario,123,Fixed,112,Result - set2,uncheck,uncheck,N/A
+TC_60,ITER_03,31,4,7,8,0.33,0.987,0.256,0.985,2001,0.985,0.33,0.55,0.11,1.5,Dose 3,Per Scenario,1002,Fixed,123,Result - set3,check,uncheck,N/A
+TC_60,ITER_04,31,4,7,8,0.33,0.987,0.256,0.985,2001,0.985,0.33,0.55,0.11,1.5,Dose 4,Common,1002,Fixed,134,Result - set4,uncheck,check,3
+TC_60,ITER_05,31,4,7,8,0.33,0.987,0.256,0.985,2001,0.985,0.33,0.55,0.11,1.5,Dose 5,Per Scenario,1002,Fixed,145,Result - set5,uncheck,uncheck,N/A

@@ -1,0 +1,6 @@
+TC_ID,IterationID,ScenarioIndex,curveFamily,e0,emax,ed50,hill,beta,delta,theta,tau,intercept,linCoefficient,quadCoefficient,linIntercept,slope,modalDose1,modalDose2,modalDose3,modalDose4,modalDose5,modalDose6
+TC_19,ITER_01,1,Emax,0.061,0.82,52,1.1,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_19,ITER_02,2,Four Parameter Logistic,N/A,N/A,N/A,N/A,0.11,0.8,26.8,12,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_19,ITER_03,3,Quadratic,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0.025,0.011,0.000212,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+TC_19,ITER_04,4,Linear,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0.062,0.011,N/A,N/A,N/A,N/A,N/A,N/A
+TC_19,ITER_05,5,General,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,0.065,0.123,0.18,0.35,N/A,N/A

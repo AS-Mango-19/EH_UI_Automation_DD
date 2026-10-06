@@ -1,0 +1,7 @@
+TC_ID,IterationID,SelectTask,Select Test,Name Input Set
+TC_42,ITER_01,Design,BOP2 : Ordinal,Set 1
+TC_42,ITER_02,Design,BOP2 : Ordinal,Set 2
+TC_42,ITER_03,Design,BOP2 : Ordinal,Set 3
+TC_42,ITER_04,Design,BOP2 : Ordinal,Set 4
+TC_42,ITER_05,Design,BOP2 : Ordinal,Set 5
+TC_42,ITER_06,Design,BOP2 : Ordinal,Set 6

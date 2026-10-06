@@ -1,0 +1,6 @@
+TC_ID,IterationID,Max. Sample Size,Cohort Size,Target Probability of Toxicity,minAcceptableEffRate,maxPatientsStage1,maxPatientsStage2,methodSelNextDose,stoppingRules,maxNoOfPatientsAtDoseLevel,patientNoRespNoDLTInput,patientRespDLTInput,probThresholdSafetyRule,probThresholdEffRule,startingDose,Number of Simulations Run,Random Number Seed,Fixed Seed,Result Name
+TC_54,ITER_01,29,2,0.33,0.22,13,19,Pick the Winner,check,13,0.33,0.55,0.955,0.955,Dose 5,1234,Fixed,123,Result - Set 1 C
+TC_54,ITER_02,30,3,0.33,0.21,12,18,Adaptive Randomization,uncheck,N/A,0.9,0.66,0.85,0.85,Dose 2,1000,Fixed,100,Result - Set 2 C
+TC_54,ITER_03,29,2,0.33,0.22,12,18,Pick the Winner,uncheck,N/A,0.88,0.6,0.9,0.9,Dose 3,100,Fixed,100,Result - Set 3 C
+TC_54,ITER_04,29,2,0.33,0.21,11,19,Adaptive Randomization,check,13,0.45,0.65,0.65,0.7,Dose 1,100,Fixed,100,Result - Set 4 C
+TC_54,ITER_05,29,2,0.33,0.21,13,17,Adaptive Randomization,check,13,0.9,0.66,0.7,0.8,Dose 4,100,Fixed,100,Result - Set 5 C

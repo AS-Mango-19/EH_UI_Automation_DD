@@ -1,0 +1,6 @@
+TC_ID,IterationID,ScenarioIndex,deChartTable.0.dose1,deChartTable.0.dose2,deChartTable.0.dose3,deChartTable.0.dose4,deChartTable.0.dose5,deChartTable.0.dose6,deChartTable.0.dose7,deChartTable.0.dose8,deChartTable.0.dose9,deChartTable.0.dose10,deChartTable.1.dose1,deChartTable.1.dose2,deChartTable.1.dose3,deChartTable.1.dose4,deChartTable.1.dose5,deChartTable.1.dose6,deChartTable.1.dose7,deChartTable.1.dose8,deChartTable.1.dose9,deChartTable.1.dose10
+TC_54,ITER_01,1,0.07,0.15,0.23,0.31,0.39,0.46,0.54,0.63,0.7,0.81,0.05,0.11,0.19,0.25,0.31,0.38,0.43,0.49,0.55,0.656
+TC_54,ITER_02,2,0.08,0.166,0.232,0.323,0.41,N/A,N/A,N/A,N/A,N/A,0.066,0.123,0.198,0.26,0.32,N/A,N/A,N/A,N/A,N/A
+TC_54,ITER_03,3,0.08,0.166,0.232,0.399,N/A,N/A,N/A,N/A,N/A,N/A,0.066,0.123,0.198,0.26,N/A,N/A,N/A,N/A,N/A,N/A
+TC_54,ITER_04,4,0.066,0.113,0.269,0.333,N/A,N/A,N/A,N/A,N/A,N/A,0.0566,0.123,0.198,0.26,N/A,N/A,N/A,N/A,N/A,N/A
+TC_54,ITER_05,5,0.0898,0.1659,0.299,0.356,N/A,N/A,N/A,N/A,N/A,N/A,0.04565,0.1251,0.199,0.222,N/A,N/A,N/A,N/A,N/A,N/A

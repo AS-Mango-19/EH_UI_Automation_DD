@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
+TC_19,ITER_01,Set 1,Design,Rolling 6,Set 1 C
+TC_19,ITER_02,Set 2,Design,Rolling 6,Set 2 C
+TC_19,ITER_03,Set 3,Design,Rolling 6,Set 3 C
+TC_19,ITER_04,Set 4,Design,Rolling 6,Set 4 C
+TC_19,ITER_05,Set 5,Design,Rolling 6,Set 5 C

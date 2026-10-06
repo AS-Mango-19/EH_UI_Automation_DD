@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,collectionName,SelectTask,SelectTest
+TC_40,ITER_01,TRUE,Set1,Design,testId-18
+TC_40,ITER_02,TRUE,Set2,Design,testId-18
+TC_40,ITER_03,TRUE,Set3,Design,testId-18
+TC_40,ITER_04,TRUE,Set4,Design,testId-18

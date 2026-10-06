@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
+TC_54,ITER_01,Set 1,Design,Utility-based Bayesian Optimal Interval Design (UBOIN),Set 1 C
+TC_54,ITER_02,Set 2,Design,Utility-based Bayesian Optimal Interval Design (UBOIN),Set 2 C
+TC_54,ITER_03,Set 3,Design,Utility-based Bayesian Optimal Interval Design (UBOIN),Set 3 C
+TC_54,ITER_04,Set 4,Design,Utility-based Bayesian Optimal Interval Design (UBOIN),Set 4 C
+TC_54,ITER_05,Set 5,Design,Utility-based Bayesian Optimal Interval Design (UBOIN),Set 5 C
