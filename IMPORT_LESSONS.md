@@ -104,6 +104,9 @@ The sim chains after a green design in the same browser; most of its traps are o
 | S13 | **`npm run test --testcase TC_XX` reports "Executing 0 iteration(s)"** for an iteration whose `project.csv` (and `inputset.csv`) `Run=TRUE`, with NO error — it's just silently excluded | `simulation.csv` (or any other testdata CSV) has an EXPLICIT `Run=FALSE` row for that iteration. **This is a GLOBAL veto, not a sim-only skip** — `core/loaders/featureLoader.ts` `loadTestData` reads every `.csv` in `01_testdata/` (not just `feature.config.json`'s `testdata.files` whitelist) into ONE store, and `core/runner/testDataStore.ts` `iterationsFor()` treats **any** file's `Run=FALSE` row as excluding the iteration from the WHOLE run (design + sim), contradicting `FRAMEWORK_KT.md` §5.1's stated "Run=FALSE on a `simulation.csv` row skips only the sim phase; design still runs." A **missing** `simulation.csv` row for an iteration IS safe (matches the docs — sim-only skip); an **explicit `Run=FALSE` row** is not. To enable an iteration's design (with or without sim), `Run` must be `TRUE` (or the row absent) in **every** testdata CSV that carries the column for that iteration — not just `project.csv`. (Confirmed on OROP(PD) TC_23 ITER_02, 2026-08-25; not yet fixed in `core/` — flagged, not patched, per the scope-to-one-feature rule.) |
 | S14 | **A `loopPeriods`/`reconcilePeriodTable` call reports `0 period(s)`/`live N, wants 0` for a period-table whose testdata clearly has real values (visible via `awk`/manual dump), and the downstream page then shows a blocking "X is required" validation error** — NOT the same as S7/S12 (a genuinely-missing fill step); here the fill step EXISTS and is wired, but never fires because the period is never *detected* as present. | The single `countField` used to gate period existence (`reconstructPeriods`'s "period exists iff `<prefix>.<n>.<countField>` is non-N/A") is the WRONG field for this iteration. Different iterations can lead the SAME boundary/period table with DIFFERENT fields — e.g. `analysisSpacingInfo` for most, but `efficacyPValue`/`cumAlphaSpent`/`futilityCP` etc. for others that skip the "spacing" input method entirely. **Fix: chain multiple `loopPeriods` (and, if rows must first be ADDED, multiple `reconcilePeriodTable`) calls back-to-back on the same gate, one per candidate leading field** — exactly the pattern §9.2 already prescribes for dual-endpoint `countField`s. Both keywords are naturally idempotent for this: `reconcilePeriodTable` no-ops once `target <= current`; `loopPeriods`'s individual `fill` steps already self-skip on blank/N/A, so a period two passes both detect just gets the same value written twice, harmlessly. **Never replace the original countField — ADD passes**, since removing it risks breaking whichever iterations it already covered. Confirmed live on `StratGADAR` TC_45: ITER_10 defined its entire 5-period boundary via `efficacyPValue`+`cumAlphaSpent` with `analysisSpacingInfo` N/A throughout (both the ADD-rows and the FILL-values logic silently no-op'd); ITER_07 was a PARTIAL case — period 0 used `analysisSpacingInfo` normally but period 1 didn't, so only period 0 got filled and the resulting baseline was silently wrong (recompute + re-baseline needed once caught). **Diagnostic tip:** cross-reference the child CSV's populated columns per iteration (`awk`/`column -t` dump across ALL iterations at once) against which field each `loopPeriods` call actually keys on — a period-row with ANY real value but a blank/N/A countField cell is the tell. A genuinely-required field with no value anywhere (e.g. the app itself demands `analysisSpacingInfo` even when a different field leads) is a **separate, real testdata gap** — screenshot-verify the validation error text before assuming the countField chain alone will fix it. |
 | S15 | **A generic "Unsaved Changes" modal (`id="cancelConfirm"`, title "Unsaved Changes", body "Are you sure you want to leave without saving your…", buttons `#primaryButton`="Leave"/`#secondaryButton`="Cancel") blocks a tab-switch click** (`intercepts pointer events` in the Playwright retry log) **— sometimes appearing on the VERY FIRST tab click, before any field has been touched.** Retrying the click with `force=true` (the framework's default retry behavior) can get the click itself to register, but the modal stays open underneath and silently blocks every subsequent interaction until something finally hard-times-out several steps later — a confusing, delayed failure far from the real cause. | Add a plain `click` step on the modal's "Leave" button with **`Optional=TRUE`** immediately after the tab-switch action most likely to trigger it (e.g. right after a "mount the Response tab early" warm-up click) — per `core/keywords/input.ts`'s documented Optional-click behavior, it probes with no wait and silently no-ops when the modal isn't present, so it's safe to leave in place for every iteration/feature even when the modal never appears. Selector: `css`, `#cancelConfirm #primaryButton`. Confirmed live on `StratGADAR` TC_45 sim flow (ITER_06 only, of 8 iterations — modal appeared immediately after the Response-tab warm-up click with zero prior edits; root trigger not fully understood, but the fix doesn't need it to be). **Diagnostic tip:** a step failure screenshot (`artifacts/<run>/<TC>_<ITER>/step_<id>_fail_*.png`, auto-captured on any hard step failure) or a temporary `dumpSubtree` callCustom on the modal's container id is enough to read its exact title/body/button text — don't guess the button label. |
+| S16 | **A manually-entered boundary value (`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/`cumBetaSpent`-family cell) `fill`s successfully — the step passes, read-back confirms the value on screen — but has reverted to an invalid sentinel default (e.g. `"1"`) by the time a LATER screenshot/validation runs**, surfacing as a range-validation error ("X should be in the range […]") plus a blocked "Unsaved Changes" modal on the next tab-switch. **Distinct from S15**: S15 is checkboxes reset by Calculate with no value involved; this is a VALUE field silently wiped. | **The boundary table is a progressive-reveal, multi-stage form, not a single flat page — clicking `btn_Calculate` doesn't just compute, it also ESTABLISHES which fields are genuinely persistent, and wipes any value entered into a field the table hasn't "initialized" yet via a prior Calculate.** Different field families reveal/persist at different stages: fields tied directly to the initially-selected boundary family (`efficacyPValue`, `upperPValue`/`lowerPValue`) are safe to fill before the FIRST Calculate; `futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` need the FIRST Calculate to have already run; `cumAlphaSpent`/`cumBetaSpent`-family fields need a SECOND Calculate. The working recipe is **three staged Calculate clicks**: (1) fill the family-tied fields → Calculate #1 → (2) fill futility-p-value/CP/HR (+ `computeCP` select) → an optional cell-click to defocus/commit → Calculate #2 → (3) fill cumAlpha/cumBeta-family fields → re-assert checkboxes (S15-style, right before the LAST calculate) → Calculate #3 (final) → a short settle sleep → THEN navigate away. This exact 3-stage structure is what `StratGADAR`'s own proven metadata already does (its StepIDs ~3070/3160/3240) but had never been written up as an explicit rule — it had to be independently rediscovered live on `StratGADSD` TC_46 after 3 failed single/double-Calculate attempts (fill-before-calc got wiped; fill-after-calc-with-no-following-calc left the page "dirty" and blocked navigation). **A single Calculate (no staging) only works for fields that don't need the progressive reveal** (e.g. a table using ONLY `analysisSpacingInfo` + checkboxes, no manual p-value/CP/HR/spend entry) — most GSD boundary iterations are fine with one Calculate; reach for the 3-stage version only once a manually-entered value family is confirmed reset. **One open case this did NOT resolve:** `StratGADSD` ITER_04 (`futBoundaryFam=p-value`, `efficacyCheck` left at its default CHECKED state) still resets `futilityPValue` after EVERY Calculate in the 3-stage recipe — StratGADAR's own working p-value-family iteration has `efficacyCheck=uncheck` instead, suggesting Efficacy-checked + Futility-p-value-family together may never persist a manual value in this app; flagged to the user and the iteration held back (`Run=FALSE`) rather than guessed at further. |
+| S17 | **A PARAMETRIC selector's `{0}` placeholder is never substituted — the live DOM query ends up literally containing `{0}` (e.g. `[name="boundary.{0}.cumBetaProportion"]`), so `fill`/`click` hard-fails "field not found" after the FULL timeout, even though the attribute pattern itself is independently confirmed correct** (e.g. by the user inspecting the live element). **`npm run validate` reports ZERO issues** — this is NOT the selectors.csv quoting bug it would normally catch. | **An unquoted comma anywhere in a `flows/*.csv` row's `Description` column shifts every column after it by one position — including the LAST column, `DynamicArgs`**, which silently receives stray overflow text instead of the real `${runtime.period.n}` token; the real token gets pushed into a phantom 18th field with no header to bind to and is silently dropped by the parser. This is a nastier variant of the already-known "CSV commas shift columns" rule (`FRAMEWORK_KT.md` Trap 12, S12's closing note) specifically because **flow files (`flows/*.csv`) aren't covered by the strict per-column schema check that catches this in `selectors.csv`** (its boolean `Exact` column reliably trips a type error on a shift; a flow file's `DynamicArgs` column has no such type constraint, so a shifted file parses "successfully" with wrong content and only fails at runtime, with an error that looks exactly like a wrong-selector bug, not a CSV-parsing one). **Diagnostic tip:** when a parametric `{0}`-style selector times out despite a confirmed-correct attribute pattern, parse the SPECIFIC flow-file row with a quote-aware CSV splitter and count fields against the header (`StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs` = 17) — one extra field is the tell. Found live on `StratGADSD` TC_46's own newly-created `flows/stratgadsd_boundary_cumSpent_period.csv` (a comma in "…Interpolated), replaces StratGADAR's cumBetaSpent" split the row into 18 fields). Fix: wrap the whole `Description` value in double quotes. |
+| S18 | **A `select`/`fill` on a tab/panel that JUST mounted appears to succeed — the step passes, and a screenshot taken right after shows the correct value — but a LATER step touching a DIFFERENT field on the SAME panel fails ("field not found"), or a later screenshot shows the EARLIER field has reverted to its fetched default.** The gap between the fill and the revert can be several seconds, well outside any single-step retry window, so it reads as an unrelated failure far from the real cause. **Distinct from S11** (a single `select` reverting within its OWN verification window — fixed in core) **and from S16** (Calculate-triggered multi-stage reveal) — this is a tab/panel MOUNT triggering an async data fetch that overwrites the panel after the automation already moved on. | **The panel's own async fetch-and-hydrate cycle keeps running for a short window AFTER its trigger element becomes visible/attached — a `waitForSelector` keyed on visibility fires the instant the DOM node mounts, well BEFORE that fetch resolves and overwrites whatever the automation just set.** There is no reliable "fetch complete" selector to wait on instead (no spinner, no state attribute observed). Fix: add a plain **settle sleep AFTER the `waitForSelector`**, sized to the panel's typical fetch duration (confirmed ~2.5s sufficient on `GADAR(PE)` TC_55's Simulation Setup panel) — so every field interaction lands after the panel's own overwrite, not racing it. Confirmed live and reproduced TWICE: the first fix attempt (a `waitForSelector(visible)` alone, mirroring the Enrollment tab's own post-mount wait) looked correct on one run but failed identically on a re-run — only the added settle sleep held across two consecutive full-suite confirmations. **Diagnostic tip:** if a field visibly holds the right value in a screenshot taken right after its own fill, but a LATER screenshot (even of a DIFFERENT field on the same panel) shows it reverted, check the log timestamps between the panel's mount click and the first field interaction — a small gap (hundreds of ms) with an intermittent revert several seconds later is the signature; a deterministic, immediate revert is S11 instead. |
 
 *Custom step template — `loadResponseTabIntoModel` (per-feature `custom/<Feat>/customSteps.ts`): click `[id="leftPanel.designs"]` → click role=button "Response" → wait for a Response control (e.g. `#distributionSelect`) → click `[id="leftPanel.designs"]` → wait for Recalculate. Wire as `callCustom` before the first design-field fill.*
 
@@ -162,6 +165,120 @@ must still complete per-iteration coverage the single recording could not captur
 ---
 
 ## Feature log *(append-only; newest first)*
+
+- **2026-10-06 · `ProductDesign/feature_GADAR(PE)` TC_55 — reviewed and fixed a feature another agent (Copilot) had stabilized; one new systemic bug class found + fixed (S18); a real credential leak caught and scrubbed across 3 features.**
+  Repurposed the `feature_GADAR(PE)` folder (previously stale `TC_12` content) for a fresh `TC_55`
+  import. The user asked for a REVIEW of Copilot's prior stabilization pass, not a from-scratch
+  import — different task shape: check wiring, look for repeated steps, and chase a specific suspicion
+  ("simulation runs field resets to 10000, but changing Fixed Seed live doesn't cause that").
+  **Found a genuine duplicate block.** StepIDs 800-805 (6 `complementTable` period 1-3 fields) were an
+  exact re-fill of a SUBSET of StepIDs 792-799 — same ObjectName, same token, no gating difference.
+  Harmless (idempotent re-fill) but real bloat, most likely from merging two overlapping recorded
+  passes without de-duplicating the overlap. Removed; `validate` + `check-testdata-coverage.ts` stayed
+  clean. **General review tip:** group a feature's metadata by `Action+ObjectName`, excluding the
+  legitimately-repeating `loopPeriods`/`reconcilePeriodTable`/`callCustom` actions — any remaining
+  duplicate pair is either this class of bug or (check context first) a legitimate warm-up-then-real-use
+  tab click like the one found alongside it (`btn_Enrollment` at two StepIDs, correctly NOT a duplicate —
+  the first was a mount-and-return-to-Design warm-up, the second the real visit right before its fields
+  get filled).
+  **S18 (new): confirmed the user's suspicion was a real bug, not a false alarm.** The Simulation Setup
+  panel has no equivalent of the Enrollment tab's own post-mount `waitForSelector` before its first field
+  interaction. Live screenshots showed the exact mechanism: right after `select
+  ddl_Random_Number_Seed="Fixed"`, the panel correctly showed Fixed/100 — but by the time the NEXT step
+  ran, Random Number Seed had reverted to the fetched default `Clock` (so `Fixed Seed`'s input no longer
+  rendered, and `fill txt_Fixed_Seed` hard-failed "not found"), and `Number of Simulations Run` sat at its
+  own untouched default `10000`. First fix attempt — a `waitForSelector(visible)` on the dropdown, mirroring
+  the Enrollment tab's pattern — looked right on one run but failed identically on a re-run: the element is
+  visible the instant the panel mounts, well before its async data fetch actually completes and overwrites.
+  Real fix: a settle sleep AFTER the wait, before touching any field. Held clean across two consecutive
+  full 4-iteration runs. **The bug had already contaminated one baseline**: `ITER_04`'s baseline (the only
+  one of 4) had captured `10000` simulations instead of testdata's `100`, cascading into 64 value
+  mismatches once the fix made the live run correctly use `100` — confirmed via the diff file itself
+  (`expected=10000, actual=100` on several `Count` cells) that this was the STALE baseline, not a
+  regression; deleted and regenerated, matching rule 19b's stale-baseline protocol. ITER_01-03's baselines
+  were already correct, confirming the race was intermittent, not deterministic.
+  **Pre-commit hook caught a real, un-scrubbed credential in `feature_GADAR(PE)`'s own `recording.txt`**
+  (literal username+password in plaintext) — scrubbed to `<<USERNAME>>`/`<<PASSWORD>>` per the established
+  policy. **The hook also blocked on two UNRELATED, uncommitted features' recordings** (`feature_MAMS_DOP`,
+  `feature_MAMS_DOP(Pvalue)`) with the identical leaked credential — `scripts/check-recordings.ts` scans
+  the WHOLE working tree on every commit, not just the staged diff, so an unrelated un-scrubbed recording
+  anywhere in the repo blocks ANY commit until fixed. Scrubbed those two as well (real security fix, safe
+  regardless of feature ownership since they were untracked/not yet committed) but did NOT stage or commit
+  them — left them in the working tree for whoever owns that work. **Also caught and fixed a factual error
+  in `FRAMEWORK_KT.md`** (claimed recordings are gitignored; `.gitignore` itself says the opposite — they
+  ARE committed, with `check-recordings.ts` as the enforcement mechanism, not gitignore).
+  **Committed scoped**, same surgical `master.csv` technique as TC_45/TC_46 (reconstructed blob with only
+  the `TC_55` row, since the working copy had ~15 unrelated pending rows interleaved). Landed as `98ad238`
+  — 75 files (old `TC_12` content fully replaced).
+
+- **2026-10-01 · `ProductDesign/feature_StratGADSD` TC_46 — 10 of 11 iterations stabilized (BASELINE_CREATED), one held back on a genuine open issue; two new systemic bug classes found + fixed (S16, S17); the multi-countField chaining pattern trimmed back down once proven over-broad.**
+  Stratified GADSD (survival, up to 3 stratification factors, same family as `StratGADAR` TC_45 but with
+  real DOM differences: a `singlePieceStratTable` sim section instead of GADAR's `strata` table, a
+  GADSD-only `cumBetaProportion` boundary field, and an enrollment table whose always-present auto-final
+  row needed its compensating-click gate widened). Imported via the deterministic importer against a
+  fresh recording, then stabilized iteration-by-iteration exactly like TC_45's arc.
+  **S16 (new): boundary Calculate is a progressive-reveal multi-stage form, not idempotent for manually-
+  entered values.** ITER_04's `futilityPValue` fill kept passing (read-back confirmed) but reverted to an
+  invalid default (`"1"`) by the next screenshot, blocking navigation with a range-validation error. Three
+  live attempts before the fix landed: pre-Calculate fill (wiped by the Calculate that follows it),
+  post-Calculate fill with no further Calculate (value stuck, but the page stayed "Not Saved" and the
+  Unsaved-Changes modal still blocked navigation), then the real fix — **staging fills across THREE
+  Calculate clicks**, matching exactly what `StratGADAR`'s own already-proven metadata does (its StepIDs
+  ~3070/3160/3240) but had never been written up as an explicit rule until now. See S16 in the table above
+  for the full field-to-stage mapping. **ITER_04 itself is still unresolved** (`Run=FALSE`, held back):
+  with `efficacyCheck` left at its default CHECKED state, `futilityPValue` keeps resetting after every
+  Calculate even with full 3-stage staging — StratGADAR's own working p-value-family iteration has
+  `efficacyCheck=uncheck` instead. Flagged to the user rather than guessed at further; a future session
+  should pick this up with that comparison in hand.
+  **S17 (new): an unquoted comma in a flow file's `Description` column corrupts `DynamicArgs` specifically
+  — `npm run validate` does NOT catch it.** A newly-created GADSD-specific flow file
+  (`flows/stratgadsd_boundary_cumSpent_period.csv`, needed because GADSD's `cumBetaProportion` field has
+  no StratGADAR equivalent) had a comma in its Description, which silently shifted the real
+  `${runtime.period.n}` DynamicArgs token out of the row. Every `{0}`-parametric selector that row touched
+  resolved to a literal unsubstituted `{0}` in the DOM query, producing a generic "field not found" after a
+  full 10s timeout that looked exactly like a wrong-selector bug — cost three live-run cycles and two
+  rounds of asking the user to inspect the live DOM before the actual CSV field-count mismatch was found by
+  parsing the row directly. See S17 in the table above.
+  **Discovered the GADSD-specific `cumBetaProportion` field.** `futSpendFunc=Interpolated` renders a
+  differently-named futility-spend column than StratGADAR's `cumBetaSpent` — confirmed live by the user
+  (`[name="boundary.0.cumBetaProportion"]`, no `input` tag restriction unlike its `cumAlphaSpent`/
+  `cumBetaSpent` siblings). Wired via a new GADSD-specific flow file (`flows/stratgadsd_boundary_cumSpent_period.csv`)
+  rather than editing StratGADAR's shared one.
+  **Fixed the enrollment table's "always-present disabled final row" gate for the 1-period case.** The
+  existing compensating `Add Period` click (from the TC_45 session) was gated on whether PERIOD 1 was real,
+  so it correctly fired for 2-period iterations but under-fired for ITER_05's single-period case — the
+  lone live row was the auto-computed final row, not period 0. Regated on period 0 instead of period 1 (any
+  iteration using this input mode needs the compensating click, not just 2+-period ones).
+  **Trimmed the S14 multi-countField chaining back down once it was proven over-broad for this feature's
+  actual testdata.** All 9 reconcile passes + most of the "keyed on itself" fallback fill passes were kept
+  from the original import, but cross-checking every GADSD iteration's testdata showed only `efficacyPValue`
+  (ITER_07's period 1, where `analysisSpacingInfo` is N/A but `efficacyPValue` is real) ever needed its own
+  fallback — every other field (`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/
+  `cumBetaProportion`/`upperPValue`/`lowerPValue`) always has `analysisSpacingInfo` populated too, so their
+  "keyed on itself" passes were pure dead weight, visibly double-filling the boundary table on every run
+  (the user watched this live and flagged it). Removed the 7 provably-unnecessary reconcile passes and 5
+  fill passes; kept `efficacyPValue`'s own-keyed pass since it's the one field actually needed. **This
+  does not contradict S14's "ADD passes, never remove" guidance** — S14 is about not regressing an already-
+  working iteration; this trim only removed passes with zero current testdata exercising them, verified by
+  re-running the FULL 10-iteration suite afterward (9 PASS unaffected by the trim, the 1 FAIL was an
+  unrelated pre-existing stale baseline on ITER_01 — see below). If a future iteration needs one of the
+  removed fallbacks, re-add it; don't assume "trimmed once" means "never needed."
+  **Full-suite confirmation run (10 iterations, ITER_04 excluded) found one pre-existing, unrelated issue:**
+  ITER_01's sim `compareWithBaseline` failed `ROW_COUNT_MISMATCH` (88 extra rows, 0 value mismatches) — not
+  a regression from anything touched this session (ITER_01 is a Fixed design with no boundary table at
+  all). Traced to `extractAllResultTables`'s AG-grid virtualized-scroll capture under-rendering the
+  "Response Generation Parameters" table's 30-stratum rows at baseline-creation time (88 = 11 missing
+  strata × 8 columns exactly); the SAME under-capture warning pattern recurred on a DIFFERENT table
+  ("Overall Stratum Information", 19 of 30 rows) during the baseline regen itself — confirming this is
+  **non-deterministic scroll-capture flakiness in the extraction tool for the largest (30-stratum) tables,
+  not a one-off.** User confirmed; stale baseline deleted and regenerated. Worth a framework-level look if
+  it recurs on another 30-stratum feature.
+  **Committed scoped, same technique as the TC_45 session:** `master.csv` had several UNRELATED pending
+  rows (TC_40-44/47-51, features not yet built) interleaved with the wanted TC_46 row — staged a
+  reconstructed version (`git show HEAD:master.csv` + a single-line insert, written as a blob via
+  `git hash-object -w` + `git update-index --cacheinfo`) containing ONLY the TC_46 addition, leaving the
+  rest in the working tree unstaged for whoever added them. Landed as `026103f` — 110 files, 18297
+  insertions.
 
 - **2026-09-30 · `ProductDesign/feature_StratGADAR` TC_45 — all 11 iterations stabilized (BASELINE_CREATED), a new static coverage-gate script added, and two new systemic bug classes found + fixed (S14, S15).**
   Stratified GADAR (survival, up to 2-3 stratification factors, cross-product Strata/Weights/Marginal-

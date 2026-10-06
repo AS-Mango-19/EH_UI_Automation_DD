@@ -290,6 +290,11 @@ npm run typecheck          # tsc --noEmit
 npm run unit               # unit tests (tests/unit/*.test.ts)
 npm run itest              # integration tests
 npm run pw:test            # DIFFERENT engine — runs the generated specs via Playwright Test (use `npm run test` normally)
+npx tsx scripts/check-testdata-coverage.ts <TC_ID> [IterationID]   # static per-iteration gate: every non-N/A
+                            #   testdata cell must be referenced by a reachable ${data.*}/${runtime.period.*}
+                            #   token (metadata + flows/*.csv). Reference check only — can't see a loopPeriods
+                            #   countField silently excluding a period (trap 27); run it before calling any
+                            #   iteration done, no npm alias yet.
 ```
 
 ### Gotchas that live with the commands
@@ -979,7 +984,14 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
 
 `callCustom` resolves the feature's own module **first**, then falls back to
 `custom/_shared/customSteps.ts`. Generic helpers (`selectStartDate`, `extractAllResultTables`,
-`reconcilePeriodTable`) live in `_shared`, so a new feature gets them for free.
+`reconcilePeriodTable`, `loopChildRows` — like `loopOverData` but for a child table WITHOUT a
+`PeriodIndex` column, so `foldChildTables` never folds it — `fillCompactIndexedCells` — packs
+non-N/A values into however many rows a modal/table actually renders, for a table whose row count
+is set by a separate "count" field rather than by which specific fields have values —
+`scrollGridIntoView`/`dumpSubtree`/`dumpTextMatches` — AG-Grid-virtualization scroll helpers and
+one-off DOM-inspection diagnostics, meant to be removed once their job is done — and
+`clickCheckboxIfNeeded` — sets a checkbox to a target state only if it isn't already there) live in
+`_shared`, so a new feature gets them for free.
 
 > **Prefer not to override `extractAllResultTables`.** It is feature-agnostic on purpose — it discovers
 > the result grids + narrative panels itself and flattens everything to `TableName | RowLabel |
@@ -1004,8 +1016,13 @@ Both use the **same importer** and the **same recording**. The full, authoritati
 
 1. **Record** the flow (`npm run codegen`) and save it into the feature's `02_selectors_repo/` as
    `recording.txt`. **Click each field's LABEL before touching it** — the importer names the testdata
-   column after the label you clicked, so this is what makes columns line up (and it's gitignored, so
-   the recorded password never enters the repo — scrub-and-commit policy in `AI_IMPORT_AGENT.md`).
+   column after the label you clicked, so this is what makes columns line up. Recordings ARE committed
+   (not gitignored — `.gitignore` keeps them reviewable on purpose); the login value must be scrubbed to
+   the `<<USERNAME>>`/`<<PASSWORD>>` placeholder before committing (login runs through the shared
+   `flows/login.csv` reusable, so the literal is never used). This is enforced by the pre-commit guard
+   `scripts/check-recordings.ts` (`npm run check-recordings`), which **scans every recording in the
+   working tree, not just the staged diff** — an un-scrubbed recording anywhere blocks any commit until
+   fixed, even one from an unrelated feature. See `AI_IMPORT_AGENT.md`'s scrub-and-commit policy.
 2. **Author `01_testdata/*.csv` first**, then **import** (`npm run import-codegen -- <Module>
    <Feature> --tc TC_XX`). The importer **wires each recorded field to an existing column by DOM id or
    label** and adds none; unmatched fields print as `UNWIRED` for you to resolve.
@@ -1086,6 +1103,60 @@ Ordered by how much time they will cost you.
     compute→save transitions.
 26. **Baselines are environment-specific — an `.env` swap invalidates them.** Confirm `.env` matches the
     baseline instance before "fixing" data ([§12](#12-baseline--compare)).
+27. **`loopPeriods`/`reconcilePeriodTable` can silently detect ZERO periods despite real testdata.**
+    `reconstructPeriods()` treats a period as present iff ONE designated `countField` cell is non-N/A;
+    different iterations of the same table can be led by DIFFERENT fields, and the single shared
+    countField correctly covers the common case while silently missing the others — no error, just an
+    empty table and a confusing failure several steps downstream (or, worse, a GREEN run that quietly
+    never filled a period). Fix: chain an extra `reconcilePeriodTable` + `loopPeriods` pass per candidate
+    leading field, keyed on that field instead (idempotent — never regresses an already-working field).
+    Error reference category V; recipe in `AI_IMPORT_AGENT.md` §9.2/§9.3.
+28. **A generic "Unsaved Changes" modal can block a tab-switch with NOTHING to save.** `id="cancelConfirm"`,
+    title "Unsaved Changes", `#primaryButton`="Leave"/`#secondaryButton`="Cancel" — can appear on the very
+    first tab mount, before any field is touched, and silently blocks every later action once force-click
+    retries paper over the symptom. Distinct from the legitimate "Save first, never Leave" case (trap 22) —
+    here there's no real work to lose. Fix: an `Optional=TRUE` click on `#cancelConfirm #primaryButton`
+    right after the triggering action; it no-ops wherever the modal never appears. Error reference category W.
+29. **A boundary table's `Calculate` button is not idempotent for manually-entered values — it's a
+    progressive-reveal multi-stage form.** A field like `futilityPValue`/`futilityCP`/`futilityHR`/
+    `cumAlphaSpent`/`cumBetaSpent` can `fill` successfully (step passes, read-back confirms it) and then
+    silently revert to an invalid default by the time a LATER Calculate runs — surfacing as a range-
+    validation error plus a blocked "Unsaved Changes" modal (trap 28) on the next navigation. A single
+    Calculate only suffices for tables using nothing but `analysisSpacingInfo` + checkboxes; once a
+    manually-entered value family is involved, different fields only persist once filled at the RIGHT
+    stage relative to Calculate — family-tied fields (`efficacyPValue`, `upperPValue`/`lowerPValue`) before
+    the first Calculate; `futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` after the first Calculate;
+    `cumAlphaSpent`/`cumBetaSpent`-family fields after a second Calculate. Fix: stage the fills across
+    **three** Calculate clicks (fill family-tied fields → Calculate #1 → fill futility-p-value/CP/HR →
+    Calculate #2 → fill cumAlpha/cumBeta fields → re-assert checkboxes (trap 28-adjacent) → Calculate #3
+    final → settle → navigate). `StratGADAR`'s own metadata already did this; `StratGADSD` TC_46 had to
+    rediscover it live. Error reference category X; full field-to-stage mapping in `IMPORT_LESSONS.md` S16.
+30. **An unquoted comma in a flow file's (`flows/*.csv`) `Description` column can corrupt `DynamicArgs`
+    specifically — and `npm run validate` does NOT catch it.** The comma shifts every column after it,
+    including the LAST one (`DynamicArgs`), which silently receives stray text instead of the real
+    `${runtime.period.n}` token; that token gets pushed into a phantom extra field with no header to bind
+    to and is dropped. A `{0}`-parametric selector touched by that row then resolves to a literal `{0}` in
+    the DOM query and times out "field not found" — looking exactly like a wrong-selector bug, not a CSV
+    one, and `validate`'s schema check (which reliably catches this in `selectors.csv` via its boolean
+    `Exact` column) has no equivalent check for flow files. Trap 12 already covers the general "CSV commas
+    shift columns" case; this is the specific, harder-to-diagnose variant. Diagnostic: parse the suspect
+    row with a quote-aware CSV splitter and count fields against the 17-column flow-file header — one
+    extra field is the tell. Error reference category Y; found live on `StratGADSD` TC_46's own new flow
+    file.
+31. **A `select`/`fill` on a tab/panel that just mounted can appear to succeed and then silently revert
+    SECONDS later, once the panel's own async data fetch resolves and overwrites it.** A
+    `waitForSelector(visible)` right after the mount click is NOT enough — the element is visible the
+    instant the DOM node mounts, well before the panel's fetch actually completes. Symptom: a field
+    correctly shows the filled value in the screenshot right after its own step, but a LATER step (even on
+    a different field of the same panel) fails "not found", or a later screenshot shows the earlier field
+    back at its fetched default. Distinct from Trap 17/S11 (a single select reverting within its own
+    verification window, fixed in core) and Trap 29 (Calculate-triggered multi-stage reveal) — this is a
+    MOUNT-triggered async overwrite. Fix: add a plain settle sleep AFTER the `waitForSelector`, sized to
+    the panel's typical fetch duration, so field interactions land after the panel's own overwrite instead
+    of racing it. Confirmed needing TWO fix attempts live: the wait-only version passed one run and failed
+    identically on a re-run; only wait+settle held across two consecutive full-suite confirmations. Error
+    reference category Z; found live on `GADAR(PE)` TC_55's Simulation Setup panel (lost `Random Number
+    Seed=Fixed` back to the default `Clock`, and `Number of Simulations Run` stayed at the default `10000`).
 
 ---
 
@@ -1101,12 +1172,15 @@ Ordered by how much time they will cost you.
 | `BASELINE_CREATED` when you expected PASS | Baseline isn't where the env points ([§12](#12-baseline--compare) / [§13](#13-environments--auth)). |
 | Compare `FAIL` | `08_diffs/` — cell-level differences. If only *labels* differ, it's app label drift → re-baseline. |
 | "Forced Log Out" / bounced to login | Iterations ran in parallel against a one-session app. Set `serial: true` (Trap 15). |
-| `field "X" not found` / `… is disabled but testdata requires a value` | Wrong selector (recover the id from `trace.zip`, Trap 20), the controlling `select` ran too late / was reset (Traps 17–18), or the field is greyed (should the cell be `Computed`?). |
+| `field "X" not found` / `… is disabled but testdata requires a value` | Wrong selector (recover the id from `trace.zip`, Trap 20), the controlling `select` ran too late / was reset (Traps 17–18), the field is greyed (should the cell be `Computed`?), or — if it's a PARAMETRIC `{0}` selector and the attribute pattern is otherwise confirmed correct — a CSV-comma shift in the flow file corrupting `DynamicArgs` so `{0}` never substitutes (Trap 30). |
 | `select … has no option matching "V"` | The error lists every real option — map your value to one, or it belongs in a different field (Trap 19). |
 | a `check`/`uncheck` step **times out** | The checkbox isn't rendered for this combination → set the cell to `N/A` (Trap 21). |
 | a **blank period/interim row** appears / design won't compute | An ungated Add-Period/Add-Interim click (Trap 23). |
 | a period gate misfires on a split child table | `==N/A` vs `==EMPTY` — see [§8.3](#83-the-skip-rules-blank--na--computed) and `Error_Reference_Guide.md` category S. |
 | `No testdata row for TC/ITER` | A keyed testdata file is missing that iteration's row (`validate` catches this first). |
+| A boundary value fills fine but reads back wrong/invalid after a LATER step, blocking navigation | Calculate reset it — the table needs staged fills across multiple Calculate clicks, not one (Trap 29). |
+| A field fills fine right after its own step but has reverted several SECONDS later (even a different field's step fails "not found") | The tab/panel's own async fetch overwrote it after mount — a visibility wait alone isn't enough, add a settle sleep after it too (Trap 31). |
+| A commit is blocked by `check-recordings` for a feature you didn't touch | The guard scans every `recording.txt` in the working tree, not just the staged diff — scrub the flagged file(s) even if unrelated to your change (real credentials shouldn't sit in the tree either way), but only stage/commit the ones that are actually yours. |
 | Nothing obvious | `artifacts/<runId>/<TC>_<ITER>/` — the screenshots show the actual screen at the failing step. |
 
 **Related docs:** `AI_IMPORT_AGENT.md` (import + wire a feature), `AI_TESTDATA_AGENT.md` (prepare

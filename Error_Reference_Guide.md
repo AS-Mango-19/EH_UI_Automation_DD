@@ -494,6 +494,100 @@ Resolution steps:
 2. If the app's new labels are correct, **re-baseline** the affected iterations (`--update-baseline`) after a human review, then re-run for a real PASS.
 3. If numbers ALSO drifted across many iterations at once, suspect an `.env` change first (category R) before re-baselining.
 
+## V. `loopPeriods`/`reconcilePeriodTable` silently detects ZERO (or too-few) periods despite real testdata values
+
+How often seen:
+- New — first documented 2026-09-30 (`feature_StratGADAR` TC_45).
+
+Exact messages seen:
+- Log shows `loopPeriods[<prefix>]: 0 period(s) [] -> flows/...` or `reconcilePeriodTable[<prefix>]: live N row(s), testdata wants 0` for a table whose child CSV clearly has real values (visible via a manual `awk`/`column -t` dump) — no error at this step, just silence.
+- Several steps later, a blocking app validation error (e.g. `"Analysis Spacing (%) Info is required."`) or a `waitForSelector` timeout on the NEXT page, far from the real cause.
+- A SNEAKIER variant: the iteration is GREEN (`PASS`/`BASELINE_CREATED`) but one period's value was never actually entered — only caught by comparing the `loopPeriods[...]: N period(s) […]` count in the log against the testdata's true period count.
+
+Likely root cause:
+- `reconstructPeriods()` (`core/keywords/periodTable.ts`) treats a period as "present" iff ONE designated `countField` cell is non-N/A for that period. Different iterations of the SAME table can be led by DIFFERENT fields (one leans on `analysisSpacingInfo`, another defines its periods purely via `efficacyPValue`/`cumAlphaSpent`/etc. with `analysisSpacingInfo` N/A throughout) — the single shared countField used by the feature's `loopPeriods`/`reconcilePeriodTable` calls correctly detects the common case and silently misses the others. This is NOT a missing-fill-step bug (category S/`AI_IMPORT_AGENT.md` table-completeness rule) — the fill step exists and is correctly wired; it simply never fires because the period is never detected as existing in the first place.
+
+Resolution steps:
+1. Confirm the gap: dump the WHOLE child-table CSV (`awk -F, '...' <table>.csv | column -t -s,`) across every iteration at once and look for a row with a real value in a non-countField column while the countField column itself is `N/A`.
+2. Chain an extra `reconcilePeriodTable` pass (row-ADD) and an extra `loopPeriods` pass (value-FILL) per candidate leading field, keyed on that field instead of the shared countField, positioned right after the existing calls on the same gate. Both keywords no-op harmlessly when a period is already covered by an earlier pass — see `AI_IMPORT_AGENT.md` §9.2/§9.3 for the exact technique and why it needs no per-iteration branching.
+3. Never replace the original countField — only add passes, so already-working iterations don't regress. Spot-check at least one already-green iteration afterward to confirm.
+4. If, after the chain, the app STILL blocks with a required-field error, that's now a separate, genuine testdata gap (the app can require a field regardless of which one leads) — screenshot-verify the exact error text before assuming the chain alone will fix it.
+
+## W. Generic "Unsaved Changes" modal blocks a tab-switch click with no prior edit
+
+How often seen:
+- New — first documented 2026-09-30 (`feature_StratGADAR` TC_45 sim flow, 1 of 8 iterations).
+
+Exact messages seen:
+- `click: retrying <objectName> with force=true after locator.click: Timeout ... exceeded` with the call log showing `<div ... id="cancelConfirm" ... class="modal fade show" ...> intercepts pointer events`.
+- The force-retry eventually "succeeds" at registering the click, but the modal stays open underneath and silently blocks every SUBSEQUENT action until something several steps later hard-times-out (e.g. a `callCustom`/`isChecked` with no force-retry path) — the reported failure point is far from the real cause.
+
+Likely root cause:
+- A shared, feature-agnostic "Unsaved Changes" confirm dialog (`id="cancelConfirm"`, title "Unsaved Changes", body "Are you sure you want to leave without saving your…", buttons `#primaryButton`="Leave"/`#secondaryButton`="Cancel") can appear immediately after mounting a tab, before any explicit field edit — not only on navigating away from genuine unsaved work (contrast `AI_IMPORT_AGENT.md` §7's "Save first, never Leave" rule, which is about a DIFFERENT, legitimate-edits case).
+
+Resolution steps:
+1. Confirm what's actually on screen before guessing a fix: a step failure auto-captures a screenshot (`artifacts/<runId>/<TC>_<ITER>/step_<id>_fail_*.png`), or add a temporary `dumpSubtree` callCustom on the modal's container id to print its exact title/body/button text.
+2. Add a plain `click` on the Leave button (`css`, `#cancelConfirm #primaryButton`) with **`Optional=TRUE`** right after the action most likely to trigger it. Optional makes it probe-and-no-op on every iteration/feature where the modal never appears (`core/keywords/input.ts`'s documented Optional-click-on-absent-target behavior) — safe to leave in place unconditionally.
+3. If the SAME modal appears after genuine field edits (not a bare tab mount), that's the category this guide already covers under `AI_IMPORT_AGENT.md` §7's "Save first" rule instead — screenshot-verify which situation you're in before picking the button.
+
+## X. A boundary table's manually-entered value fills fine but reads back invalid later, blocking navigation
+
+How often seen:
+- New — first documented 2026-10-01 (`feature_StratGADSD` TC_46, ITER_04).
+
+Exact messages seen:
+- The `fill` step itself PASSES (read-back after the fill matches the intended value) — no error at that step.
+- A later screenshot (e.g. the one captured on a DIFFERENT step's failure) shows the field holding an invalid default (`"1"`) with a red/error border, plus red validation text below the table (e.g. `"Futility p-value should be in the range [10^-25, 1-(10^-8)]."`).
+- The next tab-switch click hard-fails (`locator.click: Timeout ... exceeded`) with a screenshot showing the generic "Unsaved Changes" modal (category W) open over the page.
+
+Likely root cause:
+- The boundary table is a progressive-reveal, multi-stage form — `btn_Calculate` doesn't just compute, it also determines which fields are genuinely persistent, and WIPES any value entered into a field the table hasn't "initialized" yet via a prior Calculate. Different field families reveal/persist at different stages (see `IMPORT_LESSONS.md` S16 for the exact mapping). A single Calculate click only suffices for tables using nothing but `analysisSpacingInfo` + checkboxes; once a manually-entered p-value/CP/HR/spend field is involved, it needs to be filled at the RIGHT stage relative to Calculate, not just filled once anywhere before the final Calculate.
+
+Resolution steps:
+1. Confirm which family the reset field belongs to (`futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` vs `cumAlphaSpent`/`cumBetaSpent`-family) and compare its fill position against `IMPORT_LESSONS.md` S16's stage mapping.
+2. Restructure the metadata into three staged Calculate clicks: family-tied fields before Calculate #1; futility-p-value/CP/HR (+ `computeCP`) after Calculate #1, before Calculate #2; cumAlpha/cumBeta-family fields after Calculate #2; checkbox re-assert + the FINAL Calculate #3; a short settle sleep; THEN navigate.
+3. Screenshot-verify the field's value right before Calculate #3 and again right after — it must hold the intended value in both, not just the first.
+4. If staging the fills correctly still doesn't fix it, check whether a SIBLING checkbox (e.g. `efficacyCheck`) is in a different state than a known-working reference iteration for the same boundary family — a checked/unchecked difference on an adjacent checkbox can itself be the real blocker (confirmed unresolved on `StratGADSD` ITER_04; flag to the user rather than guessing further).
+
+## Y. A parametric `{0}` selector times out "field not found" despite a confirmed-correct attribute pattern
+
+How often seen:
+- New — first documented 2026-10-01 (`feature_StratGADSD` TC_46, a newly-created flow file).
+
+Exact messages seen:
+- `fill: field "X" not found — required value could not be entered` after the FULL configured timeout (not an instant failure).
+- `npm run validate` reports **zero issues** for the feature, including the flow file involved.
+- The user (or a trace/DOM inspection) confirms the selector's attribute pattern is exactly right.
+
+Likely root cause:
+- An unquoted comma somewhere in that flow-file row's `Description` column shifted every column after it by one position — including the LAST column, `DynamicArgs`, which ends up holding stray overflow text instead of the real `${runtime.period.n}` token. The real token gets pushed into a phantom extra field with no header to bind to and is silently dropped. Without `DynamicArgs`, the selector's `{0}` placeholder is never substituted, so the live DOM query literally contains `{0}` and matches nothing. `selectors.csv`'s strict per-column schema check (its boolean `Exact` column) reliably catches this class of mistake there; flow files have no equivalent check, so a corrupted one parses "successfully" and only fails at runtime.
+
+Resolution steps:
+1. Don't re-guess the selector — the pattern is already confirmed correct, so re-verifying it again wastes a live-run cycle.
+2. Parse the specific flow-file row with a quote-aware CSV splitter and count fields against the 17-column header (`StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs`). An extra field (18 instead of 17) is the tell.
+3. Wrap the offending `Description` value in double quotes (escape any internal `"` by doubling it, per standard CSV quoting) and re-parse to confirm exactly 17 fields with `DynamicArgs` holding the real token.
+4. Re-run live to confirm the selector now resolves.
+
+## Z. A field fills fine right after its own step, but has reverted several seconds later (a different field's step then fails "not found")
+
+How often seen:
+- New — first documented 2026-10-06 (`feature_GADAR(PE)` TC_55, Simulation Setup panel).
+
+Exact messages seen:
+- A screenshot taken right after a `select`/`fill` step shows the correct value on screen — the step itself logs as passed.
+- A LATER step, often on a DIFFERENT field of the same panel, hard-fails `fill: field "X" not found — required value could not be entered` after the full timeout.
+- A screenshot at that later failure shows the EARLIER field has reverted to its own fetched default (e.g. a dropdown back to its un-selected default option), and the field the current step wanted no longer renders at all because the panel's state changed.
+- The gap between the original fill and the observed revert can be many seconds (confirmed ~11s in one case) — far longer than any single step's own timeout, so the failure reads as unrelated to the earlier, apparently-successful step.
+
+Likely root cause:
+- The tab/panel's own async data fetch keeps running for a short window AFTER it mounts, and once it resolves it overwrites whatever the automation already set — a classic mount-triggered race, but with a LATE-arriving overwrite rather than an immediate one. A `waitForSelector(visible)` placed right after the panel's own mount click (mirroring a sibling tab's working pattern) is not sufficient: the element the wait targets becomes visible/attached the instant the DOM node mounts, well before the panel's fetch actually completes.
+
+Resolution steps:
+1. Confirm the mechanism with two screenshots: one right after the original fill (showing it DID take), and the failure screenshot (showing it reverted). If both confirm this pattern, it's category Z, not a plain wrong-selector bug.
+2. Add a plain settle sleep immediately AFTER the existing `waitForSelector`, BEFORE any field on the panel is touched — sized to the panel's typical fetch duration (2–3s has been sufficient in practice). This makes the automation's own fill land after the panel's overwrite instead of racing it.
+3. Re-run at least twice (not just once) to confirm the fix holds — this class of race can pass a single confirmation run by luck and still fail on the next one (confirmed live: a wait-only fix passed once, then failed identically on a re-run; only wait+settle held across two consecutive full-suite runs).
+4. If a stale baseline was captured while this bug was active, its stored values will reflect the WRONG (un-set) defaults, not testdata's intended values — check for diff mismatches where `expected` looks like a plausible default (e.g. a suspiciously round number) and `actual` looks like testdata's real value; delete and regenerate that baseline (confirm with the user first, same as any stale-baseline case), not the other way around.
+
 ## 4) Recurring Patterns and Known Issues
 
 - The largest recurring issue is unused testdata columns.
