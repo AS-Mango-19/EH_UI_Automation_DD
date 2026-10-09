@@ -1,0 +1,7 @@
+TC_ID,IterationID,Run,CreateInputSet,sampleSize,effBoundaryFam,effSpendFunc,effParam,effParamGamma,effParamRho,efficacyOptions-1,efficacyOptions-2,futBoundaryFam,futSpendFunc,futParam,futParamRho,futParamGamma,futilityOptions-1,futilityOptions-2,includeTrtmntSelection,trtmntSelAtInterimAnalysis,trtmntEffectScale,Number of Simulations Run,randomNumberSeed,fixedSeed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Sim Result Name
+TC_50,ITER_01,TRUE,Sim - Set1,444,Spending Functions,Rho Family,N/A,N/A,4.8855,N/A,check,Spending Functions,Gamma Family,N/A,N/A,-5.2358,check,N/A,check,2,2,100,Fixed,100,check,check,100,Result - Sim01
+TC_50,ITER_02,TRUE,Sim - Set2,205,Spending Functions,Lan-DeMets,O'Brien-Fleming,N/A,N/A,check,N/A,Spending Functions,Rho Family,N/A,5.5589,N/A,N/A,check,check,1,3,100,Fixed,100,check,check,100,Result - Sim02
+TC_50,ITER_03,TRUE,Sim - Set3,558,Spending Functions,Interpolated,N/A,N/A,N/A,N/A,check,4,N/A,N/A,N/A,N/A,check,N/A,check,3,1,100,Fixed,100,check,check,100,Result - Sim03
+TC_50,ITER_04,TRUE,Sim - Set4,275,Spending Functions,Lan-DeMets,Pocock,N/A,N/A,check,N/A,p-value,N/A,N/A,N/A,N/A,N/A,check,check,2,4,100,Fixed,100,check,check,100,Result - Sim04
+TC_50,ITER_05,TRUE,Sim - Set5,666,Spending Functions,Lan-DeMets,O'Brien-Fleming,N/A,N/A,N/A,check,Spending Functions,Lan-DeMets,O'Brien-Fleming,N/A,N/A,check,N/A,check,1,5,100,Fixed,100,check,check,100,Result - Sim05
+TC_50,ITER_06,TRUE,Sim - Set6,321,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,100,Fixed,100,check,check,100,Result - Sim06

@@ -1,0 +1,7 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,priority,endpointName,EndpointType,betterResponse,followUpTime,armName-0,armName-1,armName-2,armName-3,armName-4
+TC_50,ITER_01,TRUE,MAMS-DOP,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Larger Value,2.8,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_50,ITER_02,TRUE,MAMS-DOP,Month,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Smaller Value,3.5,Ctrl,Exp01,Exp02,Exp03,N/A
+TC_50,ITER_03,TRUE,MAMS-DOP,Year,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Smaller Value,0.321,Ctrl,Exp01,Exp02,Exp03,N/A
+TC_50,ITER_04,TRUE,MAMS-DOP,Day,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Larger Value,12.3025,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_50,ITER_05,TRUE,MAMS-DOP,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Larger Value,3,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_50,ITER_06,TRUE,MAMS-DOP,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 BIN,Binary,Smaller Value,2.5555,Ctrl,Exp01,Exp02,Exp03,N/A

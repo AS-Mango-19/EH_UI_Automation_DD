@@ -39,4 +39,7 @@ TC_38,ProductDesign,regression,Two Arm Confirmatory,Dual_LogrankDOP,,chromium,01
 TC_39,ProductDesign,regression,Two Arm Confirmatory,Dual_DOPLogrank,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_45,ProductDesign,regression,Two Arm Confirmatory,StratGADAR,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
 TC_46,ProductDesign,regression,Two Arm Confirmatory,StratGADSD,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_49,ProductDesign,regression,Two Arm Confirmatory,MAMS_DOP(Pvalue),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_50,ProductDesign,regression,Two Arm Confirmatory,MAMS_DOP,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,YES
+TC_51,ProductDesign,regression,Two Arm Confirmatory,MAMS_Logrank(Pvalue),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_55,ProductDesign,regression,Two Arm Confirmatory,GADAR(PE),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,

@@ -1,0 +1,6 @@
+TC_ID,IterationID,PeriodIndex,ruleName,trtmntSelType,trtmntSelRuleSelect,trtmntSelRuleInput
+TC_51,ITER_01,0,Rule 01,Up to Two Arms,Less than Threshold,0.35896
+TC_51,ITER_02,0,Rule 01,Up to Three Arms,Within,0.1156
+TC_51,ITER_03,0,Rule 01,Best Two Arms,N/A,N/A
+TC_51,ITER_04,0,Rule 01,Up to One Arm,Less than Threshold,0.61235
+TC_51,ITER_05,0,Rule 01,Best Three Arms,N/A,N/A
