@@ -186,6 +186,15 @@ null one. The hand-naming rule above is only for the **greyed** `assertValue` fi
 can't record. (Split fires only for distinct id-bearing *fills*; a fill sharing its column with a
 result *link*, and a dropdown recorded two ways, are left alone.)
 
+**The split is NOT reliable across two DIFFERENT action types sharing a label** (`IMPORT_LESSONS.md`
+S22) — a `select` and a `fill` that both recorded under a generic label like "Parameter" can both get
+bound to the SAME column instead of being split, even though their DOM ids differ. `validate` stays
+clean either way (both tokens resolve). Before trusting an auto-bound `select` sitting next to a
+same-labeled `fill`, grep `selectors.csv` for both ObjectNames' `SelectorValue` — if the ids differ,
+the select almost certainly belongs on its OWN sibling column (e.g. a named-option column like
+`effParam` vs a numeric `effParamRho`), not the fill's column. Confirmed live on `feature_MAMS_DOP`
+TC_50.
+
 ---
 
 ## Workflow
@@ -466,6 +475,38 @@ Fix **errors** (unknown column, missing selector, iteration-completeness — a k
 file missing a row another file has). **Warnings** are signal: "column X has a value but no
 step enters it" means wire a step or confirm it's intentional.
 
+### 4a — Full data-to-wiring audit, including every TABLE (MANDATORY before any live run) *(judgment)*
+
+`npm run validate` passing (step 4) and `check-testdata-coverage.ts` passing (step 5) are
+**necessary but not sufficient** — both are static reference checks, and both are known to miss
+real gaps (see the exact blind spots below). Before asking for approval to run (§5a step 1),
+manually walk **every** `01_testdata/*.csv` file for the feature — not just the top-level ones —
+**including every child/table CSV** (boundary, enrollment, dropout, interim/period, input-method,
+weights, strat/piece tables, …) — and for each **non-blank, non-`N/A`** cell, confirm:
+
+1. **A step targets that exact field** — by a `${data.*}` token, or by a `loopPeriods` /
+   `reconcilePeriodTable` / `fillCompactIndexedCells` / `fillGridCell` (§10) config string that
+   references that column. If nothing in `metadata.csv` mentions the column, the data is
+   **present but orphaned** — it will never reach the page no matter how green the run looks.
+2. **That step actually runs for the row holding the value** — not silently excluded by a
+   `countField`/`SkipIf` gate. A table can have the right value sitting in row 5 while a
+   `loopPeriods` `countField` keyed to a *different* column undercounts and the loop never
+   reaches row 5 — no error, no `UNWIRED`, just a quietly shorter run (§9.3's exact trap).
+3. **The value is actually read back, not merely attempted** — check the step log line for that
+   field in a prior/first run, not just that `validate` was clean.
+
+**If a value can't be traced to a step with confidence, STOP and resolve it before running live**
+— wire it, add the missing `loopPeriods`/`fillGridCell` wiring, or confirm with the user it's
+deliberately unread. A run that reports PASS without a table's data ever having been picked up is
+a **false green**, not a stabilized iteration — this is exactly the class of bug that slips past
+both static tools: a `loopPeriods` `countField` undercount (§9.3), an AG-Grid cell with no
+per-cell recorded selector that silently no-ops instead of failing (§10), or a leftover
+duplicate/stale StepID block that re-fills a field with a blank/default value one step after it
+was correctly wired (the `feature_GADAR(PE)` TC_55 case, caught only by a `StepID`-ordered read of
+`metadata.csv`, not by any tool). Do this audit even — *especially* — when another agent (e.g.
+Copilot) already reports the feature "validated"; a clean `validate`/coverage run is evidence the
+**columns exist and parse**, not that every table's data is wired, picked up, and filled.
+
 ### 5 — Run + screenshot-verify **every iteration** *(judgment)*
 ```bash
 npm run test -- --testcase TC_XX
@@ -693,6 +734,65 @@ Reviewing a feature another agent (GitHub Copilot) had already stabilized, the u
 **The bug had already contaminated a baseline.** One of the feature's 4 iterations had a baseline captured while this race was active — it stored `10000` simulations where testdata asked for `100`. Once the fix made the live run correctly honor `100`, the `compareWithBaseline` step produced 64 value mismatches, which could have looked like a regression from the fix itself. The diff file was the tell: several `Count`-type cells showed `expected=10000, actual=100` — the BASELINE held the bug's wrong output, not the live run. Deleted and regenerated that one baseline only (the other 3 iterations' baselines were already correct, confirming the race was intermittent, not deterministic on every run).
 
 **Generalizes beyond this one panel:** any tab/panel whose fields are populated by an async fetch AFTER mount (not synchronously rendered from already-loaded page state) is a candidate for this bug, especially if a sibling tab in the SAME feature already needed its own post-mount wait (a strong hint the whole page has this pattern, not just one tab). When adding a `waitForSelector` after a NEW tab's mount click, treat a plain visibility wait as unproven until confirmed stable across at least two independent live runs — add the settle sleep proactively rather than waiting to get burned by an intermittent failure in a later session.
+
+### 9.7 — Two differently-typed controls sharing a generic recorded label can collapse onto ONE column, and a "name" field recorded at one moment can really belong at a LATER moment *(judgment — the `feature_MAMS_DOP` TC_50 case)*
+
+Two distinct bugs, same root cause: the importer trusts the recording's own step order and label text more than the live DOM, so when a generic label or a repeated field genuinely means two different things, it can silently pick the wrong one — with `validate` staying clean either way.
+
+**Bug A — a `select` and a `fill` sharing a label don't always get split, even with different ids.** §"Two fields that share a visible label" documents that two *editable fills* with distinct ids get auto-split into separate columns — but that splitting is NOT reliable when the two controls are different ACTION TYPES. On TC_50, `ddl_Parameter` (a `select`, live id `#effParam`, holding named options like `Pocock`/`O'Brien-Fleming`) and `txt_Parameter` (a `fill`, live id `#effParamRho`, holding a numeric Rho value) both recorded under the generic label "Parameter" — and the importer bound BOTH to `effParamRho`. No `UNWIRED`, no `validate` warning; the `select` just silently drove the wrong field on every iteration where it mattered. Caught only by grepping `selectors.csv` for both ObjectNames' actual `SelectorValue` and noticing the ids differ. **Before trusting an auto-bound `select` sitting next to a same-labeled `fill`, do that grep** — distinct ids on different action types is a strong signal they're two unrelated sibling fields, not a label collision the importer already resolved.
+
+**Bug B — a "Result Name"-style field recorded TWICE for two different real purposes can get collapsed to ONE step by the importer's own duplicate-step dedup.** TC_50's sim flow genuinely names something twice: once at the very start (naming the simulation's own derived input set) and once again in a "Name your result before simulating" dialog, right before the actual Simulate click. The importer's dedup logic (the same "Collapsed N duplicate control/field step(s)" behavior that's normally correct and desirable) kept only the EARLY occurrence, binding it to whichever testdata column matched first (`Sim Result Name`) and leaving the real early-naming column (`CreateInputSet`) and the real LATE naming moment both unwired. This surfaced only from the user's own domain knowledge of the app, not from any importer output. **When a sim (or other multi-stage) flow's testdata has two distinct "name"-shaped columns, check the live app directly for a second naming moment** (often a confirmation dialog right before the compute/simulate trigger) before assuming one generated fill step covers both — split it into two steps at the two real moments if it doesn't, mirroring wherever the design flow's own end-of-flow `ResultName` fill already sits for positioning.
+
+### 9.8 — A boundary/futility-family selector can change WHICH per-period fields are real, not just their values *(judgment — the `feature_MAMS_DOP` TC_50 case)*
+
+A period-table's columns (`cumAlphaSpent`, `futilityPValue`, `futilityDelta`, …) are not all simultaneously real for every value of a family/boundary-type selector in the same column — different family options can render a COMPLETELY DIFFERENT field, not just a different value for the same field. Authoring (or importing) testdata against one family's field set and then hitting a DIFFERENT family live produces two distinct failure shapes, both confirmed on the same `futBoundaryFam` column on TC_50:
+
+- **A `fill`/loop hard-fails "field not found"** when testdata has a value for a field that simply isn't rendered under the live family (ITER_03: a `cumAlphaSpent` value had nowhere to land because that family's table only has a "Futility δ" field, which maps to the `futilityDelta` column instead).
+- **The app blocks `Save` with an inline validation error, and the NEXT step fails instead of the real cause** — a DIFFERENT family can require a field testdata left `N/A` (ITER_04's "p-value" family required `cumAlphaSpent`, which was `N/A`; `Save & Compute` silently stayed blocked, and the FAILURE surfaced two steps later at the `ResultName` fill, which never found its field because the page never left Design).
+
+**A family's visible dropdown label can also be a single symbol rendered from a plain-looking testdata value** — ITER_03's `futBoundaryFam` cell held the literal text `"4"`, which is NOT a typo: the live option's underlying `value` attribute is `4`, and its visible LABEL renders as the Greek letter "δ". Don't assume a bare number in a family-selector column is wrong before screenshotting what it actually selects live.
+
+**Fix/diagnostic:** screenshot the live boundary table for EVERY distinct family value a feature's testdata actually uses, before assuming one generic per-period flow/column set covers all of them, and read the table's real column headers off that screenshot rather than guessing which testdata column should supply a missing value. This is a structural variant of §9.3's "different iterations can lead the same table with different fields" — here the family SELECTOR itself picks the field set, not just which field happens to be populated.
+
+---
+
+## 10 — Writing to an AG-Grid cell that recording couldn't capture (`fillGridCell`)
+
+**The problem this solves:** an AG-Grid cell is typically a plain `<div>` until you double-click it into edit mode. A codegen recording session captures a usable selector only for the cells someone actually double-clicked while recording — every OTHER cell in that same grid has no recorded selector at all, even though the grid's full structure is completely knowable live (every cell has a `row-index` on its row and a `col-id` on a nested cell element). Previously the only options were: (a) go back and re-record double-clicking every cell you need (tedious, and still only covers one iteration's row count), or (b) hand-write a per-feature parametric selector for each column and hope the row count never needs reconciling. Neither scales to a grid where different iterations need different numbers of rows.
+
+**The fix is a general-purpose custom step, `fillGridCell` (`custom/_shared/customSteps.ts`), that writes ONE cell addressed purely by `{grid container, row-index, col-id}`** — no per-cell recorded selector needed, ever. It also handles the row not existing yet (clicks an "Add" button until it does) and, if the grid needs an explicit sequence number typed into its own index column rather than auto-numbering, fills that too.
+
+### Step 1 — find the addresses: `dumpGridDiagnostic`
+
+Before writing anything, confirm the grid's real structure live — never guess `row-index`/`col-id` values. `dumpGridDiagnostic` (already in `custom/_shared/customSteps.ts`, same file) is the read-only counterpart: point it at the grid's container and it logs every currently-rendered `[row-index]`/`[col-id]` pair plus the cell text, defeating virtualization by scrolling through the whole grid first. Add a temporary `callCustom` step (`ExpectedValue = "<containerCssSelector>[|<col-id filter>]"`), run live, read the log, then delete the diagnostic step — it's a one-off tool, not something that ships in the final metadata.
+
+This is also how you confirm the structural gotcha that makes the descendant-combinator rule below non-optional: `row-index` lives on the ROW's own element, `col-id` lives on a DIFFERENT, nested CELL element — `dumpGridDiagnostic`'s own output distinguishes them, and two features' generated POMs already carry comments confirming this is the normal AG-Grid shape here, not a one-off.
+
+### Step 2 — write the value: `fillGridCell`
+
+```
+InputValue (dispatch key) = fillGridCell
+ExpectedValue = "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]"
+DynamicArgs   = "<rowIndex>|<value>"
+```
+
+- `gridContainerCssSelector` — a plain CSS selector for the grid's own container (e.g. `#singlePieceStratTable`), same convention as `scrollGridIntoView`/`fillCompactIndexedCells`.
+- `colId` — the AG-Grid `col-id` for the target column (found via `dumpGridDiagnostic`).
+- `editorObjectName` — a **selectors.csv object name** (not raw CSS) for the grid's inline cell editor. AG-Grid typically reuses ONE editor element for whichever cell is currently being edited, and that element's selector is usually already recorded for the feature (e.g. `txt_Input_Editor`, `btn_Input_Editor` — check the closest sibling feature for an existing one before recording a new one).
+- `addButtonLabel` *(optional)* — the visible text of the button that adds a new row, if the target row might not exist yet. Omit it only for a grid whose row count never needs reconciling; otherwise a missing row fails loudly instead of silently.
+- `indexColId` *(optional)* — if the grid requires an explicit sequence number typed into its own index/"Sr. No." column (rather than auto-numbering a newly-added row), its `col-id`. Filled automatically, BEFORE the target cell, with a 1-based default (`rowIndex + 1`) whenever a row had to be added.
+- `rowIndex`/`value` go in **DynamicArgs**, not ExpectedValue, specifically so the same config works two ways: a literal one-off call (`DynamicArgs = "2|0.658"`), or looped once per row inside a `loopPeriods` flow file (`DynamicArgs = "${runtime.period.n}|${runtime.period.hazardRatio}"`) — DynamicArgs is already `${...}`-resolved by the framework and scanned by `check-testdata-coverage.ts` exactly like any other column, so looping needs no special coverage-tool handling.
+- The value auto-skips on blank/N/A, matching the universal convention every other `fill`-type step already follows — a period with no real value for this column costs nothing.
+
+**Mechanics** (every piece individually proven elsewhere in this codebase, just recombined for arbitrary row/col addressing): scroll the grid's `.ag-body-viewport` to defeat virtualization until the target cell exists (`scrollGridIntoView`'s technique) → if still missing, click the Add button — located RELATIVE to the grid container, same "anchor to the table's own content" technique as `reconcilePeriodTable` — until the row renders, with a safety cap → if a row was just added and `indexColId` is set, fill the index cell first → double-click the target cell, wait for the named editor, `fill()`, commit with `Enter` (the exact `fillCompactIndexedCells` recipe — AG-Grid's React editor often only persists on blur/Enter, not on `fill()`'s events alone).
+
+### What to verify on first use of a NEW grid
+
+This is a general-purpose tool, not a feature-specific one proven on a specific grid yet — treat the first live run on any new grid as the verification pass, same as every other technique in this document:
+
+1. **The `row-index`/`col-id` descendant-combinator shape.** Confirmed on the grids checked so far; a DIFFERENT app/grid library could in principle put both attributes on the same element (compound selector) instead — `dumpGridDiagnostic`'s own output tells you which, don't assume.
+2. **The index-column numbering convention**, if `indexColId` is used — the 1-based `rowIndex + 1` default is a reasonable guess, not a confirmed universal. Screenshot-verify a freshly-added row's index cell; if the app numbers 0-based, or non-sequentially, or auto-fills it without needing a write at all, adjust (or drop `indexColId` entirely in the no-write case).
+3. **The Add button's reachability from the container.** `xpath=following::button[...]` searches forward in document order from the grid container — fine when the Add button renders after the grid, which is the common layout, but confirm it on a new page shape before trusting it.
 
 ---
 
@@ -932,3 +1032,8 @@ what lets it handle a new feature **without destabilising the ones already commi
 - [ ] No `recording.txt` / `.env` / `.auth` staged for commit.
 - [ ] Baseline reviewed by a human before it's trusted — and built on the SAME `.env` server it will be compared against (baselines are env-specific; an `.env` swap invalidates them, §8c).
 - [ ] Adaptive (CHW/CDL) sim: `Include Enrollment=check`, SSR dropdowns settled, and a wait-for-enabled before Save & Simulate (§8b).
+- [ ] An AG-Grid column with no recorded selector was NOT hand-wired with a guessed `nth-child`/positional selector — use `dumpGridDiagnostic` to find its real `row-index`/`col-id` and `fillGridCell` to write it (§10), not a workaround.
+- [ ] **Full data-to-wiring audit done on every testdata file, including every child/table CSV**
+  (§4a) — every non-blank/non-`N/A` cell traced to a step that runs for its row and actually picks
+  it up, not just inferred from a clean `validate`/coverage run. Done even when another agent
+  (e.g. Copilot) already reports the feature "validated."
