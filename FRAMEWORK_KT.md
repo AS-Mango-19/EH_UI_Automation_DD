@@ -988,10 +988,15 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
 `PeriodIndex` column, so `foldChildTables` never folds it — `fillCompactIndexedCells` — packs
 non-N/A values into however many rows a modal/table actually renders, for a table whose row count
 is set by a separate "count" field rather than by which specific fields have values —
-`scrollGridIntoView`/`dumpSubtree`/`dumpTextMatches` — AG-Grid-virtualization scroll helpers and
-one-off DOM-inspection diagnostics, meant to be removed once their job is done — and
-`clickCheckboxIfNeeded` — sets a checkbox to a target state only if it isn't already there) live in
-`_shared`, so a new feature gets them for free.
+`dumpGridDiagnostic` — READS every currently-rendered AG-Grid `row-index`/`col-id` pair + cell text
+live (defeating virtualization first), a one-off discovery tool for when a cell has no recorded
+selector at all — `fillGridCell` — the WRITE counterpart: fills one AG-Grid cell addressed purely by
+`{grid container, row-index, col-id}` found via `dumpGridDiagnostic`, optionally adding the row first
+and filling an explicit index column, for exactly the cells recording never captured a selector for
+(see `AI_IMPORT_AGENT.md` §10) — `scrollGridIntoView`/`dumpSubtree`/`dumpTextMatches` — further
+AG-Grid-virtualization scroll helpers and one-off DOM-inspection diagnostics, meant to be removed
+once their job is done — and `clickCheckboxIfNeeded` — sets a checkbox to a target state only if it
+isn't already there) live in `_shared`, so a new feature gets them for free.
 
 > **Prefer not to override `extractAllResultTables`.** It is feature-agnostic on purpose — it discovers
 > the result grids + narrative panels itself and flattens everything to `TableName | RowLabel |
@@ -1157,6 +1162,71 @@ Ordered by how much time they will cost you.
     identically on a re-run; only wait+settle held across two consecutive full-suite confirmations. Error
     reference category Z; found live on `GADAR(PE)` TC_55's Simulation Setup panel (lost `Random Number
     Seed=Fixed` back to the default `Clock`, and `Number of Simulations Run` stayed at the default `10000`).
+32. **`extractAllResultTables` can under-render the LARGEST virtualized AG-Grid tables even after its own
+    scroll-and-capture pass** (`"X" reports N data row(s) but only M could be rendered even after
+    scrolling`, M < N) — non-deterministically: the SAME iteration, re-run, can under-render a DIFFERENT
+    table each time, or none at all. Confirmed on 30-stratum tables ("Response Generation Parameters",
+    "Overall Stratum Information") on two unrelated features (`StratGADSD` TC_46, `GADAR(PE)` TC_55). The
+    real danger isn't the warning itself — it's a STALE BASELINE captured during an under-render: a later,
+    fully-rendered run then shows `ROW_COUNT_MISMATCH` against it, which looks like a regression but isn't.
+    Diagnostic: check the diff's `expected` vs `actual` for the mismatching cells — a suspiciously
+    round/truncated `expected` (baseline) against a plausible `actual` (live) means the baseline is the
+    stale one. Fix: confirm with the user, then delete and regenerate that baseline — do NOT touch
+    metadata/selectors, since the flakiness is in `core/extractors/tableExtractor.ts`'s scroll timing, not
+    in how the feature is wired. Not yet fixed at the framework level (would need a longer settle or a
+    post-capture row-count re-verify-and-retry); flag, don't patch, while scoped to one feature. Error
+    reference category AA; `IMPORT_LESSONS.md` S19.
+33. **An unconditional "Add &lt;Item&gt;" click (a 2nd `btn_Add_Arm`, etc.) can silently build one extra
+    row/arm beyond what testdata intends, with no `UNWIRED`, no `validate` warning, and no FAIL.** Confirmed
+    on TWO sibling features (`feature_MAMS_DOP(Pvalue)` TC_49, `feature_MAMS_DOP` TC_50): the importer
+    re-emitted the same ungated click both times even though a THIRD sibling (`feature_MAMS_DOM`) already
+    gates the identical click with `SkipIf=${data.project.armName-4}==N/A`. Caught only by reading a summary
+    field ("Number of Arms") on the live Results page against testdata. Always grep a reference feature's
+    metadata for the same ObjectName before trusting an unconditional "Add" click as intentional.
+    `IMPORT_LESSONS.md` S20; `AI_IMPORT_AGENT.md` §4a exists specifically to catch this class before a live
+    run.
+34. **A `select` and a `fill` sharing a generic recorded label (e.g. "Parameter") can both get bound to the
+    SAME column even with different DOM ids** — the "distinct ids split automatically" behavior only
+    reliably fires between two fields of the SAME action type. Grep `selectors.csv` for both ObjectNames'
+    `SelectorValue` before trusting an auto-bound `select` next to a same-labeled `fill`; differing ids mean
+    they're unrelated sibling fields, not an already-resolved label collision. Separately, a "Result Name"
+    -style field recorded TWICE in one flow for two different real purposes (e.g. naming a derived input
+    set at the START vs naming the result right before Simulate) can get collapsed to ONE step by the
+    importer's duplicate-step dedup, silently losing the second moment. `IMPORT_LESSONS.md` S22/S23;
+    `AI_IMPORT_AGENT.md` §9.7. Found live on `feature_MAMS_DOP` TC_50.
+35. **A boundary/futility-family selector can change WHICH per-period fields are real, not just their
+    values.** Testdata authored for one family's field set (e.g. `cumAlphaSpent`+`futilityPValue`) can have
+    no field to land in under a DIFFERENT family selection (hard FAIL), or the live family can REQUIRE a
+    field testdata left `N/A`, blocking `Save` with an inline validation error that surfaces as a LATER,
+    unrelated-looking step failure instead of a FAIL at the real cause. A family's visible dropdown label
+    can also be a single symbol (e.g. "δ") rendered from a plain numeric testdata value via the option's
+    `value` attribute — don't assume a bare number in a family column is a typo before screenshotting what
+    it actually selects live. Screenshot the live boundary table for every distinct family value a
+    feature's testdata uses before assuming one column set covers all of them. `IMPORT_LESSONS.md` S24;
+    `AI_IMPORT_AGENT.md` §9.8. Found live on `feature_MAMS_DOP` TC_50.
+36. **An unconditional "Add &lt;Item&gt;" click INHERITED FROM THE RECORDING ITSELF (not a human gap, and
+    with no sibling feature to diff against, since the recording only ever showed the max-count case) can
+    silently build one extra row for a SMALLER-count iteration — and the app's own default value for that
+    phantom row then corrupts a completely UNRELATED later calculation.** No `UNWIRED`, no `validate`
+    warning, no FAIL anywhere near the real cause — the failure (if the curve math happens to cross a
+    threshold) surfaces as a confusing app-side validation error on a DIFFERENT step. Confirmed on
+    `feature_mTPI` TC_56: a 4th unconditional `btn_Add_Dose` (built for the recording's 7-dose project)
+    gave every 6-dose iteration a phantom dose the app auto-filled as `last dose + 10`; that phantom dose
+    later blocked an unrelated Add-Scenario curve with "Calculated Probability of Toxicities are greater
+    than 1". A sibling iteration with the identical bug passed silently because its curve math didn't cross
+    the threshold. Treat every recording-inherited "Add Item" click as a count-gating candidate, not just
+    the ones a reference feature already gates (Trap 33 is the mirrored-from-a-sibling case; this is the
+    no-sibling-to-mirror case). `IMPORT_LESSONS.md` S25.
+37. **A hand-authored per-period child CSV (`PeriodIndex`-keyed) missing its required `<parent>_` filename
+    prefix is silently NOT folded into the parent's wide model** (`foldChildTables` only recognizes
+    `<parent>_<table>.csv`) — it sits as an inert sibling file, and every dotted token referencing it
+    (`${data.design.<Table>.<n>.<field>}`) just prints as plain `UNWIRED` with no hint that a rename, not a
+    new column, is the fix. When `UNWIRED` shows a cluster of dotted tokens and a same-named
+    `<Table>.csv` already exists with a `PeriodIndex` column, rename it to `design_<Table>.csv` /
+    `simulation_<Table>.csv` before creating anything new. Also check such a file for blank `TC_ID` on
+    continuation rows (Excel-merged-cell style) — the fold's join key has no forward-fill, so repeat the
+    real TC_ID on every row. Confirmed on `feature_mTPI` TC_56: resolved 24 of 38 `UNWIRED` lines with
+    zero data changes. `IMPORT_LESSONS.md` S26.
 
 ---
 
@@ -1181,6 +1251,12 @@ Ordered by how much time they will cost you.
 | A boundary value fills fine but reads back wrong/invalid after a LATER step, blocking navigation | Calculate reset it — the table needs staged fills across multiple Calculate clicks, not one (Trap 29). |
 | A field fills fine right after its own step but has reverted several SECONDS later (even a different field's step fails "not found") | The tab/panel's own async fetch overwrote it after mount — a visibility wait alone isn't enough, add a settle sleep after it too (Trap 31). |
 | A commit is blocked by `check-recordings` for a feature you didn't touch | The guard scans every `recording.txt` in the working tree, not just the staged diff — scrub the flagged file(s) even if unrelated to your change (real credentials shouldn't sit in the tree either way), but only stage/commit the ones that are actually yours. |
+| A large result table logs "reports N rows but only M could be rendered" and a baseline compare FAILs on row count | Check which side (`expected`/baseline or `actual`/live) has the suspiciously round/partial count before assuming a regression — the baseline itself may have been captured during an under-render (Trap 32). |
+| A design is green but reads structurally wrong (e.g. "Number of Arms" one too many) with no FAIL anywhere | An unconditional "Add Item" click a reference/sibling feature already gates with `SkipIf` — grep the reference's metadata for the same ObjectName (Trap 33). |
+| An auto-bound `select` next to a same-labeled `fill` drives the wrong field despite `validate` being clean | Grep `selectors.csv` for both ObjectNames' live id — a `select`+`fill` label collision doesn't always get split like two fills do (Trap 34). |
+| A `fill`/loop hard-fails "field not found", or `Save` silently stays blocked and a LATER unrelated step fails instead | The live family/boundary-type selection renders a different field set than testdata assumed — screenshot the live table per family value before guessing (Trap 35). |
+| A design/scenario step fails with an app validation error that has nothing to do with anything you changed | An earlier unconditional "Add Item" click (inherited straight from the recording) built one extra phantom row for a smaller-count iteration — count real items against every Add-click before debugging the error's own field (Trap 36). |
+| `UNWIRED` shows a cluster of dotted `<Table>.<n>.<field>` tokens and the data looks like it should already exist | Check `01_testdata/` for a same-named `<Table>.csv` missing its `design_`/`simulation_` prefix — rename it instead of creating columns (Trap 37). |
 | Nothing obvious | `artifacts/<runId>/<TC>_<ITER>/` — the screenshots show the actual screen at the failing step. |
 
 **Related docs:** `AI_IMPORT_AGENT.md` (import + wire a feature), `AI_TESTDATA_AGENT.md` (prepare

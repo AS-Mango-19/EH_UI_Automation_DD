@@ -52,6 +52,16 @@ Non-negotiables (full detail is in the playbook):
   one iteration while every other iteration needs that checkbox). Never just swap the countField to
   fix one iteration — run TWO `reconcilePeriodTable` calls back-to-back on the same gate, one per
   candidate field; it no-ops once its target is met, so this needs no per-iteration branching.
+- **Full data-to-wiring audit before any live run, including every TABLE** — a clean
+  `npm run validate` / `check-testdata-coverage.ts` proves the columns exist and parse, NOT that
+  every cell is wired, picked up, and filled. Manually walk every `01_testdata/*.csv` **including
+  every child/table CSV** (boundary, enrollment, dropout, interim/period, weights, strat tables,
+  …) and trace each non-blank/non-`N/A` cell to a step that actually runs for its row and reads
+  the value back. Do this even when another agent (e.g. Copilot) already reports the feature
+  "validated" — both static tools have known blind spots (a `loopPeriods` `countField` undercount,
+  an AG-Grid cell with no per-cell selector that silently no-ops, a stale duplicate StepID block
+  overwriting a correctly-wired field) that a clean validate will not surface (`AI_IMPORT_AGENT.md`
+  §4a).
 - **Verify the mirroring held — right before you finish, not just when you start.** An auto-bound
   field (no `UNWIRED`) is NOT proof its selector is correct. `grep` the reference feature's
   `selectors.csv`/`metadata.csv` for `confirmed live|VERIFY selector|renamed from|collided|Never

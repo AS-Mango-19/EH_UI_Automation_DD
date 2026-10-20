@@ -80,3 +80,17 @@ Simulation flow: add `--sim` (reads `sim_recording.txt` → `sim_metadata.csv`, 
 
 When in doubt, open `AI_IMPORT_AGENT.md` and do exactly what it says for the field family in front
 of you.
+
+## Font and Typography Requests
+
+- **Default assumption:** font/typography asks are usually about report presentation, not feature wiring.
+- **Feature-import scope still applies:** while working a feature import/wire task, do **not** edit
+   report style files in `core/reporters/`.
+- **Where fonts actually live:** report CSS is defined in
+   `core/reporters/featureHtml.ts` (shared style) and reused by
+   `core/reporters/combinedHtml.ts` / `core/reporters/shareableHtml.ts`.
+- **If a user explicitly requests a global report font change:** treat it as a separate
+   framework-enhancement task (not part of a feature import), then run full validation (`npm run validate`)
+   before handing off.
+- **Do not edit generated outputs:** never change `09_html_report/` or files under `reports/`; they are
+   regenerated artifacts, not source of truth.

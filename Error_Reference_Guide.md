@@ -46,6 +46,7 @@ These short, high-frequency items were taken from the repository's `USAGE_ERRORS
   - Symptoms: `grid produced no headers`, `reports N rows but only M rendered`.
   - Cause: AG Grid virtualization, missing header cells, or wrong grid selector.
   - Fix: Verify the grid is fully rendered before extraction, increase wait/poll timeout, or adjust selectors. See [core/extractors/tableExtractor.ts](core/extractors/tableExtractor.ts#L91).
+  - **If this shows up as a `ROW_COUNT_MISMATCH` against an EXISTING baseline (not a fresh capture), see category AA below first** — the under-render is non-deterministic on the largest tables, and the stale side is often the baseline itself, not the live run.
 
 - Wait / timeout errors:
   - Symptoms: `waitForText: "..." never contained "..." within Xms`.
@@ -588,6 +589,61 @@ Resolution steps:
 3. Re-run at least twice (not just once) to confirm the fix holds — this class of race can pass a single confirmation run by luck and still fail on the next one (confirmed live: a wait-only fix passed once, then failed identically on a re-run; only wait+settle held across two consecutive full-suite runs).
 4. If a stale baseline was captured while this bug was active, its stored values will reflect the WRONG (un-set) defaults, not testdata's intended values — check for diff mismatches where `expected` looks like a plausible default (e.g. a suspiciously round number) and `actual` looks like testdata's real value; delete and regenerate that baseline (confirm with the user first, same as any stale-baseline case), not the other way around.
 
+## AA. A large AG-Grid table under-renders some rows even after the extractor's own scroll pass, non-deterministically
+
+How often seen:
+- Recurring, not new — the underlying symptom was already a one-line generic entry at the top of this document ("Table / grid extraction errors"), but without the empirical detail below. First formally traced 2026-10-01 (`feature_StratGADSD` TC_46, ITER_01's sim); confirmed recurring 2026-10-06 (`feature_GADAR(PE)` TC_55, multiple tables, no baseline impact that time).
+
+Exact messages seen:
+- `extractAllResultTables: "<Table Name>" reports N data row(s) but only M could be rendered even after scrolling` (M < N), immediately followed by `extractAllResultTables: AG grid "<Table Name>" -> <cols> column(s) x M row(s)` — i.e. the tool KNOWS it's short and logs it, but proceeds with the partial capture rather than failing.
+- Later (only if comparing against an older baseline that captured a DIFFERENT row count): `Compare TC_X/ITER_Y: FAIL — ROW_COUNT_MISMATCH, EXTRA_ROW` (or `MISSING_ROW`), with the mismatching cells' `expected`/`actual` values differing by roughly the ratio of the two captures (e.g. a `Count` cell scaling with total simulation count).
+
+Likely root cause:
+- `core/extractors/tableExtractor.ts` scrolls a virtualized AG-Grid table to try to force-render every row before capturing, and this is sufficient for the great majority of tables. For the LARGEST tables in this app (confirmed: 30-stratum breakdowns like "Response Generation Parameters"/"Overall Stratum Information"), the scroll-and-settle timing is occasionally not enough, and the shortfall is non-deterministic — the SAME iteration, re-run, can under-render a DIFFERENT table each time, or capture everything cleanly. This is a genuine framework/tool-timing limitation, not a feature-wiring issue — it has been seen on two unrelated features now.
+
+Resolution steps:
+1. **Do not assume a `ROW_COUNT_MISMATCH` against an existing baseline is a regression from whatever you just changed.** Open the diff file (`08_diffs/<...>_diff_<TC>_<ITER>.json` or `.csv`) and compare `expected` (baseline) against `actual` (live) for the mismatching cells.
+2. Look for a value that reads as a plausible DEFAULT or round/truncated figure on one side (often the baseline, if it was captured first and got unlucky) versus a value that matches testdata's real intent on the other (often the live run, especially right after fixing an unrelated bug that happens to also force a fresh, fully-rendered capture).
+3. Cross-check by grepping the baseline file directly for any literal value that doesn't match testdata (e.g. a `Number of Simulations Run` baseline value that isn't testdata's configured count) — a concrete mismatch like that confirms the baseline is the stale side, not a coincidence.
+4. If confirmed, delete and regenerate ONLY that baseline (confirm with the user first — this is still a destructive action on the regression reference, same as any stale-baseline case). Do not edit metadata/selectors to "fix" this — there is nothing wrong with the wiring.
+5. If it recurs often enough to be disruptive, it's worth raising as a `core/extractors/tableExtractor.ts` improvement (e.g. a longer settle between scroll and capture, or re-verifying the captured row count and retrying the scroll once before giving up) in a dedicated framework session — not as a side-patch while scoped to one feature's files.
+
+## BB. An unconditional "Add Item" click silently builds one extra row/arm, with no error anywhere
+
+- Confirmed twice, same bug, two sibling features: `feature_MAMS_DOP(Pvalue)` TC_49 and `feature_MAMS_DOP` TC_50 (2026-10-07/08). A second `btn_Add_Arm` click fired on EVERY iteration regardless of whether that arm's name column was `N/A`, while a third sibling feature (`feature_MAMS_DOM`) already gates the identical click with `SkipIf=${data.project.armName-4}==N/A`.
+- No `UNWIRED`, no `validate` warning, no FAIL — the extra click just creates a 5th arm with a blank name, changing the actual statistical design. Only visible by reading a summary field ("Number of Arms") on the live Results page against testdata's real arm count.
+
+Resolution steps:
+1. Before trusting an unconditional "Add" click as intentional, grep a reference/sibling feature's metadata for the same ObjectName.
+2. If the reference gates its last Add-click(s) with `SkipIf=${data.<file>.<lastCol>}==N/A` and the new feature's equivalent has no `SkipIf`, copy the reference's exact gate over.
+3. Confirm the fix by reading the design's own summary count on the live Results page, not just a clean `validate`/green run.
+
+See `IMPORT_LESSONS.md` S20; `AI_IMPORT_AGENT.md` §4a (the mandatory pre-run data-to-wiring audit) exists specifically to catch this class before any live run.
+
+## CC. Two differently-typed controls sharing a generic label collapse onto one column; a repeated "name" field loses its second moment
+
+- Confirmed live on `feature_MAMS_DOP` TC_50 (2026-10-08). `ddl_Parameter` (a `select`, live id `#effParam`) and `txt_Parameter` (a `fill`, live id `#effParamRho`) both recorded under the generic label "Parameter" — the importer bound BOTH to `effParamRho`. The documented "distinct ids split automatically" behavior only reliably fires between two fields of the SAME action type.
+- Separately: a sim flow's "Result Name" field is recorded TWICE for two different real purposes (naming a derived input set at the START, naming the result right before Simulate) — the importer's duplicate-step dedup kept only the early occurrence, binding it to the wrong testdata column and leaving the late moment unwired.
+- `validate` stays clean in both cases — both tokens resolve to a real column.
+
+Resolution steps:
+1. Before trusting an auto-bound `select` sitting next to a same-labeled `fill`, grep `selectors.csv` for both ObjectNames' `SelectorValue` — differing ids mean they're unrelated sibling fields.
+2. When a multi-stage flow's testdata has two distinct "name"-shaped columns, check the live app for a second naming moment (often a confirmation dialog right before the compute/simulate trigger) before assuming one generated fill step covers both.
+
+See `IMPORT_LESSONS.md` S22/S23; `AI_IMPORT_AGENT.md` §9.7.
+
+## DD. A boundary/futility-family selector changes WHICH per-period fields are real, not just their values
+
+- Confirmed live on `feature_MAMS_DOP` TC_50 (2026-10-08), three ways on the same `futBoundaryFam` column: (1) a family rendering as "δ" (Delta, from the plain testdata value `"4"` via the option's `value` attribute) needed a `futilityDelta` field instead of the `cumAlphaSpent` testdata had populated; (2) a "p-value" family REQUIRED `cumAlphaSpent`, left `N/A`, silently blocking `Save` — the FAILURE surfaced two steps later at an unrelated-looking `ResultName` fill, not at the real cause; (3) per-period child-table data existed for an iteration whose parent family was `N/A`, making it permanently orphaned.
+- A family's visible dropdown LABEL can be a single symbol (e.g. "δ") rendered from a plain-looking numeric testdata value — not a typo.
+
+Resolution steps:
+1. Screenshot the live boundary table for EVERY distinct family value a feature's testdata uses, before assuming one per-period column set covers all of them.
+2. When a `fill`/loop hard-fails "field not found" or `Save` silently stays blocked, read the live table's actual column headers off that screenshot rather than guessing which testdata column should supply the missing value.
+3. Don't "correct" a bare-number family value before confirming what it actually renders as live.
+
+See `IMPORT_LESSONS.md` S24; `AI_IMPORT_AGENT.md` §9.8.
+
 ## 4) Recurring Patterns and Known Issues
 
 - The largest recurring issue is unused testdata columns.
@@ -598,6 +654,8 @@ Resolution steps:
 - Baselines are environment-specific: a burst of VALUE_MISMATCH (or 200s+ login/nav timeouts) across many iterations at once usually traces to an `.env` change pointing at a different East Horizon instance, not data drift — confirm `.env` matches the baseline instance before touching data (category R).
 - Period/interim tables are gated by `SkipIf`: use `==N/A` (isNaCell — matches blank OR an `N/A` spelling) for `Add Period`/`Add Interim`; use `==EMPTY` (strict) for `loopPeriods`/`reconcilePeriodTable` count-fields (category S).
 - A VALUE_MISMATCH whose diff is only LABEL text (`Alternative`→`Alt.`), not numbers, is app label drift → re-baseline after review, not a data bug (category U). App-slowness can leave Save/Calculate disabled or spinner-blocked → settle-guard, don't force-click (category T).
+- A ROW_COUNT_MISMATCH on a very large AG-Grid table (30+ rows) is frequently the BASELINE being stale, not the live run regressing — check the diff's `expected` vs `actual` for which side looks like a partial/default capture before touching anything (category AA).
+- An unconditional "Add Item" click can silently build one extra row/arm with no error anywhere — grep a reference feature's metadata for the same ObjectName before trusting it (category BB). A `select`+`fill` sharing a generic label don't always get split like two fills do (category CC). A family/boundary-type selector can change WHICH per-period fields are real, not just their values — screenshot the live table per family before guessing (category DD).
 
 ## 5) Recommended Troubleshooting Order (Beginner-friendly)
 
