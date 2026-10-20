@@ -45,3 +45,5 @@ TC_51,ProductDesign,regression,Two Arm Confirmatory,MAMS_Logrank(Pvalue),,chromi
 TC_55,ProductDesign,regression,Two Arm Confirmatory,GADAR(PE),,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_56,ProductDesign,regression,Dose Escalation,mTPI,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
 TC_57,ProductDesign,regression,Dose Escalation,mTPI2,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_58,ProductDesign,regression,Dose Escalation,CRM,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,
+TC_59,ProductDesign,regression,Dose Escalation,BLRM,,chromium,01_testdata/inputset.csv,03_metadata/metadata.csv,TRUE,AD,

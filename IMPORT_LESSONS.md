@@ -178,11 +178,113 @@ actually landed. Proven on `ProductDesign/feature_MAMS_Logrank(Pvalue)` TC_51 IT
   playbook: `AI_IMPORT_AGENT.md` §3 "Indexed table cells and multi-period values" and the Workflow §2 ordering note.**
   The importer follow-up (don't emit a loopPeriods block for a single-period design enrollment, OR make
   `${runtime.period.<field>}` resolve to `''` when the field is absent, resolver.ts:66) is still deferred/unbuilt.
+- **Dose-escalation (mTPI, CRM, BLRM):** all three share the same project/dose-entry skeleton (ProjectPage
+  dose extension to 7/8/9 per S25), the repeated-modal Add-Scenario block (5 curve families, always
+  replaced with `loopOverData` + a LOCAL `scenario_block.csv` copy, never a cross-feature reference —
+  General family needs `modalDose8-10` hand-added past the recording's usual 7-dose cap), and a
+  `switchToMtpi`-named testdata column reused verbatim by each feature's own "Switch to X" dropdown
+  despite the misleading name (same option set, safe to reuse without asking once one sibling feature has
+  already confirmed it). **CRM/BLRM additionally share a "Stop Early Trial" checkbox table whose per-row
+  field ownership must be resolved by checkbox-then-immediately-fill ORDER in the raw recording**, reusing
+  existing `stoppingRuleIfMTD`/`stoppingRuleIfNotMTD` marker columns rather than adding new ones — but the
+  two features differ on whether `uncheck` is safe: CRM's rows only exist once checked (delete the
+  `uncheck` steps); BLRM's rows persist regardless (keep them). **Don't assume one dose-escalation
+  sibling's checkbox-row behavior for another — confirm live per feature.** BLRM additionally has the
+  Direct/Metropolis-Hastings posterior-sampling split (S27) which mTPI/CRM don't have (different stats
+  method entirely).
 - **(add survival / means / one-arm family rules as you import them)**
 
 ---
 
 ## Feature log *(append-only; newest first)*
+
+- **2026-10-20 · `ProductDesign/feature_BLRM` TC_59 — fresh import (no prior metadata/selectors/config existed), all 33 `UNWIRED` fields + 4 skipped radios resolved with ZERO new testdata columns; new systemic bug class found + fixed live (S27); 3 other live-only bugs fixed during stabilization, all 5 iterations real `PASS` on the reproducibility run.**
+  Third feature in the dose-escalation family after mTPI (TC_56) and CRM (TC_58) — only
+  `01_testdata/*.csv` + `02_selectors_repo/recording.txt` existed; `feature.config.json` and the whole
+  `03_metadata`/rest of `02_selectors_repo` were built from scratch this session (TC_ID fix TC_16→TC_59
+  + N/A-fill, then `npm run import-codegen`). Same repeated-modal Add-Scenario block (5 curve families
+  flattened into one unusable superset) → `loopOverData` + local `scenario_block.csv`, extended to
+  `modalDose8-10` for the General family's 10-dose ITER_05 (S25 pattern, hand-inferred `#modalDose8/9/10`
+  ids, confirmed correct live). 5 "Stopping Rules" checkboxes (`MTD Above Highest Dose`/`Minimum Sample
+  Size Observed`/`Target Rule`/`CI Rule`/`Allocation Rule`) resolved by REUSING the already-existing
+  `SETIfMTDNotDetermined.0`/`SETIfMTDDetermined.<0-3>.stoppingRuleIfMTD` marker columns — the
+  check-then-immediately-fill-its-own-fields ORDER in the raw recording was the reliable signal for which
+  checkbox owns which period row (no model-type ambiguity like CRM had; this feature's row-to-rule mapping
+  is fixed, not dynamic). Unlike `feature_CRM`'s dynamically-rendered Stop-Early-Trial rows, this
+  feature's `uncheck` pairs work cleanly on every row — no S19-style "row only exists once checked" issue
+  here, confirmed across ITER_03/04/05 all exercising `uncheck` without incident.
+  **S27 (new): a field sharing ONE visible label can resolve to TWO separate DOM ids gated by a sibling
+  radio/mode choice — not just multi-row TABLES (already known for `posteriorSamplingTableMH`/`Direct`),
+  but also a single STANDALONE field.** The "Steady state simulations" field looked like one shared
+  field (one label, one recorded id `#psSSSimulationMH`, used successfully for the MH-method iteration in
+  the recording) — but it hard-failed "not found" on every Direct-method iteration despite being clearly
+  visible in the failure screenshot. Extracting and grepping the Playwright trace's `resources/*.json` for
+  the field's schema (not a DOM snapshot — the app's own form-definition API response, cached in the
+  trace) revealed `"child":["psSSSimulationDirect","psSSSimulationMH","psBurnIn"]` — TWO real ids sharing
+  one label, same split as the already-known table pair. Fixed by adding a second selector
+  (`txt_Steady_state_simulations_Direct` → `#psSSSimulationDirect`) and gating both fill steps on
+  `posteriorSamplingOptions-1`/`-2` (same columns already driving the Direct/MH checkboxes) instead of
+  firing one unconditionally. **General technique worth reusing**: when a field is visible on screen but a
+  selector built from a RECORDING hard-fails "not found," `unzip trace.zip` and `grep` `resources/*.json`
+  for the field's label/id — the app's own API-sourced form schema (JSON, not HTML) is often present
+  verbatim and will show a `"child"`/sibling-id list that explains a label-sharing split the recording's
+  single captured session never exercised both branches of.
+  **A second, narrower selector-type mismatch** (not S27): one single field
+  (`SETIfMTDNotDetermined.0.minSSOnDoseIfNotMTD`) was recorded with an `input[name="..."]` selector while
+  its own row-sibling (`probabilityIfNotMTD`) was recorded with `[id="..."]` and worked — the live DOM
+  apparently doesn't carry a matching `name` attribute for that one field. Fixed by switching it to the
+  same `[id="..."]` convention every other field in the same table uses. Signal: a field fails "not found"
+  immediately after its row-sibling succeeded, AND the failing field's selector is a DIFFERENT TYPE
+  (`name=` vs `id=`) than its sibling's — try matching the sibling's selector convention before assuming a
+  conditional-rendering cause.
+  **Standing rule #12 (orphaned unconditional click) reconfirmed, new trigger condition**: an unconditional
+  `click txt_toxicity_Table_0_losses` (recording noise, no value, sharing its object with a properly
+  `N/A`-gated `fill` later) hard-failed specifically on the "Max Targeted Toxicity" dose-selection method,
+  where the `losses` column doesn't render at all (only `upperLimit` does) — the "Bayes Risk" method
+  renders both columns, so the SAME orphaned click had passed silently on ITER_01 before failing on
+  ITER_02. Deleted per rule #12, no SkipIf added (the value-driven fill below it already auto-skips).
+  **One transient environment hiccup** (unrelated to any wiring): "New Input Set" resolved to a disabled,
+  unrelated button (`id="collection-continue-primary"`) on the very first ITER_01 attempt; a straight
+  retry with no code change passed clean, confirming it wasn't reproducible (unlike the real bugs above,
+  all of which reproduced identically on a second run before being treated as real).
+  **End state:** all 5 iterations real `PASS` (not just `BASELINE_CREATED`) on a full-suite reproducibility
+  run (`PASS 5, FAIL 0, TIMEOUT 0, ERROR 0`, 1258s), `npm run validate` clean (0 warnings). The only
+  `check-testdata-coverage.ts` "gaps" are the already-proven `scenarios.csv`/`loopOverData` blind spot
+  (confirmed false-positive on `feature_CRM`/`feature_i3+3`) plus a NEW confirmed-false-positive class: the
+  tool's folded-child-table heuristic (`<prefix>.<n>.<field>`, `n` numeric) misreads `design.csv`'s own
+  FLAT column names that happen to contain a numeric segment (`posteriorSamplingTableMH.0.psStartingValue`
+  is one literal column, not a child-table reference) — manually confirmed each flagged field already has
+  a correctly-wired step before treating it as safe to ignore.
+
+- **2026-10-20 · `ProductDesign/feature_CRM` TC_58 — stabilize already-authored testdata/metadata (user had hand-built most of `03_metadata`/`02_selectors_repo` from the CRM recording); CRM's own version of mTPI's dynamically-rendered Stop-Early-Trial rows, confirmed model-type-dependent via live DevTools.**
+  Unlike mTPI/BLRM (fresh imports), this feature's metadata/selectors were largely already authored;
+  the session's work was resolving the remaining `UNWIRED` fields (dose-7/8/9 extension per S25,
+  `priorSpecificationTable.0.dose8-10`, a mis-bound `curveFamily`/`Compute Posterior Mean Only` column
+  collision, the `Switch to CRM` token, and the usual Add-Scenario → `loopOverData` replacement) and then
+  stabilizing iteration-by-iteration, surfacing two real app-behavior findings along the way.
+  **Dynamically-rendered Stop-Early-Trial checkbox rows**: the "Stop Early Trial (MTD Determined)" table's
+  rows (`MTD Below Lowest Dose`/`MTD Above Highest Dose`/`Minimum Sample Size Observed`/`MTD Rule`/
+  `Allocation Rule`) only exist in the DOM **once checked** — a fresh project has nothing to `uncheck`, so
+  an `uncheck` action on a never-checked row times out "not found" (proven live on ITER_02/ITER_04 after
+  confirming ITER_01/ITER_03 had never actually exercised the `uncheck` branch, just skipped by data
+  coincidence). Fix: delete the `uncheck` pairs for these 5 checkboxes outright, same as Standing rule
+  #12's spirit but for a check/uncheck PAIR rather than a bare orphaned click — there's no "revert" action
+  this app supports once a conditional row renders.
+  **Logistic-model "no MTD Rule row" case**: for the Logistic model type (at least ITER_02's specific
+  combination), the 2-row "Stop Early Trial (MTD Determined)" table has NO "MTD Rule" row at all — its
+  2nd row is "Allocation Rule" instead, reusing the SAME period-1 DOM fields (`probabilityIfMTD`/
+  `minSSOnDoseIfMTD`) the recording had bound to "MTD Rule". Confirmed via the user's own DevTools
+  screenshot showing `<input id="SETIfMTDDetermined.1.stoppingRuleIfMTD">` next to the "Allocation Rule"
+  label — NOT inferred or guessed; an earlier proposed fix (move ITER_02's data from period1→period2) was
+  WRONG and caught by the user ("in the screenshot, the index is 1 and same is written in the testdata")
+  before being corrected to add a parallel `modelType==Logistic`-gated step reading the SAME period1 data
+  instead of moving it. **Caveat left open, not fully resolved**: the SAME Logistic-gated step also fires
+  for ITER_05 (also Logistic, but which DOES have a real "MTD Rule" row — contradicts a pure model-type
+  gate), causing a redundant double-click + value overwrite; user explicitly reviewed this live and judged
+  it acceptable ("the iter 05 execution looks fine") since the overwrite lands on the correct final value
+  and the behavior is stable/reproducible — left as-is rather than force a cleaner fix nobody asked for.
+  **End state:** all 5 iterations real `PASS` on a full-suite reproducibility run (`PASS 5, FAIL 0,
+  TIMEOUT 0, ERROR 0`), `npm run validate` clean.
 
 - **2026-10-20 · `ProductDesign/feature_mTPI` TC_56 — fresh import from a real recording over stale `feature_i3+3`-copied metadata; all 38 `UNWIRED` fields + 6 skipped radios resolved with ZERO new testdata columns; one new systemic bug class found + fixed live (S25); the `<parent>_` child-table naming trap formalized (S26).**
   The feature folder existed with `TC_16`/`i3+3`-labeled testdata and a `metadata.csv` that was a
