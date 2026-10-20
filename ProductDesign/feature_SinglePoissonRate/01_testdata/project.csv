@@ -1,3 +1,4 @@
-TC_ID,IterationID,Run,projectName,Time Unit,Start Date,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,populationName 0,treatmentArm 0,endpointName 0
-TC_01,ITER_01,TRUE,AutoProj_SPR,Day,07/20/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,ep1,Count,Less Events,FP,Exp,Ep001
-TC_01,ITER_02,TRUE,AutoProj_SPR,Day,07/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,ep1,Count,Less Events,FP,Exp,Ep001
+TC_ID,IterationID,Run,projectName,Time Unit,Start Date,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_01,ITER_01,TRUE,AutoProj_SPR,Day,7/20/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,ep1,Count,Less Events
+TC_01,ITER_02,TRUE,AutoProj_SPR,Month,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,ep1,Count,Less Events
+TC_01,ITER_03,TRUE,AutoProj_SPR,Week,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,ep1,Count,More Events

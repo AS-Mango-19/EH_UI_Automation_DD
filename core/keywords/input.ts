@@ -9,6 +9,7 @@ import { selectorKey } from '../loaders/featureLoader.js';
 import { resolveLocator, type LocatorRoot } from '../locators/resolver.js';
 import { logger, mask } from '../utils/logger.js';
 import { FrameworkError } from '../utils/errors.js';
+import { sleep as sleepMs } from '../utils/retry.js';
 
 /**
  * Best-effort wait for the app's global loading overlay (#spinner) to clear BEFORE a
@@ -172,8 +173,122 @@ export const click: KeywordHandler = async (_page, ctx, step) => {
   // or even force click lands on the banner, so the button's handler never fires — a
   // direct DOM .click() dispatches straight to the element and actually triggers it.
   if (step.objectName === 'btn_New_Project' || step.objectName === 'btn_Calculate') {
+    // The direct-DOM bypass below defeats Playwright's actionability checks entirely
+    // (that's the point, to get past the banner) — but that also means a NATIVE
+    // disabled `<button>`'s `.click()` silently no-ops in the browser: no exception,
+    // no warning, the step just reports success having done nothing. Confirmed live
+    // (GADAR(PD) Enrollment's Accrual `#accrualCalculate`, 2026-10-16): the click was
+    // "passing" every run while the button sat disabled the whole time. Two explicit
+    // checks close that gap: NOT FOUND must fail loudly (never silently skip a
+    // required control); FOUND-BUT-DISABLED must not silently no-op either — it may
+    // be a legitimate data-driven state (e.g. a Calculate that only enables once a
+    // specific optional field is filled) or a real missing-data bug, so it goes on
+    // ctx.soft (the same mechanism softAssertValue/softAssertText already use) —
+    // execution continues, but the iteration's final status becomes FAIL with this
+    // exact reason, so it can never pass unreviewed.
+    const count = await loc.count().catch(() => 0);
+    if (count === 0) {
+      throw new FrameworkError(
+        `click: "${step.objectName}" was not found on the page — the control may be missing, mis-selected, or not yet rendered`,
+        { stepId: step.stepId },
+      );
+    }
+    // Calculate is SUPPOSED to go disabled again once it has successfully computed —
+    // that's its normal end state, not a problem (user confirmed, 2026-10-19). Several
+    // features (StratGADAR, StratGADSD) click this same button 2-3 times across a
+    // multi-stage boundary form as each stage reveals more fields. A re-click only means
+    // something if NEW data was entered since THIS button's own last successful click —
+    // otherwise it is still correctly showing the first click's own success, and treating
+    // that as noteworthy produced false soft-fails on 9/10 StratGADSD iterations whose
+    // compareWithBaseline all genuinely passed. Skip silently (no poll, no soft-fail) when
+    // nothing changed since the last successful click of this exact button.
+    // A soft-failed (disabled, no-op) click still reports stepResults status 'passed' — the
+    // handler returned normally instead of throwing, so "didn't error" and "actually fired"
+    // are NOT the same thing here. Confirmed live (StratGADAR ITER_05, 2026-10-19): a
+    // disabled 2nd click was wrongly counted as the "last successful click", which hid a
+    // real fill that happened afterward and caused the 3rd (final) click to be wrongly
+    // skipped while the page was genuinely still unsaved — cross-check ctx.soft (which a
+    // soft-fail DOES always append to, independent of stepResults) to find a click's true
+    // outcome, not just whether it threw.
+    const disabledPrefix = `click ${step.objectName}: button is DISABLED`;
+    const softFailedStepIds = new Set(
+      ctx.soft.filter((s) => s.message.startsWith(disabledPrefix)).map((s) => s.stepId),
+    );
+    const lastSuccessIdx = (() => {
+      for (let i = ctx.stepResults.length - 1; i >= 0; i--) {
+        const r = ctx.stepResults[i];
+        if (
+          r.action === 'click' &&
+          r.objectName === step.objectName &&
+          r.status === 'passed' &&
+          !softFailedStepIds.has(r.stepId)
+        ) {
+          return i;
+        }
+      }
+      return -1;
+    })();
+    if (lastSuccessIdx >= 0) {
+      // 'check'/'uncheck' deliberately excluded: this codebase's boundary-table flows use a
+      // dedicated loopPeriods pass (e.g. StratGADAR/StratGADSD's "RE-APPLY the boundary
+      // efficacyCheck/futilityCheck" step) specifically to re-assert checkbox state a prior
+      // Calculate may have silently reset — by its own documented purpose that's a defensive
+      // re-affirmation, not new data entry. Counting it as "new" caused a confirmed false
+      // soft-fail (StratGADSD ITER_02, 2026-10-19): the boundary table was already fully
+      // computed, re-asserting checkboxes is all that ran before the next Calculate, and that
+      // got misread as "something changed, re-verify" when nothing actually had.
+      const enteredSince = ctx.stepResults
+        .slice(lastSuccessIdx + 1)
+        .some((r) => ['fill', 'select'].includes(r.action) && r.status === 'passed');
+      if (!enteredSince) {
+        logger.info(
+          `click ${step.objectName}: skipped — already computed successfully and nothing new entered since; a disabled state here is expected, not reviewed as a failure.`,
+        );
+        return;
+      }
+    }
+    // A disabled Calculate right after the preceding fills isn't necessarily final: GADAR/
+    // StratGADAR/StratGADSD enable it off the page's OWN change (table edit, inputParameter
+    // select, a multi-period boundary table), and automation can outrun the app's post-fill
+    // validation by the time this step runs. Confirmed live (2026-10-16 GADAR(PD), 2026-10-19
+    // StratGADSD): real data entered, Calculate still read disabled on a quick check — and
+    // WHICH of a multi-stage form's 2-3 Calculate clicks lags is inconsistent per iteration
+    // (StratGADSD ITER_02 lagged on the 3rd click, ITER_06 on the 1st and 2nd), so a fixed
+    // short poll or a hand-placed settle sleep before one specific click both missed it. Poll
+    // for the step's own configured Timeout instead of a short hardcoded window — it already
+    // varies per Calculate step (10-15s across these features) and self-adapts to whichever
+    // click turns out to be slow. This still correctly falls through to the soft-fail below for
+    // a GENUINE data-gated disable (e.g. StratGADAR's inputParameter=None, nothing to
+    // calculate), it just stops mistaking "hasn't caught up yet" for that.
+    const enableDeadline = Date.now() + step.timeout;
+    let isDisabled = await target.isDisabled().catch(() => true);
+    while (isDisabled && Date.now() < enableDeadline) {
+      await sleepMs(250);
+      isDisabled = await target.isDisabled().catch(() => true);
+    }
+    if (isDisabled) {
+      const message = `click ${step.objectName}: button is DISABLED, click skipped — this may be expected for this iteration's data combination, or may indicate a missing/unfilled required field upstream. Review this iteration's screenshots/data before trusting its result.`;
+      logger.warn(message);
+      ctx.soft.push({ stepId: step.stepId, message });
+      return;
+    }
     try {
       await target.evaluate((element) => (element as HTMLElement).click());
+      // This click succeeded — if an EARLIER click of this exact button was soft-failed as
+      // disabled, that was premature-but-expected friction in a multi-stage reveal form, not
+      // a real problem. Confirmed live (StratGADSD ITER_06, 2026-10-19): a 3-click boundary
+      // Calculate sequence found the first two attempts disabled (later-stage fields genuinely
+      // not filled yet — by design), soft-failed each as intended, then the third attempt
+      // succeeded once everything was in, with a fully correct result (compareWithBaseline
+      // passed). Only the LAST attempt of a given button reflects its real final state, so
+      // clear any earlier soft-fails logged against this exact objectName this iteration — a
+      // later success proves they were transient, not genuine. A button that never recovers
+      // (e.g. StratGADAR's inputParameter=None) never reaches this line, so its soft-fail
+      // correctly stands.
+      const disabledPrefix = `click ${step.objectName}: button is DISABLED`;
+      for (let i = ctx.soft.length - 1; i >= 0; i--) {
+        if (ctx.soft[i].message.startsWith(disabledPrefix)) ctx.soft.splice(i, 1);
+      }
       return;
     } catch (err) {
       logger.warn(`click: DOM click for ${step.objectName} failed after ${(err as Error).message}`);

@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 268b377b5d863015b8bbfa3b94bcc23a69a6eacca400c7ffc81a8c4a7c41032f)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f1210cf8f1ee12d47de754fdcac5115617154fd46c393a499cff69cf3be0e31a)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -12,6 +12,11 @@ export class Page {
   /** textbox from codegen */
   txt_ResultName(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_ResultName', { dynamicArgs });
+  }
+
+  /** app-global loading overlay (same #spinner id confirmed live on GADAR(PD)/ProjectsPage this session) - used to wait out GSD boundary recompute instead of a fixed sleep */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'div_Spinner', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -92,6 +97,31 @@ export class Page {
   /** textbox from codegen */
   txt_boundary_Sim_1_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_analysis_Spacing_Info', { dynamicArgs });
+  }
+
+  /** textbox from codegen (period 2 - same id scheme as periods 0/1) */
+  txt_boundary_Sim_2_analysis_Spacing_Info(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_analysis_Spacing_Info', { dynamicArgs });
+  }
+
+  /** textbox from codegen (period 1 - same name scheme as period 0) */
+  txt_boundary_Sim_1_cum_Alpha_Spent_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_cum_Alpha_Spent_Lower', { dynamicArgs });
+  }
+
+  /** textbox from codegen (period 1 - same id scheme as period 0) */
+  txt_boundary_Sim_1_efficacy_ZUpper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_ZUpper', { dynamicArgs });
+  }
+
+  /** textbox from codegen (period 2 - same id scheme as period 0) */
+  txt_boundary_Sim_2_efficacy_ZLower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_efficacy_ZLower', { dynamicArgs });
+  }
+
+  /** textbox from codegen (period 1 - same name scheme as period 0) */
+  txt_boundary_Sim_1_futility_Z(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_futility_Z', { dynamicArgs });
   }
 
   /** textbox from codegen */

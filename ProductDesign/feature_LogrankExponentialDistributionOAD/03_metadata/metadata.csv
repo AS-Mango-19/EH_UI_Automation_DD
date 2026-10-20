@@ -17,9 +17,9 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 16,160,ConfigureDesign,ProjectPage,click,btn_Create_Project,,,,,,10000,FALSE,0,never,,click Create Project
 17,170,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
 18,180,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
-19,190,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName
-20,200,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,click Design Compute or simulate a
-21,210,ExtractResults,ResultsPage,select,ddl_Select_Test,${data.design.Select Test},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
+19,190,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.Name Input Set},,,,,10000,FALSE,0,never,,"fill collectionName (shares the #collectionName field with the inputset's 'Name Input Set' column)"
+20,200,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,${data.inputset.SelectTask},,,,,10000,FALSE,0,never,,"click Design Compute or simulate a (carries the SelectTask token, matching MCPMod/MAMS_DOM/SinglePoissonRate/Simon2Stage/GADSD convention)"
+21,210,ExtractResults,ResultsPage,select,ddl_Select_Test,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns
 22,220,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
 23,230,ExtractResults,DesignPage,assertValue,obj_Hypothesis,,,,${data.design.Hypothesis},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
 24,240,ExtractResults,ResultsPage,check,opt_Computed_Parameter,${data.design.Computed Parameter},,,,visible,10000,FALSE,0,never,,select Computed Parameter

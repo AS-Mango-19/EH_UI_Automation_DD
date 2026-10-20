@@ -21,13 +21,18 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 17,170,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent,${data.simulation.boundarySim.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpent
 18,180,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_CP,${data.simulation.boundarySim.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityCP
 19,190,ConfigureDesign,Page,fill,txt_boundary_Sim_1_analysis_Spacing_Info,${data.simulation.boundarySim.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.1.analysisSpacingInfo
+19.5,195,ConfigureDesign,Page,fill,txt_boundary_Sim_2_analysis_Spacing_Info,${data.simulation.boundarySim.2.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.2.analysisSpacingInfo (ITER_01 has a 3rd interim)
 20,200,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_PValue,${data.simulation.boundarySim.0.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyPValue
 21,210,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_PValue,${data.simulation.boundarySim.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityPValue
 22,220,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.0.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentUpper
 23,230,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.0.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpentLower
+23.5,235,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.1.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentLower (ITER_01 has a 2nd interim)
 25,250,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_Z,${data.simulation.boundarySim.0.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityZ
+25.5,255,ConfigureDesign,Page,fill,txt_boundary_Sim_1_futility_Z,${data.simulation.boundarySim.1.futilityZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.futilityZ (ITER_06 has a 2nd interim)
 26,260,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZUpper,${data.simulation.boundarySim.0.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZUpper
+26.5,265,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZUpper,${data.simulation.boundarySim.1.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZUpper (ITER_02 has a 2nd interim)
 27,270,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZLower,${data.simulation.boundarySim.0.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZLower
+27.5,275,ConfigureDesign,Page,fill,txt_boundary_Sim_2_efficacy_ZLower,${data.simulation.boundarySim.2.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.2.efficacyZLower (ITER_02 has a 3rd interim)
 30,300,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Recalculate the sim boundary. SKIPPED for FIXED designs (no boundary = no Recalculate button; would time out)
 30.5,305,ConfigureDesign,Page,sleep,,4500,,,,,6000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Settle after Recalculate: the boundary recompute (spinner) must finish before the Sample Size Re-Estimation / adaptation fields enable (GSD only)
 31,310,ConfigureDesign,Page,select,ddl_adaptation_Method,${data.simulation.adaptationMethod},,,,,10000,FALSE,0,always,,Select adaptationMethod. Native <select> - select matches by visible label first
