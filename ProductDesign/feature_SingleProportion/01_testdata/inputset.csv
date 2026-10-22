@@ -1,0 +1,14 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_25,ITER_01,Set1,Design,Single Proportion
+TC_25,ITER_02,Set2,Design,Single Proportion
+TC_25,ITER_03,Set3,Design,Single Proportion
+TC_25,ITER_04,Set4,Design,Single Proportion
+TC_25,ITER_05,Set5,Design,Single Proportion
+TC_25,ITER_06,Set6,Design,Single Proportion
+TC_25,ITER_07,Set7,Design,Single Proportion
+TC_25,ITER_08,Set8,Design,Single Proportion
+TC_25,ITER_09,Set9,Design,Single Proportion
+TC_25,ITER_10,Set10,Design,Single Proportion
+TC_25,ITER_11,Set11,Design,Single Proportion
+TC_25,ITER_12,Set12,Design,Single Proportion
+TC_25,ITER_13,Set13,Design,Single Proportion

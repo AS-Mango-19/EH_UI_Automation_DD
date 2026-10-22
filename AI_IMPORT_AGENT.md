@@ -754,6 +754,14 @@ A period-table's columns (`cumAlphaSpent`, `futilityPValue`, `futilityDelta`, �
 
 **Fix/diagnostic:** screenshot the live boundary table for EVERY distinct family value a feature's testdata actually uses, before assuming one generic per-period flow/column set covers all of them, and read the table's real column headers off that screenshot rather than guessing which testdata column should supply a missing value. This is a structural variant of §9.3's "different iterations can lead the same table with different fields" — here the family SELECTOR itself picks the field set, not just which field happens to be populated.
 
+### 9.9 — The SAME semantic field can have a DIFFERENT real DOM id depending on which family state the recording captured it in *(judgment — the `feature_SingleProportion` TC_25 case, S30)*
+
+§9.8 covers a family selector changing WHICH fields exist. This is a narrower, sneakier variant: a single field that exists under every family — same visible label, same row position — can render with a genuinely different `id` depending on which family was selected live at the moment a superset recording session happened to capture it. The importer has no way to know this; it binds the one id it saw, and that id looks completely ordinary: right naming convention, matches every sibling field's pattern, `validate`/`UNWIRED` both stay clean because the testdata column holds a real value and the selector is syntactically fine.
+
+The only symptom is a live `fill: field "..." not found` — and critically, it fires ONLY on the iteration(s) that exercise the family state the recording did NOT capture that field under, while every iteration using the originally-recorded family state works fine. This makes it look like an iteration-specific data problem, not a selector problem.
+
+**Fix/diagnostic:** when a `fill`/`select` throws "not found" for a selector that otherwise looks completely unremarkable (right convention, already validated, real data), don't reach for a timing fix first — `dumpSubtree` the live table on the SPECIFIC failing iteration (not a passing one) and compare the real id against what's wired. Confirmed on TC_25: the recording captured `[id="boundary.0.cumBetaProportion"]` for the "Cum. β Spent" field; the live DOM for the symmetric Spending-Functions family instead used `[id="boundary.0.cumBetaSpent"]`. Renaming the testdata column + selectors + steps back to `cumBetaSpent` fixed every iteration that actually exercised the field, with zero regression risk to iterations that never touched it (confirmed by grepping which iterations had a real, non-`N/A` value in that column before renaming).
+
 ---
 
 ## 10 — Writing to an AG-Grid cell that recording couldn't capture (`fillGridCell`)
@@ -793,6 +801,29 @@ This is a general-purpose tool, not a feature-specific one proven on a specific 
 1. **The `row-index`/`col-id` descendant-combinator shape.** Confirmed on the grids checked so far; a DIFFERENT app/grid library could in principle put both attributes on the same element (compound selector) instead — `dumpGridDiagnostic`'s own output tells you which, don't assume.
 2. **The index-column numbering convention**, if `indexColId` is used — the 1-based `rowIndex + 1` default is a reasonable guess, not a confirmed universal. Screenshot-verify a freshly-added row's index cell; if the app numbers 0-based, or non-sequentially, or auto-fills it without needing a write at all, adjust (or drop `indexColId` entirely in the no-write case).
 3. **The Add button's reachability from the container.** `xpath=following::button[...]` searches forward in document order from the grid container — fine when the Add button renders after the grid, which is the common layout, but confirm it on a new page shape before trusting it.
+
+---
+
+## 11 — Page/graph load-only verification, no data extraction (the `feature_SingleProportion` TC_25 "Details" tab)
+
+**When this applies:** a result page has a secondary tab/view (a chart, a detail panel, anything beyond the main results table) that the user explicitly wants confirmed as "loads correctly" — NOT compared cell-by-cell against a baseline. This is a deliberately lighter-weight check than `extractAllResultTables`/`compareWithBaseline`, and it needs no new framework mechanism — the existing `assertVisible`/`waitForSelector` keyword set (`core/keywords/registry.ts`) already covers it.
+
+**The three-step pattern**, placed AFTER `compareWithBaseline` so it can never affect the main result comparison, and wired identically in both the design flow and the sim flow if the tab is shared by both result types:
+
+1. `click` the tab button (e.g. `btn_Details`). If the tab was recorded in the WRONG position (recordings often capture it right after the initial result-confirm dialog, before the result has even opened — see §3's general "don't trust a recorded click's position blindly"), move the step to after `compareWithBaseline`.
+2. `waitForSelector` the page's loading-spinner element with `WaitCondition=hidden` (reuse the same spinner selector the login flow already has, e.g. `div_Spinner`/`#spinner` — add a feature-scoped selector row pointing at the same CSS if the existing one is scoped to a different logical "Page"). **Do not skip this** — the first screenshot of the tab almost always fires mid-load; confirmed live on TC_25, where the raw post-click screenshot showed only a spinner and the chart appeared only once this wait was added.
+3. `assertVisible` (hard, `Optional=FALSE`) on the real content element that only exists once the view has actually rendered — not a generic container. Find it live: add a temporary `dumpSubtree` `callCustom` step right after step 2 (`ExpectedValue = "body|0|400"` is a safe untargeted starting point when you don't know the container yet), run once, read the dump for the chart/panel's real id or class (look for library fingerprints — `js-plotly-plot`, `highcharts-container`, etc. — not just generic `div`s), then delete the debug step and wire the real selector. Confirmed on TC_25: the chart container was `#chartRender-0` (a Plotly chart), found this way.
+
+**Two things this pattern does NOT generalize automatically:**
+
+- **A feature with more than one chart/panel on the same tab** will likely render additional instances at a different index (`#chartRender-1`, …) that a single hard-coded selector won't cover — screenshot/dumpSubtree-verify per feature rather than assuming the id carries over, especially if the tab has a chart-selector dropdown implying more than one chart exists.
+- **The sim result page is not guaranteed to have the same tabs as the design result page for the same iteration** — see §9.8-adjacent case below (S31). A tab that works unconditionally on the design side may need its own gate on the sim side.
+
+### 11.1 — A fixed (no-boundary) design's SIM result page can be missing an entire tab that the DESIGN result page still has *(S31)*
+
+This is NOT the familiar S8 "Calculate/Recalculate button is disabled for a fixed design" pattern — it's one level up: for a design solving for Type 1 Error (no boundary/interim-analysis section at all), the DESIGN result's Details tab can still render fine (e.g. a generic Power-vs-Sample-Size sensitivity curve that doesn't depend on any boundary existing), while the SIM result's Details tab is missing ENTIRELY — only "Home" shows next to the result title, because the sim-side Details view specifically needs real interim/boundary simulation data to have anything to show.
+
+**Fix:** gate the sim-side click/wait/assertVisible triplet with the same `SkipIf ${data.design.<ComputedParameterColumn>}==Type 1 Error` condition already used for the sim-side Recalculate gate — do NOT assume the design-side gate (or lack thereof) tells you anything about what the sim side needs. Confirmed live on TC_25 ITER_03: the design Details check passed ungated; the identical click on the sim result timed out with `getByRole('button', { name: 'Details' })` simply not existing.
 
 ---
 
