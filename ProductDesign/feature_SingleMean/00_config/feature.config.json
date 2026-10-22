@@ -1,5 +1,5 @@
 {
-  "feature": "DOP(PD)",
+  "feature": "SingleMean",
   "module": "ProductDesign",
   "serial": true,
   "reuseAuthState": false,
