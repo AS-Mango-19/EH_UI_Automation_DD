@@ -1,0 +1,8 @@
+TC_ID,IterationID,StratumIndex,PeriodIndex,byTime,Cumulative % Survival (Control),Median Survival Times (Control),Hazard Rate (Control),Hazard Ratio
+TC_45,ITER_03,0,0,1.2,96,N/A,N/A,0.56
+TC_45,ITER_03,0,1,N/A,95,N/A,N/A,0.55
+TC_45,ITER_03,0,2,N/A,95,N/A,N/A,0.6
+TC_45,ITER_08,0,0,N/A,N/A,20.6589,N/A,0.662
+TC_45,ITER_08,0,1,N/A,N/A,21.65895,N/A,0.7412
+TC_45,ITER_08,0,2,N/A,N/A,22.65892,N/A,0.55
+TC_45,ITER_08,0,3,N/A,N/A,20.88956,N/A,0.6589

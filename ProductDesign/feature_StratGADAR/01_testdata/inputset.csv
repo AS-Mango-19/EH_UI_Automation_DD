@@ -1,0 +1,12 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_45,ITER_01,Set 1,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_02,Set 2,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_03,Set 3,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_04,Set 4,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_05,Set 5,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_06,Set 6,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_07,Set 7,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_08,Set 8,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_09,Set 9,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_10,Set 10,Design,Logrank Test Given Accrual Duration and Accrual Rates
+TC_45,ITER_11,Set 11,Design,Logrank Test Given Accrual Duration and Accrual Rates

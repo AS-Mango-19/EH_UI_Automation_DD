@@ -17,6 +17,11 @@ import type { KeywordHandler } from '../../core/keywords/types.js';
 import { logger } from '../../core/utils/logger.js';
 import { writeCsv } from '../../core/csv/writer.js';
 import { ensureDir } from '../../core/utils/paths.js';
+import { targetLocator } from '../../core/keywords/util.js';
+import { parseMetadataFile } from '../../core/runner/metadataFile.js';
+import { runSteps } from '../../core/runner/stepRunner.js';
+import { abs } from '../../core/utils/paths.js';
+import { resolveLocator } from '../../core/locators/resolver.js';
 
 const squash = (s: string): string => s.replace(/\s+/g, ' ').trim();
 
@@ -576,6 +581,599 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
   ctx.lastActualRows = rows;
   ctx.lastActualPath = outputPath;
   return outputPath;
+};
+
+/**
+ * loopChildRows — like core's loopPeriods, but for a child testdata CSV that has NO
+ * PeriodIndex column (so featureLoader.foldChildTables never merges it into the parent's
+ * wide model, and loopPeriods' fold-based reconstruction can't see it — e.g. a per-stratum
+ * weights table keyed only by StratumIndex, with no time dimension at all). Reads the
+ * child file DIRECTLY from ctx.feature.testDataParsed (it stays a separate, unfolded
+ * table in that map), filters to the current (TC_ID, IterationID), and runs the reusable
+ * flow CSV in InputValue once per matching row, exposing that row's fields as
+ * ${runtime.period.<field>} — the SAME var namespace core's loopPeriods uses, so an
+ * existing per-field flow file/selector convention works unchanged either way.
+ *
+ * Config comes from ExpectedValue (InputValue is already consumed by callCustom as the
+ * function-name dispatch key, matching reconcilePeriodTable's established convention):
+ *   ExpectedValue = "<childTestdataFile>|<flowFilePath>"
+ *     simulation_weights|flows/stratgadar_weights_period.csv
+ */
+export const loopChildRows: KeywordHandler = async (_page, ctx, step) => {
+  const [childFile, flowFile] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!childFile || !flowFile) {
+    throw new Error(`loopChildRows: ExpectedValue must be "<childTestdataFile>|<flowFilePath>" — got "${step.expected}"`);
+  }
+  const parsed = ctx.feature.testDataParsed.get(childFile);
+  if (!parsed) {
+    throw new Error(`loopChildRows: unknown testdata file "${childFile}"`);
+  }
+  const hasTc = parsed.headers.includes('TC_ID');
+  const hasIter = parsed.headers.includes('IterationID');
+  const rows = parsed.records
+    .map((r) => r.data)
+    .filter((d) => (!hasTc || d['TC_ID'] === ctx.tcId) && (!hasIter || d['IterationID'] === ctx.iterationId));
+  const steps = parseMetadataFile(abs(flowFile));
+  logger.info(`loopChildRows[${childFile}]: ${rows.length} row(s) -> ${flowFile}`);
+  for (let n = 0; n < rows.length; n++) {
+    ctx.setVar('period.n', String(n));
+    ctx.setVar('period.index', String(n));
+    for (const [field, val] of Object.entries(rows[n]!)) ctx.setVar(`period.${field}`, val);
+    await runSteps(ctx, steps, { source: `${flowFile}[row ${n}]` });
+  }
+};
+
+/**
+ * dumpGridDiagnostic — ONE-OFF debugging aid: logs every [row-index]/[col-id]
+ * element found inside a given container, so a live DOM structure question can be
+ * answered from the test log instead of a static screenshot. ExpectedValue is
+ * "<containerCssSelector>[|<col-id filter>]" (matches reconcilePeriodTable's
+ * pipe-delimited-config-via-ExpectedValue convention, since InputValue is already
+ * consumed by callCustom as the function-name dispatch key).
+ */
+export const dumpGridDiagnostic: KeywordHandler = async (page, ctx, step) => {
+  const [containerSel, colIdFilter = ''] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!containerSel) {
+    throw new Error(`dumpGridDiagnostic: ExpectedValue must be "<containerCssSelector>[|<col-id filter>]" — got "${step.expected}"`);
+  }
+
+  const snapshot = async () =>
+    page.evaluate(
+      ({ containerSel, colIdFilter }) => {
+        const container = document.querySelector(containerSel);
+        if (!container) return { found: false, containerHtmlLen: 0, ariaRowCount: null as number | null, rows: [] as unknown[] };
+        // Walk every [col-id] cell and find its NEAREST ANCESTOR [row-index] (col-id often
+        // lives on a nested cell div, not the row-index element itself - a compound selector
+        // [row-index][col-id] silently matches nothing in that layout). This reports one entry
+        // PER (row, column) pair instead of one garbled concatenated-text blob per row.
+        const colCells = Array.from(container.querySelectorAll('[col-id]'));
+        const rows = colCells
+          .filter((el) => !colIdFilter || el.getAttribute('col-id') === colIdFilter)
+          .map((el) => {
+            const rowEl = el.closest('[row-index]');
+            return {
+              rowIndex: rowEl ? rowEl.getAttribute('row-index') : null,
+              rowId: rowEl ? rowEl.getAttribute('row-id') : null,
+              colId: el.getAttribute('col-id'),
+              text: (el.textContent || '').trim().slice(0, 40),
+              visible: (el as HTMLElement).offsetParent !== null,
+              rect: (() => {
+                const r = (el as HTMLElement).getBoundingClientRect();
+                return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+              })(),
+            };
+          });
+        // AG-Grid roots are `role="grid"` OR `role="treegrid"` (row-grouped grids like the
+        // Treatment/Factor tree use treegrid) - only checking "grid" silently missed the count
+        // on a treegrid, making ariaRowCount always null and short-circuiting the scroll loop
+        // below before it ever scrolled past the first render.
+        const gridRoot = container.querySelector('[role="grid"], [role="treegrid"]');
+        const ariaRowCount = Number(gridRoot?.getAttribute('aria-rowcount') ?? container.getAttribute('aria-rowcount') ?? '0') || null;
+        return { found: true, containerHtmlLen: container.innerHTML.length, ariaRowCount, gridRole: gridRoot?.getAttribute('role') ?? null, rows };
+      },
+      { containerSel, colIdFilter },
+    );
+
+  // Defeat AG-Grid row virtualization (same technique as extractAllResultTables): scroll
+  // the container's .ag-body-viewport in steps, merging every row-index seen at each
+  // position, until no new rows appear or the aria-rowcount target is reached.
+  const matchCount = await page.evaluate((containerSel) => document.querySelectorAll(containerSel).length, containerSel).catch(() => -1);
+  if (matchCount > 1) {
+    logger.info(`dumpGridDiagnostic[${containerSel}]: WARNING - ${matchCount} elements match this selector (duplicate id?); querySelector only inspects the FIRST one.`);
+  }
+  const merged = new Map<string, { rowIndex: string; rowId: string | null; colId: string | null; text: string; visible: boolean; rect: unknown }>();
+  let ariaRowCount: number | null = null;
+  let lastSize = -1;
+  const viewportInfo = await page
+    .evaluate((containerSel) => {
+      const container = document.querySelector(containerSel);
+      const viewport = container?.querySelector('.ag-body-viewport') as HTMLElement | null;
+      if (!viewport) return { found: false };
+      return { found: true, scrollHeight: viewport.scrollHeight, clientHeight: viewport.clientHeight, scrollTop: viewport.scrollTop };
+    }, containerSel)
+    .catch(() => ({ found: false }));
+  logger.info(`dumpGridDiagnostic[${containerSel}]: .ag-body-viewport ${JSON.stringify(viewportInfo)}`);
+  for (let pass = 0; pass < 40; pass++) {
+    const snap = await snapshot();
+    if (!snap.found) {
+      logger.info(`dumpGridDiagnostic[${containerSel}]: found=false (container not in DOM)`);
+      return snap;
+    }
+    ariaRowCount = snap.ariaRowCount;
+    if (pass === 0) logger.info(`dumpGridDiagnostic[${containerSel}]: gridRole=${(snap as { gridRole?: string | null }).gridRole ?? null} ariaRowCount=${ariaRowCount}`);
+    for (const r of snap.rows as Array<{ rowIndex: string; rowId: string | null; colId: string | null; text: string; visible: boolean; rect: unknown }>) {
+      const key = `${r.rowIndex}|${r.colId ?? ''}`;
+      if (!merged.has(key) || r.text) merged.set(key, r);
+    }
+    const target = ariaRowCount && ariaRowCount > 1 ? ariaRowCount - 1 : 0;
+    if (target > 0 && new Set([...merged.values()].map((r) => r.rowIndex)).size >= target) break;
+    if (pass > 0 && merged.size === lastSize) break;
+    lastSize = merged.size;
+    const moved = await page
+      .evaluate((containerSel) => {
+        const container = document.querySelector(containerSel);
+        const viewport = container?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.8, 40);
+        return viewport.scrollTop !== before;
+      }, containerSel)
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+  await page
+    .evaluate((containerSel) => {
+      const container = document.querySelector(containerSel);
+      const viewport = container?.querySelector('.ag-body-viewport') as HTMLElement | null;
+      if (viewport) viewport.scrollTop = 0;
+    }, containerSel)
+    .catch(() => undefined);
+
+  const rows = [...merged.values()].sort((a, b) => Number(a.rowIndex) - Number(b.rowIndex) || String(a.colId).localeCompare(String(b.colId)));
+  const distinctRowIndexes = new Set(rows.map((r) => r.rowIndex)).size;
+  const distinctColIds = [...new Set(rows.map((r) => r.colId))];
+  logger.info(
+    `dumpGridDiagnostic[${containerSel}]: found=true ariaRowCount=${ariaRowCount} distinctRowIndexes=${distinctRowIndexes} distinctColIds=${JSON.stringify(distinctColIds)} matchingCells=${rows.length} (scrolled to defeat virtualization)`,
+  );
+  for (const r of rows.slice(0, 100)) {
+    logger.info(`  row-index=${r.rowIndex} row-id=${r.rowId} col-id=${r.colId} visible=${r.visible} rect=${JSON.stringify(r.rect)} text="${r.text}"`);
+  }
+  return { found: true, ariaRowCount, rows };
+};
+
+/**
+ * dumpTextMatches — ONE-OFF debugging aid: finds every element on the page whose OWN text
+ * (not its descendants') contains a keyword (case-insensitive), so a "what control handles
+ * this?" question can be answered from the test log instead of a live screenshot. ExpectedValue
+ * is "<keyword>[|<max results, default 40>]". Filters to leaf-ish text nodes (an element is
+ * reported only when none of its children also match) to avoid drowning in wrapper duplicates.
+ */
+export const dumpTextMatches: KeywordHandler = async (page, ctx, step) => {
+  const [keyword, maxStr] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!keyword) {
+    throw new Error(`dumpTextMatches: ExpectedValue must be "<keyword>[|<max results>]" — got "${step.expected}"`);
+  }
+  const max = Number(maxStr) || 40;
+  const matches = await page.evaluate(
+    ({ keyword, max }) => {
+      const kw = keyword.toLowerCase();
+      const all = Array.from(document.querySelectorAll('body *'));
+      const out: Array<{
+        tag: string; id: string; cls: string; text: string; visible: boolean;
+        ancestorIds: string[]; nearestGridId: string; nearestGridRowCount: number; nearestGridDistance: number;
+      }> = [];
+      for (const el of all) {
+        if (!(el.textContent || '').toLowerCase().includes(kw)) continue;
+        let childMatches = false;
+        for (const c of Array.from(el.children)) {
+          if ((c.textContent || '').toLowerCase().includes(kw)) { childMatches = true; break; }
+        }
+        if (childMatches) continue; // keep only the innermost matching element
+
+        // Walk up the ancestor chain: collect every id seen, and find the nearest ancestor
+        // (or the element itself) that contains an AG-Grid, to answer "which table does this
+        // caption/button belong to" without guessing at a shared/reused container id.
+        const ancestorIds: string[] = [];
+        let nearestGridId = '';
+        let nearestGridRowCount = 0;
+        let nearestGridDistance = -1;
+        let cur: Element | null = el;
+        let depth = 0;
+        while (cur && depth < 8) {
+          const id = (cur as HTMLElement).id;
+          if (id) ancestorIds.push(id);
+          if (nearestGridDistance === -1) {
+            const grid = cur.querySelector('.ag-root, [row-index]');
+            if (grid) {
+              const gridRoot = (grid.closest('[id]') as HTMLElement) || (cur as HTMLElement);
+              nearestGridId = gridRoot.id || '(no id)';
+              nearestGridRowCount = cur.querySelectorAll('[row-index]').length;
+              nearestGridDistance = depth;
+            }
+          }
+          cur = cur.parentElement;
+          depth++;
+        }
+
+        out.push({
+          tag: el.tagName.toLowerCase(),
+          id: (el as HTMLElement).id || '',
+          cls: (el.getAttribute('class') || '').slice(0, 60),
+          text: (el.textContent || '').trim().slice(0, 80),
+          visible: (el as HTMLElement).offsetParent !== null,
+          ancestorIds,
+          nearestGridId,
+          nearestGridRowCount,
+          nearestGridDistance,
+        });
+        if (out.length >= max) break;
+      }
+      return out;
+    },
+    { keyword, max },
+  );
+  logger.info(`dumpTextMatches["${keyword}"]: ${matches.length} match(es)`);
+  for (const m of matches) {
+    logger.info(
+      `  <${m.tag} id="${m.id}" class="${m.cls}"> visible=${m.visible} text="${m.text}" ancestorIds=${JSON.stringify(m.ancestorIds)} nearestGrid(id=${m.nearestGridId}, rows=${m.nearestGridRowCount}, distance=${m.nearestGridDistance})`,
+    );
+  }
+  return matches;
+};
+
+/**
+ * dumpSubtree — ONE-OFF debugging aid: lists every element inside a container (or inside the
+ * Nth ancestor of a container, via `upLevels`), one line each with tag/id/class/own-text, so a
+ * whole panel's structure (siblings, buttons, tabs the container itself doesn't reveal) can be
+ * read from the test log in one shot instead of many narrow keyword searches. ExpectedValue is
+ * "<containerCssSelector>[|<upLevels, default 0>][|<max, default 150>]".
+ */
+export const dumpSubtree: KeywordHandler = async (page, ctx, step) => {
+  const [containerSel, upStr, maxStr] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!containerSel) {
+    throw new Error(`dumpSubtree: ExpectedValue must be "<containerCssSelector>[|<upLevels>][|<max>]" — got "${step.expected}"`);
+  }
+  const upLevels = Number(upStr) || 0;
+  const max = Number(maxStr) || 150;
+  const info = await page.evaluate(
+    ({ containerSel, upLevels, max }) => {
+      let root: Element | null = document.querySelector(containerSel);
+      if (!root) return { found: false, rootTag: '', rootId: '', lines: [] as string[] };
+      for (let i = 0; i < upLevels && root.parentElement; i++) root = root.parentElement;
+      const lines: string[] = [];
+      const all = Array.from(root.querySelectorAll('*'));
+      for (const el of all) {
+        const ownText = Array.from(el.childNodes)
+          .filter((n) => n.nodeType === 3)
+          .map((n) => (n.textContent || '').trim())
+          .join(' ')
+          .trim();
+        const id = (el as HTMLElement).id;
+        const cls = (el.getAttribute('class') || '').slice(0, 50);
+        if (!id && !cls && !ownText) continue; // skip pure structural noise
+        lines.push(
+          `${el.tagName.toLowerCase()}${id ? '#' + id : ''}${cls ? '.' + cls.replace(/\s+/g, '.') : ''}${ownText ? ` "${ownText.slice(0, 50)}"` : ''}`,
+        );
+        if (lines.length >= max) break;
+      }
+      return { found: true, rootTag: root.tagName.toLowerCase(), rootId: (root as HTMLElement).id || '', lines };
+    },
+    { containerSel, upLevels, max },
+  );
+  logger.info(`dumpSubtree[${containerSel}, up=${upLevels}]: root=<${info.rootTag}#${info.rootId}> found=${info.found} ${info.lines.length} element(s) with id/class/text`);
+  for (const l of info.lines) logger.info(`  ${l}`);
+  return info;
+};
+
+/**
+ * scrollGridIntoView — defeats AG-Grid row virtualization by scrolling a container's
+ * .ag-body-viewport down in steps until a target CSS selector is found in the DOM (or a
+ * pass limit is hit), then scrolls it back to top. Needed wherever a row's cell must be
+ * interacted with (double-click, etc.) but the row hasn't been rendered yet because it's
+ * off-screen in a virtualized grid - a plain waitFor/click never sees it since the element
+ * genuinely doesn't exist in the DOM until scrolled near it, unlike extractAllResultTables
+ * (which reads every row across scroll positions) or dumpGridDiagnostic (which is read-only) -
+ * this one leaves the target scrolled INTO view for the next step to interact with.
+ *
+ * Config comes from ExpectedValue (InputValue is already consumed by callCustom as the
+ * function-name dispatch key, matching reconcilePeriodTable's convention):
+ *   ExpectedValue = "<containerCssSelector>|<targetCssSelector>"
+ */
+export const scrollGridIntoView: KeywordHandler = async (page, ctx, step) => {
+  const [containerSel, targetSel] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!containerSel || !targetSel) {
+    throw new Error(`scrollGridIntoView: ExpectedValue must be "<containerCssSelector>|<targetCssSelector>" — got "${step.expected}"`);
+  }
+  for (let pass = 0; pass < 40; pass++) {
+    const found = await page.evaluate(
+      ({ containerSel, targetSel }) => !!document.querySelector(containerSel)?.querySelector(targetSel),
+      { containerSel, targetSel },
+    );
+    if (found) {
+      logger.info(`scrollGridIntoView[${containerSel}]: "${targetSel}" found after ${pass} scroll pass(es)`);
+      return;
+    }
+    const moved = await page
+      .evaluate(({ containerSel }) => {
+        const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+        return viewport.scrollTop !== before;
+      }, { containerSel })
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+  logger.warn(`scrollGridIntoView[${containerSel}]: "${targetSel}" not found after scrolling - the next step will likely fail with a clearer error`);
+};
+
+/**
+ * fillGridCell — writes ONE value into an AG-Grid cell addressed purely by its structural
+ * coordinates (`row-index` + `col-id`), for the case recording/codegen CANNOT capture a
+ * usable per-cell selector: AG-Grid cells are typically plain `<div>`s until double-clicked
+ * into edit mode, so a codegen session that doesn't happen to double-click every cell leaves
+ * most of the grid with no recorded selector at all, even though the grid's structure (and
+ * therefore every cell's row-index/col-id) is fully knowable live via `dumpGridDiagnostic`.
+ * This is the WRITE counterpart to that READ-only diagnostic: find the addresses with
+ * `dumpGridDiagnostic` first, then drive them with this.
+ *
+ * Also handles the companion problem of a target row not existing yet: if `addButtonLabel`
+ * is configured, it clicks that button (located RELATIVE to the grid container, same
+ * technique as `reconcilePeriodTable`) until the row renders, and — if the grid requires an
+ * explicit sequence number typed into its own "index"/"Sr. No." column rather than
+ * auto-numbering new rows — fills that column too via `indexColId`, defaulting to the
+ * 1-based row position (`rowIndex + 1`). This default is a REASONABLE GUESS, not a confirmed
+ * convention for every grid — screenshot-verify a newly-added row's index cell on first use
+ * and pass a different `indexColId`/value scheme if the app numbers differently (e.g. 0-based,
+ * or a non-sequential id).
+ *
+ * Config comes from ExpectedValue (InputValue is already consumed by callCustom as the
+ * function-name dispatch key, matching reconcilePeriodTable's convention); the PER-CALL
+ * row-index and value come from DynamicArgs so the same config works standalone (literal
+ * DynamicArgs) or looped per-row inside a `loopPeriods` flow file (`${runtime.period.n}` +
+ * a resolved field token) — DynamicArgs is already `${...}`-resolved and scanned by
+ * `check-testdata-coverage.ts` like any other column, so no extra coverage-tool wiring is
+ * needed for the value token:
+ *   ExpectedValue  = "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]"
+ *   DynamicArgs    = "<rowIndex>|<value>"
+ *     e.g. ExpectedValue = "#singlePieceStratTable|hazardRatio|txt_Input_Editor|Add Stratum|srNo"
+ *          DynamicArgs   = "${runtime.period.n}|${runtime.period.hazardRatio}"
+ * `editorObjectName` is a selectors.csv OBJECT NAME (not raw CSS) for the grid's inline cell
+ * editor, matching `fillCompactIndexedCells`'s convention — AG-Grid typically reuses ONE
+ * editor element for whichever cell is being edited, and that element's selector is usually
+ * already confirmed/recorded per feature (e.g. `txt_Input_Editor`). `addButtonLabel`/
+ * `indexColId` are optional — omit both for a grid whose rows are never short of the target
+ * (fails loudly instead of silently if the row still doesn't exist and no add button is given).
+ *
+ * Row-index/col-id are on DIFFERENT elements (the row `<div>` vs a nested cell `<div>`), so
+ * the cell locator uses a DESCENDANT combinator — `[row-index="N"] [col-id="X"]` — never a
+ * compound `[row-index="N"][col-id="X"]`, which silently matches nothing (confirmed live via
+ * `dumpGridDiagnostic` on more than one feature's grid).
+ */
+const AG_GRID_CELL_FILL_MAX_SCROLL_PASSES = 40;
+
+async function scrollAndFillAgGridCell(
+  page: Page,
+  containerSel: string,
+  cellLoc: Locator,
+  editorLoc: Locator,
+  value: string,
+  timeout: number,
+  label: string,
+): Promise<void> {
+  for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+    if (await cellLoc.count().catch(() => 0)) break;
+    const moved = await page
+      .evaluate((containerSel) => {
+        const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+        return viewport.scrollTop !== before;
+      }, containerSel)
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+  await cellLoc.dblclick({ timeout });
+  await editorLoc.first().waitFor({ state: 'visible', timeout });
+  await editorLoc.first().fill(value, { timeout });
+  // Explicit Enter commit — AG-Grid's React cell editor may only save to its data model on
+  // blur/Enter, not on fill()'s input/change events alone (same finding as fillCompactIndexedCells).
+  await editorLoc.first().press('Enter', { timeout }).catch(() => undefined);
+  logger.info(`fillGridCell[${label}]: filled "${value}"`);
+  await page.waitForTimeout(300);
+}
+
+export const fillGridCell: KeywordHandler = async (page, ctx, step) => {
+  const [containerSel, colId, editorObject, addButtonLabel, indexColId] = (step.expected || '')
+    .split('|')
+    .map((s) => s.trim());
+  if (!containerSel || !colId || !editorObject) {
+    throw new Error(
+      `fillGridCell: ExpectedValue must be "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]" — got "${step.expected}"`,
+    );
+  }
+  const [rowIndex, rawValue] = step.dynamicArgs;
+  if (rowIndex === undefined || rawValue === undefined) {
+    throw new Error(`fillGridCell: DynamicArgs must resolve to "<rowIndex>|<value>" — got "${step.dynamicArgs.join('|')}"`);
+  }
+  const isNa = (v: string) => v.trim() === '' || /^(n\/a|not applicable)$/i.test(v.trim());
+  if (isNa(rowIndex) || isNa(rawValue)) {
+    logger.info(`fillGridCell[${containerSel} row=${rowIndex} col=${colId}]: testdata value blank/N/A — skipping.`);
+    return;
+  }
+  const timeout = step.timeout;
+  const label = `${containerSel} row=${rowIndex} col=${colId}`;
+  const targetCell = () => page.locator(containerSel).locator(`[row-index="${rowIndex}"] [col-id="${colId}"]`);
+  const editorLoc = await resolveLocator(ctx.root(), ctx.feature.selectorIndex, step.page, editorObject);
+
+  // First pass: is the row already rendered (possibly just off-screen in the virtualized grid)?
+  for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+    if (await targetCell().count().catch(() => 0)) break;
+    const moved = await page
+      .evaluate((containerSel) => {
+        const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+        return viewport.scrollTop !== before;
+      }, containerSel)
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+
+  let rowWasAdded = false;
+  if (!(await targetCell().count().catch(() => 0))) {
+    if (!addButtonLabel) {
+      throw new Error(`fillGridCell[${label}]: row not found and no addButtonLabel configured — cannot create it`);
+    }
+    const addBtn = page
+      .locator(containerSel)
+      .locator(`xpath=following::button[contains(normalize-space(), ${JSON.stringify(addButtonLabel)})][1]`)
+      .first();
+    let guard = 0;
+    while (!(await targetCell().count().catch(() => 0)) && guard++ < Number(rowIndex) + 10) {
+      if (!(await addBtn.count().catch(() => 0))) {
+        throw new Error(`fillGridCell[${label}]: no "${addButtonLabel}" button found after the grid (attempt ${guard})`);
+      }
+      await addBtn.click({ timeout }).catch(async () => {
+        await addBtn.click({ timeout, force: true }).catch(() => undefined);
+      });
+      await page.waitForTimeout(400);
+      rowWasAdded = true;
+      // Re-scroll in case the new row rendered off-screen too.
+      for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+        if (await targetCell().count().catch(() => 0)) break;
+        const moved = await page
+          .evaluate((containerSel) => {
+            const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+            if (!viewport) return false;
+            const before = viewport.scrollTop;
+            viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+            return viewport.scrollTop !== before;
+          }, containerSel)
+          .catch(() => false);
+        if (!moved) break;
+        await page.waitForTimeout(120);
+      }
+    }
+    if (!(await targetCell().count().catch(() => 0))) {
+      throw new Error(`fillGridCell[${label}]: row still not found after ${guard} "${addButtonLabel}" click(s)`);
+    }
+    logger.info(`fillGridCell[${label}]: row did not exist — added via "${addButtonLabel}" (${guard} click(s))`);
+  }
+
+  if (rowWasAdded && indexColId) {
+    const indexCell = page.locator(containerSel).locator(`[row-index="${rowIndex}"] [col-id="${indexColId}"]`);
+    const indexValue = String(Number(rowIndex) + 1); // 1-based default — verify live, see doc comment above.
+    await scrollAndFillAgGridCell(page, containerSel, indexCell, editorLoc, indexValue, timeout, `${label} (index col=${indexColId})`);
+  }
+
+  await scrollAndFillAgGridCell(page, containerSel, targetCell(), editorLoc, rawValue, timeout, label);
+};
+
+/**
+ * clickCheckboxIfNeeded — a state-aware alternative to `click` for checkboxes that open a
+ * confirmation dialog on toggle (which makes Playwright's own `check`/`uncheck` throw,
+ * since their built-in post-click state verification races the dialog). Plain `click` is
+ * NOT idempotent — it blindly toggles regardless of current state, so a checkbox whose
+ * live default differs from what the tester assumed gets flipped to the WRONG state. This
+ * reads the current checked state first and only clicks when it differs from the desired
+ * one, so it is safe to call unconditionally regardless of the checkbox's actual default.
+ * ExpectedValue is "check" or "uncheck" (the desired end state) - InputValue is already
+ * consumed by callCustom as the function-name dispatch key, so config goes in
+ * ExpectedValue, matching reconcilePeriodTable's convention.
+ */
+export const clickCheckboxIfNeeded: KeywordHandler = async (_page, ctx, step) => {
+  const desired = (step.expected || '').trim().toLowerCase();
+  if (desired !== 'check' && desired !== 'uncheck') {
+    throw new Error(`clickCheckboxIfNeeded: ExpectedValue must be "check" or "uncheck", got "${step.expected}"`);
+  }
+  const loc = (await targetLocator(ctx, step)).first();
+  const isChecked = await loc.isChecked();
+  const wantChecked = desired === 'check';
+  if (isChecked === wantChecked) {
+    logger.info(`clickCheckboxIfNeeded[${step.objectName}]: already ${desired} — no-op`);
+    return;
+  }
+  await loc.click({ timeout: step.timeout });
+  logger.info(`clickCheckboxIfNeeded[${step.objectName}]: was ${isChecked ? 'checked' : 'unchecked'}, clicked to ${desired}`);
+};
+
+/**
+ * fillCompactIndexedCells — fills a fixed-size, virtualized grid of N "slots" (rows 2..N,
+ * since row 1 is typically a non-editable baseline) with however many non-N/A values a list
+ * of testdata fields holds, PACKING them into the available slots in order rather than
+ * mapping field K to slot K rigidly. Needed wherever a UI table's row count is capped by a
+ * SEPARATE "how many pieces/rows" setting (so an early field being N/A does not mean "leave
+ * this slot blank" - it means "the next real value moves up to fill it", exactly the way a
+ * spreadsheet's own row count, not the field's position, determines how many rows exist).
+ * Confirmed needed live (StratGADAR ITER_05's Bulk-Edit-Starting-At-Times modal): the modal
+ * has exactly `hRNumOfPieces` rows total, and a rigid startingAtTimeN -> row-N mapping either
+ * leaves a real value nowhere to go (more real values than slots after a gap) or leaves a
+ * required cell empty (an early N/A field skipped instead of the next value taking its slot).
+ *
+ * Config comes from ExpectedValue (InputValue is already consumed by callCustom as the
+ * function-name dispatch key, matching reconcilePeriodTable's convention):
+ *   ExpectedValue = "<testDataFile>|<field1,field2,...>|<containerCssSelector>|<cellObjectName>|<editorObjectName>"
+ *     simulation|startingAtTime1,startingAtTime2,startingAtTime3,startingAtTime4,startingAtTime5|#modalGrid|sel_bulkEdit_piece_time|txt_Input_Editor
+ * cellObjectName must be a Dynamic (parametric, "{0}") selector taking the 1-based nth-child
+ * position of the slot (slot k, k=1.., renders at nth-child(k+1) when row 1/nth-child(1) is a
+ * fixed non-editable baseline row - matching this app's Bulk Edit modal structure).
+ */
+export const fillCompactIndexedCells: KeywordHandler = async (page, ctx, step) => {
+  const [file, fieldsCsv, containerSel, cellObject, editorObject] = (step.expected || '').split('|').map((s) => s.trim());
+  if (!file || !fieldsCsv || !containerSel || !cellObject || !editorObject) {
+    throw new Error(
+      `fillCompactIndexedCells: ExpectedValue must be "<testDataFile>|<field1,field2,...>|<containerCssSelector>|<cellObjectName>|<editorObjectName>" — got "${step.expected}"`,
+    );
+  }
+  const parsed = ctx.feature.testDataParsed.get(file);
+  const row = parsed?.records.find((r) => r.data['TC_ID'] === ctx.tcId && r.data['IterationID'] === ctx.iterationId)?.data;
+  const isNaCell = (v: string | undefined): boolean => {
+    const t = (v ?? '').trim();
+    return t === '' || /^(n\/a|not applicable)$/i.test(t);
+  };
+  const fields = fieldsCsv.split(',').map((s) => s.trim());
+  const values = fields.map((f) => row?.[f]).filter((v) => !isNaCell(v)) as string[];
+  logger.info(`fillCompactIndexedCells[${containerSel}]: ${values.length} of ${fields.length} field(s) have real values -> filling slots 1..${values.length}`);
+  for (let k = 1; k <= values.length; k++) {
+    const nthChild = String(k + 1); // slot k renders at nth-child(k+1); nth-child(1) is the fixed baseline row
+    // Defeat AG-Grid virtualization: scroll the container's .ag-body-viewport until this
+    // slot's cell exists in the DOM (same technique as scrollGridIntoView).
+    for (let pass = 0; pass < 40; pass++) {
+      const cellLoc = await resolveLocator(ctx.root(), ctx.feature.selectorIndex, step.page, cellObject, { dynamicArgs: [nthChild] });
+      if (await cellLoc.count().catch(() => 0)) break;
+      const moved = await page
+        .evaluate((containerSel) => {
+          const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+          if (!viewport) return false;
+          const before = viewport.scrollTop;
+          viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+          return viewport.scrollTop !== before;
+        }, containerSel)
+        .catch(() => false);
+      if (!moved) break;
+      await page.waitForTimeout(120);
+    }
+    const cellLoc = await resolveLocator(ctx.root(), ctx.feature.selectorIndex, step.page, cellObject, { dynamicArgs: [nthChild] });
+    await cellLoc.dblclick({ timeout: step.timeout });
+    const editorLoc = await resolveLocator(ctx.root(), ctx.feature.selectorIndex, step.page, editorObject);
+    await editorLoc.first().waitFor({ state: 'visible', timeout: step.timeout });
+    await editorLoc.first().fill(values[k - 1]!, { timeout: step.timeout });
+    // Explicitly commit with Enter - AG-Grid's React cell editor may only save the value
+    // into its data model on blur/Enter, not on fill()'s input/change events alone. The
+    // original per-piece steps relied on the NEXT step's doubleClick to implicitly blur;
+    // this tight loop does the same doubleClick but apparently too fast for that implicit
+    // blur to register (confirmed live: slot 1 fills fine, slot 2's editor never appears).
+    await editorLoc.first().press('Enter', { timeout: step.timeout }).catch(() => undefined);
+    logger.info(`fillCompactIndexedCells[${containerSel}]: slot ${k} (nth-child(${nthChild})) = "${values[k - 1]}"`);
+    await page.waitForTimeout(400);
+  }
 };
 
 export default extractAllResultTables;

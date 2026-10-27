@@ -1,0 +1,5 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,DesignPage,callCustom,,fillGridCell,,,#ssrStepFunctionValues|toDS|txt_Input_Editor,,10000,FALSE,0,never,,Fill SSR Step table toDS cell from the authored child CSV,${runtime.period.n}|${runtime.period.toDS}
+20,ConfigureDesign,DesignPage,callCustom,,fillGridCell,,,#ssrStepFunctionValues|toCP|txt_Input_Editor,,10000,FALSE,0,never,,Fill SSR Step table toCP cell from the authored child CSV,${runtime.period.n}|${runtime.period.toCP}
+30,ConfigureDesign,DesignPage,callCustom,,fillGridCell,,,#ssrStepFunctionValues|toTS|txt_Input_Editor,,10000,FALSE,0,never,,Fill SSR Step table toTS cell from the authored child CSV,${runtime.period.n}|${runtime.period.toTS}
+40,ConfigureDesign,DesignPage,callCustom,,fillGridCell,,,#ssrStepFunctionValues|maxSSMultiplier|btn_Input_Editor,,10000,FALSE,0,never,,Fill SSR Step table maxSSMultiplier cell from the authored child CSV,${runtime.period.n}|${runtime.period.maxSSMultiplier}

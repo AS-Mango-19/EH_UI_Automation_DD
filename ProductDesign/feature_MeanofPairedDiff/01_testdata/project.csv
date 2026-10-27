@@ -1,0 +1,15 @@
+TC_ID,IterationID,Run,projectName,Time Unit,Start Date,Study Objective,Phase,populationName 0,treatmentArm 0,Priority,endpointName 0,Endpoint Type,Better Response
+TC_26,ITER_01,TRUE,AutoProj_MeanofPairedDiff,Day,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_02,TRUE,AutoProj_MeanofPairedDiff,Month,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Smaller Value
+TC_26,ITER_03,TRUE,AutoProj_MeanofPairedDiff,Week,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_04,TRUE,AutoProj_MeanofPairedDiff,Year,7/15/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_05,TRUE,AutoProj_MeanofPairedDiff,Day,7/16/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_06,TRUE,AutoProj_MeanofPairedDiff,Month,7/17/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Smaller Value
+TC_26,ITER_07,TRUE,AutoProj_MeanofPairedDiff,Week,7/18/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_08,TRUE,AutoProj_MeanofPairedDiff,Year,7/19/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_09,TRUE,AutoProj_MeanofPairedDiff,Day,7/20/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_10,TRUE,AutoProj_MeanofPairedDiff,Month,7/21/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_11,TRUE,AutoProj_MeanofPairedDiff,Week,7/22/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Smaller Value
+TC_26,ITER_12,TRUE,AutoProj_MeanofPairedDiff,Year,7/23/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value
+TC_26,ITER_13,TRUE,AutoProj_MeanofPairedDiff,Month,7/24/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Smaller Value
+TC_26,ITER_14,TRUE,AutoProj_MeanofPairedDiff,Week,7/25/2026,One Arm Exploratory / Confirmatory,2,Adult,EXP,Primary,EPC,Continuous,Larger Value

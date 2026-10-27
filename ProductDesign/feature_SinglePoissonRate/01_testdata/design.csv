@@ -1,3 +1,5 @@
-TC_ID,IterationID,TestType,Computed Parameter,Sample Size,Power,Type1Error,Rate under Null�,Rate under Alternative�,Follow-Up Time�,Select Test,Result Name
-TC_01,ITER_01,1-Sided,Sample Size,Computed,0.88,0.035,0.152,0.321,3.8,Single Poisson Rate,Result - S1
-TC_01,ITER_02,2-Sided,Power,155,Computed,0.055,0.123,0.225,5.5,Single Poisson Rate,Result - S1
+TC_ID,IterationID,TestType,Computed Parameter,Sample Size,Power,Type1Error,rateUnderNull,rateUnderAlternative,followUpTime,Result Name
+TC_01,ITER_01,1-Sided,Sample Size,Computed,0.88,0.035,0.152,0.321,3.8,Result - S1
+TC_01,ITER_02,2-Sided,Power,155,Computed,0.055,0.123,0.225,5.5,Result - S2
+TC_01,ITER_03,2-Sided,Type 1 Error,200,0.91125,Computed,0.2225,0.31125,3.3,Result - S3
+TC_01,ITER_04,1-Sided,Power,255,Computed,0.03585,0.2658,0.425158,3.352,Result - S4

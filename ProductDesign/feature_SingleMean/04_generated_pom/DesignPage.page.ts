@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f24f11e088377f229c1b9ed36dd5b340cdf6099d3d4f0f3fb99cef0b6da76875)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: bae7208926bdc7d232157db677ca6b3793f4e2766512ec0ae19cb8bbe17d5da5)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -9,14 +9,9 @@ export class DesignPage {
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
-  /** native <select> from codegen */
-  ddl_Hypothesis(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'DesignPage', 'ddl_Hypothesis', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_Allocation_Ratio_nt_nc(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'DesignPage', 'txt_Allocation_Ratio_nt_nc', { dynamicArgs });
+  /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) */
+  obj_Hypothesis(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'DesignPage', 'obj_Hypothesis', { dynamicArgs });
   }
 
   /** choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option) */

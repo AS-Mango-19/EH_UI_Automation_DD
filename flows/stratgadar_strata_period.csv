@@ -1,0 +1,16 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,Page,doubleClick,sel_strata_byTime,,,,,,10000,FALSE,0,always,${runtime.period.byTime}==N/A,double-click this stratum row's By Time cell for the current period (shared/global field - only period 0 normally carries a value; blank/N/A auto-skips),${runtime.period.n}
+20,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.byTime}==N/A,wait for the AG-grid inline editor to render,
+30,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.byTime},,,,,10000,FALSE,0,always,${runtime.period.byTime}==N/A,fill By Time for the current period,
+40,ConfigureDesign,Page,doubleClick,sel_strata_control,,,,,,10000,FALSE,0,always,${runtime.period.Cumulative % Survival (Control)}==N/A,double-click control cell - Cumulative % Survival mode,${runtime.period.n}
+50,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.Cumulative % Survival (Control)}==N/A,wait for the AG-grid inline editor to render,
+60,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.Cumulative % Survival (Control)},,,,,10000,FALSE,0,always,${runtime.period.Cumulative % Survival (Control)}==N/A,fill Cumulative % Survival (Control) for the current period,
+70,ConfigureDesign,Page,doubleClick,sel_strata_control,,,,,,10000,FALSE,0,always,${runtime.period.Median Survival Times (Control)}==N/A,double-click control cell - Median Survival Times mode,${runtime.period.n}
+80,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.Median Survival Times (Control)}==N/A,wait for the AG-grid inline editor to render,
+90,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.Median Survival Times (Control)},,,,,10000,FALSE,0,always,${runtime.period.Median Survival Times (Control)}==N/A,fill Median Survival Times (Control) for the current period,
+100,ConfigureDesign,Page,doubleClick,sel_strata_control,,,,,,10000,FALSE,0,always,${runtime.period.Hazard Rate (Control)}==N/A,double-click control cell - Hazard Rate mode,${runtime.period.n}
+110,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.Hazard Rate (Control)}==N/A,wait for the AG-grid inline editor to render,
+120,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.Hazard Rate (Control)},,,,,10000,FALSE,0,always,${runtime.period.Hazard Rate (Control)}==N/A,fill Hazard Rate (Control) for the current period,
+130,ConfigureDesign,Page,doubleClick,sel_strata_hazardRatio,,,,,,10000,FALSE,0,always,${runtime.period.Hazard Ratio}==N/A,double-click Hazard Ratio cell,${runtime.period.n}
+140,ConfigureDesign,Page,waitForSelector,txt_Input_Editor,,,,,visible,15000,FALSE,0,never,${runtime.period.Hazard Ratio}==N/A,wait for the AG-grid inline editor to render,
+150,ConfigureDesign,Page,fill,txt_Input_Editor,${runtime.period.Hazard Ratio},,,,,10000,FALSE,0,always,${runtime.period.Hazard Ratio}==N/A,fill Hazard Ratio for the current period,

@@ -71,10 +71,9 @@ judgment. These are the calls that remain.*
 | 14 | **`validate` reports `metadata StepID: StepID must be an integer`** after inserting a new row between two existing StepIDs | **Decimals are only valid in the `Seq` column**, never `StepID` (unlike `Seq`, which can be `53.1`, `53.2`, … to insert without renumbering). To insert metadata rows between e.g. StepID 530 and 540 with no free integer left, renumber the block: use plain integers for the new rows and bump the next existing StepID (and only that one, if there's room after it) rather than giving `StepID` a decimal. | `Seq` is a cosmetic ordering label with no schema check; `StepID` is what the runner sorts and executes by, and its schema requires an integer. Proven on `ProductDecide/feature_DOM` TC_29 — a first-pass insert used `539.2`/`539.4`/`539.6` as StepIDs and validate rejected all three; fixed by using plain 540-542 and moving the pre-existing `click btn_Save` from StepID 540→545. | No |
 | 15 | **`UNWIRED … wire id="collectionName"` on an input-set page** (`inputset.csv <- wire id="collectionName" (recorded value: "Input Set N")`) | Repoint the step's token to the existing `InputSetname` column (`${data.inputset.InputSetname}`) instead of adding a `collectionName` column — **only if `InputSetname` already exists and `collectionName` does not**. If neither exists, ask before adding either. | `collectionName` is the app's DOM id for the input-set-name field; feature testdata in this framework already names that column `InputSetname` by convention (see `ProductDecide/feature_DOM`, `feature_ROP`, etc.) — same field, different header, so it's a rename-the-token fix, not a new-column one. Proven on `ProductDecide/feature_SingleArmSurv` TC_27. | No (once `InputSetname` is confirmed present) |
 | 16 | **`validate` reports `selectors Exact: Expected boolean, received string`** on a row you just hand-added, with NO change to the `Exact` cell itself | Check every hand-typed `Description` cell added in the same edit for an **unquoted internal comma** (e.g. `textbox (period 1, table-completeness)`) — it splits into two CSV fields and shifts every column after it (`Exact` ends up holding the description's tail text instead of a boolean). Fix: remove the comma (use `-` or a space) rather than quoting, to match the file's existing plain-CSV style. | A comma inside an unquoted CSV field is column-shifting, not a schema violation of the field you're being told about — the error surfaces on `Exact` (the last column) but the real defect is upstream in `Description`. Proven on `ProductDecide/feature_SingleMean` TC_28 — 9 hand-added table-completeness selector rows all used a comma in their description and all 9 threw this error simultaneously. | No |
-| 17 | **Dose-escalation feature (`Study Objective=Dose Escalation`) whose recording adds scenarios through the Add-Scenario modal** — `UNWIRED` lists `Curve Family`, `deChartTable.0.dose1..6`, `curveFamily`/`e0`/`emax`/`ed50`/`hill`/`beta`/`delta`/`theta`/`tau`/`intercept`/`linIntercept`/`linCoefficient`/`quadCoefficient`/`slope`/`modalDose1..6`, plus a stray `Username`; the testdata already has a `scenarios.csv` | **Add NO columns.** Rebuild the metadata on the BOIN (TC_14) shape: drop `Username` + `Curve Family` + every `deChartTable.0.*` fill (they edit the default "General" rows, which the `#btn-delete0` ×9 Optional clicks then delete) and the whole emitted modal block; replace with one `loopOverData scenarios …/03_metadata/scenario_block.csv` (copy BOIN's block verbatim; add the `txt_beta` alias selector) + the 9 delete clicks; gate every `Add Dose` on `doseName-<n>==N/A` and extend doses to 9. **If the design also has an Enrollment tab** (rolling designs — R-TPI, Rolling6): mirror `feature_Rolling6` for it, BUT turn the importer's Optional `assertValue obj_Distribution_of_Time_to_DLT` (the recording's bare `getByRole('combobox')`) into `select ddl_Distribution_of_Time_to_DLT` on css `#distOfTimeToDLT`, `Optional=FALSE`, before the `Probability`/`Last Fraction` fills (Weibull shows them; Uniform hides them → those cells are `N/A`). Replace `assertValue obj_Number_of_Simulations_Run` with `fill txt_Number_of_Simulations_Run` (`input[name="numOfSimRun"]`). | The modal fields are the loop's `${runtime.loop.*}` columns, not design columns; the default-row fills bind to columns nobody authored. The DLT select choice changes which fields exist, so a silent Optional skip would run the wrong design and still pass. `#distOfTimeToDLT` confirmed in a Rolling6 run screenshot (Uniform landed, dependent fields hidden). Proven on `feature_RTPI` TC_52 and `feature_PoD-TPI` TC_53 (both validate clean first pass, 2026-09-29) — fastest path is to copy the RTPI metadata and swap only the design-page block. | No |
-| 18 | **Recording was cloned from a sibling feature's recording** (identical text + a few inserted lines) and **disagrees with the testdata on one design field**: the recording fills a field with no column (e.g. `UNWIRED id="maxOfPendingPatientsAllowed"`) while `design.csv` carries a field the recording never touches (e.g. `Cohort Size`, flagged later by validate as "has a value but no step enters it") | **Follow the testdata**: add a hand step for the testdata's field using the selector already proven on a sibling (`#cohortSize` from `feature_BOIN`), `Optional=FALSE`, and drop the recorded field's step (no column, and adding one needs approval). Then **ask the user** whether the page really lacks the recorded field; if it has both, propose the column + per-iteration values. Also check the cloned **`SelectTest`** value in `inputset.csv` — it is often still the sibling's test card. | The testdata was edited after the recording (newer file time, deliberate new values), so it's the stronger signal of intent; a missing field then fails loudly at its step rather than silently running the wrong design. Proven on `feature_PoD-TPI` TC_53 (2026-09-29; pending live confirmation). **Live-confirmed on `feature_UBOIN` TC_54**: its recording carried RTPI's `Max. # Pending Patients` lines, and the live UBOIN Design page (a "Cohort Enrollment Design") has no such field — dropping the step was right. | Yes — confirm the page's fields + the test-card label |
-| 19 | **A valued design field lands, but Save stays disabled / page shows "(Not Saved)"; the NEXT tab's first control then fails `unable to resolve`** (UBOIN: `click btn_Save` retried with force, `select ddl_Starting_Dose` "unable to resolve" on the Response tab) | Don't chase the failing step — **open the screenshot of the step right after the fills** and look for red inline validation text. Typical cause: a **rate/probability entered as a percent** (`minAcceptableEffRate=22` → "should be in the range (0, 1)"); the **recording's value shows the right scale** (`0.22`). Propose the testdata fix to the user (value change → approval), never change it silently. | An invalid design disables Save and blocks tab navigation, so the failure surfaces one tab LATER than the real defect. Proven on `feature_UBOIN` TC_54 ITER_01 (2026-09-29). | Yes (testdata value) |
-| 20 | **Dose-escalation design whose Response grid (not a modal) holds the scenario** — recording: `click Add Scenario` → fills on `deChartTable.<2N>.*`/`<2N+1>.*` (e.g. `.12`/`.13`, the new scenario's toxicity + efficacy rows after N defaults) → `#btn-delete0` ×k; testdata `scenarios.csv` authors them as `deChartTable.0.*`/`deChartTable.1.*` | Order: `click btn_Add_Scenario` → `click txt_btn_delete0` ×9 (Optional, 4 s — clears the varying defaults, the added scenario is last and survives) → THEN fill rows 0/1 with `${data.scenarios.deChartTable.<r>.dose<k>}` (dose 1..10, N/A auto-skips) on `input[name="deChartTable.<r>.dose<k>"]`. Also: UBOIN needs a 2nd (efficacy) endpoint → keep the recorded unconditional `click` on role=button "Add Endpoint" (the importer mis-names it `btn_Outcome`). | Row indices before deletion depend on the default-scenario count; after deletion the added scenario is always rows 0/1, which is how the testdata names it. `${data.scenarios.*}` resolves directly (one row per iteration) and keeps the N/A auto-skip that `${runtime.loop.*}` lacks. **Proven live on `feature_UBOIN` TC_54, all 5 iterations (2026-09-29)**: 6 defaults deleted, the last 3 delete clicks no-op, all 20 cells landed on rows 0/1 (screenshot-verified), doses beyond the iteration's count auto-skip. | No |
+| 17 [promoted — `AI_IMPORT_AGENT.md` §0/§3/§6, proven on `feature_MCPMod_Con` TC_36] | **A field auto-binds cleanly (no `UNWIRED`) or gets the generic `assertValue … "VERIFY selector"` fallback, AND a stable sibling/reference feature exists for the same family** | Before accepting the importer's default, `grep` the reference's `selectors.csv`/`metadata.csv` for `confirmed live\|VERIFY selector\|renamed from\|collided\|Never recorded\|mislabeled`. If the reference already resolved a step on the same recorded id/label (a non-boilerplate Description), copy **that resolution**, don't re-derive one. Run this diff again right before declaring the import done — not only when you first pick the reference feature. | The deterministic importer has no memory between features: it regenerates its own default every run even when a sibling's judgment layer already solved the identical field, and neither `UNWIRED` nor `validate` will flag it because the field looks fully wired. Auto-bound-by-name proves the *column* is right, not that the *selector* is. Proven on `feature_MCPMod_Con` TC_36: shipped a `label` selector on the react-select "Select Test" field and a leftover `assertValue` on the mislabeled "Test Type" field — both already fixed and documented from `feature_MCPMod` TC_35 one folder over, neither caught by `UNWIRED` or `validate`. | No (mechanical diff, not a judgment call) |
+| 18 [promoted — `AI_IMPORT_AGENT.md` §9.2, proven on `feature_Dual_LogrankLogrank` TC_37 and `feature_Dual_LogrankDOP` TC_38] | **A dual-endpoint interim/boundary table renders as ONE table with two visual columns sharing a single row-index namespace** (`boundary.<n>.ep1*`/`ep2*`), with a "Synchronize Interims" (or similar) select deciding which endpoint is primary/editable vs secondary/`Determined` — and that select can be **blank** in testdata, silently defaulting live from a derived "Winning Condition" field you can't reliably predict from other testdata codes | Screenshot-verify the live default mode per iteration rather than inferring it. Wire the row-growth `reconcilePeriodTable` calls' **button label** and **countField** per mode — the secondary-side Add button's label flips with the primary endpoint (`Add Interim to EP2` under EP1-primary vs `Add Interim to EP1` under EP2-primary; no such button exists for the currently-primary side). For countField: **don't pick one field across every iteration sharing the metadata** — a single Winning Condition can suppress a checkbox column entirely (all-`N/A`) for exactly one iteration while every other iteration needs that same checkbox as its countField, and swapping to a different field to fix that one breaks the others (proven on TC_38, where `ep1EfficacyCheck` worked for 5 of 6 EP1-primary iterations but was `N/A` everywhere on the 6th, and switching to `AnalysisSpacingInfo` broke a different, previously-fine iteration whose `AnalysisSpacingInfo` is genuinely `N/A`). Instead **run two `reconcilePeriodTable` calls back-to-back on the same gate, one per candidate countField** — the tool no-ops once its own target is met, so whichever field is actually populated for a given iteration does the growing and the other call is a guaranteed no-op. The secondary-only Add button **appends a new row, it does not convert an existing `Determined` row** — don't assume the extra value lands at the next sequential `PeriodIndex`; screenshot-verify which row actually went editable. Two "keep Analysis Info same as other endpoint" checkboxes can exist with **different DOM ids** depending on which endpoint is primary, and neither renders at all when the Winning Condition is a "both endpoints" style value (not single-endpoint) — gate both as separate `check`/`uncheck` pairs and let testdata's `N/A` pick the right one. **Gate the DEFAULT-mode reconcile call on `SkipIf …==Based on EP2` (skip only when EXPLICITLY the other mode), never on `!=Based on EP1`** — a testdata cell that means "not explicitly set" can be an empty string OR the literal string `N/A` (both seen across iterations of the SAME feature), and `!=Based on EP1` demands an exact string match that neither blank nor `"N/A"` satisfies, silently skipping the reconcile for every iteration relying on the live default. Proven on TC_39 ITER_01: `syncInterims="N/A"` (literal), the metadata's only EP1-primary reconcile call was gated `!=Based on EP1`, so it never fired and the boundary table stayed at its default 1 row against a testdata target of 3 — passed `validate` and even passed on OTHER iterations (ITER_06 happened to only need 1 row, masking the gap) until an iteration needing more than the default surfaced it. Fixed by adding a second, idempotent call on the safe `==Based on EP2` gate. **Also: per-period checkbox `check`/`uncheck` steps must be value-gated on their OWN field (`SkipIf ${data...fieldName}!=check`/`!=uncheck`), never on a Winning-Condition/mode field alone** — a mode-only gate can correctly decide an iteration's checkbox SHOULD be interacted with in general, while that specific PERIOD still has no data at all for it (e.g. an iteration with no boundary row whatsoever), producing a `locator.check: Timeout` instead of a clean skip. Proven on TC_39 ITER_08 (no boundary row at all): steps gated only on `${winning-condition-select}!=At least EP2` tried to check a period-1/2 checkbox that doesn't exist; fixed by switching to the field's own value gate, matching every other checkbox step in the same file. | Every one of these was a genuine live-app discovery, not a guessable convention, and each one produced a distinct, confusing failure (`field is disabled but testdata requires a value`, `locator.check: Timeout … waiting for #keep…`, `no "Add Interim to EP2" button found`, an orphan unfilled row after reconcile, a default row count silently never reconciled). Proven across 8 iterations of `feature_Dual_LogrankLogrank` TC_37, 2026-09-22; re-proven (countField refinement) across 8 iterations of `feature_Dual_LogrankDOP` TC_38, 2026-09-23; and re-proven again (blank-vs-`"N/A"` gate + checkbox value-gating refinements) across 8 iterations of `feature_Dual_DOPLogrank` TC_39, 2026-09-27 — see feature log entries for the full diagnostic trails. | Yes — every testdata correction in this family (which field owns a row, which value moves where) was confirmed with the user against a live screenshot/DevTools capture before editing, never guessed. |
+| 19 [promoted — `AI_IMPORT_AGENT.md` §9.2, proven on `feature_Dual_LogrankDOP` TC_38] | **(a)** An iteration fails at a step unrelated to anything you changed, immediately after a DIFFERENT iteration failed in the same serial run. **(b)** A `compareWithBaseline` step reports `VALUE_MISMATCH` FAIL against an iteration's EXISTING (not freshly-created) baseline, right after you fixed a real bug in shared metadata | **(a)** Don't debug the later iteration's own steps first — fix the earlier iteration's failure, then re-run the two together in isolation (`Run=TRUE` on just that pair) to confirm the later one was only a cascade (a crashed iteration can leave the shared browser session in a state that breaks the next iteration's fresh start, e.g. `field not found` on its very first fill). **(b)** Don't assume the mismatch means your fix is wrong — screenshot-verify the current run's live design state against testdata directly first. If it now correctly matches testdata (it usually does, when the fix was for a real bug), the OLD baseline was captured from a broken prior state and is simply stale: delete `06_baseline/<env>/baseline_<TC>_<ITER>.csv` + its `.meta.json` and re-run to regenerate it. | **(a)** Proven on TC_38: ITER_04 failed with `field "txt_collection_Name" not found` at StepID 310 (the very first input-set fill) in a full-suite run, but had passed cleanly seconds earlier on its own — the true cause was ITER_03 crashing on the countField bug (rule 18) immediately before it; fixing ITER_03 and re-running the pair together made both pass. **(b)** Proven on TC_38 ITER_01/ITER_02: after fixing the boundary reconcile, both failed against baselines captured before this session (5 and 1 value mismatches) — the diff showed the old baseline was missing a real testdata value entirely (`HR (1.25, 1)` expected vs the testdata-correct `HR (1.25, 1.658)` actual) confirming the baseline, not the fix, was wrong. | **(b)** Yes — deleting/regenerating a baseline discards the previous regression reference, so confirm with the user before doing it, same as any other baseline change. **(a)** No — re-running an isolated pair is non-destructive. |
 
 **Runtime (page-behavior) traps** — dropdown-resets-dependent, ungated Add-Period/Add-Interim,
 Unsaved-Changes/credit dialogs, execution-by-StepID ordering, sim "prior parameters too extreme"
@@ -103,6 +102,25 @@ The sim chains after a green design in the same browser; most of its traps are o
 | S12 | **A many-interim iteration silently builds FEWER analyses than its testdata has** — the run is GREEN but the boundary result has too few rows; the extra periods' cells never get entered. The metadata's `Add Interim` gates + per-period fills stop at period 2 (the recording only built 3 analyses). | **Extend Add-Interim + per-period fills to the max period any iteration uses.** Boundary rows map: **period 0 = IA1 (default, no Add Interim); periods 1..k-1 each need one `Add Interim`; the last period with `analysisSpacingInfo=N/A` is the auto "Final" row (NO Add Interim — but its `efficacyPValue` IS entered as `boundary.<last>.efficacyPValue`).** Add one `click btn_Add_Interim` per period gated `SkipIf ${data.design.boundary.<n>.analysisSpacingInfo}==EMPTY`, plus `fill txt_boundary_<n>_analysisSpacingInfo/efficacyPValue/futilityPValue` (+ selectors `[id="boundary.<n>.<field>"]`). All auto-skip on blank/absent, so few-interim iterations are unaffected. **Silent under-build has no error** — verify by comparing the testdata's period count to the result table's analysis rows (or a post-Calculate screenshot). ROP: extended to period 7 for ITER_10 (7 interims + Final = 8 analyses); this also corrected ITER_04 (4 periods, was building 3). **CSV gotcha:** never put a comma inside a selector/metadata comment column — it shifts every later column (breaks the boolean `Exact`). |
 
 | S13 | **`npm run test --testcase TC_XX` reports "Executing 0 iteration(s)"** for an iteration whose `project.csv` (and `inputset.csv`) `Run=TRUE`, with NO error — it's just silently excluded | `simulation.csv` (or any other testdata CSV) has an EXPLICIT `Run=FALSE` row for that iteration. **This is a GLOBAL veto, not a sim-only skip** — `core/loaders/featureLoader.ts` `loadTestData` reads every `.csv` in `01_testdata/` (not just `feature.config.json`'s `testdata.files` whitelist) into ONE store, and `core/runner/testDataStore.ts` `iterationsFor()` treats **any** file's `Run=FALSE` row as excluding the iteration from the WHOLE run (design + sim), contradicting `FRAMEWORK_KT.md` §5.1's stated "Run=FALSE on a `simulation.csv` row skips only the sim phase; design still runs." A **missing** `simulation.csv` row for an iteration IS safe (matches the docs — sim-only skip); an **explicit `Run=FALSE` row** is not. To enable an iteration's design (with or without sim), `Run` must be `TRUE` (or the row absent) in **every** testdata CSV that carries the column for that iteration — not just `project.csv`. (Confirmed on OROP(PD) TC_23 ITER_02, 2026-08-25; not yet fixed in `core/` — flagged, not patched, per the scope-to-one-feature rule.) |
+| S14 | **A `loopPeriods`/`reconcilePeriodTable` call reports `0 period(s)`/`live N, wants 0` for a period-table whose testdata clearly has real values (visible via `awk`/manual dump), and the downstream page then shows a blocking "X is required" validation error** — NOT the same as S7/S12 (a genuinely-missing fill step); here the fill step EXISTS and is wired, but never fires because the period is never *detected* as present. | The single `countField` used to gate period existence (`reconstructPeriods`'s "period exists iff `<prefix>.<n>.<countField>` is non-N/A") is the WRONG field for this iteration. Different iterations can lead the SAME boundary/period table with DIFFERENT fields — e.g. `analysisSpacingInfo` for most, but `efficacyPValue`/`cumAlphaSpent`/`futilityCP` etc. for others that skip the "spacing" input method entirely. **Fix: chain multiple `loopPeriods` (and, if rows must first be ADDED, multiple `reconcilePeriodTable`) calls back-to-back on the same gate, one per candidate leading field** — exactly the pattern §9.2 already prescribes for dual-endpoint `countField`s. Both keywords are naturally idempotent for this: `reconcilePeriodTable` no-ops once `target <= current`; `loopPeriods`'s individual `fill` steps already self-skip on blank/N/A, so a period two passes both detect just gets the same value written twice, harmlessly. **Never replace the original countField — ADD passes**, since removing it risks breaking whichever iterations it already covered. Confirmed live on `StratGADAR` TC_45: ITER_10 defined its entire 5-period boundary via `efficacyPValue`+`cumAlphaSpent` with `analysisSpacingInfo` N/A throughout (both the ADD-rows and the FILL-values logic silently no-op'd); ITER_07 was a PARTIAL case — period 0 used `analysisSpacingInfo` normally but period 1 didn't, so only period 0 got filled and the resulting baseline was silently wrong (recompute + re-baseline needed once caught). **Diagnostic tip:** cross-reference the child CSV's populated columns per iteration (`awk`/`column -t` dump across ALL iterations at once) against which field each `loopPeriods` call actually keys on — a period-row with ANY real value but a blank/N/A countField cell is the tell. A genuinely-required field with no value anywhere (e.g. the app itself demands `analysisSpacingInfo` even when a different field leads) is a **separate, real testdata gap** — screenshot-verify the validation error text before assuming the countField chain alone will fix it. |
+| S15 | **A generic "Unsaved Changes" modal (`id="cancelConfirm"`, title "Unsaved Changes", body "Are you sure you want to leave without saving your…", buttons `#primaryButton`="Leave"/`#secondaryButton`="Cancel") blocks a tab-switch click** (`intercepts pointer events` in the Playwright retry log) **— sometimes appearing on the VERY FIRST tab click, before any field has been touched.** Retrying the click with `force=true` (the framework's default retry behavior) can get the click itself to register, but the modal stays open underneath and silently blocks every subsequent interaction until something finally hard-times-out several steps later — a confusing, delayed failure far from the real cause. | Add a plain `click` step on the modal's "Leave" button with **`Optional=TRUE`** immediately after the tab-switch action most likely to trigger it (e.g. right after a "mount the Response tab early" warm-up click) — per `core/keywords/input.ts`'s documented Optional-click behavior, it probes with no wait and silently no-ops when the modal isn't present, so it's safe to leave in place for every iteration/feature even when the modal never appears. Selector: `css`, `#cancelConfirm #primaryButton`. Confirmed live on `StratGADAR` TC_45 sim flow (ITER_06 only, of 8 iterations — modal appeared immediately after the Response-tab warm-up click with zero prior edits; root trigger not fully understood, but the fix doesn't need it to be). **Diagnostic tip:** a step failure screenshot (`artifacts/<run>/<TC>_<ITER>/step_<id>_fail_*.png`, auto-captured on any hard step failure) or a temporary `dumpSubtree` callCustom on the modal's container id is enough to read its exact title/body/button text — don't guess the button label. |
+| S16 | **A manually-entered boundary value (`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/`cumBetaSpent`-family cell) `fill`s successfully — the step passes, read-back confirms the value on screen — but has reverted to an invalid sentinel default (e.g. `"1"`) by the time a LATER screenshot/validation runs**, surfacing as a range-validation error ("X should be in the range […]") plus a blocked "Unsaved Changes" modal on the next tab-switch. **Distinct from S15**: S15 is checkboxes reset by Calculate with no value involved; this is a VALUE field silently wiped. | **The boundary table is a progressive-reveal, multi-stage form, not a single flat page — clicking `btn_Calculate` doesn't just compute, it also ESTABLISHES which fields are genuinely persistent, and wipes any value entered into a field the table hasn't "initialized" yet via a prior Calculate.** Different field families reveal/persist at different stages: fields tied directly to the initially-selected boundary family (`efficacyPValue`, `upperPValue`/`lowerPValue`) are safe to fill before the FIRST Calculate; `futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` need the FIRST Calculate to have already run; `cumAlphaSpent`/`cumBetaSpent`-family fields need a SECOND Calculate. The working recipe is **three staged Calculate clicks**: (1) fill the family-tied fields → Calculate #1 → (2) fill futility-p-value/CP/HR (+ `computeCP` select) → an optional cell-click to defocus/commit → Calculate #2 → (3) fill cumAlpha/cumBeta-family fields → re-assert checkboxes (S15-style, right before the LAST calculate) → Calculate #3 (final) → a short settle sleep → THEN navigate away. This exact 3-stage structure is what `StratGADAR`'s own proven metadata already does (its StepIDs ~3070/3160/3240) but had never been written up as an explicit rule — it had to be independently rediscovered live on `StratGADSD` TC_46 after 3 failed single/double-Calculate attempts (fill-before-calc got wiped; fill-after-calc-with-no-following-calc left the page "dirty" and blocked navigation). **A single Calculate (no staging) only works for fields that don't need the progressive reveal** (e.g. a table using ONLY `analysisSpacingInfo` + checkboxes, no manual p-value/CP/HR/spend entry) — most GSD boundary iterations are fine with one Calculate; reach for the 3-stage version only once a manually-entered value family is confirmed reset. **One open case this did NOT resolve:** `StratGADSD` ITER_04 (`futBoundaryFam=p-value`, `efficacyCheck` left at its default CHECKED state) still resets `futilityPValue` after EVERY Calculate in the 3-stage recipe — StratGADAR's own working p-value-family iteration has `efficacyCheck=uncheck` instead, suggesting Efficacy-checked + Futility-p-value-family together may never persist a manual value in this app; flagged to the user and the iteration held back (`Run=FALSE`) rather than guessed at further. |
+| S17 | **A PARAMETRIC selector's `{0}` placeholder is never substituted — the live DOM query ends up literally containing `{0}` (e.g. `[name="boundary.{0}.cumBetaProportion"]`), so `fill`/`click` hard-fails "field not found" after the FULL timeout, even though the attribute pattern itself is independently confirmed correct** (e.g. by the user inspecting the live element). **`npm run validate` reports ZERO issues** — this is NOT the selectors.csv quoting bug it would normally catch. | **An unquoted comma anywhere in a `flows/*.csv` row's `Description` column shifts every column after it by one position — including the LAST column, `DynamicArgs`**, which silently receives stray overflow text instead of the real `${runtime.period.n}` token; the real token gets pushed into a phantom 18th field with no header to bind to and is silently dropped by the parser. This is a nastier variant of the already-known "CSV commas shift columns" rule (`FRAMEWORK_KT.md` Trap 12, S12's closing note) specifically because **flow files (`flows/*.csv`) aren't covered by the strict per-column schema check that catches this in `selectors.csv`** (its boolean `Exact` column reliably trips a type error on a shift; a flow file's `DynamicArgs` column has no such type constraint, so a shifted file parses "successfully" with wrong content and only fails at runtime, with an error that looks exactly like a wrong-selector bug, not a CSV-parsing one). **Diagnostic tip:** when a parametric `{0}`-style selector times out despite a confirmed-correct attribute pattern, parse the SPECIFIC flow-file row with a quote-aware CSV splitter and count fields against the header (`StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs` = 17) — one extra field is the tell. Found live on `StratGADSD` TC_46's own newly-created `flows/stratgadsd_boundary_cumSpent_period.csv` (a comma in "…Interpolated), replaces StratGADAR's cumBetaSpent" split the row into 18 fields). Fix: wrap the whole `Description` value in double quotes. |
+| S18 | **A `select`/`fill` on a tab/panel that JUST mounted appears to succeed — the step passes, and a screenshot taken right after shows the correct value — but a LATER step touching a DIFFERENT field on the SAME panel fails ("field not found"), or a later screenshot shows the EARLIER field has reverted to its fetched default.** The gap between the fill and the revert can be several seconds, well outside any single-step retry window, so it reads as an unrelated failure far from the real cause. **Distinct from S11** (a single `select` reverting within its OWN verification window — fixed in core) **and from S16** (Calculate-triggered multi-stage reveal) — this is a tab/panel MOUNT triggering an async data fetch that overwrites the panel after the automation already moved on. | **The panel's own async fetch-and-hydrate cycle keeps running for a short window AFTER its trigger element becomes visible/attached — a `waitForSelector` keyed on visibility fires the instant the DOM node mounts, well BEFORE that fetch resolves and overwrites whatever the automation just set.** There is no reliable "fetch complete" selector to wait on instead (no spinner, no state attribute observed). Fix: add a plain **settle sleep AFTER the `waitForSelector`**, sized to the panel's typical fetch duration (confirmed ~2.5s sufficient on `GADAR(PE)` TC_55's Simulation Setup panel) — so every field interaction lands after the panel's own overwrite, not racing it. Confirmed live and reproduced TWICE: the first fix attempt (a `waitForSelector(visible)` alone, mirroring the Enrollment tab's own post-mount wait) looked correct on one run but failed identically on a re-run — only the added settle sleep held across two consecutive full-suite confirmations. **Diagnostic tip:** if a field visibly holds the right value in a screenshot taken right after its own fill, but a LATER screenshot (even of a DIFFERENT field on the same panel) shows it reverted, check the log timestamps between the panel's mount click and the first field interaction — a small gap (hundreds of ms) with an intermittent revert several seconds later is the signature; a deterministic, immediate revert is S11 instead. |
+| S19 | **`extractAllResultTables` logs `"<Table Name>" reports N data row(s) but only M could be rendered even after scrolling` (M < N), and a later `compareWithBaseline` on that table shows `ROW_COUNT_MISMATCH`/`EXTRA_ROW` or `MISSING_ROW` — NOT consistently, and NOT always on the same table.** This is a **framework-level AG-Grid extraction limitation**, not a feature-wiring bug: `core/extractors/tableExtractor.ts` already scrolls the grid to try to render every row before capturing, and for most tables that's enough — but the LARGEST virtualized tables (confirmed: 30-stratum "Response Generation Parameters"/"Overall Stratum Information" on `GADAR(PE)` TC_55 and `StratGADSD` TC_46) can still under-render some rows, and WHICH rows/table under-renders varies run to run (confirmed: the exact same iteration, re-run twice, under-rendered a DIFFERENT table each time — once "Overall Stratum Information" at 19 of 30 rows, once fully clean). | **Do not assume a `ROW_COUNT_MISMATCH`/VALUE_MISMATCH FAIL against an EXISTING baseline is a regression from whatever you just changed — check whether the baseline itself was captured during an under-render first.** Diagnostic: open the diff file (`08_diffs/<...>_diff_<TC>_<ITER>.json`) and look at the `expected` (baseline) vs `actual` (live) values for the mismatching cells — if `expected` is a suspiciously round/truncated number (e.g. a `Count` cell reading the table's own DEFAULT/partial value) while `actual` looks like the real, fully-rendered figure, the BASELINE is the stale one. Cross-check by grepping the baseline file itself for literal under-capture signatures (e.g. a `Number of Simulations Run` value that doesn't match testdata) before concluding anything. If confirmed stale, delete and regenerate that ONE baseline (confirm with the user first, per the standard stale-baseline protocol) — do NOT touch metadata/selectors to "fix" this, since the flakiness lives in the extraction tool's scroll-and-capture timing, not in how the feature is wired. **This is a known, accepted, NOT-YET-FIXED limitation** — worth a `core/extractors/tableExtractor.ts` look (e.g. a longer settle between scroll and capture, or re-verifying row count after capture and retrying) in a dedicated framework session, not as a side effect of unrelated feature work (scope discipline — don't patch `core/` while fixing one feature). |
+| S20 | **A UI "Add &lt;Item&gt;" button (`btn_Add_Arm`/`btn_Add_Dose`/`btn_Add_Period`/…) is clicked UNCONDITIONALLY in a feature's metadata, while a reference/sibling feature in the SAME family already gates the IDENTICAL click with `SkipIf=${data.<file>.<col>-N}==N/A`.** The importer reports no `UNWIRED`, `npm run validate` passes clean, and the live run doesn't FAIL either — the extra click just silently creates one more row/arm than the testdata intends (with a blank/default value), and the downstream design is now structurally WRONG (e.g. "Number of Arms" on the Results page reads one higher than the testdata's real arm count) even though every individual field "landed" exactly as wired. Nothing about this trips any automated check. | **Grep the reference feature's metadata for the SAME ObjectName before trusting an unconditional "Add" click as intentional** — if the reference gates its last Add-click(s) with `SkipIf=${data.<file>.<lastCol>}==N/A` and the new feature's equivalent click has no `SkipIf` at all, that's a missed-mirror bug (§0's "verify the mirroring held" non-negotiable), not a stylistic difference. Fix: copy the reference's exact `SkipIf` onto the new feature's click. **Confirmed live on `feature_MAMS_DOP(Pvalue)` TC_49**: `btn_Add_Arm`'s second click (building the optional 5th arm) ran unconditionally for every iteration; `feature_MAMS_DOM` (same family, already stabilized) had the identical click gated on `${data.project.armName-4}==N/A`. The bug surfaced only by reading "Number of Arms" on the live Results page against the testdata's intended arm count — not from any log, warning, or FAIL. Generalizes to any count-driven "Add" button (doses, periods, scenarios), and is exactly the class of gap `AI_IMPORT_AGENT.md` §4a's full data-to-wiring audit exists to catch. |
+| S21 | **`extractAllResultTables` logs `"<Table Name>" reports N data row(s) but only N-1 could be rendered even after scrolling"`, but the captured CSV for that table is actually COMPLETE — NOT the real S19 under-render.** Distinguishing signal: open the captured `07_actual_results/results_<TC>_<ITER>.csv` for that table and check its `RowLabel` column — if the rows read as sequential analysis numbers (`1`, `2`, …) PLUS a final `Total` row with no gap in the numbering, the data is whole; the grid's own `aria-rowcount` attribute is simply over-counting by one on grids that have a pinned "Total"/footer row (the pinned row isn't part of the scrollable body `aria-rowcount` describes, but the extractor's `target = aria-rowcount - 1` math doesn't know that). | **Do not delete/regenerate a baseline over this warning alone — verify the `RowLabel`s first.** A true S19 under-render shows a GAP in the row numbering or a materially smaller table than the design implies, and is non-deterministic (varies run to run, table to table). This benign pattern instead always resolves to exactly "N-1 sequential rows + Total", and reproduces identically on EVERY iteration and EVERY re-run — the opposite signature of S19. Confirmed live on `feature_MAMS_DOP(Pvalue)` TC_49: every grid with a pinned Total row ("Interim and Final Analysis Summary", "Probability of Claiming Efficacy and Futility") warned 100% reproducibly across all 7 iterations and every re-run, yet the captured data matched the design's actual interim-count exactly every time. Sibling rule to S19 — read both before reacting to this warning. |
+| S22 | **Two fields that share a generic recorded label (e.g. "Parameter") but have DIFFERENT DOM ids AND different action types (one `select`, one `fill`) can both get bound to the SAME testdata column** — contradicting the documented "editable fills are split automatically" behavior (`AI_IMPORT_AGENT.md`'s "Two fields that share a visible label"), which only reliably fires when BOTH fields are the same action type. `validate` stays clean (both tokens resolve to a real column) and nothing is `UNWIRED` — the bug only surfaces when the SELECT's live id is read directly off `selectors.csv` and found to differ from the column it was bound to. | **Before trusting an auto-bound `select` next to a same-labeled `fill`, grep `selectors.csv` for both ObjectNames' `SelectorValue` and confirm they're genuinely the same element** — if the ids differ (e.g. `#effParam` vs `#effParamRho`), the select is almost certainly meant to hold a DIFFERENT, sibling column (here, a named-option column like `effParam` holding `Pocock`/`O'Brien-Fleming`, vs a numeric `effParamRho` column) and needs its token manually repointed. Confirmed live on `feature_MAMS_DOP` TC_50: `ddl_Parameter` (`#effParam`, a select of named Lan-DeMets shapes) and `txt_Parameter` (`#effParamRho`, a numeric fill) both got bound to `effParamRho` by the importer; the `effParam` column sat unused and the select silently drove the wrong field on every iteration where it mattered (confirmed live after the fix: `ddl_Parameter = "Pocock"` landed correctly once repointed). |
+| S23 | **A sim flow's "Result Name"-style field (`#inputId` or similar) is recorded TWICE at genuinely different moments for different purposes — once early (naming a derived input set) and once late (naming the simulation's own result, right before the Simulate click) — but the importer's duplicate-step collapse keeps only ONE occurrence**, binding it to whichever testdata column it happened to match first. No `UNWIRED`, no `validate` warning — the flow runs and reports green, but the WRONG name lands in the WRONG place (or the correct-looking name lands at the wrong moment and the later "open result by name" step then can't find it). | **When a sim (or any multi-stage) flow's testdata has two distinct "name" columns that look similar (e.g. `CreateInputSet` vs `Sim Result Name`), don't assume the importer's single generated fill step covers both moments** — check the live app directly: does naming happen once, or does a SEPARATE "Name your result before simulating" dialog/field appear again later, right before the actual compute/simulate action? If so, split the single generated step into two: the EARLY one bound to the input-set-naming column, a NEW step inserted right after the Save/Compute-triggering click (mirroring wherever the design flow's own end-of-flow `ResultName` fill sits) bound to the result-naming column. Confirmed live on `feature_MAMS_DOP` TC_50 (user-supplied clarification, not import-tool-discovered): `CreateInputSet` names the sim's own input set at the START of the flow; `Sim Result Name` names the result in the "Simulate" confirmation dialog, confirmed via screenshot showing "Name your result before simulating" pre-filled with the correct value after the fix. |
+| S24 | **A boundary/futility-family `select` option can completely change WHICH per-period fields are real on the page — testdata authored assuming one family's field set (e.g. `cumAlphaSpent`+`futilityPValue`) silently has no field to land in under a DIFFERENT family selection, and vice versa.** Symptom 1: a `fill` on a field that's simply not rendered for this family hard-fails "field not found" (or the loop that tries to fill it does). Symptom 2 (more dangerous): the OTHER family's actual required field is left `N/A` because testdata was authored for the wrong family, and the live app blocks Save with an inline "X is required" validation error that never surfaces as a step FAIL — only as the NEXT step (e.g. "fill ResultName") failing because the page never left the Design tab. A family's visible dropdown LABEL can also be a single Greek letter (e.g. "δ") rendered from a plain numeric testdata value (e.g. `"4"`) via the option's underlying `value` attribute — don't assume a bare number in a family-selector column is a typo before checking what it actually renders as live. | **Screenshot the live boundary table for EVERY distinct family value a feature's testdata uses, before assuming one generic per-period flow/column set covers all of them** — different families are not just different presets of the SAME fields, they can be different field SETS entirely. When a `fill`/loop FAILs or an app validation error blocks Save right after a family `select`, read the live table's actual column headers from a screenshot rather than guessing which testdata column should supply the missing value. Confirmed live on `feature_MAMS_DOP` TC_50, three ways on the SAME `futBoundaryFam` column: (1) ITER_03's family rendered as "δ" (Delta) — a `cumAlphaSpent` value in testdata had no field to land in (only a "Futility δ" field existed, which maps to the `futilityDelta` column instead); (2) ITER_04's family ("p-value") required `cumAlphaSpent` to be populated (it was `N/A`), blocking Save with "Cum. α Spent is required" even though `futilityPValue` filled correctly; (3) a THIRD, unrelated pattern — `simulation_boundarySim.csv`/`simulation_trtmntSelectionTable.csv` had real per-period rows for an iteration whose parent family/gating column was `N/A`, making that data permanently orphaned (same root cause as S14/S20's "data present but the controlling field doesn't let it render" family, now confirmed recurring on child-table data specifically). |
+| S25 | **An unconditional "Add &lt;Item&gt;" click INHERITED FROM THE RECORDING (not a human-authored gap) builds one more row/item than a SMALLER-count iteration needs — and unlike S20, there is no sibling feature to diff against, because the recording itself only ever demonstrated the maximum-count case.** The importer never flags this: the click isn't `UNWIRED`, `validate` is clean, and the blank/unfilled fields in the new extra row auto-skip exactly like any other `N/A` cell, so nothing LOOKS wrong at the wiring level. The live app then silently fills the new row's fields with its OWN default (e.g. `previous value + a fixed increment`), and that phantom value can corrupt a COMPLETELY UNRELATED later calculation — surfacing as a confusing app-side validation error on a DIFFERENT step, not as a "field not found" anywhere near the real cause. Confirmed live on `feature_mTPI` TC_56: a 4th unconditional `btn_Add_Dose` click (needed by the recording's own 7-dose project) silently gave every 6-dose iteration a phantom 7th dose slot; the app auto-filled it as `last real dose + 10`, and that phantom dose later blew up an UNRELATED Add-Scenario curve's toxicity validation ("Calculated Probability of Toxicities are greater than 1") on a Quadratic-family scenario, blocking the whole iteration at a step that had nothing to do with doses. A sibling iteration with the SAME bug (4 Parameter Logistic family) passed silently — its curve math just didn't happen to cross the threshold. | **Treat EVERY "Add &lt;Item&gt;" click the importer carried over from the recording as a candidate for count-based gating, not just the ones a reference feature already gates** — if ANY iteration's testdata uses FEWER items than the recording's own demonstrated count, add `SkipIf ${data.<file>.<countedColumn>-N}==N/A` on that click (same pattern as S20, just self-derived instead of mirrored from a sibling). When a live run fails with an app-side validation error on a step that looks unrelated to anything you changed (wrong curve family, wrong boundary values, etc.), don't assume the error is about the field it's complaining over — check whether an EARLIER, seemingly-successful "Add" step in the SAME iteration built one row too many. The `--help`-free tell: count the iteration's real items against every unconditional Add-click StepID before trusting a "builds fine, fails later" run. |
+| S26 | **A hand-authored per-period child testdata CSV (`PeriodIndex`-keyed, e.g. `SETIfMTDDetermined.csv`) that's missing the required `<parent>_` filename prefix (should be `design_SETIfMTDDetermined.csv`) is silently NOT folded into the parent's wide model** — `core/loaders/featureLoader.ts`'s `foldChildTables` only treats a file as a child table when the part of its basename before the first underscore matches an already-loaded parent (`design`, `simulation`). A non-prefixed file just sits in `01_testdata/` as an inert, ordinary sibling CSV: its own blank/TC_ID-continuation rows raise no error, and every dotted token referencing it (`${data.design.SETIfMTDDetermined.0.thresholdTarget}`) prints as plain `UNWIRED` with no hint that a rename — not a new column — is the fix. | **When the importer's `UNWIRED` list shows a cluster of dotted `<TableName>.<n>.<field>` tokens and `01_testdata/` already has a same-named `<TableName>.csv` with a `PeriodIndex` column, rename it to `design_<TableName>.csv` (or `simulation_<TableName>.csv`) before concluding new columns are needed** — the data is usually already there, just invisible to the fold mechanism. Confirmed on `feature_mTPI` TC_56: renaming `SETIfMTDDetermined.csv` → `design_SETIfMTDDetermined.csv` resolved 24 of 38 `UNWIRED` lines with zero data changes. Also check such a file for the OTHER pre-fold symptom: TC_ID left blank on every row after the first of each iteration group (looks like an Excel merged-cell export) — the fold's join key is `TC_ID|IterationID` read literally per row with no forward-fill, so those rows would silently orphan even after the rename; repeat the real TC_ID on every row, matching every other working period table in the repo (e.g. `feature_GADAR(PD)`'s `design_boundary.csv`). |
+| S28 | **When a Calculate/Recalculate-style button needs a SINGLE-condition `SkipIf` gate for "this design has no boundary at all" and the feature splits the boundary family across MULTIPLE columns (symmetric `effBoundaryFam`, asymmetric `asymEffBoundaryFam`, futility-only `futBoundaryFam`), no ONE of those columns — nor `boundaryScale` — is a reliable single-column proxy.** `effBoundaryFam==N/A` wrongly skips every asymmetric-family iteration (its family lives in `asymEffBoundaryFam` instead). The seemingly-safer fallback `boundaryScale==N/A` is ALSO wrong: specific boundary families (confirmed: `Haybittle Peto (p-value)`) render with NO "Boundary Scale" selector at all despite having a real, Calculate-able boundary — so `boundaryScale` reads `N/A` for a real-boundary case too, silently re-breaking any iteration using that family (symmetric OR asymmetric). Both mistakes passed `validate` clean and only surfaced as a live `DISABLED` button warning on the specific iteration that exercised the gap. | **Gate on the upstream RADIO/selector that decides whether the boundary section renders at all, not on any field inside that section.** For a "Computed Parameter" style radio (Sample Size / Power / Type 1 Error), the boundary/interim-analysis UI only exists when solving for Sample Size or Power — `SkipIf ${data.design.Computed Parameter}==Type 1 Error` (or whatever the feature's equivalent "what are we solving for" field is) is the one condition that matches every genuinely-fixed iteration and no others, because it's upstream of ALL the boundary-family columns rather than being one of them. Before trusting any single boundary-family column as a skip proxy, cross-tabulate it against every OTHER boundary-family column across all iterations (one `awk`/table dump) to confirm no iteration has the proxy column blank while a sibling column is real. Confirmed live on `ProductDesign/feature_SingleMean` TC_24: `effBoundaryFam==N/A` broke ITER_10 (asymmetric Spending Functions); the `boundaryScale==N/A` fix for that broke ITER_07/ITER_11 (Haybittle Peto (p-value), confirmed via `feature_DOM(PD)` ITER_05/ITER_10 showing the same family leaves `boundaryScale` blank); `Computed Parameter==Type 1 Error` finally matched all 12 iterations correctly in one pass. |
+| S29 | **A growable interim-analysis boundary table can have an ALWAYS-PRESENT, auto-appended "Final" row that is NOT counted by the Add-Interim row-count mechanism, and whose DOM index shifts to whatever follows the last REAL interim** — testdata authored with one too many "real" periods (to also cover the Final row's own p-value fields) grows the table one row too far, which (a) fails live app validation on the extra interim's spacing value (`"Analysis Spacing (%) Info must be between 1 and 99"` — Final owns the 100% point, no interim may also claim it) and (b) shifts the Final row's actual DOM id past wherever the feature's existing `boundary.<N>.*` steps expect it, leaving Calculate silently `DISABLED` with no step FAIL (both the extra interim AND the real Final row's fields read as unfilled from the app's perspective). Neither `validate` nor `UNWIRED` catches this — it only surfaces as a live `click btn_Calculate: button is DISABLED` warning that must be traced to the live DOM (a `dumpSubtree` custom-step dump of the table, climbing up from any known `boundary.0.*` id, is the fastest way to confirm row count and read real ids/validation classes like `is-invalid`/`invalid-feedback` directly off the page). | **Count ONLY the real, numbered interims (IA1, IA2, …) in the testdata's period-count column (e.g. `analysisSpacingInfo`) — leave the row meant for the Final analysis's own p-value fields with its count-field at `N/A`** so the table grows to exactly N interims and the Final row lands at `boundary.N` (one past the last real interim), matching hand-added `boundary.N.*` fill steps. Confirmed live on `ProductDesign/feature_SingleMean` TC_24 ITER_11 (8 real interims intended, Haybittle Peto (p-value) asymmetric family): giving the "8th period" a real spacing value (`100`, continuing the 30/40/.../90 sequence) created a genuine 8th interim AND pushed Final from `boundary.7` to `boundary.8`, breaking the already-wired `boundary.7.upperPValue/lowerPValue` steps; reverting that period's spacing to `N/A` (keeping only its `upperPValue`/`lowerPValue` = Final's own values) let the table grow to the correct 7 interims, with the pre-existing `boundary.7.*` steps now correctly landing on Final — Calculate fired immediately. |
+| S30 | **A field recorded ONCE in a superset recording session can have a DIFFERENT real DOM id depending on which boundary-family dropdown was selected at the moment it was captured — and the importer has no way to know this, so it binds the ONE id it saw even though the live app renders a DIFFERENT id for other family states.** `validate`/`UNWIRED` both stay clean (the bound id is syntactically fine, matches the naming convention of its sibling fields, and the testdata column holds a real value) — the only live symptom is `field "..." not found` on the SPECIFIC iteration that exercises the OTHER family state, while every iteration matching the originally-recorded family state works fine. | **When a `fill`/`select` step throws "not found" for a field whose selector otherwise looks completely ordinary (right naming convention, right css pattern, validated clean), suspect a family-dependent id split before suspecting a timing issue** — `dumpSubtree` the live table for the FAILING iteration specifically (not the one that already works) and compare the real id against what's wired. Confirmed live on `ProductDesign/feature_SingleProportion` TC_25: the recording captured `[id="boundary.0.cumBetaProportion"]` for the "Cum. β Spent" field, and that id was wired cleanly (copied from a sibling feature's naming convention, looked identical to every other `boundary.N.*` field) — but the live DOM for the SYMMETRIC Spending-Functions family (ITER_09) renders that same semantic field as `[id="boundary.0.cumBetaSpent"]` instead; `cumBetaProportion` was apparently only real for a different (asymmetric or alternate) family state the recording also passed through. Renaming the column/selectors back to `cumBetaSpent` fixed it with zero iterations regressing (confirmed only ITER_09 ever exercised the field). |
+| S31 | **A fixed (fully computed, no-boundary) design's SIMULATION result page can be missing an entire TAB that the DESIGN result page still has** — not just a disabled button inside the tab (S8's pattern), but the tab itself absent from the page (only "Home" shows, no "Details"). This is asymmetric: the design-side result for the same iteration still renders the tab fine, because the design's Details view can show a generic Power-vs-Sample-Size sensitivity curve that doesn't depend on any boundary existing, while the sim-side Details view specifically needs real interim/boundary simulation data to have anything to show. | **Don't assume "works on the design result" implies "works on the sim result" for the SAME iteration and the SAME nominally-shared tab** — screenshot-verify the sim result page specifically for any fixed-design iteration before trusting a Details/graph-style check copied from the design flow. Gate the sim-side click/wait/assert with the same S8 `Computed Parameter==Type 1 Error`-style condition used for Recalculate, even though the design-side equivalent step needs no such gate. Confirmed live on `ProductDesign/feature_SingleProportion` TC_25 ITER_03: the design result's Details tab rendered its chart fine (ungated check passed), but the identical click on the sim result page timed out — `getByRole('button', { name: 'Details' })` simply didn't exist; the live screenshot showed only a "Home" button next to the result title. |
+| S32 | **A `metadata.csv`/`sim_metadata.csv` whose `StepID` values don't match the file's physical row order causes the engine's ACTUAL execution order (always `StepID`-sorted, per `core/loaders/featureLoader.ts`) to silently diverge from what the file visually looks like it does** — incrementally adding per-period fields (copy a row, bump a couple of digits, forget to also bump past the next real StepID) is the easy way to introduce this, and it compounds the more a feature grows field-by-field across multiple hand-edit sessions (here, across both Copilot's initial wiring and my own period-extension edits). The symptom is NOT a clean "field not found at the step that's actually wrong" — it's a step that LOOKS unrelated running too early relative to a step that should have preceded it (e.g. `click Response` tab-mount executing in the MIDDLE of a block of `boundarySim.*` field fills that were meant to finish first), which then makes a LATER, correctly-ordered-looking step fail because its real prerequisite never actually ran yet. Neither `npm run validate` nor `check-testdata-coverage.ts` catches this — both are column/token-existence checks, not execution-order checks. | **Diagnostic: `awk -F',' 'NR>1{print NR, $2}' <file> | awk '{if($2<prev) print "VIOLATION row",$1,"StepID",$2,"< prev",prev; prev=$2}'` — any printed violation means physical row order and execution order disagree at that point.** Fix with a full renumber once confirmed needed: `awk -F',' 'BEGIN{OFS=","} NR==1{print; next} {$2=NR*10-10; $1=(NR-1); print}' <file> > tmp && mv tmp <file>` (StepID = row-index×10, Seq = row-index — leaves 10-wide gaps for future inserts and makes file order and execution order identical again); re-run the violation check afterward to confirm zero remain, on BOTH `metadata.csv` and `sim_metadata.csv` independently. **Important caveat — don't over-correct:** a StepID that's numerically "out of physical order" is NOT automatically this bug if it was DELIBERATELY placed there to control real execution order independent of where the row happens to sit in the file (a file is just a container; `StepID` is the only thing that matters to the engine). Confirmed harmless counter-example on this same feature: `ddl_Test_Type` sits at StepID 265 while physically appearing in the file AFTER a StepID-300 row — verified via actual execution-order analysis (Test Type must fire before the Type-1-Error fields it gates, and StepID 265 < 300 achieves exactly that regardless of row position) and confirmed working across all 14 stabilized iterations; renumbering would have been unnecessary churn had the full-file renumber not already swept it up naturally. Found live on `ProductDesign/feature_MeanofPairedDiff` TC_26: both `metadata.csv` and `sim_metadata.csv` (pre-built by Copilot, then incrementally extended) had this divergence; the user live-observed the downstream symptom directly ("recalculate button was not pressed", "why did you move ahead" on an unsaved-changes popup) before the root cause was traced back to execution order, not to the Recalculate/dialog steps themselves. |
+| S33 | **A per-iteration "scale"/family selection on the DESIGN tab (e.g. `boundaryScale` = δ/σ Scale) does not necessarily carry over to a structurally-similar SIM-side boundary table that has NO equivalent scale selector of its own** — the sim table can render a COMPLETELY DIFFERENT, fixed column set (here: Upper/Lower Efficacy Z + Upper/Lower Futility Z, i.e. the "Z Scale" family) regardless of what scale the design side was configured with, especially for asymmetric (2-sided, Upper/Lower-split) designs. Testdata authored by copying a design-side field name onto the sim-side child table (`boundarySim.*.futilityDeltaBySigma`) fails live with a plain "field not found", because that id is never rendered on the sim page for this configuration at all — not a timing issue, not a selector typo. | **Before trusting a sim-side boundary-table field name inherited from the design-side convention, confirm live which columns the sim table ACTUALLY renders for that specific iteration's design configuration** — a failure screenshot (or `dumpSubtree`) of the sim Design tab showing the real column headers is definitive; don't infer sim-side rendering from the design-side scale selection. When a custom per-iteration boundary override needs to land somewhere, and the "obvious" column (matching the design-side field name) doesn't exist in the sim DOM, check sibling Upper/Lower-split columns that DO exist and use the sign convention already visible on the page's own live-computed defaults (confirmed on `ProductDesign/feature_MeanofPairedDiff` TC_26 ITER_14: the adjacent "Upper/Lower Efficacy Z" pair on the same screenshot showed Upper=positive, Lower=negative — applying that same convention to place the intended override value pair into `futilityZUpper`(+)/`futilityZLower`(−) instead of the non-existent `futilityDeltaBySigma`/mis-assigned `futilityZLower` fixed the iteration with zero wiring/metadata changes, testdata-only). |
 
 *Custom step template — `loadResponseTabIntoModel` (per-feature `custom/<Feat>/customSteps.ts`): click `[id="leftPanel.designs"]` → click role=button "Response" → wait for a Response control (e.g. `#distributionSelect`) → click `[id="leftPanel.designs"]` → wait for Recalculate. Wire as `callCustom` before the first design-field fill.*
 
@@ -125,6 +143,16 @@ validation error naming the blank cell and blocks the page.
 
 This is why the *importer's* wire-to-existing contract matters at import time **and** why the agent
 must still complete per-iteration coverage the single recording could not capture.
+
+### AG Grid cell rule
+
+When a recorded or added field targets an AG Grid cell, inspect the live grid's `row-id` and `col-id`
+attributes and bind the cell by those stable identifiers. Treat a modal grid (for example `#modalGrid`)
+as a separate coordinate system from its parent grid: never reuse the parent's column index. For each
+editable cell, double-click the resolved cell, fill the shared editor, press Enter, wait for the grid to
+commit, and read the cell back before continuing. Verify every authored non-`N/A` cell, including rows
+with explicit `row-id` values; a clean `validate` or coverage report does not prove an AG Grid cell
+actually landed. Proven on `ProductDesign/feature_MAMS_Logrank(Pvalue)` TC_51 ITER_02 (2026-10-08).
 
 ## Family-specific rules *(grows per family)*
 
@@ -156,38 +184,656 @@ must still complete per-iteration coverage the single recording could not captur
   playbook: `AI_IMPORT_AGENT.md` §3 "Indexed table cells and multi-period values" and the Workflow §2 ordering note.**
   The importer follow-up (don't emit a loopPeriods block for a single-period design enrollment, OR make
   `${runtime.period.<field>}` resolve to `''` when the field is absent, resolver.ts:66) is still deferred/unbuilt.
+- **Dose-escalation (mTPI, CRM, BLRM):** all three share the same project/dose-entry skeleton (ProjectPage
+  dose extension to 7/8/9 per S25), the repeated-modal Add-Scenario block (5 curve families, always
+  replaced with `loopOverData` + a LOCAL `scenario_block.csv` copy, never a cross-feature reference —
+  General family needs `modalDose8-10` hand-added past the recording's usual 7-dose cap), and a
+  `switchToMtpi`-named testdata column reused verbatim by each feature's own "Switch to X" dropdown
+  despite the misleading name (same option set, safe to reuse without asking once one sibling feature has
+  already confirmed it). **CRM/BLRM additionally share a "Stop Early Trial" checkbox table whose per-row
+  field ownership must be resolved by checkbox-then-immediately-fill ORDER in the raw recording**, reusing
+  existing `stoppingRuleIfMTD`/`stoppingRuleIfNotMTD` marker columns rather than adding new ones — but the
+  two features differ on whether `uncheck` is safe: CRM's rows only exist once checked (delete the
+  `uncheck` steps); BLRM's rows persist regardless (keep them). **Don't assume one dose-escalation
+  sibling's checkbox-row behavior for another — confirm live per feature.** BLRM additionally has the
+  Direct/Metropolis-Hastings posterior-sampling split (S27) which mTPI/CRM don't have (different stats
+  method entirely).
 - **(add survival / means / one-arm family rules as you import them)**
 
 ---
 
 ## Feature log *(append-only; newest first)*
 
-- **2026-09-29 · ProductDesign/feature_UBOIN TC_54** (Dose Escalation, utility-based BOIN) — project/doses
-  from RTPI + recorded "Add Endpoint" click; UBOIN design fields wired to existing columns; scenario grid
-  per rule 20. `UNWIRED`: `Username` dropped; `maxOfPendingPatientsAllowed` dropped (rule 18 — field absent
-  live); `maxNoOfPatientsAtDoseLevel` (shown when Stopping Rules is on, app default 12) → column proposed.
-  ITER_01 live: FAIL at 550 — root cause `minAcceptableEffRate=22` invalid (rule 19). User approved
-  `minAcceptableEffRate` → 0.22/0.21 and a new `maxNoOfPatientsAtDoseLevel` column (13 on `check` rows, N/A on
-  `uncheck`). Then ITER_01–05 run one at a time → all **BASELINE_CREATED**; each baseline's "Simulation
-  Summary" echo matches its testdata row. Stopping-Rules-off iterations have 11 tables (no "Simulation
-  Summary #4", the k block) vs 12 — expected. Known gap (core, not fixed): result grids with grouped headers
-  produce duplicate (Table,Row,Column) keys (e.g. Dose-wise Summary "Mean" ×2) and `core/comparator`
-  keys a Map, so only the last duplicate is compared — BOIN has the same gap. Run flags restored.
+- **2026-10-27 · `ProductDesign/feature_MeanofPairedDiff` TC_26 — reviewed and fixed another agent's (Copilot) pre-built wiring, all 14 iterations real `PASS` on the combined reproducibility run (13 chained simulations, 0 fails; 2 apparent full-suite FAILs on ITER_05/ITER_07 confirmed as environment flakiness on isolated re-run, not real bugs).**
+  Paired-data continuous-endpoint feature. Unlike every other feature logged here, this one arrived with
+  initial design+sim wiring already done by Copilot (some fields confirmed/ported from `feature_SingleProportion`
+  by the user) — the work here was an audit-and-fix pass, not a from-scratch import. Pre-run audit against the
+  session's established lesson set caught and fixed 5 issues before any live run: a missing `btn_Recalculate`
+  click on the sim side, a destructive `btn_Leave_Unsaved_Changes` click that discarded real boundarySim edits
+  (replaced with `btn_Save`, per the standing "save first, never Leave" rule), a missing Response-tab-early-mount
+  warm-up sequence, and the Details-tab load-only check (S11/§11 pattern, ported cleanly from `feature_SingleProportion`
+  with zero modification — confirms that pattern generalizes across features with different chart layouts). Live
+  debugging (user watched the browser directly and reported the exact symptom — "recalculate wasn't pressed",
+  "why did you move ahead on the popup") led to discovering a NEW systemic bug class, **S32**: both `metadata.csv`
+  and `sim_metadata.csv` had `StepID` values that didn't match physical row order (from incremental per-period
+  field additions across multiple edit sessions), so the engine's real `StepID`-sorted execution order diverged
+  from file layout — fixed via a full physical-row-order renumber of both files. A late addition — the user added
+  a new `cumBetaProportion` design-boundary column and stabilized ITER_02–13 independently while this agent was
+  paused — surfaced a second new bug class, **S33**: ITER_14's sim-side boundary table doesn't actually render the
+  `futilityDeltaBySigma` field the recording had captured (confirmed via a live failure screenshot showing the
+  real rendered columns are Upper/Lower Efficacy Z + Upper/Lower Futility Z instead); the intended custom override
+  value pair just needed to move into the correct existing columns, no wiring change required. Two apparent
+  full-suite failures (ITER_05: a disabled "New Input Set" button race; ITER_07: a plain `page.goto` timeout) both
+  passed clean on an isolated two-iteration re-run, confirming transient environment flakiness rather than a
+  regression from the StepID-order fix or the cumBetaProportion work.
 
-- **2026-09-29 · ProductDesign/feature_PoD-TPI TC_53** (Dose Escalation, PoD-TPI) — rule 17 applied
-  verbatim (RTPI metadata copied; design block swapped). 29 `UNWIRED`: the usual 28 + `maxOfPendingPatientsAllowed`
-  (recording cloned from RTPI's) vs a `Cohort Size` column the recording lacks → rule 18: wired `Cohort Size`
-  on BOIN's `#cohortSize`, dropped the pending-patients step, asked the user. πE/πD thresholds wired to
-  existing id-named columns. Added the master.csv row. `inputset.csv` `SelectTest` still says BOIN — change
-  proposed, not made. Testdata untouched. `validate --testcase TC_53`: 0 errors, 3 warnings.
+- **2026-10-22 · `ProductDesign/feature_SingleProportion` TC_25 — fresh import (design + simulation flows), all 13 iterations real `PASS` on the combined reproducibility run (9 chained simulations, 0 fails).**
+  One-Arm/Single-Proportion binary-endpoint feature, testdata/recording/structure closely mirrors
+  `feature_SingleMean` TC_24 (same session, same One-Arm family skeleton) — most S28/S29 findings from
+  that feature applied directly here with zero rediscovery needed. New user-requested capability: a
+  shared "Details" tab check (common to both design and sim result pages) that verifies the page and its
+  Plotly graph actually load, with NO data extraction/comparison — `click Details` → `waitForSelector`
+  the loading spinner to clear → `assertVisible` on the chart container (`#chartRender-0`, found live via
+  a temporary `dumpSubtree` debug step), moved to run AFTER `compareWithBaseline` so it never affects the
+  main result comparison. Two NEW systemic bug classes found (S30, S31): a field recorded once in a
+  superset session can bind to the WRONG DOM id when the live app renders a DIFFERENT id for that same
+  semantic field depending on which boundary-family state is active (`cumBetaProportion` vs the real
+  `cumBetaSpent`, both plausible-looking, only one correct per family); and a fixed (Type-1-Error) design's
+  SIMULATION result page can be missing the Details TAB entirely (only "Home"), even though the DESIGN
+  result page for the same iteration still renders it fine — needed its own S8-style gate, separate from
+  the design-side check. Also recurring: the S23 duplicate-collapse pattern (sim's early/late `#inputId`
+  needing `CreateInputSet`/`Sim Result Name` split), the shared-enrollment-flow-filename trap (scalar fill
+  on design side), the Response-tab-early-mount trap, and TWO rounds of `design_boundary.csv` getting
+  modified by an external Excel session mid-work (once needing a direct user-data correction for a
+  genuine column-shift in `lowerSpendFunc`/`lowerParam`, confirmed live via the app's own "no option
+  matching" dropdown error). One new file-lock precedent: Excel held `design_boundary.csv` open THREE
+  separate times across the session; each time, asked the user to close it rather than guessing a
+  workaround, and resumed immediately once they did.
 
-- **2026-09-29 · ProductDesign/feature_RTPI TC_52** (Dose Escalation, Rolling R-TPI) — mirrored
-  `feature_BOIN` (project/doses/scenario loop/tail) + `feature_Rolling6` (Enrollment tab). 28 `UNWIRED`
-  all resolved with **zero new columns** (rule 17): `Username` noise, `Curve Family` + `deChartTable.0.*`
-  default-row edits dropped, 20 modal fields → `loopOverData` over the existing `scenarios.csv`.
-  DLT distribution → `select #distOfTimeToDLT` (Optional=FALSE); Number of Simulations Run → fill.
-  Add-Dose clicks gated, doses extended to 9 (ITER_01 has 10). Testdata untouched. `validate
-  --testcase TC_52`: 0 errors, 3 warnings (same unused-column kind as BOIN). Live run pending user approval.
+- **2026-10-22 · `ProductDesign/feature_SingleMean` TC_24 — fresh import (design + simulation flows), all 12 iterations real `PASS` on the combined reproducibility run (9 chained simulations, 0 fails).**
+  One-Arm/Single-Mean continuous-endpoint feature, same family as `feature_DOM(PD)` TC_03 (used
+  throughout as the reference for hand-wiring: `futSpendFunc`, `criticalPoint`, the full boundarySim
+  period-extension set, the Response-tab-early-mount trap, the enrollment-scalar-fill trap). TC_ID
+  fixed TC_16→TC_24, every blank N/A-filled per this feature's own convention (meaning flat `design.csv`
+  columns need `SkipIf ==N/A`, not `==EMPTY` — `==EMPTY` only matches a truly-absent folded child-table
+  field). Design-side and sim-side enrollment tables shared one flow filename (`singlemean_enrollmentTable_period.csv`)
+  with incompatible schemas (design single-period, sim multi-period with `startingAtTime`) — fixed per
+  the `feature_DOP(PD)` precedent by replacing design's `loopPeriods` enrollment fill with a plain scalar
+  fill. Sim flow needed the same Response-tab-not-mounted fix as `feature_GADAR(PD)` (click Response →
+  sleep → click Designs → sleep, before any boundary edits) plus a settle sleep after Recalculate. Found
+  and fixed an S23 duplicate-collapse bug (sim's `#inputId` recorded twice — input-set naming vs. result
+  naming — importer kept only one) by repointing the early fill to `CreateInputSet` and re-adding the
+  late one bound to `Sim Result Name`. Found and fixed two NEW systemic bug classes (S28, S29) during
+  live stabilization of the two asymmetric/multi-family iterations (ITER_10, ITER_11): no single
+  boundary-family testdata column reliably proxies "this design has no boundary at all" when the family
+  is split across symmetric/asymmetric/futility-only columns — the upstream "Computed Parameter" radio
+  is the only correct gate (S28); and a growable interim-analysis table's auto-appended "Final" row is
+  not counted by the Add-Interim mechanism and shifts index with real-interim count, so testdata must
+  count ONLY real interims, leaving the Final row's own p-value fields keyed off a period whose count-field
+  stays `N/A` (S29, diagnosed live via a temporary `dumpSubtree` custom-step dump of the boundary table's
+  DOM). Mid-session, `design_boundary.csv` was accidentally overwritten via an external Excel edit
+  (column rename, iteration data reshuffled/swapped, stray rows from an unrelated feature) while a file
+  lock blocked reads — recovered by reconstructing the file from the session's own verified-passing
+  snapshot rather than guessing at the corrupted content.
+
+- **2026-10-20 · `ProductDesign/feature_BLRM` TC_59 — fresh import (no prior metadata/selectors/config existed), all 33 `UNWIRED` fields + 4 skipped radios resolved with ZERO new testdata columns; new systemic bug class found + fixed live (S27); 3 other live-only bugs fixed during stabilization, all 5 iterations real `PASS` on the reproducibility run.**
+  Third feature in the dose-escalation family after mTPI (TC_56) and CRM (TC_58) — only
+  `01_testdata/*.csv` + `02_selectors_repo/recording.txt` existed; `feature.config.json` and the whole
+  `03_metadata`/rest of `02_selectors_repo` were built from scratch this session (TC_ID fix TC_16→TC_59
+  + N/A-fill, then `npm run import-codegen`). Same repeated-modal Add-Scenario block (5 curve families
+  flattened into one unusable superset) → `loopOverData` + local `scenario_block.csv`, extended to
+  `modalDose8-10` for the General family's 10-dose ITER_05 (S25 pattern, hand-inferred `#modalDose8/9/10`
+  ids, confirmed correct live). 5 "Stopping Rules" checkboxes (`MTD Above Highest Dose`/`Minimum Sample
+  Size Observed`/`Target Rule`/`CI Rule`/`Allocation Rule`) resolved by REUSING the already-existing
+  `SETIfMTDNotDetermined.0`/`SETIfMTDDetermined.<0-3>.stoppingRuleIfMTD` marker columns — the
+  check-then-immediately-fill-its-own-fields ORDER in the raw recording was the reliable signal for which
+  checkbox owns which period row (no model-type ambiguity like CRM had; this feature's row-to-rule mapping
+  is fixed, not dynamic). Unlike `feature_CRM`'s dynamically-rendered Stop-Early-Trial rows, this
+  feature's `uncheck` pairs work cleanly on every row — no S19-style "row only exists once checked" issue
+  here, confirmed across ITER_03/04/05 all exercising `uncheck` without incident.
+  **S27 (new): a field sharing ONE visible label can resolve to TWO separate DOM ids gated by a sibling
+  radio/mode choice — not just multi-row TABLES (already known for `posteriorSamplingTableMH`/`Direct`),
+  but also a single STANDALONE field.** The "Steady state simulations" field looked like one shared
+  field (one label, one recorded id `#psSSSimulationMH`, used successfully for the MH-method iteration in
+  the recording) — but it hard-failed "not found" on every Direct-method iteration despite being clearly
+  visible in the failure screenshot. Extracting and grepping the Playwright trace's `resources/*.json` for
+  the field's schema (not a DOM snapshot — the app's own form-definition API response, cached in the
+  trace) revealed `"child":["psSSSimulationDirect","psSSSimulationMH","psBurnIn"]` — TWO real ids sharing
+  one label, same split as the already-known table pair. Fixed by adding a second selector
+  (`txt_Steady_state_simulations_Direct` → `#psSSSimulationDirect`) and gating both fill steps on
+  `posteriorSamplingOptions-1`/`-2` (same columns already driving the Direct/MH checkboxes) instead of
+  firing one unconditionally. **General technique worth reusing**: when a field is visible on screen but a
+  selector built from a RECORDING hard-fails "not found," `unzip trace.zip` and `grep` `resources/*.json`
+  for the field's label/id — the app's own API-sourced form schema (JSON, not HTML) is often present
+  verbatim and will show a `"child"`/sibling-id list that explains a label-sharing split the recording's
+  single captured session never exercised both branches of.
+  **A second, narrower selector-type mismatch** (not S27): one single field
+  (`SETIfMTDNotDetermined.0.minSSOnDoseIfNotMTD`) was recorded with an `input[name="..."]` selector while
+  its own row-sibling (`probabilityIfNotMTD`) was recorded with `[id="..."]` and worked — the live DOM
+  apparently doesn't carry a matching `name` attribute for that one field. Fixed by switching it to the
+  same `[id="..."]` convention every other field in the same table uses. Signal: a field fails "not found"
+  immediately after its row-sibling succeeded, AND the failing field's selector is a DIFFERENT TYPE
+  (`name=` vs `id=`) than its sibling's — try matching the sibling's selector convention before assuming a
+  conditional-rendering cause.
+  **Standing rule #12 (orphaned unconditional click) reconfirmed, new trigger condition**: an unconditional
+  `click txt_toxicity_Table_0_losses` (recording noise, no value, sharing its object with a properly
+  `N/A`-gated `fill` later) hard-failed specifically on the "Max Targeted Toxicity" dose-selection method,
+  where the `losses` column doesn't render at all (only `upperLimit` does) — the "Bayes Risk" method
+  renders both columns, so the SAME orphaned click had passed silently on ITER_01 before failing on
+  ITER_02. Deleted per rule #12, no SkipIf added (the value-driven fill below it already auto-skips).
+  **One transient environment hiccup** (unrelated to any wiring): "New Input Set" resolved to a disabled,
+  unrelated button (`id="collection-continue-primary"`) on the very first ITER_01 attempt; a straight
+  retry with no code change passed clean, confirming it wasn't reproducible (unlike the real bugs above,
+  all of which reproduced identically on a second run before being treated as real).
+  **End state:** all 5 iterations real `PASS` (not just `BASELINE_CREATED`) on a full-suite reproducibility
+  run (`PASS 5, FAIL 0, TIMEOUT 0, ERROR 0`, 1258s), `npm run validate` clean (0 warnings). The only
+  `check-testdata-coverage.ts` "gaps" are the already-proven `scenarios.csv`/`loopOverData` blind spot
+  (confirmed false-positive on `feature_CRM`/`feature_i3+3`) plus a NEW confirmed-false-positive class: the
+  tool's folded-child-table heuristic (`<prefix>.<n>.<field>`, `n` numeric) misreads `design.csv`'s own
+  FLAT column names that happen to contain a numeric segment (`posteriorSamplingTableMH.0.psStartingValue`
+  is one literal column, not a child-table reference) — manually confirmed each flagged field already has
+  a correctly-wired step before treating it as safe to ignore.
+
+- **2026-10-20 · `ProductDesign/feature_CRM` TC_58 — stabilize already-authored testdata/metadata (user had hand-built most of `03_metadata`/`02_selectors_repo` from the CRM recording); CRM's own version of mTPI's dynamically-rendered Stop-Early-Trial rows, confirmed model-type-dependent via live DevTools.**
+  Unlike mTPI/BLRM (fresh imports), this feature's metadata/selectors were largely already authored;
+  the session's work was resolving the remaining `UNWIRED` fields (dose-7/8/9 extension per S25,
+  `priorSpecificationTable.0.dose8-10`, a mis-bound `curveFamily`/`Compute Posterior Mean Only` column
+  collision, the `Switch to CRM` token, and the usual Add-Scenario → `loopOverData` replacement) and then
+  stabilizing iteration-by-iteration, surfacing two real app-behavior findings along the way.
+  **Dynamically-rendered Stop-Early-Trial checkbox rows**: the "Stop Early Trial (MTD Determined)" table's
+  rows (`MTD Below Lowest Dose`/`MTD Above Highest Dose`/`Minimum Sample Size Observed`/`MTD Rule`/
+  `Allocation Rule`) only exist in the DOM **once checked** — a fresh project has nothing to `uncheck`, so
+  an `uncheck` action on a never-checked row times out "not found" (proven live on ITER_02/ITER_04 after
+  confirming ITER_01/ITER_03 had never actually exercised the `uncheck` branch, just skipped by data
+  coincidence). Fix: delete the `uncheck` pairs for these 5 checkboxes outright, same as Standing rule
+  #12's spirit but for a check/uncheck PAIR rather than a bare orphaned click — there's no "revert" action
+  this app supports once a conditional row renders.
+  **Logistic-model "no MTD Rule row" case**: for the Logistic model type (at least ITER_02's specific
+  combination), the 2-row "Stop Early Trial (MTD Determined)" table has NO "MTD Rule" row at all — its
+  2nd row is "Allocation Rule" instead, reusing the SAME period-1 DOM fields (`probabilityIfMTD`/
+  `minSSOnDoseIfMTD`) the recording had bound to "MTD Rule". Confirmed via the user's own DevTools
+  screenshot showing `<input id="SETIfMTDDetermined.1.stoppingRuleIfMTD">` next to the "Allocation Rule"
+  label — NOT inferred or guessed; an earlier proposed fix (move ITER_02's data from period1→period2) was
+  WRONG and caught by the user ("in the screenshot, the index is 1 and same is written in the testdata")
+  before being corrected to add a parallel `modelType==Logistic`-gated step reading the SAME period1 data
+  instead of moving it. **Caveat left open, not fully resolved**: the SAME Logistic-gated step also fires
+  for ITER_05 (also Logistic, but which DOES have a real "MTD Rule" row — contradicts a pure model-type
+  gate), causing a redundant double-click + value overwrite; user explicitly reviewed this live and judged
+  it acceptable ("the iter 05 execution looks fine") since the overwrite lands on the correct final value
+  and the behavior is stable/reproducible — left as-is rather than force a cleaner fix nobody asked for.
+  **End state:** all 5 iterations real `PASS` on a full-suite reproducibility run (`PASS 5, FAIL 0,
+  TIMEOUT 0, ERROR 0`), `npm run validate` clean.
+
+- **2026-10-20 · `ProductDesign/feature_mTPI` TC_56 — fresh import from a real recording over stale `feature_i3+3`-copied metadata; all 38 `UNWIRED` fields + 6 skipped radios resolved with ZERO new testdata columns; one new systemic bug class found + fixed live (S25); the `<parent>_` child-table naming trap formalized (S26).**
+  The feature folder existed with `TC_16`/`i3+3`-labeled testdata and a `metadata.csv` that was a
+  byte-for-byte copy of `feature_i3+3`'s own flow (dose-escalation project setup matches, but every
+  mTPI-specific Design-page field — `maxSampleSize`, `switchToMtpi`, `SETIfMTDNotDetermined.*`,
+  `SETIfMTDDetermined.*` — was absent). A fresh `recording.txt` already existed; running the importer
+  regenerated `metadata.csv`/`selectors.csv` against it from scratch.
+  **Repeated-modal Add-Scenario block** (curveFamily/E0/Emax/.../modalDose1-7 + 14 more fields) was
+  flagged unusable by the importer, same as every other `feature_i3+3`-family dose-escalation feature —
+  replaced with `loopOverData` + a NEW local `03_metadata/scenario_block.csv` (own copy, not a
+  cross-feature reference to `feature_i3+3`'s, matching `feature_BOIN`'s established local-copy
+  convention) mirroring `feature_i3+3`'s own proven block almost field-for-field.
+  **S26 (new): 24 of 38 `UNWIRED` lines were `SETIfMTDDetermined.0-3.*` dotted tokens with data that
+  already existed** in a hand-authored `01_testdata/SETIfMTDDetermined.csv` — missing only the
+  `design_` filename prefix the fold mechanism requires. Renaming it resolved all 24 with no data
+  changes. The same file also had blank `TC_ID` on every continuation row (Excel-merged-cell style) —
+  fixed by repeating the real TC_ID per row, confirmed necessary since the fold's join key has no
+  forward-fill. See S26 above.
+  **5 UNWIRED checkboxes resolved by REUSE, not new columns**: `MTD Above Highest Dose` /
+  `Minimum Sample Size Observed` / `Target Rule` / `CI Rule` / `Allocation Rule` each sit immediately
+  before one specific period's fields in the recording — matched 1:1 against the ALREADY-EXISTING
+  `SETIfMTDNotDetermined.1.stoppingRuleIfNotMTD` / `SETIfMTDDetermined.<0-3>.stoppingRuleIfMTD`
+  per-period enable columns (confirmed by position in the recording, then confirmed live). Saved 5
+  columns a less careful import would have created as pure duplicates of data already on disk.
+  **6 unlabeled radios** (`Next Recommended Dose (NRD)`/`Current MTD`, 2× `Compute Average
+  Allocations…`, 2× `Compute Isotonic Estimates…`) were SKIPPED by the importer (selector captured,
+  no step emitted — codegen recorded them without a bindable accessible label). Hand-added `click`
+  steps gated on pre-existing `SRAppliedOn-1`/`SRAppliedOn-2`/`avgAllocation-1`/`isotonicEstimates-1`
+  columns, confirmed live on all 5 iterations (every mutually-exclusive combination exercised: both
+  SRAppliedOn values, both avgAllocation values, both isotonicEstimates values).
+  **§4a manual audit caught what the static coverage tool could not**: the tool flagged
+  `scenarios.csv`'s loop-driven fields and the `SETIfMTDNotDetermined.*` inline dotted fields as
+  "no step references this field" — cross-checked against the ALREADY-STABLE `feature_i3+3` (same
+  tool, same false positives there too) to confirm it's a known blind spot (the tool doesn't trace
+  `${runtime.loop.*}` tokens through a `loopOverData`-referenced child metadata file), not a real gap.
+  The audit DID catch one real gap the tool missed: ITER_05 is a "General" curve-family scenario with
+  10 real doses, needing `modalDose1` through `modalDose10`, but the scenario block (mirrored from
+  `feature_i3+3`, whose own project never exceeds 6-7 doses) only filled through `modalDose7`. Added
+  `modalDose8-10` with pattern-inferred selectors (`#modalDose8/9/10`, following the confirmed
+  `#modalDose1-7` id convention) — confirmed correct on the live ITER_05 run.
+  **S25 (new, found only during the live stabilization run, not by any static check)**: see S25 above.
+  A 4th unconditional `btn_Add_Dose` click (needed by the 7-dose recording) silently gave every
+  6-dose iteration (ITER_02, ITER_03) a phantom 7th dose slot that the app auto-defaulted to
+  `last dose + 10`. ITER_03 (Quadratic curve family) failed outright with a blocked "Add Scenario"
+  modal and a `defaultModal` intercepting every subsequent click, traced via screenshot to "Calculated
+  Probability of Toxicities are greater than 1" — recomputing the Quadratic curve by hand against the
+  testdata's real 6 doses showed max toxicity ~0.83, well under 1; only the phantom 7th dose (51)
+  pushed it over. ITER_02 (Four Parameter Logistic) had the IDENTICAL phantom-dose bug but its curve
+  math didn't cross the threshold, so it passed silently on the first pass — its baseline was deleted
+  and regenerated after the fix per the standard stale-baseline protocol, confirmed clean the second
+  time (404 captured cells vs 443 before, consistent with the phantom dose's data no longer present).
+  **End state:** all 5 iterations (`BASELINE_CREATED`, `PASS 0/FAIL 0/ERROR 0`), `npm run validate`
+  clean (0 warnings), stabilized one iteration at a time per §5a with the single-iteration `Run`
+  toggle restored to all-`TRUE` afterward.
+
+- **2026-10-08 · `ProductDesign/feature_MAMS_DOP` TC_50 — fresh import, all 6 iterations PASS; §4a's data-to-wiring audit caught two importer mis-wirings before any live run; three new systemic bug classes found + fixed (S22, S23, S24).**
+  Non-Pvalue sibling of `feature_MAMS_DOP(Pvalue)` TC_49 (same session, see the entry below). Config
+  had the same `"feature": "ROM(PD)"` copy-paste leftover as TC_49 — this whole MAMS_* scaffold family
+  was seeded from a ROM(PD) template. Testdata (already authored) was audited first per the user's
+  explicit instruction: every file's `TC_ID` column fixed, every genuinely blank table cell filled with
+  `N/A`, one fully-orphaned blank row removed — all BEFORE running the importer.
+  **S20/S21 (from TC_49) both confirmed recurring here** — the identical unconditional `btn_Add_Arm`
+  click and the identical pinned-Total-row AG-grid false positive, both on a DIFFERENT feature in the
+  same family, reinforcing these are systemic MAMS-family patterns, not one-offs.
+  **S22 (new): `ddl_Parameter` (`#effParam`, select) and `txt_Parameter` (`#effParamRho`, fill) — two
+  DIFFERENT ids, two DIFFERENT action types, same generic recorded label — both got bound to
+  `effParamRho` by the importer.** Caught by directly cross-referencing `selectors.csv`'s id attributes
+  against the bound column, not by any automated check; confirmed the fix live (`Pocock` correctly
+  selected on ITER_02 once repointed to `effParam`). See S22 above.
+  **S23 (new): a sim flow's "Result Name" field is recorded TWICE for different purposes** (naming the
+  sim's own input set at the START vs naming the result right before Simulate) **but the importer's
+  duplicate-step collapse kept only the early occurrence**, binding it to the wrong testdata column
+  (`Sim Result Name` instead of `CreateInputSet`) and leaving the LATE naming moment completely
+  unwired. Found from the user's own domain clarification, not import-tool output — fixed by splitting
+  into two steps at the two real moments, confirmed via the "Name your result before simulating"
+  dialog screenshot. See S23 above.
+  **S24 (new): the SAME `futBoundaryFam` column drove three distinct orphaned-data failure modes
+  across different iterations** — a family rendering as "δ" (Delta, from a bare numeric testdata value
+  `"4"`) needing `futilityDelta` instead of `cumAlphaSpent`; a "p-value" family requiring `cumAlphaSpent`
+  that testdata had left `N/A`, blocking Save with no step-level FAIL (the NEXT step failed instead);
+  and orphaned per-period sim data for an iteration whose family was `N/A`. All three were root-caused
+  by screenshotting the live boundary table per family, not guessed from testdata alone. See S24 above.
+  **End state:** all 6 iterations (`ITER_01`-`ITER_06`) confirmed real `PASS` on both design and sim
+  phases across a full serial suite run (`PASS 6, FAIL 0`), after an earlier full-suite attempt crashed
+  from a genuine environment/browser failure (confirmed non-reproducible on immediate re-run — not a
+  regression). Several live FAILs during iteration-by-iteration stabilization were deliberately NOT
+  treated as wiring bugs once their signature matched known transient-environment patterns (a full
+  browser closure, a blank-page login) rather than reproducing on retry — see the "two full-suite
+  diagnostic traps" non-negotiable; don't over-fit a fix to a failure that doesn't reproduce.
+
+- **2026-10-07 · `ProductDesign/feature_MAMS_DOP(Pvalue)` TC_49 — reviewed and stabilized a feature another agent (Copilot) had already "validated"; all 7 iterations PASS; two new systemic bug classes found + fixed (S20, S21); prompted the new §4a mandatory pre-run data-to-wiring audit.**
+  User's instruction was explicit and now standing policy: a clean `npm run validate`/Copilot
+  "validation" is not proof a feature is actually wired correctly — before any live run, manually
+  trace every non-blank/non-`N/A` testdata cell (including every child/table CSV) to a step that
+  actually runs for its row and reads the value back. See `AI_IMPORT_AGENT.md` §4a (new this
+  session) and the mirrored non-negotiable in the `import-feature` skill.
+  **S20 (new): found via the §4a audit's live-screenshot discipline, not any automated check.**
+  `btn_Add_Arm`'s second click (StepID 210, builds the optional 5th arm) ran UNCONDITIONALLY for
+  every iteration — no `SkipIf`, no `UNWIRED`, `validate` clean. For the 4 of 7 iterations whose
+  `armName-4=N/A` (meant to be 4-arm designs), this silently built a 5th arm with a blank name,
+  changing the actual statistical design: the live Results page read "Number of Arms = 5" instead
+  of the intended 4. Caught only by screenshot-verifying the Results page's own summary against
+  testdata's arm-name columns — not by any log line or FAIL. Fix: mirrored the already-proven gate
+  from the sibling `feature_MAMS_DOM` (`SkipIf=${data.project.armName-4}==N/A`) onto the identical
+  click here. See S20 in the table above.
+  **Also found and fixed (not promoted to a numbered rule, since it's a direct reuse of an
+  existing convention rather than a new pattern): a missing post-Create-Project spinner wait.**
+  Reproduced twice in a row: clicking `btn_Inputs`/`btn_New_Input_Set` immediately after
+  `btn_Create_Project` force-clicked through a `#spinner` loading overlay before the page settled,
+  failing downstream at `txt_Name_Input_Set not found`. The shared `flows/login.csv` already has
+  the exact right pattern (`waitForSelector div_Spinner` with `WaitCondition=hidden`) for the
+  landing-page spinner after login; this feature (and presumably its siblings, since the reference
+  `feature_MAMS_DOM` has the identical gap) never applied the SAME convention to the
+  Create-Project→Inputs transition. Added `div_Spinner` on `ProjectPage` to `selectors.csv` and a
+  `waitForSelector … hidden` step between `btn_Create_Project` and `btn_Inputs`. Worth checking any
+  OTHER major page-transition click sequence for the same missing wait, not just this feature.
+  **S21 (new): a benign AG-Grid false-positive, found while investigating whether S19 had struck
+  again.** Several result tables warned "reports N data rows but only N-1 rendered" on EVERY
+  iteration, 100% reproducibly — the opposite signature of S19's non-determinism. Verified the
+  captured data was actually complete (sequential analysis rows + a pinned "Total" row) before
+  concluding this is a distinct, harmless `aria-rowcount` miscount on grids with a pinned footer
+  row, not a real missing-data bug — no baseline was deleted over it. See S21 in the table above.
+  **Also hit, and correctly did NOT chase as wiring bugs:** two live failures (a full browser
+  closure mid-run, and a completely blank login page after a retry) that both resolved on a plain
+  re-run with zero code changes — confirmed as transient app/network unavailability, not
+  regressions, by their total lack of reproducibility and their unrelated, inconsistent failure
+  points.
+
+- **2026-10-06 · `ProductDesign/feature_GADAR(PE)` TC_55 — reviewed and fixed a feature another agent (Copilot) had stabilized; one new systemic bug class found + fixed (S18); a real credential leak caught and scrubbed across 3 features.**
+  Repurposed the `feature_GADAR(PE)` folder (previously stale `TC_12` content) for a fresh `TC_55`
+  import. The user asked for a REVIEW of Copilot's prior stabilization pass, not a from-scratch
+  import — different task shape: check wiring, look for repeated steps, and chase a specific suspicion
+  ("simulation runs field resets to 10000, but changing Fixed Seed live doesn't cause that").
+  **Found a genuine duplicate block.** StepIDs 800-805 (6 `complementTable` period 1-3 fields) were an
+  exact re-fill of a SUBSET of StepIDs 792-799 — same ObjectName, same token, no gating difference.
+  Harmless (idempotent re-fill) but real bloat, most likely from merging two overlapping recorded
+  passes without de-duplicating the overlap. Removed; `validate` + `check-testdata-coverage.ts` stayed
+  clean. **General review tip:** group a feature's metadata by `Action+ObjectName`, excluding the
+  legitimately-repeating `loopPeriods`/`reconcilePeriodTable`/`callCustom` actions — any remaining
+  duplicate pair is either this class of bug or (check context first) a legitimate warm-up-then-real-use
+  tab click like the one found alongside it (`btn_Enrollment` at two StepIDs, correctly NOT a duplicate —
+  the first was a mount-and-return-to-Design warm-up, the second the real visit right before its fields
+  get filled).
+  **S18 (new): confirmed the user's suspicion was a real bug, not a false alarm.** The Simulation Setup
+  panel has no equivalent of the Enrollment tab's own post-mount `waitForSelector` before its first field
+  interaction. Live screenshots showed the exact mechanism: right after `select
+  ddl_Random_Number_Seed="Fixed"`, the panel correctly showed Fixed/100 — but by the time the NEXT step
+  ran, Random Number Seed had reverted to the fetched default `Clock` (so `Fixed Seed`'s input no longer
+  rendered, and `fill txt_Fixed_Seed` hard-failed "not found"), and `Number of Simulations Run` sat at its
+  own untouched default `10000`. First fix attempt — a `waitForSelector(visible)` on the dropdown, mirroring
+  the Enrollment tab's pattern — looked right on one run but failed identically on a re-run: the element is
+  visible the instant the panel mounts, well before its async data fetch actually completes and overwrites.
+  Real fix: a settle sleep AFTER the wait, before touching any field. Held clean across two consecutive
+  full 4-iteration runs. **The bug had already contaminated one baseline**: `ITER_04`'s baseline (the only
+  one of 4) had captured `10000` simulations instead of testdata's `100`, cascading into 64 value
+  mismatches once the fix made the live run correctly use `100` — confirmed via the diff file itself
+  (`expected=10000, actual=100` on several `Count` cells) that this was the STALE baseline, not a
+  regression; deleted and regenerated, matching rule 19b's stale-baseline protocol. ITER_01-03's baselines
+  were already correct, confirming the race was intermittent, not deterministic.
+  **Pre-commit hook caught a real, un-scrubbed credential in `feature_GADAR(PE)`'s own `recording.txt`**
+  (literal username+password in plaintext) — scrubbed to `<<USERNAME>>`/`<<PASSWORD>>` per the established
+  policy. **The hook also blocked on two UNRELATED, uncommitted features' recordings** (`feature_MAMS_DOP`,
+  `feature_MAMS_DOP(Pvalue)`) with the identical leaked credential — `scripts/check-recordings.ts` scans
+  the WHOLE working tree on every commit, not just the staged diff, so an unrelated un-scrubbed recording
+  anywhere in the repo blocks ANY commit until fixed. Scrubbed those two as well (real security fix, safe
+  regardless of feature ownership since they were untracked/not yet committed) but did NOT stage or commit
+  them — left them in the working tree for whoever owns that work. **Also caught and fixed a factual error
+  in `FRAMEWORK_KT.md`** (claimed recordings are gitignored; `.gitignore` itself says the opposite — they
+  ARE committed, with `check-recordings.ts` as the enforcement mechanism, not gitignore).
+  **Committed scoped**, same surgical `master.csv` technique as TC_45/TC_46 (reconstructed blob with only
+  the `TC_55` row, since the working copy had ~15 unrelated pending rows interleaved). Landed as `98ad238`
+  — 75 files (old `TC_12` content fully replaced).
+
+- **2026-10-01 · `ProductDesign/feature_StratGADSD` TC_46 — 10 of 11 iterations stabilized (BASELINE_CREATED), one held back on a genuine open issue; two new systemic bug classes found + fixed (S16, S17); the multi-countField chaining pattern trimmed back down once proven over-broad.**
+  Stratified GADSD (survival, up to 3 stratification factors, same family as `StratGADAR` TC_45 but with
+  real DOM differences: a `singlePieceStratTable` sim section instead of GADAR's `strata` table, a
+  GADSD-only `cumBetaProportion` boundary field, and an enrollment table whose always-present auto-final
+  row needed its compensating-click gate widened). Imported via the deterministic importer against a
+  fresh recording, then stabilized iteration-by-iteration exactly like TC_45's arc.
+  **S16 (new): boundary Calculate is a progressive-reveal multi-stage form, not idempotent for manually-
+  entered values.** ITER_04's `futilityPValue` fill kept passing (read-back confirmed) but reverted to an
+  invalid default (`"1"`) by the next screenshot, blocking navigation with a range-validation error. Three
+  live attempts before the fix landed: pre-Calculate fill (wiped by the Calculate that follows it),
+  post-Calculate fill with no further Calculate (value stuck, but the page stayed "Not Saved" and the
+  Unsaved-Changes modal still blocked navigation), then the real fix — **staging fills across THREE
+  Calculate clicks**, matching exactly what `StratGADAR`'s own already-proven metadata does (its StepIDs
+  ~3070/3160/3240) but had never been written up as an explicit rule until now. See S16 in the table above
+  for the full field-to-stage mapping. **ITER_04 itself is still unresolved** (`Run=FALSE`, held back):
+  with `efficacyCheck` left at its default CHECKED state, `futilityPValue` keeps resetting after every
+  Calculate even with full 3-stage staging — StratGADAR's own working p-value-family iteration has
+  `efficacyCheck=uncheck` instead. Flagged to the user rather than guessed at further; a future session
+  should pick this up with that comparison in hand.
+  **S17 (new): an unquoted comma in a flow file's `Description` column corrupts `DynamicArgs` specifically
+  — `npm run validate` does NOT catch it.** A newly-created GADSD-specific flow file
+  (`flows/stratgadsd_boundary_cumSpent_period.csv`, needed because GADSD's `cumBetaProportion` field has
+  no StratGADAR equivalent) had a comma in its Description, which silently shifted the real
+  `${runtime.period.n}` DynamicArgs token out of the row. Every `{0}`-parametric selector that row touched
+  resolved to a literal unsubstituted `{0}` in the DOM query, producing a generic "field not found" after a
+  full 10s timeout that looked exactly like a wrong-selector bug — cost three live-run cycles and two
+  rounds of asking the user to inspect the live DOM before the actual CSV field-count mismatch was found by
+  parsing the row directly. See S17 in the table above.
+  **Discovered the GADSD-specific `cumBetaProportion` field.** `futSpendFunc=Interpolated` renders a
+  differently-named futility-spend column than StratGADAR's `cumBetaSpent` — confirmed live by the user
+  (`[name="boundary.0.cumBetaProportion"]`, no `input` tag restriction unlike its `cumAlphaSpent`/
+  `cumBetaSpent` siblings). Wired via a new GADSD-specific flow file (`flows/stratgadsd_boundary_cumSpent_period.csv`)
+  rather than editing StratGADAR's shared one.
+  **Fixed the enrollment table's "always-present disabled final row" gate for the 1-period case.** The
+  existing compensating `Add Period` click (from the TC_45 session) was gated on whether PERIOD 1 was real,
+  so it correctly fired for 2-period iterations but under-fired for ITER_05's single-period case — the
+  lone live row was the auto-computed final row, not period 0. Regated on period 0 instead of period 1 (any
+  iteration using this input mode needs the compensating click, not just 2+-period ones).
+  **Trimmed the S14 multi-countField chaining back down once it was proven over-broad for this feature's
+  actual testdata.** All 9 reconcile passes + most of the "keyed on itself" fallback fill passes were kept
+  from the original import, but cross-checking every GADSD iteration's testdata showed only `efficacyPValue`
+  (ITER_07's period 1, where `analysisSpacingInfo` is N/A but `efficacyPValue` is real) ever needed its own
+  fallback — every other field (`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/
+  `cumBetaProportion`/`upperPValue`/`lowerPValue`) always has `analysisSpacingInfo` populated too, so their
+  "keyed on itself" passes were pure dead weight, visibly double-filling the boundary table on every run
+  (the user watched this live and flagged it). Removed the 7 provably-unnecessary reconcile passes and 5
+  fill passes; kept `efficacyPValue`'s own-keyed pass since it's the one field actually needed. **This
+  does not contradict S14's "ADD passes, never remove" guidance** — S14 is about not regressing an already-
+  working iteration; this trim only removed passes with zero current testdata exercising them, verified by
+  re-running the FULL 10-iteration suite afterward (9 PASS unaffected by the trim, the 1 FAIL was an
+  unrelated pre-existing stale baseline on ITER_01 — see below). If a future iteration needs one of the
+  removed fallbacks, re-add it; don't assume "trimmed once" means "never needed."
+  **Full-suite confirmation run (10 iterations, ITER_04 excluded) found one pre-existing, unrelated issue:**
+  ITER_01's sim `compareWithBaseline` failed `ROW_COUNT_MISMATCH` (88 extra rows, 0 value mismatches) — not
+  a regression from anything touched this session (ITER_01 is a Fixed design with no boundary table at
+  all). Traced to `extractAllResultTables`'s AG-grid virtualized-scroll capture under-rendering the
+  "Response Generation Parameters" table's 30-stratum rows at baseline-creation time (88 = 11 missing
+  strata × 8 columns exactly); the SAME under-capture warning pattern recurred on a DIFFERENT table
+  ("Overall Stratum Information", 19 of 30 rows) during the baseline regen itself — confirming this is
+  **non-deterministic scroll-capture flakiness in the extraction tool for the largest (30-stratum) tables,
+  not a one-off.** User confirmed; stale baseline deleted and regenerated. **The same WARN pattern (`"X"
+  reports N data row(s) but only M could be rendered even after scrolling`) also appeared repeatedly on
+  `GADAR(PE)` TC_55 (2026-10-06)**, on different tables than here — in that session baselines were freshly
+  created each run so no comparison FAIL resulted, but the recurrence across two unrelated features
+  confirms this is a genuine, recurring framework-level pattern rather than a one-off — now formalized as
+  rule S19 (see the table above) rather than left as only a narrative mention.
+  **Committed scoped, same technique as the TC_45 session:** `master.csv` had several UNRELATED pending
+  rows (TC_40-44/47-51, features not yet built) interleaved with the wanted TC_46 row — staged a
+  reconstructed version (`git show HEAD:master.csv` + a single-line insert, written as a blob via
+  `git hash-object -w` + `git update-index --cacheinfo`) containing ONLY the TC_46 addition, leaving the
+  rest in the working tree unstaged for whoever added them. Landed as `026103f` — 110 files, 18297
+  insertions.
+
+- **2026-09-30 · `ProductDesign/feature_StratGADAR` TC_45 — all 11 iterations stabilized (BASELINE_CREATED), a new static coverage-gate script added, and two new systemic bug classes found + fixed (S14, S15).**
+  Stratified GADAR (survival, up to 2-3 stratification factors, cross-product Strata/Weights/Marginal-
+  Allocation tables on top of a standard GADAR design+sim). ITER_01-09 built earlier in the session (see
+  prior context); this entry covers ITER_06-11 stabilization and the durable lessons that came out of it.
+  **New tool: `scripts/check-testdata-coverage.ts`** (`npx tsx scripts/check-testdata-coverage.ts <TC_ID>
+  [IterationID]`) — a per-iteration static gate, built in direct response to the user's complaint that
+  manual review kept missing wired-but-incomplete fields. It scans metadata + every referenced `flows/*.csv`
+  for `${data.*}`/`${runtime.period.*}` tokens (plus `reconcilePeriodTable`/`loopPeriods`/`loopChildRows`/
+  `fillCompactIndexedCells` config strings) and cross-checks every non-N/A testdata cell has SOME reachable
+  reference. It caught real gaps (`SelectTask`, `criticalPoint`, `margin_NI`/`margin_SS`, duplicate/unwired
+  `shapeParamDelta`, ITER_11's `upperPValue`/`lowerPValue`) but — by its own documented limitation — is a
+  STATIC reference check: it cannot see that a `loopPeriods` call's `countField` silently excludes a period
+  whose OTHER fields are populated. That deeper class of bug (S14) only surfaced via live runs + manual
+  `awk`/`column -t` dumps of the full child-table CSV across all iterations at once.
+  **S14 (new): `loopPeriods`/`reconcilePeriodTable` single-`countField` under-detection.** `design_boundary.csv`'s
+  value columns (`efficacyPValue`/`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/`cumBetaSpent`/
+  `upperPValue`/`lowerPValue`) were all gated for period-existence purposes on ONE shared field,
+  `analysisSpacingInfo`. ITER_10 defines its whole 5-period boundary via `efficacyPValue`+`cumAlphaSpent`
+  alone (`analysisSpacingInfo` N/A throughout) — both the row-ADD (`reconcilePeriodTable`) and value-FILL
+  (`loopPeriods`) logic silently no-op'd for every period, and the app then blocked navigation with an
+  "Analysis Spacing (%) Info is required" modal (screenshot-verified) that turned out to be a SEPARATE, real
+  testdata gap on top (the app requires that field regardless of leading field — user supplied real values).
+  ITER_07 was a sneakier PARTIAL case: period 0 used `analysisSpacingInfo` normally but period 1 didn't, so
+  the iteration looked green (it WAS green — `PASS`/`BASELINE_CREATED`) while silently only ever filling
+  period 0; the baseline had to be identified as stale, deleted, and regenerated once the gap was found.
+  Fixed by chaining extra `reconcilePeriodTable`/`loopPeriods` passes per candidate field (idempotent —
+  see S14 above) rather than swapping the countField, so no iteration's already-working detection regresses;
+  confirmed via a clean ITER_02 spot-check re-run (938 cells/854 within tolerance, zero mismatch) after the
+  chain was added feature-wide.
+  **S15 (new): generic "Unsaved Changes" modal blocking a tab-switch with no prior edit.** Blocked the sim
+  flow's Response-tab mount for ITER_06 only (of 8 sim iterations) — diagnosed via a temporary `dumpSubtree`
+  callCustom that printed the modal's exact title/body/button ids, fixed with an `Optional=TRUE` "Leave"
+  click that no-ops everywhere else.
+  **Also fixed this arc:** `margin_SS` selector was an unverified camelCase guess (`#marginSS`) that FAILED
+  live for ITER_08 — the real id, `#margin_SS` (underscore, matching the testdata column literally), was
+  found by grepping the closest sibling `feature_GADAR(PD)`'s already-wired `txt_Margin_SS`; ITER_11's
+  `upperPValue`/`lowerPValue` were completely unwired (no selector, no metadata step at all) until this
+  session — wired parametrically from the start (mirroring the already-proven `boundary.{0}.<field>`
+  convention) rather than copying sibling features' period-0-only hardcoded form, since three siblings
+  (`feature_DOP(PD)`, `feature_OROP(PD)`, `feature_SingleMean`) all independently confirmed the DOM id
+  convention `[id="boundary.<n>.upperPValue"]`/`.lowerPValue`.
+
+- **2026-09-27 · `ProductDesign/feature_Dual_DOPLogrank` TC_39 — Copilot handoff resumed and stabilized end-to-end; all 8 iterations PASS.**
+  A third dual-endpoint sibling (EP1=Difference of Proportions, EP2=Logrank — the mirror of TC_38's
+  EP1/EP2 assignment), continued from ITER_01–04 a teammate had stabilized in Copilot. Copilot's
+  metadata for this feature was noticeably more elaborate than TC_38's handoff (multiple
+  `reconcilePeriodTable` calls already combining `syncInterims`- and `winning-condition-select`-based
+  gates, evidently drawing on the by-then-updated `AI_IMPORT_AGENT.md` §9.2), but two gate-direction
+  bugs remained, both invisible to `npm run validate` and to ITER_01–04/05/06 (which didn't happen to
+  exercise them) until a broader iteration set did:
+  1. **The EP1-primary DEFAULT reconcile call was gated on the wrong string.** It used
+     `SkipIf ${syncInterims}!=Based on EP1` (only fires when `syncInterims` is the EXACT string
+     `"Based on EP1"`), but a "not explicitly set" cell in this testdata could be either an empty
+     string OR the literal string `"N/A"` — neither satisfies that exact match. ITER_01
+     (`syncInterims="N/A"`) silently never grew its boundary table past the default 1 row (target 3);
+     ITER_06 (`syncInterims=""`, blank) happened to only need 1 row, masking the same gap until ITER_01
+     exposed it. Fixed by adding a second, idempotent reconcile call gated the proven-safe way
+     (`SkipIf …==Based on EP2` — skip only when EXPLICITLY the other mode), matching the TC_37/TC_38
+     pattern exactly.
+  2. **Per-period checkbox steps gated on Winning Condition alone, not the field's own value.** Several
+     `check`/`uncheck` pairs were gated only on `${winning-condition-select}!=At least EP2`, with no
+     fallback to the period's own data. ITER_08 (a fixed/no-interim design with NO boundary row at
+     all, same shape as TC_38's ITER_08) has `winning-condition-select=At least EP2`, so the gate let
+     the step through — straight into a `locator.check: Timeout` on a checkbox that doesn't exist for
+     an iteration with zero boundary periods. Fixed by switching to the field's own value gate
+     (`SkipIf ${data...}!=check`/`!=uncheck`), matching every other checkbox step already in the file.
+  Also reused the already-known TC_38-ITER_07-style fix directly (a reconcile call using
+  `ep2AnalysisSpacingInfo` for the explicit-`Based on EP2` case, since that mode's boundary checkboxes
+  are all `N/A` here too) — no rediscovery needed, applied from the ledger on the first pass.
+  Two full-suite runs were interrupted by the user closing the browser mid-run (HEADLESS=false, watched
+  runs) — both times produced a cascade of `page.goto: Target page, context or browser has been closed`
+  across every iteration after the closure point; correctly recognized as operator interruption, not a
+  regression, confirmed by simply re-running.
+  **[PROMOTED] `IMPORT_LESSONS.md` rule 18 extended (2 new refinements)**: the blank-vs-literal-`"N/A"`
+  gate-string trap, and the checkbox-steps-need-their-own-value-gate rule — both written generally
+  enough to apply to any dual-endpoint feature's boundary metadata, not just this one.
+
+- **2026-09-23 · `ProductDesign/feature_Dual_LogrankDOP` TC_38 — Copilot handoff resumed and stabilized end-to-end; all 8 iterations PASS.**
+  A sibling of `feature_Dual_LogrankLogrank` TC_37 (same dual-endpoint shared-row-index boundary
+  table, EP1=Logrank/EP2=Difference of Proportions instead of EP1/EP2 both Logrank), continued from
+  a partial import a teammate had started in GitHub Copilot but couldn't finish there (ITER_01/02
+  were reported "already stabilized" with existing baselines; the rest were untouched).
+  **Auditing the handed-off metadata against `npm run validate` and the TC_37 §9.2 pattern surfaced
+  gaps the prior session had missed** (none of these tripped `validate` as hard errors, only WARNs):
+  a whole missing checkbox variant (`keepAnalysisInfoForEP2SameAsEP1` had no step at all — only its
+  EP2-primary counterpart was wired), an un-tokened `click btn_Select_Task` (fires but selects
+  nothing without `${data.inputset.SelectTask}`), a blank enrollment cell that should have been
+  `N/A`, and `ep1InputMethodTable` wired only through period 2 via a single hand-counted `Add Piece`
+  click (same bug class as TC_37 — one iteration needed period 4, another period 6) — replaced with
+  the proven mode-gated `reconcilePeriodTable` pair, extended through period 6.
+  **New bug class not seen on TC_37 — same shared boundary-reconcile metadata needed OPPOSITE
+  countFields for different iterations:** `ep1EfficacyCheck` (the field that worked for
+  5 of 6 EP1-primary iterations, since it stays real even when EP1 is the `Determined` side) was
+  `N/A` on every row for exactly one iteration, because that iteration's Winning Condition ("At
+  least EP1") renders no EP1 efficacy/futility checkboxes at all. The straightforward "swap the
+  countField" fix (proven on TC_37 ITER_07) broke a DIFFERENT, previously-working iteration whose
+  `AnalysisSpacingInfo` is genuinely `N/A` instead. Resolved by running BOTH candidate-countField
+  `reconcilePeriodTable` calls back-to-back on the same gate rather than choosing one —
+  `reconcilePeriodTable` no-ops once its own target is met, so this needed no per-iteration branching.
+  Same fix applied a second time to the EP2-primary "Both" call for a different iteration whose
+  boundary checkboxes were ALL `N/A` (only `AnalysisSpacingInfo` carried real values), mirroring
+  TC_37 ITER_07's exact bug.
+  Two straightforward data-entry corrections (same class as a TC_37 finding): a value in
+  `ep1HazardRateControl` instead of `ep1CumPercSurvivalControl` for a Cumulative % Survival
+  iteration, twice (once flagged mid-run, once pre-emptively recognized from the TC_37 precedent and
+  confirmed in one round-trip).
+  **Two full-suite runs surfaced process lessons, not feature bugs** — a cascading failure (a crashed
+  iteration broke the very next iteration's fresh start in the same serial run; fixed the real bug
+  and re-ran the pair to confirm) and two stale pre-existing baselines (captured before this
+  session's fixes, missing real testdata values; screenshot-verified the corrected design was right,
+  then deleted and regenerated both baselines with the user's confirmation).
+  **[PROMOTED] Standing rule 19 (new) + rule 18 extended + `AI_IMPORT_AGENT.md` §9.2**: the
+  idempotent-dual-countField-call technique, and the two full-suite diagnostic patterns
+  (cascading failures, stale-baseline mismatches).
+
+- **2026-09-22 · `ProductDesign/feature_Dual_LogrankLogrank` TC_37 — imported, wired, and stabilized end-to-end; all 8 iterations PASS.**
+  A structurally novel "Dual Endpoint" Logrank-Logrank design: two endpoints (EP1, EP2), each with its
+  own boundary/interim setup, sharing ONE physical boundary table via a shared row-index namespace
+  (`boundary.<n>.ep1*`/`ep2*`) — see **[PROMOTED] standing rule 18 + `AI_IMPORT_AGENT.md` §9.2** for
+  the full reusable pattern. Also two InputMethodTable sections (`ep1InputMethodTable`/
+  `ep2InputMethodTable`), each rendering a different field set per the shared `inputMethod` column
+  (Hazard Rate / Median Survival Times / Cumulative % Survival) — handled with two mode-gated
+  `reconcilePeriodTable` calls per endpoint (`SkipIf ${data.design.inputMethod}!=<mode>`), same
+  mechanism as the boundary table.
+  **Chain of real bugs found and fixed, in order:**
+  (1) Hand-counted "click Add-X N times" gating (an `interimSource`=`Both`/`EP2Only` testdata column,
+  devised early because `SkipIf` can't express compound conditions) assumed a fixed default row count
+  that turned out wrong on more than one iteration — replaced entirely with `reconcilePeriodTable`
+  (already proven on `enrollmentTable`), which reconciles live-vs-target and needs no default-count
+  assumption. The `interimSource` column became obsolete and was removed once the boundary table also
+  moved to this mechanism.
+  (2) The boundary table's `Final` row shares the same disabled-checkbox id pattern as real interim
+  rows, inflating `reconcilePeriodTable`'s live count by 1 and causing under-click (one iteration never
+  grew past its first row) — fixed with the already-documented `excludeDisabled=true` flag
+  (`customSteps.ts` literally names "the East-Horizon GSD boundary table" in its own doc comment for
+  this exact case).
+  (3) Two DIFFERENT "keep Analysis Info same as other endpoint" checkboxes exist
+  (`#keepAnalysisInfoForEP2SameAsEP1` vs `#keepAnalysisInfoForEP1SameAsEP2`) depending on which
+  endpoint the (sometimes-blank, live-defaulted) "Synchronize Interims" select resolves to as primary
+  — confirmed via user DevTools screenshots on two different iterations landing in each mode.
+  (4) The secondary-side "Add Interim to `<X>`" button's label flips with the primary endpoint
+  (`…to EP2` vs `…to EP1`) and simply doesn't exist for the currently-primary side — a hand-picked
+  button label that worked for EP1-primary mode threw `no "Add Interim to EP2" button found` under
+  EP2-primary mode.
+  (5) On the one iteration needing an EP1-side extra row (EP2-primary + `Planned End of Trial=Full Info
+  for both endpoints` — confirmed live to be the mirror of the already-known EP1-primary+Full-Info-both
+  → EP2-gets-the-extra-row case), the checkbox-based `reconcilePeriodTable` countField couldn't
+  distinguish "EP2's own row" from "EP1's extra row" because EP2's checkbox stayed real/checked on
+  BOTH — switched countField to `AnalysisSpacingInfo` itself (`excludeDisabled=true`), which genuinely
+  reads `N/A` wherever a side doesn't own the row.
+  (6) `Add Interim to EP1` turned out to APPEND a brand-new row rather than convert an existing
+  `Determined` row to editable — the testdata's `PeriodIndex` for the extra value had to move to match
+  where the click actually landed (index 4, a genuinely new 5th row, not index 3 as first assumed),
+  confirmed by reading the failure screenshot directly rather than continuing to reason from the log
+  alone.
+  Two unrelated, smaller data-typo fixes along the way: a value in the wrong `InputMethodTable` field
+  for one iteration's `inputMethod` mode (`ep1HazardRateControl` instead of `ep1CumPercSurvivalControl`
+  for a `Cumulative % Survival` iteration), and dead `boundary.4.*` metadata rows left over from an
+  earlier testdata restructuring, caught by `validate`'s `unknown column` errors.
+  **[PROMOTED] New standing rule 18 + `AI_IMPORT_AGENT.md` §9.2**: the full dual-endpoint
+  shared-row-index pattern, written so the next dual-endpoint feature (including a GitHub Copilot
+  session) starts from the discovered mode/button/countField rules instead of re-deriving them from
+  scratch through the same failure chain.
+
+- **2026-09-14 · `ProductDesign/feature_MCPMod_Con` TC_36 — audited after user report "repeating the same errors we fixed for TC 35"; ITER_01 re-verified green.**
+  A `_Con` (Continuous-endpoint) sibling of `feature_MCPMod` TC_35, imported by mirroring it per §0 —
+  structurally the mirroring worked well (the `loopOverData` SkipIf gating, the `ObjectName`-basename
+  rule, and the 25s background-retry `sleep` all carried over correctly, because those fixes live
+  behind prominent callout boxes in `AI_IMPORT_AGENT.md`/`MULTI_SCENARIO_GUIDE.md`). **But two TC_35
+  fixes that were NOT given the same visual prominence got silently re-broken**, invisible to both
+  `UNWIRED` and `npm run validate`:
+  **(1)** StepID 370 ("Select Test") used a plain `label` selector — the exact pre-TC_35 default —
+  instead of TC_35's `.react-select__input-container` fix (documented, but buried in §3's
+  UNWIRED-resolution reference table, never called out as a standalone rule).
+  **(2)** a leftover `assertValue obj_Test_Type` step (StepID 420) re-appeared, asserting a
+  never-verified `label:has-text("Test Type")` selector against `design.csv`'s `testtype` column —
+  the exact importer default TC_35 had already concluded was a mislabeled duplicate of the real
+  `#type1Error` field and removed. Also found (cosmetic, no functional impact): a dead `btn_Yes` row
+  from the same importer selector-naming-collision pattern TC_35 hit, and a dead duplicate
+  `txt_ResultName,Page,...` row — both orphaned, never referenced by any metadata step, left over
+  from raw codegen output.
+  **[PROMOTED] New standing rule 17 + `AI_IMPORT_AGENT.md` §0/§3/§6/Guardrails**: mirroring a
+  reference feature must be **verified, not assumed** — right before finishing, `grep` the
+  reference's selectors/metadata for judgment-call markers (`confirmed live`, `VERIFY selector`,
+  `renamed from`, `collided`, `Never recorded`, `mislabeled`) and diff each hit's resolution against
+  the new feature's equivalent field, even fields that auto-bound cleanly. **Meta-lesson for how this
+  ledger and the playbook get written**: the fixes that transferred cleanly were the ones with a
+  visible callout box; the ones that silently regressed were correct-but-buried in prose/tables.
+  Prefer callouts/standalone rules over reference-table rows for anything that must survive into a
+  sibling import.
+  Fixed in place: StepID 370 repointed to `ddl_react_select_input_container` (+ new selectors.csv
+  row), StepID 420 removed, `obj_Test_Type`/`btn_Yes`/duplicate-`txt_ResultName` selector rows
+  removed, `btn_Calculate_Allocations` added alongside `btn_Calculate` to match TC_35's naming, and
+  the carried-over fixes' terse descriptions enriched to match TC_35's rationale (self-documentation
+  for the next reader). Re-validated clean (`[PASS]`, 8 warnings — one new expected "testtype unused"
+  warning, matching TC_35's own documented pattern) and re-ran ITER_01 live: StepID 370 passed with no
+  fallback warning, StepID 420 no longer present, `BASELINE_CREATED`, 11 result tables / 133 cells
+  captured. ITER_02-08 remain untouched/unrun (out of scope for this audit — `project.csv` still has
+  `Run=TRUE` on ITER_01 only, as found).
+
+- **2026-09-14 · `ProductDesign/feature_MCPMod` TC_35 — imported + all 8 iterations stabilized (dose-finding, candidate models via `loopOverData`).**
+  A genuinely different shape from every prior import this ledger covers: multiple-comparison-procedure dose-finding,
+  with a growing Arms table (flat `armName-N`/`doseLevel-N` columns in `project.csv`, same convention as `feature_BOIN`'s
+  dose table) AND a repeated candidate-model "Add Model" modal (one model per iteration here, so `design_model.csv` is
+  one row per iteration — the `loopOverData` single-record variant of `MULTI_SCENARIO_GUIDE.md`'s pattern).
+  **[PROMOTED] Two corrections copied straight into the durable docs** (not just this ledger) since they're
+  general-purpose, not MCPMod-specific: `AI_IMPORT_AGENT.md` §9's callout box and `MULTI_SCENARIO_GUIDE.md` §4/§7 —
+  **(1)** `${runtime.loop.*}` tokens never auto-skip on blank/`N/A` the way `${data.*}` tokens do (every field needs
+  its own `SkipIf`, type- or value-gated) — this was already implied by the guide's own BOIN example but not stated
+  as a standalone rule, and cost a full debug cycle here. **(2)** a `loopOverData` step's `ObjectName` must equal the
+  child CSV's own basename — `loadTestData` keys `testDataParsed` by filename regardless of `feature.config.json`
+  registration, so a "logical" name like `model` (vs the real `design_model`) silently finds 0 rows.
+  **Two real app-behavior discoveries, not wiring bugs** (now in `AI_IMPORT_AGENT.md` §6/§7's diagnose material):
+  **(3)** an entire required action (a "Calculate" button for the Optimized-Allocations path) was absent from the
+  recording — Save/Save & Compute stayed disabled with no metadata error until it was added by hand, discovered from
+  the app's own on-screen banner, not from any log. **(4)** a background models-list fetch 400s on page load and
+  silently self-heals ~25s later; iterations reaching "Add Model" before that window closed had the click land
+  correctly (confirmed via Playwright's own actionability checks — no retry warning) yet produce **zero** network
+  activity — diagnosed by comparing `trace.network` between a passing and a failing iteration for the same feature
+  (new technique, now documented in `AI_IMPORT_AGENT.md` §7), not by guessing. Fixed with an unconditional `sleep`
+  early in the flow (no pollable DOM signal exists for this one). Also fixed: an importer selector-naming collision
+  (two different recorded interactions auto-named `btn_Yes`, and the LATER one's selector silently won — the real
+  "Add Model" button, not a "Yes" confirm — leaving the actual "Yes" dialog-confirm with no selector at all) and a
+  duplicate `ed50` testdata header (two model families' fields both auto-named `ed50`; safe to merge since no row
+  ever populated both).
 
 - **[PROMOTED] The whole `ProductDecide` "Decide" checklist (casing check → `collectionName` →
   `SelectTask` → results-grid mirror → `Add_Interim` gating → CSV-comma gotcha) is now copied into

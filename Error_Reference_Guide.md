@@ -46,6 +46,7 @@ These short, high-frequency items were taken from the repository's `USAGE_ERRORS
   - Symptoms: `grid produced no headers`, `reports N rows but only M rendered`.
   - Cause: AG Grid virtualization, missing header cells, or wrong grid selector.
   - Fix: Verify the grid is fully rendered before extraction, increase wait/poll timeout, or adjust selectors. See [core/extractors/tableExtractor.ts](core/extractors/tableExtractor.ts#L91).
+  - **If this shows up as a `ROW_COUNT_MISMATCH` against an EXISTING baseline (not a fresh capture), see category AA below first** — the under-render is non-deterministic on the largest tables, and the stale side is often the baseline itself, not the live run.
 
 - Wait / timeout errors:
   - Symptoms: `waitForText: "..." never contained "..." within Xms`.
@@ -494,6 +495,155 @@ Resolution steps:
 2. If the app's new labels are correct, **re-baseline** the affected iterations (`--update-baseline`) after a human review, then re-run for a real PASS.
 3. If numbers ALSO drifted across many iterations at once, suspect an `.env` change first (category R) before re-baselining.
 
+## V. `loopPeriods`/`reconcilePeriodTable` silently detects ZERO (or too-few) periods despite real testdata values
+
+How often seen:
+- New — first documented 2026-09-30 (`feature_StratGADAR` TC_45).
+
+Exact messages seen:
+- Log shows `loopPeriods[<prefix>]: 0 period(s) [] -> flows/...` or `reconcilePeriodTable[<prefix>]: live N row(s), testdata wants 0` for a table whose child CSV clearly has real values (visible via a manual `awk`/`column -t` dump) — no error at this step, just silence.
+- Several steps later, a blocking app validation error (e.g. `"Analysis Spacing (%) Info is required."`) or a `waitForSelector` timeout on the NEXT page, far from the real cause.
+- A SNEAKIER variant: the iteration is GREEN (`PASS`/`BASELINE_CREATED`) but one period's value was never actually entered — only caught by comparing the `loopPeriods[...]: N period(s) […]` count in the log against the testdata's true period count.
+
+Likely root cause:
+- `reconstructPeriods()` (`core/keywords/periodTable.ts`) treats a period as "present" iff ONE designated `countField` cell is non-N/A for that period. Different iterations of the SAME table can be led by DIFFERENT fields (one leans on `analysisSpacingInfo`, another defines its periods purely via `efficacyPValue`/`cumAlphaSpent`/etc. with `analysisSpacingInfo` N/A throughout) — the single shared countField used by the feature's `loopPeriods`/`reconcilePeriodTable` calls correctly detects the common case and silently misses the others. This is NOT a missing-fill-step bug (category S/`AI_IMPORT_AGENT.md` table-completeness rule) — the fill step exists and is correctly wired; it simply never fires because the period is never detected as existing in the first place.
+
+Resolution steps:
+1. Confirm the gap: dump the WHOLE child-table CSV (`awk -F, '...' <table>.csv | column -t -s,`) across every iteration at once and look for a row with a real value in a non-countField column while the countField column itself is `N/A`.
+2. Chain an extra `reconcilePeriodTable` pass (row-ADD) and an extra `loopPeriods` pass (value-FILL) per candidate leading field, keyed on that field instead of the shared countField, positioned right after the existing calls on the same gate. Both keywords no-op harmlessly when a period is already covered by an earlier pass — see `AI_IMPORT_AGENT.md` §9.2/§9.3 for the exact technique and why it needs no per-iteration branching.
+3. Never replace the original countField — only add passes, so already-working iterations don't regress. Spot-check at least one already-green iteration afterward to confirm.
+4. If, after the chain, the app STILL blocks with a required-field error, that's now a separate, genuine testdata gap (the app can require a field regardless of which one leads) — screenshot-verify the exact error text before assuming the chain alone will fix it.
+
+## W. Generic "Unsaved Changes" modal blocks a tab-switch click with no prior edit
+
+How often seen:
+- New — first documented 2026-09-30 (`feature_StratGADAR` TC_45 sim flow, 1 of 8 iterations).
+
+Exact messages seen:
+- `click: retrying <objectName> with force=true after locator.click: Timeout ... exceeded` with the call log showing `<div ... id="cancelConfirm" ... class="modal fade show" ...> intercepts pointer events`.
+- The force-retry eventually "succeeds" at registering the click, but the modal stays open underneath and silently blocks every SUBSEQUENT action until something several steps later hard-times-out (e.g. a `callCustom`/`isChecked` with no force-retry path) — the reported failure point is far from the real cause.
+
+Likely root cause:
+- A shared, feature-agnostic "Unsaved Changes" confirm dialog (`id="cancelConfirm"`, title "Unsaved Changes", body "Are you sure you want to leave without saving your…", buttons `#primaryButton`="Leave"/`#secondaryButton`="Cancel") can appear immediately after mounting a tab, before any explicit field edit — not only on navigating away from genuine unsaved work (contrast `AI_IMPORT_AGENT.md` §7's "Save first, never Leave" rule, which is about a DIFFERENT, legitimate-edits case).
+
+Resolution steps:
+1. Confirm what's actually on screen before guessing a fix: a step failure auto-captures a screenshot (`artifacts/<runId>/<TC>_<ITER>/step_<id>_fail_*.png`), or add a temporary `dumpSubtree` callCustom on the modal's container id to print its exact title/body/button text.
+2. Add a plain `click` on the Leave button (`css`, `#cancelConfirm #primaryButton`) with **`Optional=TRUE`** right after the action most likely to trigger it. Optional makes it probe-and-no-op on every iteration/feature where the modal never appears (`core/keywords/input.ts`'s documented Optional-click-on-absent-target behavior) — safe to leave in place unconditionally.
+3. If the SAME modal appears after genuine field edits (not a bare tab mount), that's the category this guide already covers under `AI_IMPORT_AGENT.md` §7's "Save first" rule instead — screenshot-verify which situation you're in before picking the button.
+
+## X. A boundary table's manually-entered value fills fine but reads back invalid later, blocking navigation
+
+How often seen:
+- New — first documented 2026-10-01 (`feature_StratGADSD` TC_46, ITER_04).
+
+Exact messages seen:
+- The `fill` step itself PASSES (read-back after the fill matches the intended value) — no error at that step.
+- A later screenshot (e.g. the one captured on a DIFFERENT step's failure) shows the field holding an invalid default (`"1"`) with a red/error border, plus red validation text below the table (e.g. `"Futility p-value should be in the range [10^-25, 1-(10^-8)]."`).
+- The next tab-switch click hard-fails (`locator.click: Timeout ... exceeded`) with a screenshot showing the generic "Unsaved Changes" modal (category W) open over the page.
+
+Likely root cause:
+- The boundary table is a progressive-reveal, multi-stage form — `btn_Calculate` doesn't just compute, it also determines which fields are genuinely persistent, and WIPES any value entered into a field the table hasn't "initialized" yet via a prior Calculate. Different field families reveal/persist at different stages (see `IMPORT_LESSONS.md` S16 for the exact mapping). A single Calculate click only suffices for tables using nothing but `analysisSpacingInfo` + checkboxes; once a manually-entered p-value/CP/HR/spend field is involved, it needs to be filled at the RIGHT stage relative to Calculate, not just filled once anywhere before the final Calculate.
+
+Resolution steps:
+1. Confirm which family the reset field belongs to (`futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` vs `cumAlphaSpent`/`cumBetaSpent`-family) and compare its fill position against `IMPORT_LESSONS.md` S16's stage mapping.
+2. Restructure the metadata into three staged Calculate clicks: family-tied fields before Calculate #1; futility-p-value/CP/HR (+ `computeCP`) after Calculate #1, before Calculate #2; cumAlpha/cumBeta-family fields after Calculate #2; checkbox re-assert + the FINAL Calculate #3; a short settle sleep; THEN navigate.
+3. Screenshot-verify the field's value right before Calculate #3 and again right after — it must hold the intended value in both, not just the first.
+4. If staging the fills correctly still doesn't fix it, check whether a SIBLING checkbox (e.g. `efficacyCheck`) is in a different state than a known-working reference iteration for the same boundary family — a checked/unchecked difference on an adjacent checkbox can itself be the real blocker (confirmed unresolved on `StratGADSD` ITER_04; flag to the user rather than guessing further).
+
+## Y. A parametric `{0}` selector times out "field not found" despite a confirmed-correct attribute pattern
+
+How often seen:
+- New — first documented 2026-10-01 (`feature_StratGADSD` TC_46, a newly-created flow file).
+
+Exact messages seen:
+- `fill: field "X" not found — required value could not be entered` after the FULL configured timeout (not an instant failure).
+- `npm run validate` reports **zero issues** for the feature, including the flow file involved.
+- The user (or a trace/DOM inspection) confirms the selector's attribute pattern is exactly right.
+
+Likely root cause:
+- An unquoted comma somewhere in that flow-file row's `Description` column shifted every column after it by one position — including the LAST column, `DynamicArgs`, which ends up holding stray overflow text instead of the real `${runtime.period.n}` token. The real token gets pushed into a phantom extra field with no header to bind to and is silently dropped. Without `DynamicArgs`, the selector's `{0}` placeholder is never substituted, so the live DOM query literally contains `{0}` and matches nothing. `selectors.csv`'s strict per-column schema check (its boolean `Exact` column) reliably catches this class of mistake there; flow files have no equivalent check, so a corrupted one parses "successfully" and only fails at runtime.
+
+Resolution steps:
+1. Don't re-guess the selector — the pattern is already confirmed correct, so re-verifying it again wastes a live-run cycle.
+2. Parse the specific flow-file row with a quote-aware CSV splitter and count fields against the 17-column header (`StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs`). An extra field (18 instead of 17) is the tell.
+3. Wrap the offending `Description` value in double quotes (escape any internal `"` by doubling it, per standard CSV quoting) and re-parse to confirm exactly 17 fields with `DynamicArgs` holding the real token.
+4. Re-run live to confirm the selector now resolves.
+
+## Z. A field fills fine right after its own step, but has reverted several seconds later (a different field's step then fails "not found")
+
+How often seen:
+- New — first documented 2026-10-06 (`feature_GADAR(PE)` TC_55, Simulation Setup panel).
+
+Exact messages seen:
+- A screenshot taken right after a `select`/`fill` step shows the correct value on screen — the step itself logs as passed.
+- A LATER step, often on a DIFFERENT field of the same panel, hard-fails `fill: field "X" not found — required value could not be entered` after the full timeout.
+- A screenshot at that later failure shows the EARLIER field has reverted to its own fetched default (e.g. a dropdown back to its un-selected default option), and the field the current step wanted no longer renders at all because the panel's state changed.
+- The gap between the original fill and the observed revert can be many seconds (confirmed ~11s in one case) — far longer than any single step's own timeout, so the failure reads as unrelated to the earlier, apparently-successful step.
+
+Likely root cause:
+- The tab/panel's own async data fetch keeps running for a short window AFTER it mounts, and once it resolves it overwrites whatever the automation already set — a classic mount-triggered race, but with a LATE-arriving overwrite rather than an immediate one. A `waitForSelector(visible)` placed right after the panel's own mount click (mirroring a sibling tab's working pattern) is not sufficient: the element the wait targets becomes visible/attached the instant the DOM node mounts, well before the panel's fetch actually completes.
+
+Resolution steps:
+1. Confirm the mechanism with two screenshots: one right after the original fill (showing it DID take), and the failure screenshot (showing it reverted). If both confirm this pattern, it's category Z, not a plain wrong-selector bug.
+2. Add a plain settle sleep immediately AFTER the existing `waitForSelector`, BEFORE any field on the panel is touched — sized to the panel's typical fetch duration (2–3s has been sufficient in practice). This makes the automation's own fill land after the panel's overwrite instead of racing it.
+3. Re-run at least twice (not just once) to confirm the fix holds — this class of race can pass a single confirmation run by luck and still fail on the next one (confirmed live: a wait-only fix passed once, then failed identically on a re-run; only wait+settle held across two consecutive full-suite runs).
+4. If a stale baseline was captured while this bug was active, its stored values will reflect the WRONG (un-set) defaults, not testdata's intended values — check for diff mismatches where `expected` looks like a plausible default (e.g. a suspiciously round number) and `actual` looks like testdata's real value; delete and regenerate that baseline (confirm with the user first, same as any stale-baseline case), not the other way around.
+
+## AA. A large AG-Grid table under-renders some rows even after the extractor's own scroll pass, non-deterministically
+
+How often seen:
+- Recurring, not new — the underlying symptom was already a one-line generic entry at the top of this document ("Table / grid extraction errors"), but without the empirical detail below. First formally traced 2026-10-01 (`feature_StratGADSD` TC_46, ITER_01's sim); confirmed recurring 2026-10-06 (`feature_GADAR(PE)` TC_55, multiple tables, no baseline impact that time).
+
+Exact messages seen:
+- `extractAllResultTables: "<Table Name>" reports N data row(s) but only M could be rendered even after scrolling` (M < N), immediately followed by `extractAllResultTables: AG grid "<Table Name>" -> <cols> column(s) x M row(s)` — i.e. the tool KNOWS it's short and logs it, but proceeds with the partial capture rather than failing.
+- Later (only if comparing against an older baseline that captured a DIFFERENT row count): `Compare TC_X/ITER_Y: FAIL — ROW_COUNT_MISMATCH, EXTRA_ROW` (or `MISSING_ROW`), with the mismatching cells' `expected`/`actual` values differing by roughly the ratio of the two captures (e.g. a `Count` cell scaling with total simulation count).
+
+Likely root cause:
+- `core/extractors/tableExtractor.ts` scrolls a virtualized AG-Grid table to try to force-render every row before capturing, and this is sufficient for the great majority of tables. For the LARGEST tables in this app (confirmed: 30-stratum breakdowns like "Response Generation Parameters"/"Overall Stratum Information"), the scroll-and-settle timing is occasionally not enough, and the shortfall is non-deterministic — the SAME iteration, re-run, can under-render a DIFFERENT table each time, or capture everything cleanly. This is a genuine framework/tool-timing limitation, not a feature-wiring issue — it has been seen on two unrelated features now.
+
+Resolution steps:
+1. **Do not assume a `ROW_COUNT_MISMATCH` against an existing baseline is a regression from whatever you just changed.** Open the diff file (`08_diffs/<...>_diff_<TC>_<ITER>.json` or `.csv`) and compare `expected` (baseline) against `actual` (live) for the mismatching cells.
+2. Look for a value that reads as a plausible DEFAULT or round/truncated figure on one side (often the baseline, if it was captured first and got unlucky) versus a value that matches testdata's real intent on the other (often the live run, especially right after fixing an unrelated bug that happens to also force a fresh, fully-rendered capture).
+3. Cross-check by grepping the baseline file directly for any literal value that doesn't match testdata (e.g. a `Number of Simulations Run` baseline value that isn't testdata's configured count) — a concrete mismatch like that confirms the baseline is the stale side, not a coincidence.
+4. If confirmed, delete and regenerate ONLY that baseline (confirm with the user first — this is still a destructive action on the regression reference, same as any stale-baseline case). Do not edit metadata/selectors to "fix" this — there is nothing wrong with the wiring.
+5. If it recurs often enough to be disruptive, it's worth raising as a `core/extractors/tableExtractor.ts` improvement (e.g. a longer settle between scroll and capture, or re-verifying the captured row count and retrying the scroll once before giving up) in a dedicated framework session — not as a side-patch while scoped to one feature's files.
+
+## BB. An unconditional "Add Item" click silently builds one extra row/arm, with no error anywhere
+
+- Confirmed twice, same bug, two sibling features: `feature_MAMS_DOP(Pvalue)` TC_49 and `feature_MAMS_DOP` TC_50 (2026-10-07/08). A second `btn_Add_Arm` click fired on EVERY iteration regardless of whether that arm's name column was `N/A`, while a third sibling feature (`feature_MAMS_DOM`) already gates the identical click with `SkipIf=${data.project.armName-4}==N/A`.
+- No `UNWIRED`, no `validate` warning, no FAIL — the extra click just creates a 5th arm with a blank name, changing the actual statistical design. Only visible by reading a summary field ("Number of Arms") on the live Results page against testdata's real arm count.
+
+Resolution steps:
+1. Before trusting an unconditional "Add" click as intentional, grep a reference/sibling feature's metadata for the same ObjectName.
+2. If the reference gates its last Add-click(s) with `SkipIf=${data.<file>.<lastCol>}==N/A` and the new feature's equivalent has no `SkipIf`, copy the reference's exact gate over.
+3. Confirm the fix by reading the design's own summary count on the live Results page, not just a clean `validate`/green run.
+
+See `IMPORT_LESSONS.md` S20; `AI_IMPORT_AGENT.md` §4a (the mandatory pre-run data-to-wiring audit) exists specifically to catch this class before any live run.
+
+## CC. Two differently-typed controls sharing a generic label collapse onto one column; a repeated "name" field loses its second moment
+
+- Confirmed live on `feature_MAMS_DOP` TC_50 (2026-10-08). `ddl_Parameter` (a `select`, live id `#effParam`) and `txt_Parameter` (a `fill`, live id `#effParamRho`) both recorded under the generic label "Parameter" — the importer bound BOTH to `effParamRho`. The documented "distinct ids split automatically" behavior only reliably fires between two fields of the SAME action type.
+- Separately: a sim flow's "Result Name" field is recorded TWICE for two different real purposes (naming a derived input set at the START, naming the result right before Simulate) — the importer's duplicate-step dedup kept only the early occurrence, binding it to the wrong testdata column and leaving the late moment unwired.
+- `validate` stays clean in both cases — both tokens resolve to a real column.
+
+Resolution steps:
+1. Before trusting an auto-bound `select` sitting next to a same-labeled `fill`, grep `selectors.csv` for both ObjectNames' `SelectorValue` — differing ids mean they're unrelated sibling fields.
+2. When a multi-stage flow's testdata has two distinct "name"-shaped columns, check the live app for a second naming moment (often a confirmation dialog right before the compute/simulate trigger) before assuming one generated fill step covers both.
+
+See `IMPORT_LESSONS.md` S22/S23; `AI_IMPORT_AGENT.md` §9.7.
+
+## DD. A boundary/futility-family selector changes WHICH per-period fields are real, not just their values
+
+- Confirmed live on `feature_MAMS_DOP` TC_50 (2026-10-08), three ways on the same `futBoundaryFam` column: (1) a family rendering as "δ" (Delta, from the plain testdata value `"4"` via the option's `value` attribute) needed a `futilityDelta` field instead of the `cumAlphaSpent` testdata had populated; (2) a "p-value" family REQUIRED `cumAlphaSpent`, left `N/A`, silently blocking `Save` — the FAILURE surfaced two steps later at an unrelated-looking `ResultName` fill, not at the real cause; (3) per-period child-table data existed for an iteration whose parent family was `N/A`, making it permanently orphaned.
+- A family's visible dropdown LABEL can be a single symbol (e.g. "δ") rendered from a plain-looking numeric testdata value — not a typo.
+
+Resolution steps:
+1. Screenshot the live boundary table for EVERY distinct family value a feature's testdata uses, before assuming one per-period column set covers all of them.
+2. When a `fill`/loop hard-fails "field not found" or `Save` silently stays blocked, read the live table's actual column headers off that screenshot rather than guessing which testdata column should supply the missing value.
+3. Don't "correct" a bare-number family value before confirming what it actually renders as live.
+
+See `IMPORT_LESSONS.md` S24; `AI_IMPORT_AGENT.md` §9.8.
+
 ## 4) Recurring Patterns and Known Issues
 
 - The largest recurring issue is unused testdata columns.
@@ -504,6 +654,8 @@ Resolution steps:
 - Baselines are environment-specific: a burst of VALUE_MISMATCH (or 200s+ login/nav timeouts) across many iterations at once usually traces to an `.env` change pointing at a different East Horizon instance, not data drift — confirm `.env` matches the baseline instance before touching data (category R).
 - Period/interim tables are gated by `SkipIf`: use `==N/A` (isNaCell — matches blank OR an `N/A` spelling) for `Add Period`/`Add Interim`; use `==EMPTY` (strict) for `loopPeriods`/`reconcilePeriodTable` count-fields (category S).
 - A VALUE_MISMATCH whose diff is only LABEL text (`Alternative`→`Alt.`), not numbers, is app label drift → re-baseline after review, not a data bug (category U). App-slowness can leave Save/Calculate disabled or spinner-blocked → settle-guard, don't force-click (category T).
+- A ROW_COUNT_MISMATCH on a very large AG-Grid table (30+ rows) is frequently the BASELINE being stale, not the live run regressing — check the diff's `expected` vs `actual` for which side looks like a partial/default capture before touching anything (category AA).
+- An unconditional "Add Item" click can silently build one extra row/arm with no error anywhere — grep a reference feature's metadata for the same ObjectName before trusting it (category BB). A `select`+`fill` sharing a generic label don't always get split like two fills do (category CC). A family/boundary-type selector can change WHICH per-period fields are real, not just their values — screenshot the live table per family before guessing (category DD).
 
 ## 5) Recommended Troubleshooting Order (Beginner-friendly)
 

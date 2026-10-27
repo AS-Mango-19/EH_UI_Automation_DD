@@ -1,0 +1,14 @@
+TC_ID,IterationID,PeriodIndex,analysisSpacingInfo,efficacyCheck,futilityCheck,futilityDelta,cumAlphaSpent,futilityPValue
+TC_50,ITER_01,0,32,uncheck,check,N/A,N/A,N/A
+TC_50,ITER_01,1,45,check,uncheck,N/A,N/A,N/A
+TC_50,ITER_01,2,55.6589,check,check,N/A,N/A,N/A
+TC_50,ITER_01,3,72.22568,check,check,N/A,N/A,N/A
+TC_50,ITER_02,0,61.32568,check,check,N/A,N/A,N/A
+TC_50,ITER_02,1,75.88895,N/A,check,N/A,N/A,N/A
+TC_50,ITER_03,0,30.5,check,uncheck,N/A,0.022,N/A
+TC_50,ITER_03,1,60.5,check,check,0.123,0.0335,N/A
+TC_50,ITER_03,2,80.5,N/A,check,0.321,0.0558,N/A
+TC_50,ITER_04,0,44,check,check,N/A,N/A,0.8658
+TC_50,ITER_04,1,66,check,check,N/A,N/A,0.6658
+TC_50,ITER_04,2,88,N/A,check,N/A,N/A,0.8888
+TC_50,ITER_05,0,60.7876,N/A,check,N/A,N/A,N/A

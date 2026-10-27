@@ -1,0 +1,472 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Control_Arm,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Longer Duration,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+chk_Variable,ProjectPage,role,checkbox,Variable,,FALSE,checkbox from codegen,FALSE
+txt_Follow_up_Time_Week,ProjectPage,css,#followUpTime-0_0,,,FALSE,textbox from codegen,FALSE
+chk_Stratification,ProjectPage,role,checkbox,Stratification,,FALSE,"checkbox that enables the Factor/Level stratification section - confirmed live via new recording.txt",FALSE
+lnk_Add_Factor,ProjectPage,role,link,Factor,,FALSE,"Add Factor link - confirmed live for creating Factor 1 only. The recording used a DIFFERENT selector (#Factors-0) for Factor 2/3, and live evidence this session confirmed reusing this same role=link click for Factor 2 does not work (click succeeds but Level_1-1 never appears)",FALSE
+btn_Add_Factor_2plus,ProjectPage,css,#Factors-0,,,FALSE,"Add Factor trigger for the 2nd+ factor - confirmed in recording.txt (used for Factor 2 and Factor 3 additions, distinct from the role=link selector used for Factor 1)",FALSE
+btn_Add_Level,ProjectPage,css,#btnLevels,,,FALSE,"Add Level button, scoped to whichever factor panel is currently focused - confirmed live via new recording.txt",FALSE
+txt_Level_1-0,ProjectPage,css,#Level_1-0,,,FALSE,Factor 1 Level 1 name - confirmed live via new recording.txt,FALSE
+txt_Level_2-0,ProjectPage,css,#Level_2-0,,,FALSE,Factor 1 Level 2 name - confirmed live via new recording.txt,FALSE
+txt_Level_3-0,ProjectPage,css,#Level_3-0,,,FALSE,Factor 1 Level 3 name - confirmed live via new recording.txt,FALSE
+txt_Level_4-0,ProjectPage,css,#Level_4-0,,,FALSE,"Factor 1 Level 4 name - id pattern extrapolated, not itself confirmed live",FALSE
+txt_Level_5-0,ProjectPage,css,#Level_5-0,,,FALSE,"Factor 1 Level 5 name - id pattern extrapolated, not itself confirmed live",FALSE
+txt_Level_1-1,ProjectPage,css,#Level_1-1,,,FALSE,Factor 2 Level 1 name - confirmed live via new recording.txt,FALSE
+txt_Level_2-1,ProjectPage,css,#Level_2-1,,,FALSE,Factor 2 Level 2 name - confirmed live via new recording.txt,FALSE
+txt_Level_3-1,ProjectPage,css,#Level_3-1,,,FALSE,Factor 2 Level 3 name - confirmed live via new recording.txt,FALSE
+txt_Level_1-2,ProjectPage,css,#Level_1-2,,,FALSE,Factor 3 Level 1 name - confirmed live via new recording.txt,FALSE
+txt_Level_2-2,ProjectPage,css,#Level_2-2,,,FALSE,Factor 3 Level 2 name - confirmed live via new recording.txt,FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Design_Compute_or_simulate_a,DesignPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_react_select_input_container,ResultsPage,css,.react-select__input-container,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE
+ddl_Hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
+txt_Power,ResultsPage,css,#power,,,FALSE,textbox from codegen,FALSE
+obj_Test_Type,DesignPage,label,Test Type,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+ddl_testtype,ResultsPage,css,#testtype,,,FALSE,native <select> from codegen,FALSE
+txt_upper_Type1Error,ResultsPage,css,#upperType1Error,,,FALSE,textbox from codegen,FALSE
+txt_lower_Type1Error,ResultsPage,css,#lowerType1Error,,,FALSE,textbox from codegen,FALSE
+obj_Number_of_Events,DesignPage,label,Number of Events,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Allocation_Ratio_nt_nc,ResultsPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+ddl_Input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+obj_Starting_At_Time_Week,DesignPage,label,Starting At Time (Week),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_input_Method_Table_0_hazard_Rate_Control,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_hazard_Rate_Trmt_Null_SS,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateTrmt_Null_SS""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_hazard_Rate_Trmt_Alt_SPSS,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateTrmt_Alt_SPSS""]",,,FALSE,textbox from codegen,FALSE
+btn_Add_Period,ResultsPage,role,button,Add Period,,FALSE,button from codegen,FALSE
+txt_input_Method_Table_2_starting_At_Time,ResultsPage,css,"[id=""inputMethodTable.2.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_1_starting_At_Time,ResultsPage,css,"[id=""inputMethodTable.1.startingAtTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_1_hazard_Rate_Control,ResultsPage,css,"[id=""inputMethodTable.1.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_2_hazard_Rate_Control,ResultsPage,css,"[id=""inputMethodTable.2.hazardRateControl""]",,,FALSE,textbox from codegen,FALSE
+obj_Input_Method,DesignPage,label,Input Method,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Hazard_Ratio_Null,ResultsPage,css,#hazardRatio_Null_SS,,,FALSE,textbox from codegen,FALSE
+txt_Hazard_Ratio_Alternative,ResultsPage,css,#hazardRatio_Alt_SS,,,FALSE,textbox from codegen,FALSE
+obj_Log_Hazard_Ratio_Null,DesignPage,label,Log Hazard Ratio (Null),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+ddl_Log_Hazard_Ratio_Alternative,ResultsPage,css,#hazardRatioInputMethod,,,FALSE,native <select> from codegen,FALSE
+obj_Hazard_Ratio_Null,DesignPage,label,Hazard Ratio (Null),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+obj_Hazard_Ratio_Alternative,DesignPage,label,Hazard Ratio (Alternative),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Log_Hazard_Ratio_Null,ResultsPage,css,#logHazardRatio_Null_SS,,,FALSE,textbox from codegen,FALSE
+txt_log_Hazard_Ratio_Alt_SS,ResultsPage,css,#logHazardRatio_Alt_SS,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_by_Time,ResultsPage,css,"input[name=""inputMethodTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Null_SS,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalTrmt_Null_SS""]",,,FALSE,"inferred from the sibling Trmt field id pattern (hazardRateTrmt/medianSurvivalTimeTrmt both have _Null_SS; cumPercSurvivalTrmt was missing it) - NOT yet confirmed live, screenshot-verify on first run",FALSE
+btn_Cumulative_Survival_Treatment_Alternative_st,ResultsPage,role,button,Add Period,,FALSE,button from codegen,FALSE
+txt_input_Method_Table_3_by_Time,ResultsPage,css,"input[name=""inputMethodTable.3.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_3_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.3.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Survivals_at_Period_1_Null,ResultsPage,css,#ratioOfPercSurv_Null_SS,,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Survivals_at_Period_1_Alternative,ResultsPage,css,#ratioOfPercSurv_Alt_SS,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_median_Survival_Time_Control,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_median_Survival_Time_Trmt_Null_SS,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Null_SS""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_median_Survival_Time_Trmt_Alt_SPSS,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Alt_SPSS""]",,,FALSE,textbox from codegen,FALSE
+obj_Ratio_of_Medians_Null,DesignPage,label,Ratio of Medians (Null),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+ddl_Ratio_of_Medians_Alternative,ResultsPage,css,#hazardRatioInputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Ratio_of_Medians_Null,ResultsPage,css,#ratioOfMedians_Null_SS,,,FALSE,textbox from codegen,FALSE
+txt_ratio_Of_Medians_Alt_SS,ResultsPage,css,#ratioOfMedians_Alt_SS,,,FALSE,textbox from codegen,FALSE
+ddl_hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
+txt_hazard_Ratio_Alt_SP,ResultsPage,css,#hazardRatio_Alt_SP,,,FALSE,textbox from codegen,FALSE
+txt_log_Hazard_Ratio_Alt_SP,ResultsPage,css,#logHazardRatio_Alt_SP,,,FALSE,textbox from codegen,FALSE
+txt_allocation_Ratio,ResultsPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Alt_SPSS,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalTrmt_Alt_SPSS""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_1_by_Time,ResultsPage,css,"input[name=""inputMethodTable.1.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_1_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.1.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_2_by_Time,ResultsPage,css,"input[name=""inputMethodTable.2.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_2_cum_Perc_Survival_Control,ResultsPage,css,"[id=""inputMethodTable.2.cumPercSurvivalControl""]",,,FALSE,textbox from codegen,FALSE
+txt_ratio_Of_Perc_Surv_Alt_SP,ResultsPage,css,#ratioOfPercSurv_Alt_SP,,,FALSE,textbox from codegen,FALSE
+ddl_hazard_Ratio_Input_Method,ResultsPage,css,#hazardRatioInputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_Ratio_of_Survivals_at_Period_1_Alternative,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+obj_Median_Survival_Time_Treatment_Alternative_mt_Week,DesignPage,label,Median Survival Time (Treatment: Alternative) (mt) (Week),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+obj_Ratio_of_Medians_Alternative,DesignPage,label,Ratio of Medians (Alternative),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_ratio_Of_Medians_Alt_SP,ResultsPage,css,#ratioOfMedians_Alt_SP,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_hazard_Rate_Trmt_Null_NI,ResultsPage,css,"[id=""inputMethodTable.0.hazardRateTrmt_Null_NI""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_hazard_Rate_Trmt_Alt_NI,ResultsPage,css,"input[name=""inputMethodTable.0.hazardRateTrmt_Alt_NI""]",,,FALSE,textbox from codegen,FALSE
+txt_hazard_Ratio_Null_NI,ResultsPage,css,#hazardRatio_Null_NI,,,FALSE,textbox from codegen,FALSE
+txt_hazard_Ratio_Alt_NI,ResultsPage,css,#hazardRatio_Alt_NI,,,FALSE,textbox from codegen,FALSE
+txt_log_Hazard_Ratio_Null_NI,ResultsPage,css,#logHazardRatio_Null_NI,,,FALSE,textbox from codegen,FALSE
+txt_log_Hazard_Ratio_Alt_NI,ResultsPage,css,#logHazardRatio_Alt_NI,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_median_Survival_Time_Trmt_Null_NI,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Null_NI""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_median_Survival_Time_Trmt_Alt_NI,ResultsPage,css,"[id=""inputMethodTable.0.medianSurvivalTimeTrmt_Alt_NI""]",,,FALSE,textbox from codegen,FALSE
+txt_ratio_Of_Medians_Null_NI,ResultsPage,css,#ratioOfMedians_Null_NI,,,FALSE,textbox from codegen,FALSE
+txt_ratio_Of_Medians_Alt_NI,ResultsPage,css,#ratioOfMedians_Alt_NI,,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Null_NI,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalTrmt_Null_NI""]",,,FALSE,textbox from codegen,FALSE
+txt_input_Method_Table_0_cum_Perc_Survival_Trmt_Alt_NI,ResultsPage,css,"[id=""inputMethodTable.0.cumPercSurvivalTrmt_Alt_NI""]",,,FALSE,textbox from codegen,FALSE
+obj_Ratio_of_Survivals_at_Period_1_Null,DesignPage,label,Ratio of % Survivals at Period # 1 (Null),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+obj_Ratio_of_Survivals_at_Period_1_Alternative,DesignPage,label,Ratio of % Survivals at Period # 1 (Alternative),,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_ratio_Of_Perc_Surv_Null_NI,ResultsPage,css,#ratioOfPercSurv_Null_NI,,,FALSE,textbox from codegen,FALSE
+txt_ratio_Of_Perc_Surv_Alt_NI,ResultsPage,css,#ratioOfPercSurv_Alt_NI,,,FALSE,textbox from codegen,FALSE
+ddl_Variance_of_Log_Hazard_Ratio,ResultsPage,css,#varianceOfLogHR,,,FALSE,native <select> from codegen,FALSE
+chk_variable,ResultsPage,testid,variable,,,FALSE,checkbox from codegen,FALSE
+txt_Follow_up_Time_Week,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+txt_Starting_At_Time_Week,ResultsPage,role,columnheader,Hazard Rate (Control),,FALSE,"textbox from codegen - CONFIRMED via live dumpTextMatches this ""Hazard Rate (Control)"" columnheader only actually renders for piecewiseInputMethod=Hazard Rates; misleadingly named after ""Starting At Time"" which never appears on the live page under this text at all",FALSE
+txt_dropout_Prob_Of_Dropout_Control_Header,ResultsPage,role,columnheader,Probability of Dropout (Control),,FALSE,"dropout table columnheader landmark for piecewiseInputMethod=Probability of Dropout - CONFIRMED via live dumpTextMatches (visible=true); found via ITER_05's timeout on the Hazard-Rates-only landmark above",FALSE
+lbl_Starting_At_Time_Week,ResultsPage,text,Starting At Time (Week),,,FALSE,"click the Starting At Time (Week) text label to reveal/activate the dropout table's Hazard Rate (Control) column - recording shows this click always precedes the columnheader click (getByText then getByRole columnheader); some iterations (e.g. ITER_02) never render the columnheader without it first",FALSE
+chk_include_Assurance,ResultsPage,testid,includeAssurance,,,FALSE,checkbox from codegen,FALSE
+ddl_Prior_Distribution_for,ResultsPage,css,#priorDistributionFor,,,FALSE,native <select> from codegen,FALSE
+ddl_Distribution,ResultsPage,css,#distributionMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Min_HR,ResultsPage,css,#minHR,,,FALSE,textbox from codegen,FALSE
+txt_Max_HR,ResultsPage,css,#maxHR,,,FALSE,textbox from codegen,FALSE
+ddl_distribution_Method,ResultsPage,css,#distributionMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_assurance_Input_Method,ResultsPage,css,#assuranceInputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_perc_HR1st_Operator,ResultsPage,css,#percHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_HR1st_Percentile_Val,ResultsPage,css,#percHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_HR1st_Percentile_Prob,ResultsPage,css,#percHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_HR2nd_Operator,ResultsPage,css,#percHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_HR2nd_Percentile_Val,ResultsPage,css,#percHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_HR2nd_Percentile_Prob,ResultsPage,css,#percHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_E_HR,ResultsPage,css,"input[name=""eHR""]",,,FALSE,textbox from codegen,FALSE
+txt_SD_HR,ResultsPage,css,"input[name=""sdHR""]",,,FALSE,textbox from codegen,FALSE
+ddl_prior_Distribution_For,ResultsPage,css,#priorDistributionFor,,,FALSE,native <select> from codegen,FALSE
+txt_min_Delta,ResultsPage,css,#minDelta,,,FALSE,textbox from codegen,FALSE
+txt_max_Delta,ResultsPage,css,#maxDelta,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Delta1st_Operator,ResultsPage,css,#percDelta1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Delta1st_Percentile_Val,ResultsPage,css,#percDelta1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Delta1st_Percentile_Prob,ResultsPage,css,#percDelta1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Delta2nd_Operator,ResultsPage,css,#percDelta2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Delta2nd_Percentile_Val,ResultsPage,css,#percDelta2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Delta2nd_Percentile_Prob,ResultsPage,css,#percDelta2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_e_Delta,ResultsPage,css,#eDelta,,,FALSE,textbox from codegen,FALSE
+txt_sd_Delta,ResultsPage,css,#sdDelta,,,FALSE,textbox from codegen,FALSE
+ddl_perc_SCHR1st_Operator,ResultsPage,css,#percSCHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_SCHR1st_Percentile_Val,ResultsPage,css,#percSCHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_SCHR1st_Percentile_Prob,ResultsPage,css,#percSCHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_SCHR2nd_Operator,ResultsPage,css,#percSCHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_SCHR2nd_Percentile_Val,ResultsPage,css,#percSCHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_SCHR2nd_Percentile_Prob,ResultsPage,css,#percSCHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_SC1st_Operator,ResultsPage,css,#percSC1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_SC1st_Percentile_Val,ResultsPage,css,#percSC1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_SC1st_Percentile_Prob,ResultsPage,css,#percSC1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_SC2nd_Operator,ResultsPage,css,#percSC2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_SC2nd_Percentile_Val,ResultsPage,css,#percSC2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_SC2nd_Percentile_Prob,ResultsPage,css,#percSC2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_sc_a,ResultsPage,css,#sc_a,,,FALSE,textbox from codegen,FALSE
+txt_sc_b,ResultsPage,css,#sc_b,,,FALSE,textbox from codegen,FALSE
+txt_st_a,ResultsPage,css,#st_a,,,FALSE,textbox from codegen,FALSE
+txt_st_b,ResultsPage,css,#st_b,,,FALSE,textbox from codegen,FALSE
+ddl_perc_ST1st_Operator,ResultsPage,css,#percST1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_ST1st_Percentile_Val,ResultsPage,css,#percST1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_ST1st_Percentile_Prob,ResultsPage,css,#percST1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_ST2nd_Operator,ResultsPage,css,#percST2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_ST2nd_Percentile_Val,ResultsPage,css,#percST2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_ST2nd_Percentile_Prob,ResultsPage,css,#percST2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_STHR1st_Operator,ResultsPage,css,#percSTHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_STHR1st_Percentile_Val,ResultsPage,css,#percSTHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_STHR1st_Percentile_Prob,ResultsPage,css,#percSTHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_STHR2nd_Operator,ResultsPage,css,#percSTHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_STHR2nd_Percentile_Val,ResultsPage,css,#percSTHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_STHR2nd_Percentile_Prob,ResultsPage,css,#percSTHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_min_HR,ResultsPage,css,#minHR,,,FALSE,textbox from codegen,FALSE
+txt_max_HR,ResultsPage,css,#maxHR,,,FALSE,textbox from codegen,FALSE
+txt_input_name_e_HR,ResultsPage,css,"input[name=""eHR""]",,,FALSE,textbox from codegen,FALSE
+txt_input_name_sd_HR,ResultsPage,css,"input[name=""sdHR""]",,,FALSE,textbox from codegen,FALSE
+txt_min_Lambda_C,ResultsPage,css,#minLambdaC,,,FALSE,textbox from codegen,FALSE
+txt_max_Lambda_C,ResultsPage,css,#maxLambdaC,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_C1st_Operator,ResultsPage,css,#percLambdaC1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_C1st_Percentile_Val,ResultsPage,css,#percLambdaC1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_C1st_Percentile_Prob,ResultsPage,css,#percLambdaC1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_C2nd_Operator,ResultsPage,css,#percLambdaC2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_C2nd_Percentile_Val,ResultsPage,css,#percLambdaC2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_C2nd_Percentile_Prob,ResultsPage,css,#percLambdaC2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_lambda_c_a,ResultsPage,css,#lambda_c_a,,,FALSE,textbox from codegen,FALSE
+txt_lambda_c_b,ResultsPage,css,#lambda_c_b,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_CHR1st_Operator,ResultsPage,css,#percLambdaCHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_CHR1st_Percentile_Val,ResultsPage,css,#percLambdaCHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_CHR1st_Percentile_Prob,ResultsPage,css,#percLambdaCHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_CHR2nd_Operator,ResultsPage,css,#percLambdaCHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_CHR2nd_Percentile_Val,ResultsPage,css,#percLambdaCHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_CHR2nd_Percentile_Prob,ResultsPage,css,#percLambdaCHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_T1st_Operator,ResultsPage,css,#percLambdaT1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_T1st_Percentile_Val,ResultsPage,css,#percLambdaT1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_T1st_Percentile_Prob,ResultsPage,css,#percLambdaT1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_T2nd_Operator,ResultsPage,css,#percLambdaT2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_T2nd_Percentile_Val,ResultsPage,css,#percLambdaT2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_T2nd_Percentile_Prob,ResultsPage,css,#percLambdaT2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_lambda_t_a,ResultsPage,css,#lambda_t_a,,,FALSE,textbox from codegen,FALSE
+txt_lambda_t_b,ResultsPage,css,#lambda_t_b,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_THR1st_Operator,ResultsPage,css,#percLambdaTHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_THR1st_Percentile_Val,ResultsPage,css,#percLambdaTHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_THR1st_Percentile_Prob,ResultsPage,css,#percLambdaTHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_Lambda_THR2nd_Operator,ResultsPage,css,#percLambdaTHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_Lambda_THR2nd_Percentile_Val,ResultsPage,css,#percLambdaTHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_Lambda_THR2nd_Percentile_Prob,ResultsPage,css,#percLambdaTHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_min_Lambda_T,ResultsPage,css,#minLambdaT,,,FALSE,textbox from codegen,FALSE
+txt_max_Lambda_T,ResultsPage,css,#maxLambdaT,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MC1st_Operator,ResultsPage,css,#percMC1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MC1st_Percentile_Val,ResultsPage,css,#percMC1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MC1st_Percentile_Prob,ResultsPage,css,#percMC1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MC2nd_Operator,ResultsPage,css,#percMC2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MC2nd_Percentile_Val,ResultsPage,css,#percMC2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MC2nd_Percentile_Prob,ResultsPage,css,#percMC2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_input_name_e_MC,ResultsPage,css,"input[name=""eMC""]",,,FALSE,textbox from codegen,FALSE
+txt_input_name_sd_MC,ResultsPage,css,"input[name=""sdMC""]",,,FALSE,textbox from codegen,FALSE
+ddl_perc_MCHR1st_Operator,ResultsPage,css,#percMCHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MCHR1st_Percentile_Val,ResultsPage,css,#percMCHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MCHR1st_Percentile_Prob,ResultsPage,css,#percMCHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MCHR2nd_Operator,ResultsPage,css,#percMCHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MCHR2nd_Percentile_Val,ResultsPage,css,#percMCHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MCHR2nd_Percentile_Prob,ResultsPage,css,#percMCHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MT1st_Operator,ResultsPage,css,#percMT1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MT1st_Percentile_Val,ResultsPage,css,#percMT1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MT1st_Percentile_Prob,ResultsPage,css,#percMT1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MT2nd_Operator,ResultsPage,css,#percMT2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MT2nd_Percentile_Val,ResultsPage,css,#percMT2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MT2nd_Percentile_Prob,ResultsPage,css,#percMT2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+txt_input_name_e_MT,ResultsPage,css,"input[name=""eMT""]",,,FALSE,textbox from codegen,FALSE
+txt_input_name_sd_MT,ResultsPage,css,"input[name=""sdMT""]",,,FALSE,textbox from codegen,FALSE
+ddl_perc_MTHR1st_Operator,ResultsPage,css,#percMTHR1stOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MTHR1st_Percentile_Val,ResultsPage,css,#percMTHR1stPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MTHR1st_Percentile_Prob,ResultsPage,css,#percMTHR1stPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_perc_MTHR2nd_Operator,ResultsPage,css,#percMTHR2ndOperator,,,FALSE,native <select> from codegen,FALSE
+txt_perc_MTHR2nd_Percentile_Val,ResultsPage,css,#percMTHR2ndPercentileVal,,,FALSE,textbox from codegen,FALSE
+txt_perc_MTHR2nd_Percentile_Prob,ResultsPage,css,#percMTHR2ndPercentileProb,,,FALSE,textbox from codegen,FALSE
+ddl_eff_Boundary_Fam,ResultsPage,css,#effBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_asym_Eff_Boundary_Fam,ResultsPage,css,#asymEffBoundaryFam,,,FALSE,"UNVERIFIED - asymmetric Efficacy Boundary Family select, enabled when Test Type=2-Sided (Asymmetric) and disables the symmetric effBoundaryFam; DOM id guessed by this app's consistent id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_upper_Spend_Func,ResultsPage,css,#upperSpendFunc,,,FALSE,"UNVERIFIED - asymmetric upper-boundary Spend Function select, mirrors the symmetric #effSpendFunc; id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_upper_Param,ResultsPage,css,#upperParam,,,FALSE,"UNVERIFIED - asymmetric upper-boundary Param select, mirrors the symmetric #effParam; id===testdata-column-name convention, screenshot-verify",FALSE
+txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,"UNVERIFIED - asymmetric upper-boundary Param Gamma textbox, mirrors the symmetric #effParamGamma; id===testdata-column-name convention, screenshot-verify",FALSE
+txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,"UNVERIFIED - asymmetric upper-boundary Param Rho textbox, mirrors the symmetric #effParamRho; id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_upper_Fix,ResultsPage,css,#upperFix,,,FALSE,"UNVERIFIED - asymmetric upper-boundary Fix select, mirrors the shared #fix; id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_lower_Spend_Func,ResultsPage,css,#lowerSpendFunc,,,FALSE,"UNVERIFIED - asymmetric lower-boundary Spend Function select, mirrors the symmetric #effSpendFunc; id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_lower_Param,ResultsPage,css,#lowerParam,,,FALSE,"UNVERIFIED - asymmetric lower-boundary Param select, mirrors the symmetric #effParam; id===testdata-column-name convention, screenshot-verify",FALSE
+txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,"UNVERIFIED - asymmetric lower-boundary Param Gamma textbox, mirrors the symmetric #effParamGamma; id===testdata-column-name convention, screenshot-verify",FALSE
+txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,"UNVERIFIED - asymmetric lower-boundary Param Rho textbox, mirrors the symmetric #effParamRho; id===testdata-column-name convention, screenshot-verify",FALSE
+ddl_eff_Spend_Func,ResultsPage,css,#effSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_eff_Param_Gamma,ResultsPage,css,#effParamGamma,,,FALSE,textbox from codegen,FALSE
+txt_eff_Param_Rho,ResultsPage,css,#effParamRho,,,FALSE,textbox from codegen,FALSE
+ddl_eff_Param,ResultsPage,css,#effParam,,,FALSE,native <select> from codegen,FALSE
+ddl_fut_Boundary_Fam,ResultsPage,css,#futBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_fut_Spend_Func,ResultsPage,css,#futSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_fut_Param_Gamma,ResultsPage,css,#futParamGamma,,,FALSE,textbox from codegen,FALSE
+txt_fut_Param_Rho,ResultsPage,css,#futParamRho,,,FALSE,textbox from codegen,FALSE
+ddl_fut_Boundary,ResultsPage,css,#futBoundary,,,FALSE,native <select> from codegen,FALSE
+ddl_fut_Param,ResultsPage,css,#futParam,,,FALSE,native <select> from codegen,FALSE
+ddl_fix,ResultsPage,css,#fix,,,FALSE,native <select> from codegen,FALSE
+txt_boundary_0_efficacy_PValue,ResultsPage,css,"[id=""boundary.0.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_efficacy_PValue,ResultsPage,css,"[id=""boundary.1.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+btn_Add_Interim,ResultsPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_boundary_2_efficacy_PValue,ResultsPage,css,"[id=""boundary.2.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_3_efficacy_PValue,ResultsPage,css,"[id=""boundary.3.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+btn_Calculate,ResultsPage,role,button,Calculate,,FALSE,button from codegen,FALSE
+txt_boundary_0_futility_PValue,ResultsPage,css,"[id=""boundary.0.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_PValue,ResultsPage,css,"[id=""boundary.1.futilityPValue""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern; found live for ITER_04 (Futility p-value required error blocked Enrollment navigation)",FALSE
+txt_boundary_2_futility_PValue,ResultsPage,css,"[id=""boundary.2.futilityPValue""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_3_futility_PValue,ResultsPage,css,"[id=""boundary.3.futilityPValue""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern; UNVERIFIED (no iteration currently needs period 3), id-convention guess",FALSE
+ddl_compute_CP,ResultsPage,css,#computeCP,,,FALSE,native <select> from codegen,FALSE
+ddl_boundary_Scale,ResultsPage,css,#boundaryScale,,,FALSE,native <select> from codegen,FALSE
+txt_boundary_0_futility_CP,ResultsPage,css,"[id=""boundary.0.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_CP,ResultsPage,css,"[id=""boundary.1.futilityCP""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_2_futility_CP,ResultsPage,css,"[id=""boundary.2.futilityCP""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_3_futility_CP,ResultsPage,css,"[id=""boundary.3.futilityCP""]",,,FALSE,"table-completeness gap fix - only period 0 was wired; UNVERIFIED (no iteration currently needs period 3), id-convention guess",FALSE
+txt_boundary_0_futility_HR,ResultsPage,css,"[id=""boundary.0.futilityHR""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_HR,ResultsPage,css,"[id=""boundary.1.futilityHR""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_2_futility_HR,ResultsPage,css,"[id=""boundary.2.futilityHR""]",,,FALSE,"table-completeness gap fix - only period 0 was wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_3_futility_HR,ResultsPage,css,"[id=""boundary.3.futilityHR""]",,,FALSE,"table-completeness gap fix - only period 0 was wired; UNVERIFIED (no iteration currently needs period 3), id-convention guess",FALSE
+txt_shape_Param_Delta_One,ResultsPage,css,#shapeParamDeltaOne,,,FALSE,textbox from codegen,FALSE
+txt_shape_Param_Delta_Two,ResultsPage,css,#shapeParamDeltaTwo,,,FALSE,textbox from codegen,FALSE
+txt_shape_Param_Delta,ResultsPage,css,#shapeParamDelta,,,FALSE,"UNVERIFIED - only used by ITER_09; id===testdata-column-name convention, screenshot-verify",FALSE
+txt_col_md_12_card_table_tbody_tr_nth_child_2_td_nth_child_4,ResultsPage,css,.col-md-12 > .card > .table > tbody > tr:nth-child(2) > td:nth-child(4),,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.0.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.0.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.1.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.1.cumBetaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.2.cumAlphaSpent""]",,,FALSE,"table-completeness gap fix - only periods 0-1 were wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_2_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.2.cumBetaSpent""]",,,FALSE,"table-completeness gap fix - only periods 0-1 were wired, matching the efficacyPValue pattern",FALSE
+txt_boundary_3_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.3.cumAlphaSpent""]",,,FALSE,"table-completeness gap fix - only periods 0-1 were wired; UNVERIFIED (no iteration currently needs period 3), id-convention guess",FALSE
+txt_boundary_3_cum_Beta_Spent,ResultsPage,css,"input[name=""boundary.3.cumBetaSpent""]",,,FALSE,"table-completeness gap fix - only periods 0-1 were wired; UNVERIFIED (no iteration currently needs period 3), id-convention guess",FALSE
+btn_Hypothesis_Select_Superiority_Super_Superiority_Noninferiority_Power_Test,ResultsPage,role,button,Calculate,,FALSE,button from codegen,FALSE
+btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+ddl_input_Parameter,ResultsPage,css,#inputParameter,,,FALSE,native <select> from codegen,FALSE
+txt_committed_Duration,ResultsPage,css,#committedDuration,,,FALSE,textbox from codegen,FALSE
+btn_Accrual_Info_Period_Starting_At,ResultsPage,role,button,Calculate,,FALSE,button from codegen,FALSE
+txt_committed_Subjects,ResultsPage,css,#committedSubjects,,,FALSE,textbox from codegen,FALSE
+txt_px_4_pb_4_overflow_auto,ResultsPage,css,.px-4.pb-4.overflow-auto,,,FALSE,textbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,ResultsPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_InputSetName,Page,css,#inputId,,,FALSE,"Input Set Name field (same #inputId element as txt_ResultName, but filled right after clicking Simulate to name the new Input Set - distinct occurrence from the post-Save&Simulate Result Name fill)",FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
+chk_boundary_efficacyCheck,ResultsPage,css,"[id=""boundary.{0}.efficacyCheck""]",,,TRUE,PARAMETRIC boundary efficacyCheck; {0}=period index (loopPeriods),FALSE
+chk_boundary_futilityCheck,ResultsPage,css,"[id=""boundary.{0}.futilityCheck""]",,,TRUE,PARAMETRIC boundary futilityCheck; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_startingAtTime,ResultsPage,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,ResultsPage,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutStartingAtTime,ResultsPage,css,"[id=""dropoutTable.{0}.dropoutStartingAtTime""]",,,TRUE,PARAMETRIC dropoutTable dropoutStartingAtTime; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutHazardRateControl,ResultsPage,css,"[id=""dropoutTable.{0}.dropoutHazardRateControl""]",,,TRUE,PARAMETRIC dropoutTable dropoutHazardRateControl; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutHazardRateTreatment,ResultsPage,css,"[id=""dropoutTable.{0}.dropoutHazardRateTreatment""]",,,TRUE,PARAMETRIC dropoutTable dropoutHazardRateTreatment; {0}=period index (loopPeriods),FALSE
+btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,Page,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,Page,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_designs,Page,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_response,Page,css,"[id=""leftPanel.response""]",,,FALSE,"Sim Response tab (leftPanel.response) - click to mount it early before header/boundary edits, matching the proven feature_DOM(PD)/feature_ROP(PD) fix pattern",FALSE
+txt_sample_Size,Page,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+ddl_Fix_at_Each_Analysis,Page,css,#fixAtEachAnalysis,,,FALSE,native <select> from codegen,FALSE
+txt_Study_Duration_Day,Page,css,#studyDuration,,,FALSE,textbox from codegen,FALSE
+ddl_fix_At_Each_Analysis,Page,css,#fixAtEachAnalysis,,,FALSE,native <select> from codegen,FALSE
+txt_number_Of_Events,Page,css,#numberOfEvents,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,Page,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,Page,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_harrington_Flem_P,Page,css,#harringtonFlemP,,,FALSE,textbox from codegen,FALSE
+txt_harrington_Flem_Q,Page,css,#harringtonFlemQ,,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_analysis_Spacing_Info,Page,css,"[id=""boundarySim.0.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.0.cumAlphaSpentUpper""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.0.cumAlphaSpentLower""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_efficacy_ZUpper,Page,css,"[id=""boundarySim.0.efficacyZUpper""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_efficacy_ZLower,Page,css,"[id=""boundarySim.0.efficacyZLower""]",,,FALSE,textbox from codegen,FALSE
+btn_Response,Page,role,button,Response,,FALSE,button from codegen,FALSE
+chk_link_Model_Params,Page,testid,linkModelParams,,,FALSE,checkbox from codegen,FALSE
+lnk_Unlinking_the_model,Page,text,Unlinking the model,,,FALSE,"confirmation prompt text (fixed from a wrong #primaryButton binding, which collided with the separate btn_primary_Button confirm click that comes after it) - matches recording's getByText('Unlinking the model').click()",FALSE
+lnk_Linking_the_model_parameters,Page,text,Linking the model parameters,,,FALSE,"confirmation prompt text (fixed from a wrong #primaryButton binding, which collided with the separate btn_primary_Button confirm click that comes after it) - matches recording's getByText('Linking the model parameters').click()",FALSE
+txt_Baseline_Hazard_Rate,Page,css,#baselineHR,,,FALSE,textbox from codegen,FALSE
+btn_Expand_All,Page,role,button,Expand All,,FALSE,button from codegen,FALSE
+txt_0_5,Page,role,gridcell,0.5,,FALSE,textbox from codegen,FALSE
+btn_Input_Editor,Page,role,spinbutton,Input Editor,,FALSE,textbox from codegen,FALSE
+txt_1,Page,role,gridcell,1,,FALSE,textbox from codegen,TRUE
+btn_Apply,Page,role,button,Apply,,FALSE,button from codegen,FALSE
+btn_primary_Button,Page,css,#primaryButton,,,FALSE,button from codegen,FALSE
+ddl_Input_Method,Page,css,#hRInputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_Distribution,Page,css,#hRDistributionSelect,,,FALSE,native <select> from codegen,FALSE
+ddl_Number_of_Pieces,Page,css,#hRNumOfPieces,,,FALSE,native <select> from codegen,FALSE
+ddl_Apply_Hazard_Ratio,Page,css,#commonHrSelect,,,FALSE,native <select> from codegen,FALSE
+txt_common_Hr_Input,Page,css,#commonHrInput,,,FALSE,textbox from codegen,FALSE
+ddl_stratum_Select,Page,css,#stratumSelect,,,FALSE,native <select> from codegen,FALSE
+ddl_Piece,Page,css,#pieceSelect,,,FALSE,native <select> from codegen,FALSE
+txt_bulk_HRControl,Page,css,#bulkHRControl,,,FALSE,textbox from codegen,FALSE
+txt_bulk_HR,Page,css,#bulkHR,,,FALSE,textbox from codegen,FALSE
+btn_Bulk_Apply,Page,role,button,Bulk Apply,,FALSE,button from codegen,FALSE
+txt_starting_At_Time1,Page,css,#startingAtTime1,,,FALSE,textbox from codegen,FALSE
+txt_starting_At_Time2,Page,css,#startingAtTime2,,,FALSE,"piece boundary time field, same pattern as txt_starting_At_Time1",FALSE
+txt_starting_At_Time3,Page,css,#startingAtTime3,,,FALSE,"piece boundary time field, same pattern as txt_starting_At_Time1",FALSE
+txt_starting_At_Time4,Page,css,#startingAtTime4,,,FALSE,"piece boundary time field, same pattern as txt_starting_At_Time1",FALSE
+txt_starting_At_Time5,Page,css,#startingAtTime5,,,FALSE,"piece boundary time field, same pattern as txt_starting_At_Time1",FALSE
+txt_ag_row_odd_ag_row_no_focus_ag_row_ag_row_level_0_ag_row_position_absolute_ag_row_last_ag_row_not_inline_editing_ag_row_hover_ag_cell_ag_cell_not_inline_editing_ag_cell_normal_height_rag_red,Page,css,.ag-row-odd.ag-row-no-focus.ag-row.ag-row-level-0.ag-row-position-absolute.ag-row-last.ag-row-not-inline-editing.ag-row-hover > .ag-cell.ag-cell-not-inline-editing.ag-cell-normal-height.rag-red,,,FALSE,textbox from codegen,FALSE
+txt_Input_Editor,Page,label,Input Editor,,,FALSE,textbox from codegen,FALSE
+txt_confirmation_primary,Page,css,#confirmation-primary,,,FALSE,textbox from codegen,FALSE
+ddl_h_RDistribution_Select,Page,css,#hRDistributionSelect,,,FALSE,native <select> from codegen,FALSE
+chk_variable,Page,testid,variable,,,FALSE,checkbox from codegen,FALSE
+txt_follow_Up_Time,Page,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+ddl_Dropout_Distribution,Page,css,#dropoutDistributionSelect,,,FALSE,native <select> from codegen,FALSE
+ddl_dropout_Distribution_Select,Page,css,#dropoutDistributionSelect,,,FALSE,native <select> from codegen,FALSE
+btn_Add_Period,Page,role,button,Add Period,,FALSE,button from codegen,FALSE
+ddl_Follow_up_Time_Day_Variable_Dropouts_Piecewise_Dropout_Information_Dropout,Page,css,#piecewiseInputMethod,,,FALSE,native <select> from codegen,FALSE
+ddl_piecewiseInputMethod,ResultsPage,css,#piecewiseInputMethod,,,FALSE,"dropout Piecewise Input Method select (Hazard Rates / Probability of Dropout / None) - must be selected before the dropout table's per-mode columns render",FALSE
+btn_Enrollment,Page,role,button,Enrollment,,FALSE,button from codegen,FALSE
+txt_Accrual_Duration_Day,Page,css,#accrualDuration,,,FALSE,textbox from codegen,FALSE
+ddl_accrual_Info_Input_Method,Page,css,#accrualInfoInputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_accrual_Duration,Page,css,#accrualDuration,,,FALSE,textbox from codegen,FALSE
+txt_enrollment_Table_0_by_Time,Page,css,"input[name=""enrollmentTable.0.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_enrollment_Table_0_avg_Subjects_Enrolled,Page,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,"missing literal (period-0) selector - the parametric txt_enrollmentTable_avgSubjectsEnrolled with {0} already existed but StepID=690 uses the literal ObjectName, which was never defined",FALSE
+txt_enrollment_Table_0_avg_Subjects_Enrolled,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,"design-flow variant (Page=ResultsPage) of the same missing literal period-0 selector, needed for the waitForSelector at StepID 2955",FALSE
+txt_enrollment_Table_0_accrual_Percentage,Page,css,"[id=""enrollmentTable.0.accrualPercentage""]",,,FALSE,textbox from codegen,FALSE
+txt_enrollment_Table_1_by_Time,Page,css,"input[name=""enrollmentTable.1.byTime""]",,,FALSE,textbox from codegen,FALSE
+txt_enrollment_Table_1_accrual_Percentage,Page,css,"[id=""enrollmentTable.1.accrualPercentage""]",,,FALSE,textbox from codegen,FALSE
+txt_enrollmentTable_byTime,Page,css,"input[name=""enrollmentTable.{0}.byTime""]",,,TRUE,PARAMETRIC enrollmentTable byTime; {0}=period index (loopPeriods) - needed for ITER_02/05/08-style byTime-mode iterations,FALSE
+txt_enrollmentTable_accrualPercentage,Page,css,"[id=""enrollmentTable.{0}.accrualPercentage""]",,,TRUE,PARAMETRIC enrollmentTable accrualPercentage; {0}=period index (loopPeriods) - needed for ITER_02/05/08-style byTime-mode iterations,FALSE
+chk_link_Marginal_Allocation,Page,testid,linkMarginalAllocation,,,FALSE,checkbox from codegen,FALSE
+lnk_Unlinking_the_marginal,Page,text,Unlinking the marginal,,,FALSE,"confirmation prompt text (fixed from a wrong #primaryButton binding, same bug class as lnk_Unlinking_the_model) - matches recording's getByText('Unlinking the marginal').click()",FALSE
+lnk_Linking_the_marginal,Page,text,Linking the marginal,,,FALSE,"confirmation prompt text (fixed from a wrong #primaryButton binding, same bug class as lnk_Linking_the_model_parameters) - matches recording's getByText('Linking the marginal').click()",FALSE
+txt_25,Page,role,gridcell,25,,FALSE,textbox from codegen,FALSE
+txt_40,Page,role,gridcell,40,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,Page,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,Page,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,Page,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,Page,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+txt_enrollmentTable_startingAtTime,Page,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,Page,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutStartingAtTime,Page,css,"[id=""dropoutTable.{0}.dropoutStartingAtTime""]",,,TRUE,PARAMETRIC dropoutTable dropoutStartingAtTime; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutByTime,Page,css,"[id=""dropoutTable.{0}.dropoutByTime""]",,,TRUE,PARAMETRIC dropoutTable dropoutByTime; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_probOfdropoutControl,Page,css,"[id=""dropoutTable.{0}.probOfdropoutControl""]",,,TRUE,PARAMETRIC dropoutTable probOfdropoutControl; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_probOfdropoutTreatment,Page,css,"[id=""dropoutTable.{0}.probOfdropoutTreatment""]",,,TRUE,PARAMETRIC dropoutTable probOfdropoutTreatment; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutHazardRateControl,Page,css,"[id=""dropoutTable.{0}.dropoutHazardRateControl""]",,,TRUE,PARAMETRIC dropoutTable dropoutHazardRateControl; {0}=period index (loopPeriods),FALSE
+txt_dropoutTable_dropoutHazardRateTreatment,Page,css,"[id=""dropoutTable.{0}.dropoutHazardRateTreatment""]",,,TRUE,PARAMETRIC dropoutTable dropoutHazardRateTreatment; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_startingAtTime,ResultsPage,css,"[id=""inputMethodTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC inputMethodTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_hazardRateControl,ResultsPage,css,"[id=""inputMethodTable.{0}.hazardRateControl""]",,,TRUE,PARAMETRIC inputMethodTable hazardRateControl; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_hazardRateTrmt_Null_SS,ResultsPage,css,"[id=""inputMethodTable.{0}.hazardRateTrmt_Null_SS""]",,,TRUE,PARAMETRIC inputMethodTable hazardRateTrmt_Null_SS; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_hazardRateTrmt_Alt_SPSS,ResultsPage,css,"[id=""inputMethodTable.{0}.hazardRateTrmt_Alt_SPSS""]",,,TRUE,PARAMETRIC inputMethodTable hazardRateTrmt_Alt_SPSS; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_byTime,ResultsPage,css,"input[name=""inputMethodTable.{0}.byTime""]",,,TRUE,PARAMETRIC inputMethodTable byTime; {0}=period index (loopPeriods) - uses name= like period 0's sibling selector (txt_input_Method_Table_0_by_Time),FALSE
+txt_inputMethodTable_cumPercSurvivalControl,ResultsPage,css,"[id=""inputMethodTable.{0}.cumPercSurvivalControl""]",,,TRUE,PARAMETRIC inputMethodTable cumPercSurvivalControl; {0}=period index (loopPeriods),FALSE
+txt_inputMethodTable_medianSurvivalTimeControl,ResultsPage,css,"[id=""inputMethodTable.{0}.medianSurvivalTimeControl""]",,,TRUE,PARAMETRIC inputMethodTable medianSurvivalTimeControl; {0}=period index (loopPeriods),FALSE
+sel_hR_treatment,Page,css,"#childGrid0 [row-index=""1""] [col-id=""hazardRatio""]",,,FALSE,Treatment's own Hazard Ratio cell (row-index=1; row-index=0 is the non-editable Control/Baseline row) - confirmed live via DevTools col-id/row-index evidence,FALSE
+sel_hR_f1_level2,Page,css,"#childGrid1 [row-index=""1""] [col-id=""hazardRatio""]",,,FALSE,Factor 1 Level 2 Hazard Ratio cell (row-index=1; row-index=0 is F1L1/Baseline) - confirmed live via DevTools col-id/row-index evidence,FALSE
+sel_hR_f1_level3,Page,css,"#childGrid1 [row-index=""2""] [col-id=""hazardRatio""]",,,FALSE,Factor 1 Level 3 Hazard Ratio cell - confirmed live via DevTools col-id/row-index evidence,FALSE
+sel_hR_f1_level4,Page,css,"#childGrid1 [row-index=""3""] [col-id=""hazardRatio""]",,,FALSE,Factor 1 Level 4 Hazard Ratio cell - confirmed live via DevTools col-id/row-index evidence,FALSE
+sel_hR_f1_level5,Page,css,"#childGrid1 [row-index=""4""] [col-id=""hazardRatio""]",,,FALSE,Factor 1 Level 5 Hazard Ratio cell - row-index pattern extrapolated from confirmed Levels 2-4; not itself screenshot-confirmed,FALSE
+sel_hR_f2_level2,Page,css,"#childGrid2 [row-index=""1""] [col-id=""hazardRatio""]",,,FALSE,Factor 2 Level 2 Hazard Ratio cell (row-index=1; row-index=0 is F2L1/Baseline) - confirmed live via DevTools col-id/row-index evidence,FALSE
+sel_hR_f2_level3,Page,css,"#childGrid2 [row-index=""2""] [col-id=""hazardRatio""]",,,FALSE,Factor 2 Level 3 Hazard Ratio cell - row-index pattern extrapolated from confirmed Level 2; not itself screenshot-confirmed,FALSE
+sel_hR_f3_level2,Page,css,"#childGrid3 [row-index=""1""] [col-id=""hazardRatio""]",,,FALSE,"Factor 3 Level 2 Hazard Ratio cell - UNCONFIRMED: childGrid3 container id is inferred by pattern from childGrid0/1/2, never seen live (Factor 3 never appeared in the demo scenario screenshotted this session). Screenshot-verify on ITER_01's first run.",FALSE
+sel_wA_f1_level1,Page,css,"#childGrid0 [row-index=""0""] [col-id=""weights""]",,,FALSE,"Marginal Allocation Factor 1 Level 1 weight cell - reuses the Response page's childGrid pattern (Factor 1=childGrid1); Level 1 IS editable here (unlike the Hazard Ratio grid's Baseline row) - CONFIRMED live via DevTools - Factor 1 container is childGrid0 on this page (Marginal Allocation has only 3 grids, no Treatment, so numbering is one lower than the Response page",FALSE
+sel_wA_f1_level2,Page,css,"#childGrid0 [row-index=""1""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 1 Level 2 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f1_level3,Page,css,"#childGrid0 [row-index=""2""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 1 Level 3 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f1_level4,Page,css,"#childGrid0 [row-index=""3""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 1 Level 4 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f1_level5,Page,css,"#childGrid0 [row-index=""4""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 1 Level 5 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f2_level1,Page,css,"#childGrid1 [row-index=""0""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 2 Level 1 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f2_level2,Page,css,"#childGrid1 [row-index=""1""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 2 Level 2 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f2_level3,Page,css,"#childGrid1 [row-index=""2""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 2 Level 3 weight cell - CONFIRMED live via DevTools - row-index=2 exists here (Factor 2 genuinely has 3 levels),FALSE
+sel_wA_f3_level1,Page,css,"#childGrid2 [row-index=""0""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 3 Level 1 weight cell - CONFIRMED live via DevTools,FALSE
+sel_wA_f3_level2,Page,css,"#childGrid2 [row-index=""1""] [col-id=""weights""]",,,FALSE,Marginal Allocation Factor 3 Level 2 weight cell - CONFIRMED live via DevTools,FALSE
+btn_Recalculate,Page,role,button,Recalculate,,FALSE,"Recalculate button - appears after editing table data (boundarySim/Hazard Ratio/dropout/enrollment/Marginal Allocation) and must be pressed when available before proceeding; matches feature_GADAR(PD)'s btn_Recalculate convention",FALSE
+btn_cancelConfirm_Leave,Page,css,#cancelConfirm #primaryButton,,,FALSE,"Unsaved Changes modal's Leave button (title ""Unsaved Changes"", body ""Are you sure you want to leave without saving your...""). Can appear immediately after mounting the Response tab, before any explicit edit (observed live for ITER_06/Logrank). Clicked with Optional=TRUE so it no-ops for iterations where the modal never appears - see core/keywords/input.ts's Optional-click-on-absent-target no-op behavior.",FALSE
+btn_Expand_Piecewise_Group,Page,css,"#multiPieceStratTable [row-index=""0""] .ag-group-contracted",,,FALSE,"CONFIRMED via Chrome DevTools ""Copy selector"" of the expanded-state equivalent (span.ag-group-expanded) - the actual interactive icon span, not the outer .ag-cell-expandable wrapper. Scoped to #multiPieceStratTable (the Strata/Piece grid's stable container id) to resolve cross-grid ambiguity.",FALSE
+btn_startingAtTime_edit,Page,css,#startingAtTime1btn,,,FALSE,"CONFIRMED live via DevTools - pencil/edit icon button next to the expanded Strata row's Starting at Time (Week) column header; opens the 'Bulk Edit Starting at Times' modal (applies to all strata)",FALSE
+sel_bulkEdit_piece1_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child(2) [col-id=""startingAtTime""]",,,FALSE,"CONFIRMED via Playwright's own strict-mode-violation error, which printed the exact element: col-id=""startingAtTime"" (aria-colindex=2). Modal container is #modalGrid (opened directly by clicking #startingAtTime1). UI Piece 1 is a fixed/disabled row at time=0 (nth-child(1)); this is UI Piece 2, mapped from testdata startingAtTime1.",FALSE
+sel_bulkEdit_piece2_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child(3) [col-id=""startingAtTime""]",,,FALSE,"CONFIRMED col-id=startingAtTime - UI Piece 3, mapped from testdata startingAtTime2",FALSE
+sel_bulkEdit_piece3_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child(4) [col-id=""startingAtTime""]",,,FALSE,"UI Piece 4, mapped from testdata startingAtTime3 (extrapolated row position, col-id confirmed)",FALSE
+sel_bulkEdit_piece4_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child(5) [col-id=""startingAtTime""]",,,FALSE,"UI Piece 5, mapped from testdata startingAtTime4 (extrapolated row position, col-id confirmed)",FALSE
+sel_bulkEdit_piece5_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child(6) [col-id=""startingAtTime""]",,,FALSE,"UI Piece 6, mapped from testdata startingAtTime5 (extrapolated row position, col-id confirmed) - DISPROVEN live for hRNumOfPieces=5 (only 5 total rows exist, no UI Piece 6); kept only for hRNumOfPieces>=6 iterations if any ever need it",FALSE
+sel_bulkEdit_piece_time,Page,css,"#modalGrid .ag-center-cols-viewport > div > div:nth-child({0}) [col-id=""startingAtTime""]",,,TRUE,"PARAMETRIC Bulk Edit modal Starting-At-Time cell; {0}=1-based nth-child position (UI Piece N sits at nth-child(N), UI Piece 1 is the fixed baseline=0). CONFIRMED via live dumpGridDiagnostic (ITER_05): total modal rows = hRNumOfPieces, so only hRNumOfPieces-1 editable rows exist - used by fillBulkEditStartingTimes to compact-fill whichever startingAtTime1-5 values are non-N/A into the available rows in order, since a rigid per-field-to-per-row mapping breaks when an early field (e.g. startingAtTime1) is N/A but a later one isn't",TRUE
+sel_strata_byTime,Page,css,"#singlePieceStratTable [row-index=""{0}""] [col-id=""byTime""]",,,TRUE,"FIXED via live DOM diagnostic (dumpGridDiagnostic): row-index is on the ROW div, col-id is on a separate nested CELL div - NOT the same element, so this needs a descendant combinator (space) not a compound attribute selector. {0}=stratum row index",FALSE
+sel_strata_control,Page,css,"#singlePieceStratTable [row-index=""{0}""] [col-id=""control""]",,,TRUE,"Same descendant-combinator fix as sel_strata_byTime. The PRIMARY editable value cell (shows Cumulative % Survival / Median Survival Time / Hazard Rate depending on hRInputMethod, but col-id stays ""control"" regardless); {0}=stratum row index",FALSE
+sel_strata_hazardRatio,Page,css,"#singlePieceStratTable [row-index=""{0}""] [col-id=""hazardRatio""]",,,TRUE,"Same descendant-combinator fix as sel_strata_byTime. Hazard Ratio column, present in all 3 Input Methods; {0}=stratum row index",FALSE
+diag_singlePieceStratTable,Page,css,#singlePieceStratTable,,,FALSE,"DIAGNOSTIC - bare container only, to test whether the container itself is found before suspecting the nested row-index/col-id selector",FALSE
+txt_boundarySim_analysisSpacingInfo,Page,css,"[id=""boundarySim.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundarySim analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
+txt_boundarySim_analysisTime,Page,css,"[id=""boundarySim.{0}.analysisTime""]",,,TRUE,"PARAMETRIC boundarySim analysisTime; {0}=period index. UNVERIFIED attribute pattern (guessed id=, matching most other boundarySim fields) - screenshot-verify",FALSE
+txt_boundarySim_cumAlphaSpent,Page,css,"[id=""boundarySim.{0}.cumAlphaSpent""]",,,TRUE,"PARAMETRIC boundarySim cumAlphaSpent; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_efficacyZ,Page,css,"[id=""boundarySim.{0}.efficacyZ""]",,,TRUE,"PARAMETRIC boundarySim efficacyZ; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_futilityHR,Page,css,"[id=""boundarySim.{0}.futilityHR""]",,,TRUE,"PARAMETRIC boundarySim futilityHR; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_futilityZ,Page,css,"[id=""boundarySim.{0}.futilityZ""]",,,TRUE,"PARAMETRIC boundarySim futilityZ; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_efficacyPValue,Page,css,"[id=""boundarySim.{0}.efficacyPValue""]",,,TRUE,"PARAMETRIC boundarySim efficacyPValue; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_futilityPValue,Page,css,"[id=""boundarySim.{0}.futilityPValue""]",,,TRUE,"PARAMETRIC boundarySim futilityPValue; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_cumAlphaSpentUpper,Page,css,"input[name=""boundarySim.{0}.cumAlphaSpentUpper""]",,,TRUE,PARAMETRIC boundarySim cumAlphaSpentUpper; {0}=period index (loopPeriods),FALSE
+txt_boundarySim_cumAlphaSpentLower,Page,css,"input[name=""boundarySim.{0}.cumAlphaSpentLower""]",,,TRUE,PARAMETRIC boundarySim cumAlphaSpentLower; {0}=period index (loopPeriods),FALSE
+txt_boundarySim_efficacyZUpper,Page,css,"[id=""boundarySim.{0}.efficacyZUpper""]",,,TRUE,PARAMETRIC boundarySim efficacyZUpper; {0}=period index (loopPeriods),FALSE
+txt_boundarySim_efficacyZLower,Page,css,"[id=""boundarySim.{0}.efficacyZLower""]",,,TRUE,PARAMETRIC boundarySim efficacyZLower; {0}=period index (loopPeriods),FALSE
+txt_boundarySim_futilityZUpper,Page,css,"[id=""boundarySim.{0}.futilityZUpper""]",,,TRUE,"PARAMETRIC boundarySim futilityZUpper; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_futilityZLower,Page,css,"[id=""boundarySim.{0}.futilityZLower""]",,,TRUE,"PARAMETRIC boundarySim futilityZLower; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+txt_boundarySim_futilityCP,Page,css,"[id=""boundarySim.{0}.futilityCP""]",,,TRUE,"PARAMETRIC boundarySim futilityCP; {0}=period index. UNVERIFIED - screenshot-verify",FALSE
+sel_weights_cell,Page,css,"#individualAllocStratTable [row-index=""{0}""] [col-id=""weights""]",,,TRUE,"PARAMETRIC Weights panel (Enrollment page, shown when linkMarginalAllocation=uncheck) per-stratum weight cell; {0}=row-index=StratumIndex. CONFIRMED via live DevTools (user-provided): row-index/col-id are on DIFFERENT elements (descendant combinator needed), same structural pattern as #singlePieceStratTable",FALSE
+txt_critical_Point,Page,css,#criticalPoint,,,FALSE,"textbox - copied from proven feature_DOM(PD) sim pattern, found via check-testdata-coverage.ts gap report",FALSE
+txt_margin_NI,Page,xpath,"//*[normalize-space(text())=""Noninferiority Margin(ln(HR0))""]/following::input[1]",,,FALSE,"the #marginNI id guess AND the label-type selector both failed (""field not found"" - fill doesn't get the label->sibling fallback that click/select get, and getByLabel needs a real <label for> association this app apparently doesn't use here); using an XPath that finds the label TEXT then the next input in document order instead",FALSE
+txt_margin_SS,Page,css,#margin_SS,,,FALSE,"Super Superiority margin (hypothesis-specific; renders only for Super Superiority) - matches feature_GADAR(PD)'s txt_Margin_SS (#margin_SS, underscore matches the testdata column literally, not camelCase). Original camelCase guess (#marginSS) FAILED live for ITER_08 - fixed by mirroring the sibling.",TRUE
+txt_boundary_efficacyPValue,ResultsPage,css,"[id=""boundary.{0}.efficacyPValue""]",,,TRUE,"PARAMETRIC boundary efficacyPValue; {0}=period index. Replaces the individually-numbered txt_boundary_N_efficacy_PValue rows (0-3 only) with a count-agnostic form - ITER_06 confirmed PeriodIndex goes up to 6 across iterations, and every new max period was silently missing a fill",FALSE
+txt_boundary_upperPValue,ResultsPage,css,"[id=""boundary.{0}.upperPValue""]",,,TRUE,"PARAMETRIC boundary upperPValue; {0}=period index. Asymmetric-2-Sided-boundary counterpart to efficacyPValue (mutually exclusive per iteration - Test Type=2-Sided (Asymmetric) with asymEffBoundaryFam populates this instead of efficacyPValue). Matches feature_DOP(PD)/feature_OROP(PD)/feature_SingleMean's [id=""boundary.0.upperPValue""] convention, made count-agnostic (needed for ITER_11).",FALSE
+txt_boundary_lowerPValue,ResultsPage,css,"[id=""boundary.{0}.lowerPValue""]",,,TRUE,"PARAMETRIC boundary lowerPValue; {0}=period index. Asymmetric-2-Sided-boundary counterpart to futilityPValue, same convention as txt_boundary_upperPValue.",FALSE
+txt_boundary_futilityPValue,ResultsPage,css,"[id=""boundary.{0}.futilityPValue""]",,,TRUE,PARAMETRIC boundary futilityPValue; {0}=period index (loopPeriods),FALSE
+txt_boundary_futilityCP,ResultsPage,css,"[id=""boundary.{0}.futilityCP""]",,,TRUE,PARAMETRIC boundary futilityCP; {0}=period index (loopPeriods),FALSE
+txt_boundary_futilityHR,ResultsPage,css,"[id=""boundary.{0}.futilityHR""]",,,TRUE,PARAMETRIC boundary futilityHR; {0}=period index (loopPeriods),FALSE
+txt_boundary_cumAlphaSpent,ResultsPage,css,"input[name=""boundary.{0}.cumAlphaSpent""]",,,TRUE,PARAMETRIC boundary cumAlphaSpent; {0}=period index (loopPeriods),FALSE
+txt_boundary_cumBetaSpent,ResultsPage,css,"input[name=""boundary.{0}.cumBetaSpent""]",,,TRUE,PARAMETRIC boundary cumBetaSpent; {0}=period index (loopPeriods),FALSE

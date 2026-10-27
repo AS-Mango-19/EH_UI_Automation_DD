@@ -1,0 +1,9 @@
+TC_ID,IterationID,modelFamily,ed50,h,deltaEnabled,delta1,delta2,placeboEffect,maxEffect,weight
+TC_36,ITER_01,Sigmoid Emax,75,2.2,N/A,N/A,N/A,0.565,-0.535,N/A
+TC_36,ITER_02,Linear in log dose,N/A,N/A,N/A,N/A,N/A,0.123,0.55,N/A
+TC_36,ITER_03,Linear,N/A,N/A,N/A,N/A,N/A,0.61235,-0.58,N/A
+TC_36,ITER_04,Emax,9.123,N/A,N/A,N/A,N/A,0.123,0.5823,N/A
+TC_36,ITER_05,Exponential,N/A,N/A,20,N/A,N/A,0.611,-0.511,N/A
+TC_36,ITER_06,Quadratic,N/A,N/A,-0.01,N/A,N/A,0.11,0.54,N/A
+TC_36,ITER_07,Logistic,82.2,N/A,3.5,N/A,N/A,0.588,-0.511,N/A
+TC_36,ITER_08,Beta,N/A,N/A,N/A,0.35,3.123,0.123,0.6156,N/A

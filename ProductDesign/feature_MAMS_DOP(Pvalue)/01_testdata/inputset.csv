@@ -1,0 +1,8 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_49,ITER_01,Set1,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_02,Set2,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_03,Set3,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_04,Set4,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_05,Set5,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_06,Set6,Design,MAMS Difference of Proportion: Combining P-Values
+TC_49,ITER_07,Set7,Design,MAMS Difference of Proportion: Combining P-Values

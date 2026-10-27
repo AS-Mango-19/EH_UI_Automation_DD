@@ -1,0 +1,9 @@
+TC_ID,IterationID,Computed Parameter,sampleSize,power,testtype,type1Error,powerSummaryFunction,direction,allocationDropdown,optimalityCriterion,optDelta,ResultName
+TC_35,ITER_01,Sample Size,Computed,0.923,1-Sided,0.0562,Minimum,Decreasing,Optimized Allocations,D-Optimal,,Result - Set01
+TC_35,ITER_02,Power,550,Computed,1-Sided,0.03586,Maximum,Increasing,Optimized Allocations,Target Dose,0.255,Result - Set02
+TC_35,ITER_03,Power,666,Computed,1-Sided,0.06666,Mean,Decreasing,Optimized Allocations,D-Optimal + Target Dose,-0.3256,Result - Set03
+TC_35,ITER_04,Sample Size,Computed,0.889,1-Sided,0.092,Maximum,Increasing,User Defined Allocations,,,Result - Set04
+TC_35,ITER_05,Sample Size,Computed,0.72,1-Sided,0.07564,Minimum,Decreasing,User Defined Allocations,,,Result - Set05
+TC_35,ITER_06,Power,777,Computed,1-Sided,0.08321,Mean,Increasing,Optimized Allocations,D-Optimal,,Result - Set06
+TC_35,ITER_07,Sample Size,Computed,0.923,1-Sided,0.092,Minimum,Decreasing,Optimized Allocations,Target Dose,-0.333,Result - Set07
+TC_35,ITER_08,Power,480,Computed,1-Sided,0.09325,Mean,Increasing,User Defined Allocations,,,Result - Set08

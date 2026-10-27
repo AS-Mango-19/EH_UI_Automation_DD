@@ -1,0 +1,7 @@
+TC_ID,IterationID,computedParameter,power,sampleSize,type1Error,effBoundaryFam,effSpendFunc,effParam,effParamGamma,effParamRho,futBoundaryFam,futSpendFunc,futParam,futParamRho,futParamGamma,ResultName
+TC_50,ITER_01,Power,Computed,385,0.05685,Spending Functions,Gamma Family,N/A,-5.3256,,Spending Functions,Rho Family,N/A,4.5685,N/A,Result - Set01
+TC_50,ITER_02,Sample Size,0.855,Computed,0.06288,Spending Functions,Lan-DeMets,Pocock,N/A,,Spending Functions,Gamma Family,N/A,N/A,-4.221,Result - Set02
+TC_50,ITER_03,Power,Computed,500,0.06389,Spending Functions,Rho Family,N/A,N/A,4.62569,4,N/A,N/A,N/A,N/A,Result - Set03
+TC_50,ITER_04,Sample Size,0.8165,Computed,0.071235,Spending Functions,Interpolated,N/A,N/A,,p-value,N/A,N/A,N/A,N/A,Result - Set04
+TC_50,ITER_05,Power,Computed,600,0.089568,Spending Functions,Lan-DeMets,O'Brien-Fleming,N/A,,Spending Functions,Lan-DeMets,Pocock,,,Result - Set05
+TC_50,ITER_06,Sample Size,0.82256,Computed,0.0777,None,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Result - Set06

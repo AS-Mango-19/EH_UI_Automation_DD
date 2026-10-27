@@ -1,0 +1,213 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,,FALSE,Sign in button (login flow),FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+obj_Hypothesis,DesignPage,label,Hypothesis,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+opt_Computed_Parameter,DesignPage,role,radio,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+radio_Power,ResultsPage,role,radio,Power,,FALSE,radio button from codegen,FALSE
+radio_Type_1_Error,ResultsPage,role,radio,Type 1 Error (α),,FALSE,radio button from codegen,FALSE
+txt_Sample_Size_n,ResultsPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Power,ResultsPage,css,#power,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Type,ResultsPage,css,#testtype,,,FALSE,native <select> from codegen,FALSE
+txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_Upper_Type_1_Error,ResultsPage,css,#upperType1Error,,,FALSE,textbox from codegen,FALSE
+txt_Lower_Type_1_Error,ResultsPage,css,#lowerType1Error,,,FALSE,textbox from codegen,FALSE
+txt_Proportion_Response_under_Null_0,ResultsPage,css,#propResponseUnderNull,,,FALSE,textbox from codegen,FALSE
+txt_Proportion_Response_under_Alternative_1,ResultsPage,css,#propResponseUnderAlt,,,FALSE,textbox from codegen,FALSE
+chk_include_Exact_Computation,ResultsPage,testid,includeExactComputation,,,FALSE,checkbox from codegen,FALSE
+txt_Follow_up_Time_Week,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,ResultsPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+ddl_Variance,ResultsPage,css,#variance,,,FALSE,native <select> from codegen,FALSE
+chk_include_Assurance,ResultsPage,testid,includeAssurance,,,FALSE,checkbox from codegen,FALSE
+ddl_Distribution,ResultsPage,css,#distributionMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Min,ResultsPage,css,#minPi,,,FALSE,textbox from codegen,FALSE
+txt_Max,ResultsPage,css,#maxPi,,,FALSE,textbox from codegen,FALSE
+txt_Input_Method,ResultsPage,css,#pi_a,,,FALSE,textbox from codegen,FALSE
+txt_pi_b,ResultsPage,css,#pi_b,,,FALSE,textbox from codegen,FALSE
+ddl_Efficacy_Boundary_Family,ResultsPage,css,#effBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_Spending_Function,ResultsPage,css,#effSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_Parameter,ResultsPage,css,#effParamRho,,,FALSE,textbox from codegen,FALSE
+txt_eff_Param_Gamma,ResultsPage,css,#effParamGamma,,,FALSE,textbox from codegen,FALSE
+ddl_eff_Param,ResultsPage,css,#effParam,,,FALSE,native <select> from codegen,FALSE
+ddl_Fix,ResultsPage,css,#fix,,,FALSE,native <select> from codegen,FALSE
+ddl_fut_Spend_Func,ResultsPage,css,#futSpendFunc,,,FALSE,"hand-added - recorded (recording.txt line 136, ""Spending Function"".nth(3)) but silently dropped by the importer with no UNWIRED warning, confirmed real DOM id from the recording itself",FALSE
+ddl_assurance_Input_Method,ResultsPage,css,#assuranceInputMethod,,,FALSE,"hand-added - testdata has real values (assuranceInputMethod) but the recording never touched this dropdown (it must have already sat at the needed default); id confirmed via feature_SingleMean's identical field - SCREENSHOT-VERIFY on first live run",FALSE
+txt_enrollment_Table_0_avg_Subjects_Enrolled,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,"hand-added - design enrollment is single-period, confirmed via feature_SingleMean/feature_DOP(PD)'s identical scalar fix (shared loopPeriods flow filename with sim's multi-period schema otherwise clobbers design's)",FALSE
+ddl_upper_Fix,ResultsPage,css,#upperFix,,,FALSE,"hand-added - recorded (recording.txt line 165, after ""Fix"".first() click) but silently dropped by the importer with no UNWIRED warning, confirmed real DOM id from the recording itself",FALSE
+txt_shape_Param_Delta,ResultsPage,css,#shapeParamDelta,,,FALSE,textbox from codegen,FALSE
+ddl_Futility_Boundary_Family,ResultsPage,css,#futBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+txt_Shape_Parameter_2,ResultsPage,css,#shapeParamDeltaTwo,,,FALSE,textbox from codegen,FALSE
+ddl_fut_Boundary,ResultsPage,css,#futBoundary,,,FALSE,native <select> from codegen,FALSE
+txt_Shape_Parameter_1,ResultsPage,css,#shapeParamDeltaOne,,,FALSE,textbox from codegen,FALSE
+txt_fut_Param_Rho,ResultsPage,css,#futParamRho,,,FALSE,textbox from codegen,FALSE
+txt_fut_Param_Gamma,ResultsPage,css,#futParamGamma,,,FALSE,textbox from codegen,FALSE
+ddl_fut_Param,ResultsPage,css,#futParam,,,FALSE,native <select> from codegen,FALSE
+ddl_Compute_CP_Using,DesignPage,css,#computeCP,,,FALSE,native <select> from codegen,FALSE
+ddl_asym_Eff_Boundary_Fam,ResultsPage,css,#asymEffBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,textbox from codegen,FALSE
+ddl_upper_Spend_Func,ResultsPage,css,#upperSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,textbox from codegen,FALSE
+ddl_upper_Param,ResultsPage,css,#upperParam,,,FALSE,native <select> from codegen,FALSE
+ddl_lower_Spend_Func,ResultsPage,css,#lowerSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,textbox from codegen,FALSE
+txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,textbox from codegen,FALSE
+ddl_lower_Param,ResultsPage,css,#lowerParam,,,FALSE,native <select> from codegen,FALSE
+ddl_Boundary_Scale,ResultsPage,css,#boundaryScale,,,FALSE,native <select> from codegen,FALSE
+btn_Add_Interim,ResultsPage,role,button,Add Interim,,FALSE,button from codegen,FALSE
+txt_boundary_0_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.0.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.1.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_cum_Alpha_Spent,ResultsPage,css,"input[name=""boundary.2.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_futility_Pi,ResultsPage,css,"[id=""boundary.0.futilityPi""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_Pi,ResultsPage,css,"[id=""boundary.1.futilityPi""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_Pi,ResultsPage,css,"[id=""boundary.2.futilityPi""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_efficacy_PValue,ResultsPage,css,"[id=""boundary.0.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_efficacy_PValue,ResultsPage,css,"[id=""boundary.1.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_efficacy_PValue,ResultsPage,css,"[id=""boundary.2.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_futility_CP,ResultsPage,css,"[id=""boundary.0.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_CP,ResultsPage,css,"[id=""boundary.1.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_CP,ResultsPage,css,"[id=""boundary.2.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_futility_PValue,ResultsPage,css,"[id=""boundary.0.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_futility_PValue,ResultsPage,css,"[id=""boundary.1.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_2_futility_PValue,ResultsPage,css,"[id=""boundary.2.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_cum_Beta_Spent,ResultsPage,css,"[id=""boundary.0.cumBetaSpent""]",,,FALSE,"corrected from cumBetaProportion - confirmed live via dumpSubtree (TC_25 ITER_09) the symmetric boundary table's real id is cumBetaSpent, not cumBetaProportion (that id belongs to a different boundary-family state the recording also captured)",FALSE
+txt_boundary_1_cum_Beta_Spent,ResultsPage,css,"[id=""boundary.1.cumBetaSpent""]",,,FALSE,"corrected from cumBetaProportion - see txt_boundary_0_cum_Beta_Spent note",FALSE
+txt_boundary_2_cum_Beta_Spent,ResultsPage,css,"[id=""boundary.2.cumBetaSpent""]",,,FALSE,"corrected from cumBetaProportion - see txt_boundary_0_cum_Beta_Spent note",FALSE
+txt_boundary_0_upper_Alpha,ResultsPage,css,"[id=""boundary.0.upperAlpha""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_upper_Alpha,ResultsPage,css,"[id=""boundary.1.upperAlpha""]",,,FALSE,"hand-added (period 1) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_2_upper_Alpha,ResultsPage,css,"[id=""boundary.2.upperAlpha""]",,,FALSE,"hand-added (period 2) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_3_upper_Alpha,ResultsPage,css,"[id=""boundary.3.upperAlpha""]",,,FALSE,"hand-added (period 3) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_0_lower_Alpha,ResultsPage,css,"[id=""boundary.0.lowerAlpha""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_1_lower_Alpha,ResultsPage,css,"[id=""boundary.1.lowerAlpha""]",,,FALSE,"hand-added (period 1) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_2_lower_Alpha,ResultsPage,css,"[id=""boundary.2.lowerAlpha""]",,,FALSE,"hand-added (period 2) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_3_lower_Alpha,ResultsPage,css,"[id=""boundary.3.lowerAlpha""]",,,FALSE,"hand-added (period 3) - TC_25 ITER_13 needs 4 periods",FALSE
+txt_boundary_0_upper_PValue,ResultsPage,css,"[id=""boundary.0.upperPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_0_lower_PValue,ResultsPage,css,"[id=""boundary.0.lowerPValue""]",,,FALSE,textbox from codegen,FALSE
+btn_Calculate,ResultsPage,role,button,Calculate,,FALSE,button from codegen,FALSE
+btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,button from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
+chk_boundary_efficacyCheck,ResultsPage,css,"[id=""boundary.{0}.efficacyCheck""]",,,TRUE,PARAMETRIC boundary efficacyCheck; {0}=period index (loopPeriods),FALSE
+chk_boundary_futilityCheck,ResultsPage,css,"[id=""boundary.{0}.futilityCheck""]",,,TRUE,PARAMETRIC boundary futilityCheck; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,ResultsPage,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
+btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,Page,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,Page,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_designs,Page,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_response,Page,css,"[id=""leftPanel.response""]",,,FALSE,"hand-added for the Response-tab-early-mount fix (feature_SingleMean/feature_GADAR(PD) precedent)",FALSE
+div_Spinner,ResultsPage,css,#spinner,,,FALSE,"hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check",FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,"hand-added - the Details tab's Plotly chart container (div.js-plotly-plot), confirmed live via dumpSubtree (TC_25 ITER_01, ""Power vs. Sample Size"" chart). Proves the chart actually rendered, not just that the tab navigated",FALSE
+txt_boundary_1_upper_PValue,ResultsPage,css,"[id=""boundary.1.upperPValue""]",,,FALSE,"hand-added (period 1) - TC_25 ITER_11 needs 7 real interims (feature_SingleMean S29 precedent)",FALSE
+txt_boundary_2_upper_PValue,ResultsPage,css,"[id=""boundary.2.upperPValue""]",,,FALSE,"hand-added (period 2) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_3_upper_PValue,ResultsPage,css,"[id=""boundary.3.upperPValue""]",,,FALSE,"hand-added (period 3) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_4_upper_PValue,ResultsPage,css,"[id=""boundary.4.upperPValue""]",,,FALSE,"hand-added (period 4) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_5_upper_PValue,ResultsPage,css,"[id=""boundary.5.upperPValue""]",,,FALSE,"hand-added (period 5) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_6_upper_PValue,ResultsPage,css,"[id=""boundary.6.upperPValue""]",,,FALSE,"hand-added (period 6) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_7_upper_PValue,ResultsPage,css,"[id=""boundary.7.upperPValue""]",,,FALSE,"hand-added - this is the auto-generated FINAL row (not an 8th interim) once 7 real interims exist (feature_SingleMean S29 precedent)",FALSE
+txt_boundary_1_lower_PValue,ResultsPage,css,"[id=""boundary.1.lowerPValue""]",,,FALSE,"hand-added (period 1) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_2_lower_PValue,ResultsPage,css,"[id=""boundary.2.lowerPValue""]",,,FALSE,"hand-added (period 2) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_3_lower_PValue,ResultsPage,css,"[id=""boundary.3.lowerPValue""]",,,FALSE,"hand-added (period 3) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_4_lower_PValue,ResultsPage,css,"[id=""boundary.4.lowerPValue""]",,,FALSE,"hand-added (period 4) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_5_lower_PValue,ResultsPage,css,"[id=""boundary.5.lowerPValue""]",,,FALSE,"hand-added (period 5) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_6_lower_PValue,ResultsPage,css,"[id=""boundary.6.lowerPValue""]",,,FALSE,"hand-added (period 6) - TC_25 ITER_11 needs 7 real interims",FALSE
+txt_boundary_7_lower_PValue,ResultsPage,css,"[id=""boundary.7.lowerPValue""]",,,FALSE,"hand-added - the FINAL row's lower p-value, same note as txt_boundary_7_upper_PValue",FALSE
+txt_Sample_Size_n,Page,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Proportion_Response_under,Page,css,#propResponseUnderNull,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point,Page,css,#criticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_analysis_Spacing_Info,Page,css,"[id=""boundarySim.0.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.0.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_efficacy_PValue,Page,css,"[id=""boundarySim.0.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_Z,Page,css,"input[name=""boundarySim.0.futilityZ""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_efficacy_ZUpper,Page,css,"[id=""boundarySim.0.efficacyZUpper""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_efficacy_ZLower,Page,css,"[id=""boundarySim.0.efficacyZLower""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_ZUpper,Page,css,"[id=""boundarySim.0.futilityZUpper""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_ZLower,Page,css,"[id=""boundarySim.0.futilityZLower""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_1_futility_ZLower,Page,css,"[id=""boundarySim.1.futilityZLower""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_0_efficacy_Z,Page,css,"input[name=""boundarySim.0.efficacyZ""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_PValue,Page,css,"[id=""boundarySim.0.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.0.cumAlphaSpentUpper""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.0.cumAlphaSpentLower""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_Pi,Page,css,"input[name=""boundarySim.0.futilityPi""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_0_futility_CP,Page,css,"input[name=""boundarySim.0.futilityCP""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_1_analysis_Spacing_Info,Page,css,"[id=""boundarySim.1.analysisSpacingInfo""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_analysis_Spacing_Info,Page,css,"[id=""boundarySim.2.analysisSpacingInfo""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_analysis_Spacing_Info,Page,css,"[id=""boundarySim.3.analysisSpacingInfo""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.1.cumAlphaSpentUpper""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.2.cumAlphaSpentUpper""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.3.cumAlphaSpentUpper""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_4_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.4.cumAlphaSpentUpper""]",,,FALSE,"hand-added (period 4) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.1.cumAlphaSpentLower""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.2.cumAlphaSpentLower""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.3.cumAlphaSpentLower""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_4_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.4.cumAlphaSpentLower""]",,,FALSE,"hand-added (period 4) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_efficacy_PValue,Page,css,"[id=""boundarySim.1.efficacyPValue""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_efficacy_PValue,Page,css,"[id=""boundarySim.2.efficacyPValue""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_efficacy_PValue,Page,css,"[id=""boundarySim.3.efficacyPValue""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_0_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.0.efficacyPValueUpper""]",,,FALSE,"hand-added (period 0) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.1.efficacyPValueUpper""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.2.efficacyPValueUpper""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.3.efficacyPValueUpper""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_4_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.4.efficacyPValueUpper""]",,,FALSE,"hand-added (period 4) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_5_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.5.efficacyPValueUpper""]",,,FALSE,"hand-added (period 5) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_6_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.6.efficacyPValueUpper""]",,,FALSE,"hand-added (period 6) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_7_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.7.efficacyPValueUpper""]",,,FALSE,"hand-added (period 7) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_0_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.0.efficacyPValueLower""]",,,FALSE,"hand-added (period 0) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.1.efficacyPValueLower""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.2.efficacyPValueLower""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_3_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.3.efficacyPValueLower""]",,,FALSE,"hand-added (period 3) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_4_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.4.efficacyPValueLower""]",,,FALSE,"hand-added (period 4) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_5_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.5.efficacyPValueLower""]",,,FALSE,"hand-added (period 5) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_6_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.6.efficacyPValueLower""]",,,FALSE,"hand-added (period 6) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_7_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.7.efficacyPValueLower""]",,,FALSE,"hand-added (period 7) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_efficacy_ZUpper,Page,css,"[id=""boundarySim.1.efficacyZUpper""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_futility_CP,Page,css,"input[name=""boundarySim.1.futilityCP""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_futility_CP,Page,css,"input[name=""boundarySim.2.futilityCP""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_futility_PValue,Page,css,"[id=""boundarySim.1.futilityPValue""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_1_futility_ZUpper,Page,css,"[id=""boundarySim.1.futilityZUpper""]",,,FALSE,"hand-added (period 1) - testdata needs it, same id convention as period 0 sibling",FALSE
+txt_boundary_Sim_2_futility_ZUpper,Page,css,"[id=""boundarySim.2.futilityZUpper""]",,,FALSE,"hand-added (period 2) - testdata needs it, same id convention as period 0 sibling",FALSE
+btn_Recalculate,Page,role,button,Recalculate,,FALSE,button from codegen,FALSE
+btn_Response,Page,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Proportion_Response,Page,css,#propResponseUnderAlt,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,Page,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,Page,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+btn_Enrollment,Page,role,button,Enrollment,,FALSE,button from codegen,FALSE
+chk_Include,Page,role,checkbox,Include,,FALSE,checkbox from codegen,FALSE
+btn_Add_Period,Page,role,button,Add Period,,FALSE,button from codegen,FALSE
+btn_Simulation_Setup,Page,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,Page,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,Page,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,Page,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+btn_Details,Page,role,button,Details,,FALSE,button from codegen,FALSE
+txt_enrollmentTable_startingAtTime,Page,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,Page,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE

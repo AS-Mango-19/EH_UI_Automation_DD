@@ -1,0 +1,8 @@
+TC_ID,IterationID,PeriodIndex,byTime,Cumulative % Survival (Control),Median Survival Times (Control),Hazard Ratio
+TC_46,ITER_03,0,1.2,96,N/A,0.56
+TC_46,ITER_03,1,N/A,95,N/A,0.55
+TC_46,ITER_03,2,N/A,95,N/A,0.6
+TC_46,ITER_08,0,N/A,N/A,20.6589,0.662
+TC_46,ITER_08,1,N/A,N/A,21.65895,0.7412
+TC_46,ITER_08,2,N/A,N/A,22.65892,0.55
+TC_46,ITER_08,3,N/A,N/A,20.88956,0.6589

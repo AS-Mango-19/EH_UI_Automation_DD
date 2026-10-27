@@ -186,6 +186,15 @@ null one. The hand-naming rule above is only for the **greyed** `assertValue` fi
 can't record. (Split fires only for distinct id-bearing *fills*; a fill sharing its column with a
 result *link*, and a dropdown recorded two ways, are left alone.)
 
+**The split is NOT reliable across two DIFFERENT action types sharing a label** (`IMPORT_LESSONS.md`
+S22) — a `select` and a `fill` that both recorded under a generic label like "Parameter" can both get
+bound to the SAME column instead of being split, even though their DOM ids differ. `validate` stays
+clean either way (both tokens resolve). Before trusting an auto-bound `select` sitting next to a
+same-labeled `fill`, grep `selectors.csv` for both ObjectNames' `SelectorValue` — if the ids differ,
+the select almost certainly belongs on its OWN sibling column (e.g. a named-option column like
+`effParam` vs a numeric `effParamRho`), not the fill's column. Confirmed live on `feature_MAMS_DOP`
+TC_50.
+
 ---
 
 ## Workflow
@@ -221,6 +230,35 @@ almost the entire `design.csv` column set — a straight retarget (see `AI_TESTD
 > to sanity-check is `.github/workflows/ci.yml`'s artifact-upload glob still covers it (it's
 > `*/**/08_diffs/**` / `*/**/09_html_report/**`, module-agnostic as of this fix — don't re-narrow
 > it to a literal module name).
+
+> **Mirroring is not a one-time skim — verify it held, right before you finish.** `feature_MCPMod_Con`
+> (TC_36, imported after `feature_MCPMod` TC_35 was already stable) re-shipped **two bugs TC_35 had
+> already fixed and documented** — a `label` selector on the react-select "Select Test" field (the
+> fix was sitting in this very file's UNWIRED-resolution table, § below), and a leftover `assertValue`
+> on the mislabeled "Test Type" field (TC_35's metadata.csv had already merged it into the real fill
+> and dropped the assert). **Neither printed as `UNWIRED`, neither failed `npm run validate`** — which
+> is exactly why they're dangerous:
+> - **A field can auto-bind "successfully"** to an existing column by id/label match — no `UNWIRED`
+>   line, nothing to prompt a second look — while the *selector strategy* the importer captured is
+>   still wrong (a plain `label` on a custom react-select control, say). Auto-bound proves the column
+>   is right, not that the selector is.
+> - **A field can get the generic `assertValue … "VERIFY selector"` fallback** and the import resolves
+>   it with a fresh, independent guess instead of reusing the reference's already-proven resolution for
+>   the identical recorded id/label — because the deterministic importer has no memory between
+>   features; it regenerates its own default every run even when a sibling already solved this exact
+>   field.
+>
+> So the mirroring in the table above has to be checked, not assumed. **Before you finish** (not just
+> when you start), diff every field against the reference:
+> ```bash
+> grep -n "confirmed live\|VERIFY selector\|renamed from\|collided\|Never recorded\|mislabeled" \
+>   <Module>/feature_<Reference>/02_selectors_repo/selectors.csv \
+>   <Module>/feature_<Reference>/03_metadata/*.csv
+> ```
+> Each hit is a judgment call the reference already made for a specific recorded id/label. For each
+> one, find your new feature's step targeting that same id/label and confirm it got the **same
+> resolution** — not merely a structurally-similar step. This is a mechanical check, not a judgment
+> call, so it isn't optional and doesn't need to be asked about — just run it.
 
 ### 1 — Run the deterministic importer (standalone-capable)
 ```bash
@@ -288,6 +326,10 @@ genuinely-distinct fields. Turn it into the clean data-driven form:
   `DOP(PD)` and `OROP(PD)`.
 
 ### 3 — Wire `UNWIRED` fields & add missing steps *(judgment)*
+- **A reference feature's fix applies even to fields that never show up here.** This section is
+  about the `UNWIRED` list, but a field that auto-binds cleanly (so it's NOT on that list) can still
+  be carrying the wrong selector strategy. If a reference feature exists (§0), the §0 verification
+  pass covers those fields too — don't limit the reference-diff to just the `UNWIRED` lines below.
 - **Resolve every `UNWIRED` line.** The importer already wired each field it could match to an
   existing column by **id or label**; what remains is the `UNWIRED` list. For each one it prints
   the field's **id**, **label**, and **recorded value**. Decide, per field:
@@ -433,6 +475,38 @@ Fix **errors** (unknown column, missing selector, iteration-completeness — a k
 file missing a row another file has). **Warnings** are signal: "column X has a value but no
 step enters it" means wire a step or confirm it's intentional.
 
+### 4a — Full data-to-wiring audit, including every TABLE (MANDATORY before any live run) *(judgment)*
+
+`npm run validate` passing (step 4) and `check-testdata-coverage.ts` passing (step 5) are
+**necessary but not sufficient** — both are static reference checks, and both are known to miss
+real gaps (see the exact blind spots below). Before asking for approval to run (§5a step 1),
+manually walk **every** `01_testdata/*.csv` file for the feature — not just the top-level ones —
+**including every child/table CSV** (boundary, enrollment, dropout, interim/period, input-method,
+weights, strat/piece tables, …) — and for each **non-blank, non-`N/A`** cell, confirm:
+
+1. **A step targets that exact field** — by a `${data.*}` token, or by a `loopPeriods` /
+   `reconcilePeriodTable` / `fillCompactIndexedCells` / `fillGridCell` (§10) config string that
+   references that column. If nothing in `metadata.csv` mentions the column, the data is
+   **present but orphaned** — it will never reach the page no matter how green the run looks.
+2. **That step actually runs for the row holding the value** — not silently excluded by a
+   `countField`/`SkipIf` gate. A table can have the right value sitting in row 5 while a
+   `loopPeriods` `countField` keyed to a *different* column undercounts and the loop never
+   reaches row 5 — no error, no `UNWIRED`, just a quietly shorter run (§9.3's exact trap).
+3. **The value is actually read back, not merely attempted** — check the step log line for that
+   field in a prior/first run, not just that `validate` was clean.
+
+**If a value can't be traced to a step with confidence, STOP and resolve it before running live**
+— wire it, add the missing `loopPeriods`/`fillGridCell` wiring, or confirm with the user it's
+deliberately unread. A run that reports PASS without a table's data ever having been picked up is
+a **false green**, not a stabilized iteration — this is exactly the class of bug that slips past
+both static tools: a `loopPeriods` `countField` undercount (§9.3), an AG-Grid cell with no
+per-cell recorded selector that silently no-ops instead of failing (§10), or a leftover
+duplicate/stale StepID block that re-fills a field with a blank/default value one step after it
+was correctly wired (the `feature_GADAR(PE)` TC_55 case, caught only by a `StepID`-ordered read of
+`metadata.csv`, not by any tool). Do this audit even — *especially* — when another agent (e.g.
+Copilot) already reports the feature "validated"; a clean `validate`/coverage run is evidence the
+**columns exist and parse**, not that every table's data is wired, picked up, and filled.
+
 ### 5 — Run + screenshot-verify **every iteration** *(judgment)*
 ```bash
 npm run test -- --testcase TC_XX
@@ -445,6 +519,15 @@ npm run test -- --testcase TC_XX
   A **second** run turns it into a real `PASS`.
 - The app allows **one session per user**, so iterations run **serially** and take a while;
   leave a gap between runs (the app can crash on rapid re-runs).
+- **Before declaring an iteration done, also run the static coverage gate:**
+  `npx tsx scripts/check-testdata-coverage.ts <TC_ID> [IterationID]`. It cross-checks every
+  non-N/A testdata cell for that iteration against every `${data.*}`/`${runtime.period.*}` token
+  reachable from metadata + referenced `flows/*.csv` (plus `reconcilePeriodTable`/`loopPeriods`/
+  `loopChildRows`/`fillCompactIndexedCells` config strings), and reports any cell nothing
+  references. It is a STATIC reference check, not a runtime one — it cannot see that a
+  `loopPeriods` call's `countField` silently excludes a period whose OTHER fields are populated
+  (see §9.3); for that, cross-reference the live log's `loopPeriods[...]: N period(s) […]` lines
+  against a full `awk`/`column -t` dump of the child table.
 
 #### 5a — Interactive run protocol (MANDATORY once wiring is resolved) *(judgment)*
 
@@ -506,6 +589,10 @@ resolved), follow this protocol exactly:
 | a `select` logs **OK** but the field still shows the placeholder ("Select"), then every dependent field reports **"unable to resolve"** | the value matched **no option**, so the type+Enter fallback fired — it logs OK but commits **nothing**, and a wrong **controlling** value silently starves every field it should reveal. Fix the value to a real option; the **recording** is authoritative (e.g. Study Objective is `Two Arm Confirmatory`, not the master's "…Superiority" — that is the design-page *hypothesis*) |
 | a `check`/`uncheck` **never fires** though its column has a value | the `SkipIf` convention doesn't match the column's values. Checkbox columns in the SAME testdata can differ — one `TRUE`/`FALSE`, another `check`/`uncheck`. Gate each on its own convention (`…!=TRUE` vs `…!=check`), or the section it reveals never renders and the next field is "unable to resolve" |
 | an administrative field (`Phase`, Program, Indication) is **absent on this app version** | the project page is app-version-dependent (fields move between General and the post-Study-Objective Plan section). Fields with **no effect on the computed design** should be `Optional=TRUE` so a missing one warns instead of failing the run |
+| a `loopOverData` sub-flow field reports **`field not found`** even though its testdata cell is blank/`N/A` for this row | `${runtime.loop.*}` tokens do **NOT** auto-skip on blank/`N/A` the way `${data.*}` tokens do — gate every field explicitly (§9 below). Proven on `feature_MCPMod` TC_35. |
+| **`Save`/`Save & Compute` stay disabled**, no metadata error, nothing obviously wrong | a **required action was never recorded** — not a wiring gap, a genuinely missing step. Screenshot the live page: the app may show its own banner naming exactly what's missing (e.g. *"Please click 'Calculate' to generate…"*). A recording completing without visible errors does NOT mean every required action was captured — the tester may have skipped one. Proven on `feature_MCPMod` TC_35 (an unrecorded "Calculate" button). |
+| a click **reports success** (no retry warning, no error) but **visibly nothing happens** afterward | before assuming a wiring bug, compare `trace.network` between this run and a PASSING iteration of the same feature (below) — the click may be landing correctly while the app silently blocks on an unrelated async precondition. |
+| a field is wired (no `UNWIRED`, `validate` clean) but behaves like an untouched importer default — a plain `label` selector on a custom control, an unresolved `assertValue … "VERIFY selector"` — on a field a **reference/sibling feature already solved** | the §0 reference-diff wasn't run, or was only run at the start instead of again right before finishing. Auto-bound-by-name is not proof the selector is right. Run §0's `grep` against the reference and compare resolutions field-by-field. Proven on `feature_MCPMod_Con` TC_36 (re-shipped two `feature_MCPMod` TC_35 fixes). |
 
 ### 7 — Scenario-conditional wiring, dialogs & recovering a real `#id` *(judgment — the GADAR cases)*
 
@@ -519,6 +606,8 @@ A second iteration with a **different option combination** touches fields the fi
 - **Enrollment "Add Period" inserts at the TOP, not the bottom.** In the Enrollment table **only**, clicking *Add Period* inserts the new blank row at the **top** and shifts the existing rows **down** (the final 100%-accrued row ends up last) — every other period table appends at the **bottom**. Any Add-Period gating, reconcile, or period-fill ordering for `enrollmentTable` must account for this top-insertion (a bottom-append assumption fills the wrong row). *(Runtime special-case handling is pending until a GADSD recording exists — author/gate around it for now.)*
 - **Duplicate ids → disambiguate positionally.** Every "Add Period" button shares `id="addButton"`; `.first()` grabs the wrong one. Use a Playwright CSS `:nth-match(button:has-text("Add Period"), 2)` for the 2nd (dropout-table) one.
 - **Dialogs are steps too.** *Unsaved Changes* on navigation → **Save first**, never "Leave". *Compute* (a credit dialog) → fill the **Result Name** (`#inputId`), then confirm its primary button (`#credit-alert-primary`) to start the sim — the result link is `getByRole('link', {name:<Result Name>})`, so the `Result Name` column must hold a value. Dialog buttons are frequently **not** semantic `role=button` — target them by `text` or a stable `#id`.
+- **An "Unsaved Changes" modal can also appear on a tab-switch with NOTHING to save — and "Leave" is the correct dismiss there, not a contradiction of the rule above.** Proven on `feature_StratGADAR` TC_45 sim flow, 2026-09-30: the generic modal (`id="cancelConfirm"`, title "Unsaved Changes", `#primaryButton`="Leave"/`#secondaryButton`="Cancel") blocked the very first Response-tab mount for one iteration out of eight, before any field had been touched — confirmed via a temporary `dumpSubtree` callCustom reading its exact title/body/button text (don't guess the label). The distinction from the rule above: that case is a real design with real unsaved edits, where discarding them is destructive; this case is a spurious prompt with nothing behind it to lose. Fix: a plain `click` on the Leave button with **`Optional=TRUE`** (selector `css`, `#cancelConfirm #primaryButton`) immediately after the action most likely to trigger it — it probes with no wait and silently no-ops on every iteration/feature where the modal never appears, so it's safe to leave in place unconditionally. If a tab-switch modal appears with REAL prior edits on the page, apply the original rule (Save first) instead — screenshot-verify which situation you're actually in before picking the button.
+- **A `flows/*.csv` row's `Description` column needs the SAME comma-quoting discipline as `selectors.csv` — but `validate` won't catch a mistake here the way it does there.** An unquoted comma in `Description` shifts every later column, including the LAST one, `DynamicArgs` — which silently receives stray overflow text instead of the intended `${runtime.period.n}` token, while that real token gets pushed into a phantom extra field with no header to bind to and is dropped. A `{0}`-parametric selector touched by that row then resolves to a literal, never-substituted `{0}` in its DOM query and times out "field not found" after the FULL timeout — indistinguishable at first glance from a genuinely wrong selector. `selectors.csv` has a strict per-column schema (its boolean `Exact` column reliably trips a type error on a shift); flow files have no equivalent check, so a corrupted row parses "successfully" and only fails live. Proven on `feature_StratGADSD` TC_46's own newly-created `flows/stratgadsd_boundary_cumSpent_period.csv` — cost three live-run cycles (including asking the user to inspect the live DOM twice) before the CSV field-count mismatch, not the selector, was found to be the actual cause. **Whenever creating or editing a flow file, quote any `Description` value containing a comma, and if a parametric selector mysteriously "isn't found" despite a confirmed-correct pattern, count that row's fields against the 17-column header before re-guessing the selector.**
 
 **Recovering a field's real `#id` from the trace** (when a valued cell reports `not found` and DevTools isn't handy). Every run writes `artifacts/<runId>/<TC>_<ITER>/trace.zip`, whose DOM snapshots carry the true ids:
 ```bash
@@ -526,6 +615,13 @@ unzip -o trace.zip -d /tmp/tr
 grep -rohE '\["SELECT",\{[^}]*"id":"[^"]+"' /tmp/tr | grep -oE '"id":"[^"]+"' | sort -u
 ```
 Swap `SELECT` for `INPUT` / `BUTTON` for other controls. This is how `#piecewiseInputMethod`, `#shapeParamDelta`, and `ratioOfPercSurv_Alt_SP` were found with no live browser. The hardened `select` also **prints the option list** on a mismatch — read it before guessing.
+
+**Diagnosing a click that "succeeds" but does nothing** (no retry warning, no error, yet the UI never advances — e.g. a modal that never closes). Same `trace.zip`, but the network log instead of the DOM snapshots. Unzip it, then filter `trace.network` for the app's API domain around the click's timestamp:
+```bash
+unzip -o trace.zip -d /tmp/tr
+grep -o '"url":"[^"]*apis\.[a-z.]*\.com[^"]*"' /tmp/tr/trace.network | sort -u
+```
+Compare a **failing** iteration's trace against a **passing** one of the same feature. If the passing run shows a `POST`/save call right after the click and the failing run shows **none at all**, the click isn't reaching the app's submit handler — it's not a selector problem. Look at what loaded just *before* the click on the failing run: a `GET` returning a `4xx` on some prerequisite resource, followed by nothing, often means the app is silently blocked on a background retry that hasn't finished yet (see the next paragraph). Proven on `feature_MCPMod` TC_35 — an "Add Model" modal that never closed traced back to a `GET 400` on the design's models list, which the app **silently retries and self-heals after ~25s in the background**; iterations that reached "Add Model" before that window closed failed even though the click itself was fine. Fix: a flat `sleep` early in the flow (right after the page that fires the background fetch), long enough to cover the observed retry window, applied unconditionally so it helps regardless of how many steps a given iteration has before reaching the affected action — no DOM signal exists to poll on instead.
 
 ### 8 — Simulation import — the hard cases *(judgment — the GADAR sim)*
 
@@ -540,7 +636,11 @@ The sim runs on the **same page after a green design**, so its Design tab **inhe
 
 ### 9 — Repeated-modal / multi-scenario records (`loopOverData`) *(judgment)*
 
-When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`) + a reusable `03_metadata/<name>_block.csv` sub-flow (fills gated `SkipIf ${runtime.loop.<col>}…`, since the blank/`N/A` auto-skip is `${data.*}`-only) + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN`, TC_14).
+When a page adds **N same-kind records through one re-opened "Add …" modal** (candidate models, dose-response scenarios, arms), the modal **reuses the same DOM ids** every time, so the importer's dedup **collapses the repeats into one** and leaves N ungated open/commit clicks — a garbled, non-looping block (the importer now **warns** when it detects this fingerprint). Do **not** try to salvage the emitted block. Replace it with the **Option A** pattern: a child `01_testdata/scenarios.csv` (one row per record, keyed `TC_ID`+`IterationID`+`ScenarioIndex`, or just `TC_ID`+`IterationID` if the feature only ever adds one record per iteration) + a reusable `03_metadata/<name>_block.csv` sub-flow + one `loopOverData` step. Full recipe: **`MULTI_SCENARIO_GUIDE.md`** (reference `feature_BOIN` TC_14, and `feature_MCPMod` TC_35 for the single-record-per-iteration variant).
+
+> **Two rules that are easy to skip past reading quickly (both bit `feature_MCPMod`):**
+> 1. **`${runtime.loop.<col>}` fields do NOT auto-skip on blank/`N/A`** the way `${data.*}` tokens do. Gate every field yourself — either a type-gate (`SkipIf ${runtime.loop.<typeColumn>}!=<Type>`, when fields are exclusive to one record type) or a value-gate (`SkipIf ${runtime.loop.<col>}==N/A`, when a field is simply optional/shared across types). Skipping this produces `field "X" not found` for whichever fields a given row leaves blank — it looks exactly like a selector bug.
+> 2. **The `loopOverData` step's `ObjectName` must equal the child CSV's own basename** (filename minus `.csv`), not a name you pick or register in `feature.config.json`. `core/loaders/featureLoader.ts`'s `loadTestData` reads **every** CSV in `01_testdata/` and keys `testDataParsed` by basename regardless of `feature.config.json`'s `testdata.files` map — registering the child file there does nothing for this purpose and can mislead you into using the wrong `ObjectName`.
 
 ### 9.1 — Count-agnostic period-table FILLS (`loopPeriods`) — now the importer DEFAULT
 
@@ -565,6 +665,165 @@ A folded period table (`boundary.<n>.*`, `enrollmentTable.<n>.*`, `dropoutTable.
 **To extend coverage:** add a field to a table's `fields` (or flip a table `enabled`), re-import a feature that uses it, `validate`, and screenshot-verify one run (greyed period-0 cells must auto-skip). Values route through the ordinary core `fill`/`check`, so read-back/retry/N/A-skip are inherited. **Proven on `feature_ROP(PD)` TC_21**; the importer reproduces that exact shape.
 
 **Hand-authoring (rare — only for a table the config can't cover):** one parametric selector per field; a template flow driven by `${runtime.period.<field>}` with `DynamicArgs=${runtime.period.n}` (checkbox rows gated `SkipIf ${runtime.period.<field>}!=check`/`!=uncheck`); one `loopPeriods` step (`ObjectName=<parentFile>`, `InputValue=flows/…`, `ExpectedValue=<table>|<countField>`); and `reconcilePeriodTable` BEFORE it (`<file>|<table>|<countField>|<addLabel>[|excludeDisabled]`) — reconcile ADDS the rows, loop FILLS them, in StepID order.
+
+### 9.2 — Dual-endpoint shared-row-index boundary tables *(judgment — the `feature_Dual_LogrankLogrank` TC_37 case)*
+
+A **dual-endpoint** design (two primary/secondary endpoints, each with its own boundary/interim setup) can render its interim-analysis table as **one physical table with two visual columns (EP1 | EP2) that share ONE row-index namespace** — DOM ids are `boundary.<n>.ep1*` / `boundary.<n>.ep2*`, never two independent counters. One endpoint is the "primary/editable" side (its own `Analysis Spacing (%) Info` cell is a real input); the other is the "secondary/Determined" side (same row, but the cell shows greyed literal text `Determined` and its value is app-computed). Proven end-to-end on `feature_Dual_LogrankLogrank` TC_37, all 8 iterations, 2026-09-22.
+
+**Which endpoint is primary is decided by "Synchronize Interims" (`Based on EP1` / `Based on EP2`), and that field can be BLANK in testdata** — the app still resolves it to a real default the moment you land on the Design tab, driven by the (read-only, derived) "Winning Condition" summary field on the left rail. Do **not** try to predict the resulting mode from `endpointRules`/`endpointSubRules`-style numeric testdata codes — two iterations with **identical** codes produced **different** Winning Conditions in this feature (a real, confirmed contradiction, not a data bug). Screenshot-verify the live default per iteration instead of inferring it.
+
+**Two "keep Analysis Info same as other endpoint" checkboxes exist, with DIFFERENT DOM ids, and only for single-endpoint Winning Conditions:**
+- `#keepAnalysisInfoForEP2SameAsEP1` when EP1 is primary (Winning Condition "At least EP1", or its default).
+- `#keepAnalysisInfoForEP1SameAsEP2` when EP2 is primary (Winning Condition "At least EP2", or its default) — tooltip literally says "Checkbox when EP2 is primary endpoint", confirming it's a distinct element, not a relabeled one.
+- Neither checkbox renders at all when Winning Condition is **"Both endpoints"** — a testdata cell with a real `check`/`uncheck` value there times out (`locator.check: Timeout … waiting for #keep…`). Both columns must be `N/A` for a "Both endpoints" iteration; wire **both** checkboxes as separate gated `check`/`uncheck` step pairs (`SkipIf ${data.design.keepAnalysisInfoForEP2SameAsEP1}!=check` etc.) and let the testdata's `N/A` skip whichever one doesn't apply.
+
+**Row growth uses TWO buttons, and the second button's LABEL flips with the primary side:**
+- `Based on EP1`: **`Add Interim to Both`** (grows the synced portion) + **`Add Interim to EP2`** (extends EP2 alone past it).
+- `Based on EP2`: **`Add Interim to Both`** (same button) + **`Add Interim to EP1`** (extends EP1 alone — there is NO "Add Interim to EP2" button in this mode; confirmed live via DevTools, `id="ep1Event"`). Gate which pair of `reconcilePeriodTable` calls runs with `SkipIf ${data.design.syncInterims}==Based on EP2` / `!=Based on EP2` — this only reaches the alternate pair for iterations that explicitly set `syncInterims=Based on EP2`; a *blank* `syncInterims` that merely *defaults* to EP2-primary doesn't need the alternate pair unless that iteration also needs the secondary-only extra rows (see below).
+
+**`reconcilePeriodTable` countField choice depends on whether the checkbox field cleanly separates "my row" from "the other side's row" — it doesn't always:**
+- The normal case (proven on ITER_02 etc.): the PRIMARY side's efficacy checkbox (`ep1EfficacyCheck` under `Based on EP1`) is genuinely `N/A` on the secondary-only extra rows, so `<prefix>|<primaryEfficacyCheck>|Add Interim to Both|true` (target = Both-row count) and `<prefix>|<secondaryEfficacyCheck>|Add Interim to <secondary>|true` (target = total row count, since the secondary's checkbox is real on every row) is correct and matches the loopPeriods/9.1 pattern.
+- **The exception (ITER_07):** when a row belongs entirely to one side (that side gets its own independent value there), the OTHER side's checkbox can still read `check`/real even though its own `AnalysisSpacingInfo` is `N/A` — a legitimate app display quirk, confirmed and intentionally left as-is by the tester rather than "fixed" in testdata. When that's true, checkbox-based counting can't tell the two portions apart (both read the same total). Switch the countField to **`AnalysisSpacingInfo` itself** (still `|true` for `excludeDisabled`, since the `Determined` cells are disabled inputs) — it's the one field that's reliably `N/A` wherever a side doesn't independently own the row.
+- **`Add Interim to <secondary>` does NOT convert an existing `Determined` row into an editable one — it APPENDS a brand-new row at the end**, after whatever the `Add Interim to Both` clicks already produced. Don't assume the secondary side's "extra" value lands at the next unused `PeriodIndex` you'd naively expect; screenshot-verify which row actually went editable and align `PeriodIndex` to match (ITER_07's extra EP1 value landed at index 4 — a genuinely new 5th row — not index 3, which is what a naive "drop the last EP2 row" edit produced; index 3 stayed a harmless `Determined` filler needing no testdata value).
+- **`Add Interim to Both` grows the two sides' raw row COUNT asymmetrically — by design, not a bug.** In this feature the secondary/Determined side's count consistently ends up **one row ahead** of the primary side's count after the same number of "Both" clicks (a UI artifact of how the paired rows render). This is harmless as long as your countField is the one that reliably reflects each side's OWN target (per the point above) — don't try to "fix" the imbalance, just count the right field.
+
+**`Planned End of Trial` (`plannedEOT`) combines with the sync direction to decide which endpoint gets an extra/asymmetric row:** `Full Info for both endpoints` + `Based on EP1` → EP2 gets the extra row(s); the same value + `Based on EP2` → **EP1** gets the extra row instead (mirrored, not symmetric-by-coincidence). `Full Info for EP1`/`Full Info for EP2` (single-endpoint) iterations in this feature had no asymmetry to reconcile at all.
+
+**Don't pick ONE countField for the "Both" reconcile call across every iteration sharing that metadata — a single Winning Condition can make the "normal" countField go universally `N/A` while another iteration relies on that exact field being real.** Proven on `feature_Dual_LogrankDOP` TC_38: `ep1EfficacyCheck` correctly represented the Both-row count for 5 of 6 EP1-primary iterations (it's real even when EP1 is the `Determined` side, per the checkbox-stays-real quirk above) — but one iteration's Winning Condition ("At least EP1") rendered **no EP1 efficacy/futility checkboxes at all**, so `ep1EfficacyCheck` was `N/A` on every row and the reconcile computed target=0, never grew the table, and the LATER `Add Interim to <secondary>` call then failed with "button not found" (a single-button Winning Condition has no secondary button to fall back to). Swapping the countField outright to `AnalysisSpacingInfo` (the TC_37 ITER_07 fix) broke a DIFFERENT already-working iteration whose `AnalysisSpacingInfo` is genuinely `N/A` (it's the fully-`Determined` side there). **The robust fix: run TWO `reconcilePeriodTable` calls back-to-back on the same gate, one per candidate countField (`ep1EfficacyCheck` then `ep1AnalysisSpacingInfo`), not one call with a chosen field.** `reconcilePeriodTable` no-ops whenever its own target is already met (`target <= current` just warns/skips, never regresses), so whichever field is genuinely populated for a given iteration does the growing and the other call is a guaranteed no-op — no per-iteration branching needed, and it doesn't require knowing in advance which iterations need which field.
+
+**A downstream iteration's unrelated-looking failure in a serial run can be a pure cascade from an earlier iteration's crash — verify in isolation before debugging its own steps.** On TC_38, a full-suite run showed ITER_04 failing at its very first fill step (`txt_collection_Name` not found, StepID 310) — but ITER_04 had passed cleanly on its own moments earlier. The cause was ITER_03 (which runs immediately before it) crashing mid-flow from the countField bug above; the browser was left in a state that broke ITER_04's fresh start. Re-running the two together after fixing ITER_03 confirmed it: both passed. **Diagnostic rule:** when an iteration fails at a step that has nothing to do with any recent change, and a DIFFERENT iteration just failed immediately before it in the same run, fix the earlier failure first and re-run the pair before spending time on the later one's own steps.
+
+**A `compareWithBaseline` value-mismatch FAIL on an iteration with an EXISTING baseline can mean the baseline is stale, not that your fix is wrong.** After fixing ITER_01/ITER_02's reconcile bugs, both failed against their pre-existing baselines (5 and 1 value mismatches respectively) — but screenshot-verifying the live design showed it now correctly matched testdata (e.g., the mismatch was `HR (1.25, 1)` expected vs `HR (1.25, 1.658)` actual, and testdata's own `ep1ThresholdPerInterim` is `1.25, 1.658` — the OLD baseline was simply missing the real period-1 value). Those baselines predated this session's fixes and were captured from a broken run. **Before assuming a value-mismatch is a regression:** screenshot-verify the current run's design state against testdata directly; if it's correct, the fix is right and the baseline is stale — delete it (`06_baseline/<env>/baseline_<TC>_<ITER>.csv` + its `.meta.json`) and re-run to regenerate. This is a meaningful action (it discards the previous regression reference), so confirm with the user before deleting, same as any other baseline change.
+
+### 9.3 — Multi-countField chaining generalizes to ANY `loopPeriods`/`reconcilePeriodTable` table, not just dual-endpoint ones *(judgment — the `feature_StratGADAR` TC_45 case)*
+
+§9.2's "run multiple `reconcilePeriodTable` calls back-to-back, one per candidate countField" technique was discovered on a dual-endpoint table, but the same failure mode — and the same fix — applies to an ORDINARY single boundary/period table whenever different iterations lead it with different fields. Proven on `feature_StratGADAR` TC_45, 2026-09-30: `design_boundary.csv`'s value columns (`efficacyPValue`/`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/`cumBetaSpent`/`upperPValue`/`lowerPValue`) were ALL gated for period-existence on one shared field, `analysisSpacingInfo`. Most iterations genuinely lead with that field, but **ITER_10 defined its entire 5-period boundary via `efficacyPValue`+`cumAlphaSpent` alone, with `analysisSpacingInfo` N/A throughout** — both the row-ADD (`reconcilePeriodTable`) and value-FILL (`loopPeriods`) logic silently no-op'd for every period, with no error, just an empty table and a later "X is required" validation block several steps downstream.
+
+**The sneaky part: a PARTIAL case passes validate, runs green, and still silently drops data.** `ITER_07` used `analysisSpacingInfo` correctly for period 0, but not period 1 — so the iteration reached `BASELINE_CREATED`/`PASS` (it WAS green) while quietly only ever filling period 0. The gap wasn't an error anywhere; it only surfaced by cross-referencing the full child-table CSV against what each `loopPeriods` call actually keyed on (`awk`/`column -t` dump of every iteration's rows at once — looking for a period-row with ANY real value but a blank/N/A countField cell). The existing baseline had to be identified as stale, deleted, and regenerated once the gap was fixed (§9.2's stale-baseline paragraph applies here unchanged).
+
+**Fix, same shape as §9.2 but now proven outside dual-endpoint:** for EVERY candidate leading field a table might use across its iterations, chain one extra `reconcilePeriodTable` pass (to top up the row count) and one extra `loopPeriods` pass (to fill that field), keyed on the field itself instead of the usual shared countField — positioned immediately after the existing calls, same gate. Both keywords are naturally idempotent for this: `reconcilePeriodTable` no-ops once `target <= current`; `loopPeriods`'s individual `fill` steps already self-skip on blank/N/A, so a period two passes both detect just gets the same value written twice, harmlessly. **Never replace the original countField with the new one — ADD passes**, since removing it risks breaking whichever iterations it already covered (confirmed safe via a spot-check re-run of an already-green iteration after adding the chain: identical PASS, zero mismatch). A genuinely-required field with no value anywhere (the app can demand a field like `analysisSpacingInfo` even when a different field leads, independent of this detection problem) is a SEPARATE, real testdata gap — screenshot-verify the blocking validation error's exact text before assuming the countField chain alone fixes it.
+
+**Diagnostic tip:** `awk -F, 'NR==1{for(i=1;i<=NF;i++)h[i]=$i} {print}' <table>.csv | column -t -s,` across the WHOLE child-table file (not one iteration at a time) makes a silently-wrong countField obvious — look for any row with a real value in a non-countField column while the countField column itself is `N/A`.
+
+### 9.4 — The countField chain can be trimmed back once proven over-broad — a scoped exception to "never remove" *(judgment — the `feature_StratGADSD` TC_46 case)*
+
+§9.2/§9.3's "ADD passes, never remove" guidance protects against regressing an iteration the original pass already covered — but it's not a mandate to keep every pass forever once better evidence exists. On `feature_StratGADSD` TC_46, the import had (correctly, defensively) carried over all 9 reconcile passes and most of the "keyed on itself" fallback fill passes from the sibling `feature_StratGADAR` import. Watching a live run, the user noticed the SAME field being filled twice in a row and asked why. Cross-checking every GADSD iteration's testdata (the same `awk`/`column -t` whole-file dump technique as §9.3) showed only `efficacyPValue` (one iteration, one period, where `analysisSpacingInfo` is N/A but `efficacyPValue` is real) ever actually needed its own-keyed fallback — every OTHER field in use always had `analysisSpacingInfo` populated alongside it, making their fallback passes pure double-fill with zero functional benefit.
+
+**When it's safe to trim:** only after (a) checking EVERY current iteration's testdata directly (not assuming), and (b) re-running the FULL multi-iteration suite afterward to confirm nothing regressed — not just the iterations you touched. On TC_46, trimming 7 dead reconcile passes + 5 dead fill passes and then re-running all 10 stabilized iterations came back 9 PASS (unaffected) + 1 unrelated pre-existing FAIL, confirming the trim was safe. **This is a scoped exception, not a reversal of §9.2/§9.3's rule** — the rule still holds for any pass that current testdata actually exercises; only genuinely-dead passes (proven dead by exhaustive cross-check, not assumption) are candidates for removal, and the removal still needs the same empirical verification the original chaining did.
+
+### 9.5 — A boundary table's `Calculate` can be a progressive-reveal multi-stage form, not a one-shot compute *(judgment — the `feature_StratGADSD` TC_46 case)*
+
+A manually-entered boundary value (`futilityPValue`/`futilityCP`/`futilityHR`/`cumAlphaSpent`/`cumBetaSpent`-family) can `fill` successfully — the step passes, read-back confirms the value — and then silently revert to an invalid sentinel default by the time a LATER screenshot or validation runs, surfacing as a range-validation error plus the generic "Unsaved Changes" modal (§7) blocking the next navigation. This is DISTINCT from the checkbox-reset case already documented for `feature_StratGADAR` (§7's Unsaved-Changes entry, `IMPORT_LESSONS.md` S15) — this is a VALUE field, not a checkbox, and it reset on `feature_StratGADSD` TC_46's ITER_04 across THREE different single/double-Calculate attempts before the real pattern was found.
+
+**Root cause:** the boundary table doesn't just compute on Calculate — it also determines which fields are genuinely persistent, by STAGE. A field tied directly to the initially-selected boundary family (`efficacyPValue`, `upperPValue`/`lowerPValue`) is safe to fill before the FIRST Calculate. `futilityPValue`/`computeCP`/`futilityCP`/`futilityHR` only persist once filled AFTER the first Calculate. `cumAlphaSpent`/`cumBetaSpent`-family fields only persist once filled after a SECOND Calculate. A single Calculate (no staging) is perfectly fine for tables using nothing but `analysisSpacingInfo` + checkboxes — most GSD boundary iterations never trigger this at all; reach for the staged version only once a manually-entered value family is confirmed reset.
+
+**Fix — three staged Calculate clicks:** (1) fill family-tied fields → Calculate #1 → (2) fill futility-p-value/CP/HR (+ select `computeCP`) → an optional cell-click to defocus/commit the just-filled cells → Calculate #2 → (3) fill cumAlpha/cumBeta-family fields → re-assert checkboxes (§7-style, right before the LAST calculate, never after) → Calculate #3 (final) → a short settle sleep → THEN navigate. This exact structure is what `feature_StratGADAR`'s own proven metadata already does (its own StepIDs follow this same 3-Calculate shape) — it had simply never been written up as an explicit, nameable pattern before `feature_StratGADSD` had to rediscover it live. When importing a NEW boundary-table feature in this family, check whether the closest sibling's metadata already has 2-3 `btn_Calculate` clicks spread through the boundary section before assuming one Calculate suffices.
+
+**One case this did NOT resolve:** `feature_StratGADSD` ITER_04 (`futBoundaryFam=p-value`, `efficacyCheck` left at its default CHECKED state) still reset `futilityPValue` after every Calculate even with full 3-stage staging. `feature_StratGADAR`'s own working p-value-family iteration has `efficacyCheck=uncheck` instead — a real lead for a future session, not yet followed. Flagged to the user rather than guessed at further; the iteration was held back (`Run=FALSE`) rather than shipped broken or endlessly re-guessed.
+
+### 9.6 — A `waitForSelector` right after a tab/panel mount isn't always enough — the panel can keep overwriting itself for a few seconds after *(judgment — the `feature_GADAR(PE)` TC_55 case)*
+
+Reviewing a feature another agent (GitHub Copilot) had already stabilized, the user flagged a specific suspicion: a "Number of Simulations Run" field seemed to reset to its default, but changing "Fixed Seed" in the LIVE app never caused that. The suspicion turned out to be correct, but the mechanism was one step removed from what it first looked like.
+
+**What live screenshots actually showed:** right after `select ddl_Random_Number_Seed="Fixed"`, the panel correctly displayed `Random Number Seed=Fixed`, `Fixed Seed=100`. The VERY NEXT metadata step (`fill txt_Fixed_Seed`) then hard-failed "field not found" — because by the time it ran, `Random Number Seed` had silently reverted to its fetched default (`Clock`), which hides the Fixed Seed input entirely. `Number of Simulations Run` sat at its own untouched default (`10000`) the whole time, never having been touched yet (its own fill step comes later).
+
+**First fix attempt was insufficient, and looked like it worked.** Mirroring the Enrollment tab's own proven pattern (a `waitForSelector` on one of its fields immediately after the tab's mount click, before any fill), a `waitForSelector(visible)` was added on the Simulation Setup panel's `Random Number Seed` dropdown. It passed a full 4-iteration confirmation run. On the VERY NEXT full run, the identical failure recurred on the identical iteration. **The reason: `waitForSelector(visible)` resolves the instant the DOM node mounts — which happens immediately, well before the panel's own async data fetch actually completes and overwrites whatever was just selected.** A visibility wait and an "is this panel done loading" wait are not the same thing, and there was no reliable second signal (no spinner, no loaded-state attribute) to wait on instead.
+
+**Real fix:** a plain settle sleep (2.5s) placed AFTER the `waitForSelector`, BEFORE touching any field on the panel — so the automation's own fill always lands after the panel's async overwrite finishes, rather than racing it. Confirmed held across TWO separate full 4-iteration confirmation runs (not just one — the whole point of this section is that one green run is not enough evidence for this bug class).
+
+**The bug had already contaminated a baseline.** One of the feature's 4 iterations had a baseline captured while this race was active — it stored `10000` simulations where testdata asked for `100`. Once the fix made the live run correctly honor `100`, the `compareWithBaseline` step produced 64 value mismatches, which could have looked like a regression from the fix itself. The diff file was the tell: several `Count`-type cells showed `expected=10000, actual=100` — the BASELINE held the bug's wrong output, not the live run. Deleted and regenerated that one baseline only (the other 3 iterations' baselines were already correct, confirming the race was intermittent, not deterministic on every run).
+
+**Generalizes beyond this one panel:** any tab/panel whose fields are populated by an async fetch AFTER mount (not synchronously rendered from already-loaded page state) is a candidate for this bug, especially if a sibling tab in the SAME feature already needed its own post-mount wait (a strong hint the whole page has this pattern, not just one tab). When adding a `waitForSelector` after a NEW tab's mount click, treat a plain visibility wait as unproven until confirmed stable across at least two independent live runs — add the settle sleep proactively rather than waiting to get burned by an intermittent failure in a later session.
+
+### 9.7 — Two differently-typed controls sharing a generic recorded label can collapse onto ONE column, and a "name" field recorded at one moment can really belong at a LATER moment *(judgment — the `feature_MAMS_DOP` TC_50 case)*
+
+Two distinct bugs, same root cause: the importer trusts the recording's own step order and label text more than the live DOM, so when a generic label or a repeated field genuinely means two different things, it can silently pick the wrong one — with `validate` staying clean either way.
+
+**Bug A — a `select` and a `fill` sharing a label don't always get split, even with different ids.** §"Two fields that share a visible label" documents that two *editable fills* with distinct ids get auto-split into separate columns — but that splitting is NOT reliable when the two controls are different ACTION TYPES. On TC_50, `ddl_Parameter` (a `select`, live id `#effParam`, holding named options like `Pocock`/`O'Brien-Fleming`) and `txt_Parameter` (a `fill`, live id `#effParamRho`, holding a numeric Rho value) both recorded under the generic label "Parameter" — and the importer bound BOTH to `effParamRho`. No `UNWIRED`, no `validate` warning; the `select` just silently drove the wrong field on every iteration where it mattered. Caught only by grepping `selectors.csv` for both ObjectNames' actual `SelectorValue` and noticing the ids differ. **Before trusting an auto-bound `select` sitting next to a same-labeled `fill`, do that grep** — distinct ids on different action types is a strong signal they're two unrelated sibling fields, not a label collision the importer already resolved.
+
+**Bug B — a "Result Name"-style field recorded TWICE for two different real purposes can get collapsed to ONE step by the importer's own duplicate-step dedup.** TC_50's sim flow genuinely names something twice: once at the very start (naming the simulation's own derived input set) and once again in a "Name your result before simulating" dialog, right before the actual Simulate click. The importer's dedup logic (the same "Collapsed N duplicate control/field step(s)" behavior that's normally correct and desirable) kept only the EARLY occurrence, binding it to whichever testdata column matched first (`Sim Result Name`) and leaving the real early-naming column (`CreateInputSet`) and the real LATE naming moment both unwired. This surfaced only from the user's own domain knowledge of the app, not from any importer output. **When a sim (or other multi-stage) flow's testdata has two distinct "name"-shaped columns, check the live app directly for a second naming moment** (often a confirmation dialog right before the compute/simulate trigger) before assuming one generated fill step covers both — split it into two steps at the two real moments if it doesn't, mirroring wherever the design flow's own end-of-flow `ResultName` fill already sits for positioning.
+
+### 9.8 — A boundary/futility-family selector can change WHICH per-period fields are real, not just their values *(judgment — the `feature_MAMS_DOP` TC_50 case)*
+
+A period-table's columns (`cumAlphaSpent`, `futilityPValue`, `futilityDelta`, …) are not all simultaneously real for every value of a family/boundary-type selector in the same column — different family options can render a COMPLETELY DIFFERENT field, not just a different value for the same field. Authoring (or importing) testdata against one family's field set and then hitting a DIFFERENT family live produces two distinct failure shapes, both confirmed on the same `futBoundaryFam` column on TC_50:
+
+- **A `fill`/loop hard-fails "field not found"** when testdata has a value for a field that simply isn't rendered under the live family (ITER_03: a `cumAlphaSpent` value had nowhere to land because that family's table only has a "Futility δ" field, which maps to the `futilityDelta` column instead).
+- **The app blocks `Save` with an inline validation error, and the NEXT step fails instead of the real cause** — a DIFFERENT family can require a field testdata left `N/A` (ITER_04's "p-value" family required `cumAlphaSpent`, which was `N/A`; `Save & Compute` silently stayed blocked, and the FAILURE surfaced two steps later at the `ResultName` fill, which never found its field because the page never left Design).
+
+**A family's visible dropdown label can also be a single symbol rendered from a plain-looking testdata value** — ITER_03's `futBoundaryFam` cell held the literal text `"4"`, which is NOT a typo: the live option's underlying `value` attribute is `4`, and its visible LABEL renders as the Greek letter "δ". Don't assume a bare number in a family-selector column is wrong before screenshotting what it actually selects live.
+
+**Fix/diagnostic:** screenshot the live boundary table for EVERY distinct family value a feature's testdata actually uses, before assuming one generic per-period flow/column set covers all of them, and read the table's real column headers off that screenshot rather than guessing which testdata column should supply a missing value. This is a structural variant of §9.3's "different iterations can lead the same table with different fields" — here the family SELECTOR itself picks the field set, not just which field happens to be populated.
+
+### 9.9 — The SAME semantic field can have a DIFFERENT real DOM id depending on which family state the recording captured it in *(judgment — the `feature_SingleProportion` TC_25 case, S30)*
+
+§9.8 covers a family selector changing WHICH fields exist. This is a narrower, sneakier variant: a single field that exists under every family — same visible label, same row position — can render with a genuinely different `id` depending on which family was selected live at the moment a superset recording session happened to capture it. The importer has no way to know this; it binds the one id it saw, and that id looks completely ordinary: right naming convention, matches every sibling field's pattern, `validate`/`UNWIRED` both stay clean because the testdata column holds a real value and the selector is syntactically fine.
+
+The only symptom is a live `fill: field "..." not found` — and critically, it fires ONLY on the iteration(s) that exercise the family state the recording did NOT capture that field under, while every iteration using the originally-recorded family state works fine. This makes it look like an iteration-specific data problem, not a selector problem.
+
+**Fix/diagnostic:** when a `fill`/`select` throws "not found" for a selector that otherwise looks completely unremarkable (right convention, already validated, real data), don't reach for a timing fix first — `dumpSubtree` the live table on the SPECIFIC failing iteration (not a passing one) and compare the real id against what's wired. Confirmed on TC_25: the recording captured `[id="boundary.0.cumBetaProportion"]` for the "Cum. β Spent" field; the live DOM for the symmetric Spending-Functions family instead used `[id="boundary.0.cumBetaSpent"]`. Renaming the testdata column + selectors + steps back to `cumBetaSpent` fixed every iteration that actually exercised the field, with zero regression risk to iterations that never touched it (confirmed by grepping which iterations had a real, non-`N/A` value in that column before renaming).
+
+---
+
+## 10 — Writing to an AG-Grid cell that recording couldn't capture (`fillGridCell`)
+
+**The problem this solves:** an AG-Grid cell is typically a plain `<div>` until you double-click it into edit mode. A codegen recording session captures a usable selector only for the cells someone actually double-clicked while recording — every OTHER cell in that same grid has no recorded selector at all, even though the grid's full structure is completely knowable live (every cell has a `row-index` on its row and a `col-id` on a nested cell element). Previously the only options were: (a) go back and re-record double-clicking every cell you need (tedious, and still only covers one iteration's row count), or (b) hand-write a per-feature parametric selector for each column and hope the row count never needs reconciling. Neither scales to a grid where different iterations need different numbers of rows.
+
+**The fix is a general-purpose custom step, `fillGridCell` (`custom/_shared/customSteps.ts`), that writes ONE cell addressed purely by `{grid container, row-index, col-id}`** — no per-cell recorded selector needed, ever. It also handles the row not existing yet (clicks an "Add" button until it does) and, if the grid needs an explicit sequence number typed into its own index column rather than auto-numbering, fills that too.
+
+### Step 1 — find the addresses: `dumpGridDiagnostic`
+
+Before writing anything, confirm the grid's real structure live — never guess `row-index`/`col-id` values. `dumpGridDiagnostic` (already in `custom/_shared/customSteps.ts`, same file) is the read-only counterpart: point it at the grid's container and it logs every currently-rendered `[row-index]`/`[col-id]` pair plus the cell text, defeating virtualization by scrolling through the whole grid first. Add a temporary `callCustom` step (`ExpectedValue = "<containerCssSelector>[|<col-id filter>]"`), run live, read the log, then delete the diagnostic step — it's a one-off tool, not something that ships in the final metadata.
+
+This is also how you confirm the structural gotcha that makes the descendant-combinator rule below non-optional: `row-index` lives on the ROW's own element, `col-id` lives on a DIFFERENT, nested CELL element — `dumpGridDiagnostic`'s own output distinguishes them, and two features' generated POMs already carry comments confirming this is the normal AG-Grid shape here, not a one-off.
+
+### Step 2 — write the value: `fillGridCell`
+
+```
+InputValue (dispatch key) = fillGridCell
+ExpectedValue = "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]"
+DynamicArgs   = "<rowIndex>|<value>"
+```
+
+- `gridContainerCssSelector` — a plain CSS selector for the grid's own container (e.g. `#singlePieceStratTable`), same convention as `scrollGridIntoView`/`fillCompactIndexedCells`.
+- `colId` — the AG-Grid `col-id` for the target column (found via `dumpGridDiagnostic`).
+- `editorObjectName` — a **selectors.csv object name** (not raw CSS) for the grid's inline cell editor. AG-Grid typically reuses ONE editor element for whichever cell is currently being edited, and that element's selector is usually already recorded for the feature (e.g. `txt_Input_Editor`, `btn_Input_Editor` — check the closest sibling feature for an existing one before recording a new one).
+- `addButtonLabel` *(optional)* — the visible text of the button that adds a new row, if the target row might not exist yet. Omit it only for a grid whose row count never needs reconciling; otherwise a missing row fails loudly instead of silently.
+- `indexColId` *(optional)* — if the grid requires an explicit sequence number typed into its own index/"Sr. No." column (rather than auto-numbering a newly-added row), its `col-id`. Filled automatically, BEFORE the target cell, with a 1-based default (`rowIndex + 1`) whenever a row had to be added.
+- `rowIndex`/`value` go in **DynamicArgs**, not ExpectedValue, specifically so the same config works two ways: a literal one-off call (`DynamicArgs = "2|0.658"`), or looped once per row inside a `loopPeriods` flow file (`DynamicArgs = "${runtime.period.n}|${runtime.period.hazardRatio}"`) — DynamicArgs is already `${...}`-resolved by the framework and scanned by `check-testdata-coverage.ts` exactly like any other column, so looping needs no special coverage-tool handling.
+- The value auto-skips on blank/N/A, matching the universal convention every other `fill`-type step already follows — a period with no real value for this column costs nothing.
+
+**Mechanics** (every piece individually proven elsewhere in this codebase, just recombined for arbitrary row/col addressing): scroll the grid's `.ag-body-viewport` to defeat virtualization until the target cell exists (`scrollGridIntoView`'s technique) → if still missing, click the Add button — located RELATIVE to the grid container, same "anchor to the table's own content" technique as `reconcilePeriodTable` — until the row renders, with a safety cap → if a row was just added and `indexColId` is set, fill the index cell first → double-click the target cell, wait for the named editor, `fill()`, commit with `Enter` (the exact `fillCompactIndexedCells` recipe — AG-Grid's React editor often only persists on blur/Enter, not on `fill()`'s events alone).
+
+### What to verify on first use of a NEW grid
+
+This is a general-purpose tool, not a feature-specific one proven on a specific grid yet — treat the first live run on any new grid as the verification pass, same as every other technique in this document:
+
+1. **The `row-index`/`col-id` descendant-combinator shape.** Confirmed on the grids checked so far; a DIFFERENT app/grid library could in principle put both attributes on the same element (compound selector) instead — `dumpGridDiagnostic`'s own output tells you which, don't assume.
+2. **The index-column numbering convention**, if `indexColId` is used — the 1-based `rowIndex + 1` default is a reasonable guess, not a confirmed universal. Screenshot-verify a freshly-added row's index cell; if the app numbers 0-based, or non-sequentially, or auto-fills it without needing a write at all, adjust (or drop `indexColId` entirely in the no-write case).
+3. **The Add button's reachability from the container.** `xpath=following::button[...]` searches forward in document order from the grid container — fine when the Add button renders after the grid, which is the common layout, but confirm it on a new page shape before trusting it.
+
+---
+
+## 11 — Page/graph load-only verification, no data extraction (the `feature_SingleProportion` TC_25 "Details" tab)
+
+**When this applies:** a result page has a secondary tab/view (a chart, a detail panel, anything beyond the main results table) that the user explicitly wants confirmed as "loads correctly" — NOT compared cell-by-cell against a baseline. This is a deliberately lighter-weight check than `extractAllResultTables`/`compareWithBaseline`, and it needs no new framework mechanism — the existing `assertVisible`/`waitForSelector` keyword set (`core/keywords/registry.ts`) already covers it.
+
+**The three-step pattern**, placed AFTER `compareWithBaseline` so it can never affect the main result comparison, and wired identically in both the design flow and the sim flow if the tab is shared by both result types:
+
+1. `click` the tab button (e.g. `btn_Details`). If the tab was recorded in the WRONG position (recordings often capture it right after the initial result-confirm dialog, before the result has even opened — see §3's general "don't trust a recorded click's position blindly"), move the step to after `compareWithBaseline`.
+2. `waitForSelector` the page's loading-spinner element with `WaitCondition=hidden` (reuse the same spinner selector the login flow already has, e.g. `div_Spinner`/`#spinner` — add a feature-scoped selector row pointing at the same CSS if the existing one is scoped to a different logical "Page"). **Do not skip this** — the first screenshot of the tab almost always fires mid-load; confirmed live on TC_25, where the raw post-click screenshot showed only a spinner and the chart appeared only once this wait was added.
+3. `assertVisible` (hard, `Optional=FALSE`) on the real content element that only exists once the view has actually rendered — not a generic container. Find it live: add a temporary `dumpSubtree` `callCustom` step right after step 2 (`ExpectedValue = "body|0|400"` is a safe untargeted starting point when you don't know the container yet), run once, read the dump for the chart/panel's real id or class (look for library fingerprints — `js-plotly-plot`, `highcharts-container`, etc. — not just generic `div`s), then delete the debug step and wire the real selector. Confirmed on TC_25: the chart container was `#chartRender-0` (a Plotly chart), found this way.
+
+**Two things this pattern does NOT generalize automatically:**
+
+- **A feature with more than one chart/panel on the same tab** will likely render additional instances at a different index (`#chartRender-1`, …) that a single hard-coded selector won't cover — screenshot/dumpSubtree-verify per feature rather than assuming the id carries over, especially if the tab has a chart-selector dropdown implying more than one chart exists.
+- **The sim result page is not guaranteed to have the same tabs as the design result page for the same iteration** — see §9.8-adjacent case below (S31). A tab that works unconditionally on the design side may need its own gate on the sim side.
+
+### 11.1 — A fixed (no-boundary) design's SIM result page can be missing an entire tab that the DESIGN result page still has *(S31)*
+
+This is NOT the familiar S8 "Calculate/Recalculate button is disabled for a fixed design" pattern — it's one level up: for a design solving for Type 1 Error (no boundary/interim-analysis section at all), the DESIGN result's Details tab can still render fine (e.g. a generic Power-vs-Sample-Size sensitivity curve that doesn't depend on any boundary existing), while the SIM result's Details tab is missing ENTIRELY — only "Home" shows next to the result title, because the sim-side Details view specifically needs real interim/boundary simulation data to have anything to show.
+
+**Fix:** gate the sim-side click/wait/assertVisible triplet with the same `SkipIf ${data.design.<ComputedParameterColumn>}==Type 1 Error` condition already used for the sim-side Recalculate gate — do NOT assume the design-side gate (or lack thereof) tells you anything about what the sim side needs. Confirmed live on TC_25 ITER_03: the design Details check passed ungated; the identical click on the sim result timed out with `getByRole('button', { name: 'Details' })` simply not existing.
 
 ---
 
@@ -794,9 +1053,18 @@ what lets it handle a new feature **without destabilising the ones already commi
   value) and approved BEFORE being written** (§3) — the agent never adds or renames a column
   silently, including while resolving `UNWIRED`.
 - [ ] **[IMPORT_LESSONS.md](IMPORT_LESSONS.md) read before wiring, and any new judgment call / user correction appended** as a rule.
+- [ ] **If a reference/sibling feature exists, its judgment-call resolutions were diffed against
+  this feature's — not just structure, the actual resolution** (§0: `grep` the reference for
+  `confirmed live|VERIFY selector|renamed from|collided|Never recorded|mislabeled` and check each
+  hit's field landed the same way here). Run this again right before finishing, not only at the start.
 - [ ] `npm run validate` passes for **all** features (not just this one).
 - [ ] **User approval obtained before any live run**; iterations run **one at a time**; on error, analyse then fix by tier — minor metadata/selector fixes **autonomously** (reported), but **testdata** edits and **major/other-file** changes only **with user approval** (§5a).
 - [ ] Each iteration screenshot-verified; blank/`N/A` skipped, valued fields landed.
 - [ ] No `recording.txt` / `.env` / `.auth` staged for commit.
 - [ ] Baseline reviewed by a human before it's trusted — and built on the SAME `.env` server it will be compared against (baselines are env-specific; an `.env` swap invalidates them, §8c).
 - [ ] Adaptive (CHW/CDL) sim: `Include Enrollment=check`, SSR dropdowns settled, and a wait-for-enabled before Save & Simulate (§8b).
+- [ ] An AG-Grid column with no recorded selector was NOT hand-wired with a guessed `nth-child`/positional selector — use `dumpGridDiagnostic` to find its real `row-index`/`col-id` and `fillGridCell` to write it (§10), not a workaround.
+- [ ] **Full data-to-wiring audit done on every testdata file, including every child/table CSV**
+  (§4a) — every non-blank/non-`N/A` cell traced to a step that runs for its row and actually picks
+  it up, not just inferred from a clean `validate`/coverage run. Done even when another agent
+  (e.g. Copilot) already reports the feature "validated."

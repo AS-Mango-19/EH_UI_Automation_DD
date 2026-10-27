@@ -9,7 +9,12 @@ The naive fix (`scenario1_e0, scenario2_e0, … scenario10_e0`, ×N params) expl
 mostly-empty columns. **Don't do that.** Use the child-table + loop pattern below: **adding a
 scenario is one new row, and it scales to any count with no metadata edits.**
 
-The reference implementation is **`ProductDesign/feature_BOIN`**. Copy it.
+The reference implementation is **`ProductDesign/feature_BOIN`**. Copy it. A second, simpler
+variant — one record per iteration rather than a variable N — is
+**`ProductDesign/feature_MCPMod`** (TC_35, candidate dose-response models); its `scenario_block.csv`
+equivalent (`model_block.csv`) shows the value-gate style (rule 4 below) instead of BOIN's
+type-gate style, since MCPMod's fields are shared across several record "families" rather than
+exclusive to one each.
 
 > **Not the same as a period child-table.** This guide's child CSV (`scenarios.csv`) is keyed
 > `(TC_ID, IterationID, ScenarioIndex)` and drives **repeated sub-flows** via `loopOverData` +
@@ -65,9 +70,18 @@ then runs `scenario_block.csv` top-to-bottom. So the sub-flow fills the modal fr
 ## 4. The rules that make it work
 
 - **One row = one scenario.** Adding a scenario is one new line in `scenarios.csv`.
-- **Type-gating.** Each field is gated `SkipIf ${runtime.loop.<typeColumn>}!=<Type>`, so a
-  field only fills when the row is that type. Cross-type cells never fire — even left blank —
-  because the *type* doesn't match, so the modal never hunts for a field it isn't showing.
+- **`${runtime.loop.*}` NEVER auto-skips on blank/`N/A` — this is the #1 way people get bitten.**
+  Unlike `${data.*}` tokens (which the runner self-skips when the testdata cell is blank/`N/A`),
+  a `${runtime.loop.<col>}` field is filled with whatever string is in that row's cell, **including
+  the literal text "N/A"** if you leave it ungated. Every field needs its own `SkipIf`, one of two
+  styles:
+  - **Type-gating** (BOIN style, use when fields are exclusive to one record type):
+    `SkipIf ${runtime.loop.<typeColumn>}!=<Type>` — the field only fills when the row is that type.
+  - **Value-gating** (MCPMod style, use when a field is simply optional / shared across types):
+    `SkipIf ${runtime.loop.<col>}==N/A` — the field fills whenever that row actually has a value,
+    regardless of type. Simpler when several record types legitimately share the same field.
+  Skipping this shows up as `field "X" not found` on a field whose testdata cell is blank for that
+  row — it looks exactly like a selector bug, not a missing gate.
 - **`N/A` convention.** Put `N/A` (or leave blank) in any cell that doesn't apply to the row's
   type. It's documentation; the type-gate is what actually skips it.
 - **Scoping = `TC_ID` + `IterationID`.** Rows are matched to the running test exactly like
@@ -144,6 +158,24 @@ click, the `select`, and the commit click are ungated (they run for every row).
   shared `flows/login.csv`.
 - **No false "unused column" warnings.** The validator knows a `loopOverData` file is consumed
   whole, so populated `scenarios.csv` columns don't trip the coverage check.
+- **`ObjectName` must be the child file's own basename, not a name you choose.** `loadTestData`
+  (`core/loaders/featureLoader.ts`) reads **every** CSV in `01_testdata/` and keys the parsed-data
+  map by filename-minus-`.csv`, regardless of anything registered in `feature.config.json`'s
+  `testdata.files`. If your child file is `design_model.csv`, the `loopOverData` step's
+  `ObjectName` must be exactly `design_model` — not `model`, not whatever you registered in the
+  config (registering it there does nothing for this purpose). Get it wrong and every populated
+  column in the child file silently shows as "unused" and the loop finds 0 rows, with no error.
+- **A required action can be missing from the recording entirely, not just mis-wired.** If
+  `Save`/`Save & Compute` stay disabled with no metadata error, screenshot the live page before
+  assuming a wiring bug — the app may show its own banner naming what's missing (e.g. a
+  "Calculate" button the recording session never clicked). A clean recording doesn't guarantee
+  every required step was captured.
+- **A click that "succeeds" but does nothing may be blocked by an async precondition, not a
+  selector bug.** If the modal never closes / the page never advances despite no retry warning,
+  compare `trace.network` (inside `trace.zip`) between this run and a passing iteration — see
+  `AI_IMPORT_AGENT.md` §7's trace.network recipe. Proven on `feature_MCPMod`: a `GET 400` on the
+  design's model list self-healed in the background ~25s later; iterations that reached "Add
+  Model" before that window closed failed with no visible cause.
 
 ---
 

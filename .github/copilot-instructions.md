@@ -38,6 +38,10 @@ browser.
 4. **Follow the testdata.** A valued cell must land (verified by read-back); blank/`N/A` skips; a
    valued field that isn't found **FAILS** — fix the data or selector, never delete the step.
    Every `fill`/`select`/`check` must carry a `${data.*}` token.
+   **If a failure or warning indicates that testdata may be wrong, incomplete, or inconsistent,
+   stop and report it before editing or proceeding. State the exact file, iteration, field/cell,
+   current value, and observed issue, then ask the user what action to take. Do not change the
+   testdata or work around the issue silently.**
 5. **Cell decisions:** hidden → `N/A`; editable → the value; greyed showing "Computed" →
    `Computed`; greyed showing a derived number → `assertValue` it, never `fill`.
    **Period tables** (`boundary`/`enrollment`/`dropout`) can be normalized child CSVs
@@ -51,7 +55,17 @@ browser.
    **`ProductDecide` "Go/No-Go" features** (any module isn't just `ProductDesign` — see
    `AI_IMPORT_AGENT.md` §0) → `ProductDecide/feature_DOM` (TC_29) or `feature_DOP` (TC_31, has an
    interim table) — follow the dedicated Decide-family checklist there, it always needs the same
-   6 fixes.
+   6 fixes; **dual-endpoint (two-endpoint boundary table)** → `feature_Dual_LogrankLogrank` (TC_37)
+   or `feature_Dual_LogrankDOP` (TC_38) — follow `AI_IMPORT_AGENT.md` §9.2 in full, especially its
+   rule that the shared boundary reconcile can need DIFFERENT `countField`s for different iterations
+   of the SAME feature (fix by running two `reconcilePeriodTable` calls back-to-back, never by
+   swapping the field outright — swapping breaks whichever iteration relied on the original field).
+   **Then verify the mirroring held, right before you finish** — an auto-bound field (no
+   `UNWIRED`) is NOT proof its selector is correct; `grep` the reference's `selectors.csv`/
+   `metadata.csv` for `confirmed live|VERIFY selector|renamed from|collided|Never recorded|mislabeled`
+   and check your feature resolved each matching field the same way. `feature_MCPMod_Con` shipped
+   with two bugs `feature_MCPMod` had already fixed this way — neither tripped `UNWIRED` or
+   `validate` (`AI_IMPORT_AGENT.md` §0, `IMPORT_LESSONS.md` rule 17).
 7. **Verify with your eyes.** Screenshot-verify every iteration — green ≠ correct (a missing
    baseline is green and proves nothing).
 8. **Never commit secrets.** `.env`, `.auth/`, and raw credentials in recordings stay out of git.
@@ -66,3 +80,17 @@ Simulation flow: add `--sim` (reads `sim_recording.txt` → `sim_metadata.csv`, 
 
 When in doubt, open `AI_IMPORT_AGENT.md` and do exactly what it says for the field family in front
 of you.
+
+## Font and Typography Requests
+
+- **Default assumption:** font/typography asks are usually about report presentation, not feature wiring.
+- **Feature-import scope still applies:** while working a feature import/wire task, do **not** edit
+   report style files in `core/reporters/`.
+- **Where fonts actually live:** report CSS is defined in
+   `core/reporters/featureHtml.ts` (shared style) and reused by
+   `core/reporters/combinedHtml.ts` / `core/reporters/shareableHtml.ts`.
+- **If a user explicitly requests a global report font change:** treat it as a separate
+   framework-enhancement task (not part of a feature import), then run full validation (`npm run validate`)
+   before handing off.
+- **Do not edit generated outputs:** never change `09_html_report/` or files under `reports/`; they are
+   regenerated artifacts, not source of truth.

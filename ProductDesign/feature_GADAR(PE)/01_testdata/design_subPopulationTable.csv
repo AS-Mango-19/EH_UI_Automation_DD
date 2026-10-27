@@ -1,0 +1,11 @@
+TC_ID,IterationID,PeriodIndex,startingAtTime,byTime,medianSurvivalTimeControl,hazardRateControl,cumPercSurvivalControl,hazardRatio
+TC_55,ITER_01,0,N/A,N/A,22.6589,N/A,N/A,0.58
+TC_55,ITER_02,0,N/A,N/A,N/A,0.04856,N/A,0.62
+TC_55,ITER_02,1,2.5,N/A,N/A,0.068956,N/A,0.68
+TC_55,ITER_02,2,3.5,N/A,N/A,0.088956,N/A,0.72
+TC_55,ITER_03,0,N/A,1.1,N/A,N/A,96,0.6
+TC_55,ITER_03,1,N/A,2.1,N/A,N/A,95,0.65
+TC_55,ITER_03,2,N/A,3.1,N/A,N/A,94,0.7
+TC_55,ITER_03,3,N/A,4.1,N/A,N/A,93,0.75
+TC_55,ITER_03,4,N/A,5.1,N/A,N/A,92,0.8
+TC_55,ITER_04,0,N/A,N/A,N/A,0.058898,N/A,0.65489
