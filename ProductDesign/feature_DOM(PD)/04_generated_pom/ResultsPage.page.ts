@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f1210cf8f1ee12d47de754fdcac5115617154fd46c393a499cff69cf3be0e31a)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f0b45df27f994b3365b285738ab730d372c570cfbe4b9590f4f5b2e544d13ce2)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -544,6 +544,51 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_asym_Eff_Boundary_Fam', { dynamicArgs });
   }
 
+  /** Upper efficacy Rho parameter */
+  txt_upper_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Rho', { dynamicArgs });
+  }
+
+  /** Upper efficacy Gamma parameter */
+  txt_upper_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_upper_Param_Gamma', { dynamicArgs });
+  }
+
+  /** native <select> for upper efficacy parameter */
+  ddl_upper_Param(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_upper_Param', { dynamicArgs });
+  }
+
+  /** Lower efficacy Rho parameter */
+  txt_lower_Param_Rho(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Rho', { dynamicArgs });
+  }
+
+  /** Lower efficacy Gamma parameter */
+  txt_lower_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lower_Param_Gamma', { dynamicArgs });
+  }
+
+  /** native <select> for lower efficacy parameter */
+  ddl_lower_Param(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_lower_Param', { dynamicArgs });
+  }
+
+  /** Upper efficacy boundary fix */
+  ddl_upper_Fix(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_upper_Fix', { dynamicArgs });
+  }
+
+  /** native <select> for futility parameter */
+  ddl_fut_Param(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_fut_Param', { dynamicArgs });
+  }
+
+  /** Futility Gamma parameter */
+  txt_fut_Param_Gamma(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_fut_Param_Gamma', { dynamicArgs });
+  }
+
   /** Interim 0 Upper alpha (asymmetric Interpolated - per-analysis cum alpha) */
   txt_boundary_0_upper_Alpha(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_0_upper_Alpha', { dynamicArgs });
@@ -582,6 +627,61 @@ export class ResultsPage {
   /** boundary cell */
   txt_boundary_2_cum_Beta_Spent(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_cum_Beta_Spent', { dynamicArgs });
+  }
+
+  /** Interim 0 upper p-value */
+  txt_boundary_0_upper_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_0_upper_PValue', { dynamicArgs });
+  }
+
+  /** Interim 1 upper p-value */
+  txt_boundary_1_upper_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_upper_PValue', { dynamicArgs });
+  }
+
+  /** Interim 2 upper p-value */
+  txt_boundary_2_upper_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_upper_PValue', { dynamicArgs });
+  }
+
+  /** Interim 3 upper p-value */
+  txt_boundary_3_upper_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_upper_PValue', { dynamicArgs });
+  }
+
+  /** Interim 4 upper p-value */
+  txt_boundary_4_upper_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_4_upper_PValue', { dynamicArgs });
+  }
+
+  /** Interim 0 lower p-value */
+  txt_boundary_0_lower_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_0_lower_PValue', { dynamicArgs });
+  }
+
+  /** Interim 1 lower p-value */
+  txt_boundary_1_lower_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_1_lower_PValue', { dynamicArgs });
+  }
+
+  /** Interim 2 lower p-value */
+  txt_boundary_2_lower_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_2_lower_PValue', { dynamicArgs });
+  }
+
+  /** Interim 3 lower p-value */
+  txt_boundary_3_lower_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_3_lower_PValue', { dynamicArgs });
+  }
+
+  /** Interim 4 lower p-value */
+  txt_boundary_4_lower_PValue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_4_lower_PValue', { dynamicArgs });
+  }
+
+  /** Interim 0 cumulative beta proportion */
+  txt_boundary_0_cumBetaProportion(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_0_cumBetaProportion', { dynamicArgs });
   }
 
   /** boundary cell */
@@ -697,5 +797,20 @@ export class ResultsPage {
   /** PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods) */
   txt_boundary_analysisSpacingInfo(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_boundary_analysisSpacingInfo', { dynamicArgs });
+  }
+
+  /** hand-added - Details tab load-check (feature_SingleProportion/SinglePoissonRate/MeanofPairedDiff precedent) - SCREENSHOT-VERIFY on first live run */
+  btn_Details(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Details', { dynamicArgs });
+  }
+
+  /** hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Spinner', { dynamicArgs });
+  }
+
+  /** hand-added - the Details tab's Plotly chart container (div.js-plotly-plot), id proven across 3 sibling means-family features via dumpSubtree - SCREENSHOT-VERIFY it matches here on first live run */
+  div_Details_Chart(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Chart', { dynamicArgs });
   }
 }

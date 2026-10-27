@@ -153,6 +153,16 @@ txt_Lower_Type_1_Error,ResultsPage,css,#lowerType1Error,,,FALSE,Lower Type 1 Err
 ddl_upper_Spend_Func,ResultsPage,css,#upperSpendFunc,,,FALSE,Upper efficacy spending function (asymmetric; inferred #id - verify at runtime),FALSE
 ddl_lower_Spend_Func,ResultsPage,css,#lowerSpendFunc,,,FALSE,Lower efficacy spending function (asymmetric; inferred #id - verify at runtime),FALSE
 ddl_asym_Eff_Boundary_Fam,ResultsPage,css,#asymEffBoundaryFam,,,FALSE,Asymmetric efficacy boundary family - 2-Sided Asymmetric uses THIS instead of #effBoundaryFam (GADSD-analysed),FALSE
+txt_upper_Param_Rho,ResultsPage,css,#upperParamRho,,,FALSE,Upper efficacy Rho parameter,FALSE
+txt_upper_Param_Gamma,ResultsPage,css,#upperParamGamma,,,FALSE,Upper efficacy Gamma parameter,FALSE
+ddl_upper_Param,ResultsPage,css,#upperParam,,,FALSE,native <select> for upper efficacy parameter,FALSE
+txt_lower_Param_Rho,ResultsPage,css,#lowerParamRho,,,FALSE,Lower efficacy Rho parameter,FALSE
+txt_lower_Param_Gamma,ResultsPage,css,#lowerParamGamma,,,FALSE,Lower efficacy Gamma parameter,FALSE
+ddl_lower_Param,ResultsPage,css,#lowerParam,,,FALSE,native <select> for lower efficacy parameter,FALSE
+ddl_upper_Fix,ResultsPage,css,#upperFix,,,FALSE,Upper efficacy boundary fix,FALSE
+ddl_fut_Param,ResultsPage,css,#futParam,,,FALSE,native <select> for futility parameter,FALSE
+txt_fut_Param_Gamma,ResultsPage,css,#futParamGamma,,,FALSE,Futility Gamma parameter,FALSE
+chk_use_T_Distribution_Boundary,Page,css,#useTDistributionBoundary,,,FALSE,Simulation use T distribution boundary toggle,FALSE
 txt_boundary_0_upper_Alpha,ResultsPage,css,"[id=""boundary.0.upperAlpha""]",,,FALSE,Interim 0 Upper alpha (asymmetric Interpolated - per-analysis cum alpha),FALSE
 txt_boundary_1_upper_Alpha,ResultsPage,css,"[id=""boundary.1.upperAlpha""]",,,FALSE,Interim 1 Upper alpha (asymmetric Interpolated),FALSE
 txt_boundary_2_upper_Alpha,ResultsPage,css,"[id=""boundary.2.upperAlpha""]",,,FALSE,Interim 2 Upper alpha (asymmetric Interpolated),FALSE
@@ -193,6 +203,28 @@ txt_boundary_Sim_0_efficacy_ZUpper,Page,css,"[id=""boundarySim.0.efficacyZUpper"
 txt_boundary_Sim_0_efficacy_ZLower,Page,css,"[id=""boundarySim.0.efficacyZLower""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_0_futility_ZUpper,Page,css,"[id=""boundarySim.0.futilityZUpper""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_0_futility_ZLower,Page,css,"[id=""boundarySim.0.futilityZLower""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_1_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.1.cumAlphaSpent""]",,,FALSE,simulation boundary period 1 cumulative alpha spent,FALSE
+txt_boundary_Sim_2_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.2.cumAlphaSpent""]",,,FALSE,simulation boundary period 2 cumulative alpha spent,FALSE
+txt_boundary_Sim_3_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.3.cumAlphaSpent""]",,,FALSE,simulation boundary period 3 cumulative alpha spent,FALSE
+txt_boundary_Sim_4_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.4.cumAlphaSpent""]",,,FALSE,simulation boundary period 4 cumulative alpha spent,FALSE
+txt_boundary_Sim_1_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.1.cumAlphaSpentUpper""]",,,FALSE,simulation boundary period 1 upper cumulative alpha spent,FALSE
+txt_boundary_Sim_2_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.2.cumAlphaSpentUpper""]",,,FALSE,simulation boundary period 2 upper cumulative alpha spent,FALSE
+txt_boundary_Sim_3_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.3.cumAlphaSpentUpper""]",,,FALSE,simulation boundary period 3 upper cumulative alpha spent,FALSE
+txt_boundary_Sim_2_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.2.cumAlphaSpentLower""]",,,FALSE,simulation boundary period 2 lower cumulative alpha spent,FALSE
+txt_boundary_Sim_3_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.3.cumAlphaSpentLower""]",,,FALSE,simulation boundary period 3 lower cumulative alpha spent,FALSE
+txt_boundary_Sim_1_efficacy_Z,Page,css,"input[name=""boundarySim.1.efficacyZ""]",,,FALSE,simulation boundary period 1 efficacy Z,FALSE
+txt_boundary_Sim_2_efficacy_ZUpper,Page,css,"[id=""boundarySim.2.efficacyZUpper""]",,,FALSE,simulation boundary period 2 upper efficacy Z,FALSE
+txt_boundary_Sim_1_efficacy_ZLower,Page,css,"[id=""boundarySim.1.efficacyZLower""]",,,FALSE,simulation boundary period 1 lower efficacy Z,FALSE
+txt_boundary_Sim_0_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.0.efficacyPValueUpper""]",,,FALSE,simulation boundary period 0 upper efficacy p-value,FALSE
+txt_boundary_Sim_1_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.1.efficacyPValueUpper""]",,,FALSE,simulation boundary period 1 upper efficacy p-value,FALSE
+txt_boundary_Sim_2_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.2.efficacyPValueUpper""]",,,FALSE,simulation boundary period 2 upper efficacy p-value,FALSE
+txt_boundary_Sim_3_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.3.efficacyPValueUpper""]",,,FALSE,simulation boundary period 3 upper efficacy p-value,FALSE
+txt_boundary_Sim_4_efficacy_PValue_Upper,Page,css,"[id=""boundarySim.4.efficacyPValueUpper""]",,,FALSE,simulation boundary period 4 upper efficacy p-value,FALSE
+txt_boundary_Sim_0_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.0.efficacyPValueLower""]",,,FALSE,simulation boundary period 0 lower efficacy p-value,FALSE
+txt_boundary_Sim_1_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.1.efficacyPValueLower""]",,,FALSE,simulation boundary period 1 lower efficacy p-value,FALSE
+txt_boundary_Sim_2_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.2.efficacyPValueLower""]",,,FALSE,simulation boundary period 2 lower efficacy p-value,FALSE
+txt_boundary_Sim_3_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.3.efficacyPValueLower""]",,,FALSE,simulation boundary period 3 lower efficacy p-value,FALSE
+txt_boundary_Sim_4_efficacy_PValue_Lower,Page,css,"[id=""boundarySim.4.efficacyPValueLower""]",,,FALSE,simulation boundary period 4 lower efficacy p-value,FALSE
 btn_Recalculate,Page,role,button,Recalculate,,FALSE,button from codegen,FALSE
 ddl_adaptation_Method,Page,css,#adaptationMethod,,,FALSE,native <select> from codegen,FALSE
 ddl_adapt_At_Select,Page,css,#adaptAtSelect,,,FALSE,native <select> from codegen,FALSE
@@ -230,6 +262,11 @@ ddl_random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from c
 txt_fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
 txt_Number_of_Simulations_Run,Page,css,"input[name=""numOfSimRun""]",,,FALSE,textbox (Number of Simulations Run) - mirrors GADAR,FALSE
 txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+txt_outputZForAllTrialsTable_0_percentile,Page,css,"[id=""outputForAllTrialsTable.0.percentile""]",,,FALSE,OutputForAllTrialsTable period 0 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName),FALSE
+txt_outputZForAllTrialsTable_1_percentile,Page,css,"[id=""outputForAllTrialsTable.1.percentile""]",,,FALSE,OutputForAllTrialsTable period 1 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName),FALSE
+txt_outputZForAllTrialsTable_2_percentile,Page,css,"[id=""outputForAllTrialsTable.2.percentile""]",,,FALSE,OutputForAllTrialsTable period 2 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName),FALSE
+txt_outputZForAllTrialsTable_3_percentile,Page,css,"[id=""outputForAllTrialsTable.3.percentile""]",,,FALSE,OutputForAllTrialsTable period 3 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName),FALSE
+txt_outputZForAllTrialsTable_4_percentile,Page,css,"[id=""outputForAllTrialsTable.4.percentile""]",,,FALSE,OutputForAllTrialsTable period 4 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName),FALSE
 btn_Save,Page,role,button,Save,,FALSE,button from codegen,TRUE
 btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
 txt_left_Panel_response,Page,css,"[id=""leftPanel.response""]",,,FALSE,Sim Response tab (leftPanel.response) - click to activate before filling distribution/means/SD,FALSE
@@ -247,6 +284,17 @@ txt_enrollment_Table_4_starting_At_Time,Page,css,"[id=""enrollmentTable.4.starti
 txt_enrollment_Table_4_avg_Subjects_Enrolled,Page,css,"[id=""enrollmentTable.4.avgSubjectsEnrolled""]",,,FALSE,Sim enrollment period 4 avgSubjectsEnrolled,FALSE
 txt_boundary_2_efficacy_PValue,ResultsPage,css,"[id=""boundary.2.efficacyPValue""]",,,FALSE,boundary cell,FALSE
 txt_boundary_2_cum_Beta_Spent,ResultsPage,css,"[id=""boundary.2.cumBetaSpent""]",,,FALSE,boundary cell,FALSE
+txt_boundary_0_upper_PValue,ResultsPage,css,"[name=""boundary.0.upperPValue""]",,,FALSE,Interim 0 upper p-value,FALSE
+txt_boundary_1_upper_PValue,ResultsPage,css,"[name=""boundary.1.upperPValue""]",,,FALSE,Interim 1 upper p-value,FALSE
+txt_boundary_2_upper_PValue,ResultsPage,css,"[name=""boundary.2.upperPValue""]",,,FALSE,Interim 2 upper p-value,FALSE
+txt_boundary_3_upper_PValue,ResultsPage,css,"[name=""boundary.3.upperPValue""]",,,FALSE,Interim 3 upper p-value,FALSE
+txt_boundary_4_upper_PValue,ResultsPage,css,"[name=""boundary.4.upperPValue""]",,,FALSE,Interim 4 upper p-value,FALSE
+txt_boundary_0_lower_PValue,ResultsPage,css,"[name=""boundary.0.lowerPValue""]",,,FALSE,Interim 0 lower p-value,FALSE
+txt_boundary_1_lower_PValue,ResultsPage,css,"[name=""boundary.1.lowerPValue""]",,,FALSE,Interim 1 lower p-value,FALSE
+txt_boundary_2_lower_PValue,ResultsPage,css,"[name=""boundary.2.lowerPValue""]",,,FALSE,Interim 2 lower p-value,FALSE
+txt_boundary_3_lower_PValue,ResultsPage,css,"[name=""boundary.3.lowerPValue""]",,,FALSE,Interim 3 lower p-value,FALSE
+txt_boundary_4_lower_PValue,ResultsPage,css,"[name=""boundary.4.lowerPValue""]",,,FALSE,Interim 4 lower p-value,FALSE
+txt_boundary_0_cumBetaProportion,ResultsPage,css,"[name=""boundary.0.cumBetaProportion""]",,,FALSE,Interim 0 cumulative beta proportion,FALSE
 txt_boundary_2_futility_PValue,ResultsPage,css,"[id=""boundary.2.futilityPValue""]",,,FALSE,boundary cell,FALSE
 txt_boundary_2_futility_CP,ResultsPage,css,"[id=""boundary.2.futilityCP""]",,,FALSE,boundary cell,FALSE
 chk_boundary_0_efficacy_Check,ResultsPage,css,"[id=""boundary.0.efficacyCheck""]",,,FALSE,boundary cell,FALSE
@@ -272,3 +320,6 @@ txt_boundary_7_efficacy_PValue,ResultsPage,css,"[id=""boundary.7.efficacyPValue"
 txt_boundary_analysisSpacingInfo,ResultsPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
 txt_enrollmentTable_startingAtTime,Page,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC sim enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
 txt_enrollmentTable_avgSubjectsEnrolled,Page,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC sim enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,"hand-added - Details tab load-check (feature_SingleProportion/SinglePoissonRate/MeanofPairedDiff precedent) - SCREENSHOT-VERIFY on first live run",FALSE
+div_Spinner,ResultsPage,css,#spinner,,,FALSE,"hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check",FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,"hand-added - the Details tab's Plotly chart container (div.js-plotly-plot), id proven across 3 sibling means-family features via dumpSubtree - SCREENSHOT-VERIFY it matches here on first live run",FALSE

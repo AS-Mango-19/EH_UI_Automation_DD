@@ -18,6 +18,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 13,130,ConfigureDesign,Page,fill,txt_critical_Point,${data.simulation.criticalPoint},,,,,10000,FALSE,0,never,,fill criticalPoint
 14,140,ConfigureDesign,Page,fill,txt_supsup_margin,${data.simulation.supsup_margin},,,,,10000,FALSE,0,never,,fill supsup margin
 15,150,ConfigureDesign,Page,fill,txt_boundary_Sim_0_analysis_Spacing_Info,${data.simulation.boundarySim.0.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.0.analysisSpacingInfo
+15.1,151,ConfigureDesign,Page,check,chk_use_T_Distribution_Boundary,,,,,,10000,FALSE,0,never,${data.simulation.useTDistributionBoundary}!=check,check useTDistributionBoundary
 17,170,ConfigureDesign,Page,fill,txt_boundary_Sim_0_cum_Alpha_Spent,${data.simulation.boundarySim.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.0.cumAlphaSpent
 18,180,ConfigureDesign,Page,fill,txt_boundary_Sim_0_futility_CP,${data.simulation.boundarySim.0.futilityCP},,,,,10000,FALSE,0,never,,fill boundarySim.0.futilityCP
 19,190,ConfigureDesign,Page,fill,txt_boundary_Sim_1_analysis_Spacing_Info,${data.simulation.boundarySim.1.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim.1.analysisSpacingInfo
@@ -33,8 +34,32 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 26.5,265,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZUpper,${data.simulation.boundarySim.1.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZUpper (ITER_02 has a 2nd interim)
 27,270,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_ZLower,${data.simulation.boundarySim.0.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZLower
 27.5,275,ConfigureDesign,Page,fill,txt_boundary_Sim_2_efficacy_ZLower,${data.simulation.boundarySim.2.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.2.efficacyZLower (ITER_02 has a 3rd interim)
-30,300,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Recalculate the sim boundary. SKIPPED for FIXED designs (no boundary = no Recalculate button; would time out)
-30.5,305,ConfigureDesign,Page,sleep,,4500,,,,,6000,FALSE,0,never,${data.design.effBoundaryFam}==EMPTY,Settle after Recalculate: the boundary recompute (spinner) must finish before the Sample Size Re-Estimation / adaptation fields enable (GSD only)
+27.6,276,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent,${data.simulation.boundarySim.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpent
+27.7,277,ConfigureDesign,Page,fill,txt_boundary_Sim_2_cum_Alpha_Spent,${data.simulation.boundarySim.2.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.2.cumAlphaSpent
+27.8,278,ConfigureDesign,Page,fill,txt_boundary_Sim_3_cum_Alpha_Spent,${data.simulation.boundarySim.3.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.3.cumAlphaSpent
+27.9,279,ConfigureDesign,Page,fill,txt_boundary_Sim_4_cum_Alpha_Spent,${data.simulation.boundarySim.4.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim.4.cumAlphaSpent
+27.10,280,ConfigureDesign,Page,fill,txt_boundary_Sim_1_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.1.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.cumAlphaSpentUpper
+27.11,281,ConfigureDesign,Page,fill,txt_boundary_Sim_2_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.2.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.2.cumAlphaSpentUpper
+27.12,282,ConfigureDesign,Page,fill,txt_boundary_Sim_3_cum_Alpha_Spent_Upper,${data.simulation.boundarySim.3.cumAlphaSpentUpper},,,,,10000,FALSE,0,never,,fill boundarySim.3.cumAlphaSpentUpper
+27.13,283,ConfigureDesign,Page,fill,txt_boundary_Sim_2_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.2.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.2.cumAlphaSpentLower
+27.14,284,ConfigureDesign,Page,fill,txt_boundary_Sim_3_cum_Alpha_Spent_Lower,${data.simulation.boundarySim.3.cumAlphaSpentLower},,,,,10000,FALSE,0,never,,fill boundarySim.3.cumAlphaSpentLower
+27.15,285,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_Z,${data.simulation.boundarySim.1.efficacyZ},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZ
+27.151,299,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_Z,${data.simulation.boundarySim.0.efficacyZ},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyZ
+27.16,286,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZUpper,${data.simulation.boundarySim.1.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZUpper
+27.17,287,ConfigureDesign,Page,fill,txt_boundary_Sim_2_efficacy_ZUpper,${data.simulation.boundarySim.2.efficacyZUpper},,,,,10000,FALSE,0,never,,fill boundarySim.2.efficacyZUpper
+27.18,288,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_ZLower,${data.simulation.boundarySim.1.efficacyZLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyZLower
+27.19,289,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_PValue_Upper,${data.simulation.boundarySim.0.efficacyPValueUpper},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyPValueUpper
+27.20,290,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_PValue_Upper,${data.simulation.boundarySim.1.efficacyPValueUpper},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyPValueUpper
+27.21,291,ConfigureDesign,Page,fill,txt_boundary_Sim_2_efficacy_PValue_Upper,${data.simulation.boundarySim.2.efficacyPValueUpper},,,,,10000,FALSE,0,never,,fill boundarySim.2.efficacyPValueUpper
+27.22,292,ConfigureDesign,Page,fill,txt_boundary_Sim_3_efficacy_PValue_Upper,${data.simulation.boundarySim.3.efficacyPValueUpper},,,,,10000,FALSE,0,never,,fill boundarySim.3.efficacyPValueUpper
+27.23,293,ConfigureDesign,Page,fill,txt_boundary_Sim_4_efficacy_PValue_Upper,${data.simulation.boundarySim.4.efficacyPValueUpper},,,,,10000,FALSE,0,never,,fill boundarySim.4.efficacyPValueUpper
+27.24,294,ConfigureDesign,Page,fill,txt_boundary_Sim_0_efficacy_PValue_Lower,${data.simulation.boundarySim.0.efficacyPValueLower},,,,,10000,FALSE,0,never,,fill boundarySim.0.efficacyPValueLower
+27.25,295,ConfigureDesign,Page,fill,txt_boundary_Sim_1_efficacy_PValue_Lower,${data.simulation.boundarySim.1.efficacyPValueLower},,,,,10000,FALSE,0,never,,fill boundarySim.1.efficacyPValueLower
+27.26,296,ConfigureDesign,Page,fill,txt_boundary_Sim_2_efficacy_PValue_Lower,${data.simulation.boundarySim.2.efficacyPValueLower},,,,,10000,FALSE,0,never,,fill boundarySim.2.efficacyPValueLower
+27.27,297,ConfigureDesign,Page,fill,txt_boundary_Sim_3_efficacy_PValue_Lower,${data.simulation.boundarySim.3.efficacyPValueLower},,,,,10000,FALSE,0,never,,fill boundarySim.3.efficacyPValueLower
+27.28,298,ConfigureDesign,Page,fill,txt_boundary_Sim_4_efficacy_PValue_Lower,${data.simulation.boundarySim.4.efficacyPValueLower},,,,,10000,FALSE,0,never,,fill boundarySim.4.efficacyPValueLower
+30,300,ConfigureDesign,Page,click,btn_Recalculate,,,,,,10000,FALSE,0,never,${data.simulation.boundarySim.0.analysisSpacingInfo}==EMPTY,"Recalculate the sim boundary. SKIPPED for FIXED designs (no boundary = no Recalculate button; would time out). effBoundaryFam==EMPTY was the original (broken) gate - that design.csv column holds the literal N/A even for fixed AND non-fixed iterations alike (never truly empty), so it never skipped - confirmed live on ITER_03/04 via 30s timeout waiting for the Recalculate button. boundarySim.0.analysisSpacingInfo folds to a genuinely empty string only when period 0 is absent from simulation_boundarySim.csv (the fixed-design case); a present period's own analysisSpacingInfo cell is N/A, not empty, so GSD iterations are unaffected"
+30.5,305,ConfigureDesign,Page,sleep,,4500,,,,,6000,FALSE,0,never,${data.simulation.boundarySim.0.analysisSpacingInfo}==EMPTY,Settle after Recalculate: the boundary recompute (spinner) must finish before the Sample Size Re-Estimation / adaptation fields enable (GSD only). Same corrected gate as StepID=300
 31,310,ConfigureDesign,Page,select,ddl_adaptation_Method,${data.simulation.adaptationMethod},,,,,10000,FALSE,0,always,,Select adaptationMethod. Native <select> - select matches by visible label first
 31.5,315,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Settle after Adaptation Method (SSR panel renders/recomputes) - fast dropdown changes here corrupt the design and leave Save & Simulate disabled
 32,320,ConfigureDesign,Page,select,ddl_adapt_At_Select,${data.simulation.Adapt At},,,,,10000,FALSE,0,always,,Select adaptAtSelect. Native <select> - select matches by visible label first
@@ -43,12 +68,12 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 34,340,ConfigureDesign,Page,select,ddl_adapt_At_Number_Of_Interims,${data.simulation.adaptAtNumberOfInterims},,,,,10000,FALSE,0,always,,Select adaptAtNumberOfInterims. Native <select> - select matches by visible label first
 34.5,345,ConfigureDesign,Page,sleep,,900,,,,,5000,FALSE,0,never,,Settle after Interim Analysis # (SSR dropdown; boundary/looks recompute)
 35,350,ConfigureDesign,Page,fill,txt_use_Wald_Stat,${data.simulation.useWaldStat},,,,,10000,FALSE,0,never,,fill useWaldStat
-36,360,ConfigureDesign,Page,fill,txt_upper_Limit_Study_Duration,${data.simulation.Upper Limit on Study Duration},,,,,10000,FALSE,0,never,,fill upperLimitStudyDuration
+36,360,ConfigureDesign,Page,fill,txt_upper_Limit_Study_Duration,${data.simulation.upperLimitStudyDuration},,,,,10000,FALSE,0,never,,fill upperLimitStudyDuration
 37,370,ConfigureDesign,Page,select,ddl_enroll_Rate_After_Adapt,${data.simulation.enrollRateAfterAdapt},,,,,10000,FALSE,0,always,,Select enrollRateAfterAdapt. Native <select> - select matches by visible label first
 37.5,375,ConfigureDesign,Page,sleep,,700,,,,,5000,FALSE,0,never,,Settle after Enroll Rate After Adapt (SSR dropdown; reveals multiplier/fixed rate)
 38,380,ConfigureDesign,Page,fill,txt_multiplier_Enroll_Rate,${data.simulation.multiplierEnrollRate},,,,,10000,FALSE,0,never,,fill multiplierEnrollRate
 39,390,ConfigureDesign,Page,fill,txt_fixed_Enroll_Rate,${data.simulation.fixedEnrollRate},,,,,10000,FALSE,0,never,,fill fixedEnrollRate
-40,400,ConfigureDesign,Page,fill,txt_ref_CPChart,${data.simulation.Reference HR for CP Chart},,,,,10000,FALSE,0,never,,fill refCPChart
+40,400,ConfigureDesign,Page,fill,txt_ref_CPChart,${data.simulation.refCPChart},,,,,10000,FALSE,0,never,,fill refCPChart
 41,410,ConfigureDesign,Page,select,ddl_scale,${data.simulation.scale},,,,,10000,FALSE,0,always,,Select scale. Native <select> - select matches by visible label first
 41.5,415,ConfigureDesign,Page,sleep,,1200,,,,,5000,FALSE,0,never,,Settle after Promising Zone Scale (SSR dropdown; app CONVERTS min/max to the new scale) - filling min/max before this settles triggers Unable to convert values. Reverting to defaults
 42,420,ConfigureDesign,Page,fill,txt_min_Test_Statistic,${data.simulation.minTestStatistic},,,,,10000,FALSE,0,never,,fill minTestStatistic
@@ -91,6 +116,11 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 637,637,ConfigureDesign,Page,uncheck,chk_save_Subject_Level_Data,,,,,,10000,FALSE,0,never,${data.simulation.saveSubjectLevelData}!=uncheck,saveSubjectLevelData OFF (gated)
 63.8,638,ConfigureDesign,Page,sleep,,800,,,,,5000,FALSE,0,never,,Let subLevelDataSimRuns enable after Save Subject-Level Data
 64,640,ConfigureDesign,Page,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
+64.1,641,ConfigureDesign,Page,fill,txt_outputZForAllTrialsTable_0_percentile,${data.simulation.outputForAllTrialsTable.0.percentile},,,,,10000,FALSE,0,never,,fill OutputZForAllTrialsTable period 0 percentile before Save
+64.2,642,ConfigureDesign,Page,fill,txt_outputZForAllTrialsTable_1_percentile,${data.simulation.outputForAllTrialsTable.1.percentile},,,,,10000,FALSE,0,never,,fill OutputZForAllTrialsTable period 1 percentile before Save
+64.3,643,ConfigureDesign,Page,fill,txt_outputZForAllTrialsTable_2_percentile,${data.simulation.outputForAllTrialsTable.2.percentile},,,,,10000,FALSE,0,never,,fill OutputZForAllTrialsTable period 2 percentile before Save
+64.4,644,ConfigureDesign,Page,fill,txt_outputZForAllTrialsTable_3_percentile,${data.simulation.outputForAllTrialsTable.3.percentile},,,,,10000,FALSE,0,never,,fill OutputZForAllTrialsTable period 3 percentile before Save
+64.5,645,ConfigureDesign,Page,fill,txt_outputZForAllTrialsTable_4_percentile,${data.simulation.outputForAllTrialsTable.4.percentile},,,,,10000,FALSE,0,never,,fill OutputZForAllTrialsTable period 4 percentile before Save
 65,650,ConfigureDesign,Page,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
 65.5,655,ConfigureDesign,Page,callCustom,,waitAndInspectSaveSimulate,,,,,60000,FALSE,0,always,,Wait for Save & Simulate (#save-compute) to re-enable after Save (adaptive designs re-validate); if it never enables INSPECT + log the reason (toasts/spinner/invalid fields) instead of a bare disabled-click failure
 66,660,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
@@ -100,3 +130,6 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 69,690,ExtractResults,ResultsPage,click,lnk_ResultName,DOM_SimRes_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
 70,700,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
 71,710,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+72,720,ExtractResults,ResultsPage,click,btn_Details,,,,,,10000,FALSE,0,never,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,Details tab load-check (MeanofPairedDiff sim-side precedent - same family/column structure): skip when no design boundary row exists - fixed-design simulation results do not render the tab. SCREENSHOT-VERIFY the gate holds for DOM(PD) on first live run
+73,730,ExtractResults,ResultsPage,waitForSelector,div_Spinner,,,,,hidden,30000,FALSE,0,always,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,Wait for Details loading only when the simulation Details tab exists. Same gate as StepID 720
+74,740,ExtractResults,ResultsPage,assertVisible,div_Details_Chart,,,,,visible,15000,FALSE,0,always,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,Assert the sim Details chart only when the simulation Details tab exists. Same gate as StepID 720

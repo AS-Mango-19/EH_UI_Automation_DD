@@ -5,7 +5,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 4,40,CreateProject,ProjectsPage,click,btn_New_Project,,,,,,10000,FALSE,0,never,,Open New Project
 5,50,ConfigureDesign,ProjectPage,fill,txt_Project_Name,${data.project.ProjectName}_${runId}_${iterationId},,,,,10000,FALSE,0,never,,Project name (made unique per run so re-runs are not rejected as duplicates)
 6,60,ConfigureDesign,ProjectPage,select,ddl_Time_Unit,${data.project.TimeUnit},,,,,15000,FALSE,0,always,,Time Unit
-7,70,ConfigureDesign,ProjectPage,callCustom,,selectStartDate,,,,,15000,FALSE,0,always,,Pick Start Date in the calendar (shared handler reads project.StartDate; value must be M/d/yyyy or yyyy-MM-dd)
+7,70,ConfigureDesign,ProjectPage,callCustom,${data.project.StartDate},selectStartDate,,,,,15000,FALSE,0,always,,Pick Start Date in the calendar (shared handler reads project.StartDate; value must be M/d/yyyy or yyyy-MM-dd)
 8,80,ConfigureDesign,ProjectPage,select,ddl_Study_Objective,${data.project.StudyObjective},,,,,15000,FALSE,0,always,,Study Objective (Two Arm Superiority)
 9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,TRUE,0,always,,Phase (Optional) - tolerant (Optional): this env moved General fields to Program/Indication; Phase is administrative and does not affect the computed design
 10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,Target Population
@@ -69,11 +69,18 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 61,610,ExtractResults,ResultsPage,select,ddl_perc_Delta_By_Sigma2nd_Operator,${data.design.percDeltaBySigma2ndOperator},,,,,10000,FALSE,0,always,,Prior percentile-of-delta/sigma 2nd operator
 62,620,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Val,${data.design.percDeltaBySigma2ndPercentileVal},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd value
 63,630,ExtractResults,ResultsPage,fill,txt_perc_Delta_By_Sigma2nd_Percentile_Prob,${data.design.percDeltaBySigma2ndPercentileProb},,,,,10000,FALSE,0,never,,Prior percentile-of-delta/sigma 2nd probability
-63.5,638,ExtractResults,ResultsPage,select,ddl_asym_Eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}!=2-Sided (Asymmetric),Asymmetric efficacy boundary family (#asymEffBoundaryFam) - fires ONLY on 2-Sided Asymmetric (Test-Type gated)
+63.5,638,ExtractResults,ResultsPage,select,ddl_asym_Eff_Boundary_Fam,${data.design.asymEffBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}!=2-Sided (Asymmetric),Asymmetric efficacy boundary family (#asymEffBoundaryFam) - fires ONLY on 2-Sided Asymmetric (Test-Type gated)
 64,640,ExtractResults,ResultsPage,select,ddl_eff_Boundary_Fam,${data.design.effBoundaryFam},,,,,10000,FALSE,0,always,${data.design.testtype}==2-Sided (Asymmetric),Efficacy Boundary Family (#effBoundaryFam) - SYMMETRIC only; asymmetric uses #asymEffBoundaryFam (Test-Type gated)
 65,650,ExtractResults,ResultsPage,select,ddl_eff_Spend_Func,${data.design.effSpendFunc},,,,,10000,FALSE,0,always,,Efficacy Spending Function - single/symmetric (#effSpendFunc). N/A on asymmetric iterations (they use upper/lower)
 65.1,652,ExtractResults,ResultsPage,select,ddl_upper_Spend_Func,${data.design.upperSpendFunc},,,,,10000,FALSE,0,always,,Upper efficacy spending function (2-Sided Asymmetric only; #upperSpendFunc). N/A for symmetric
 65.2,654,ExtractResults,ResultsPage,select,ddl_lower_Spend_Func,${data.design.lowerSpendFunc},,,,,10000,FALSE,0,always,,Lower efficacy spending function (2-Sided Asymmetric only; #lowerSpendFunc). N/A for symmetric
+65.3,656,ExtractResults,ResultsPage,fill,txt_upper_Param_Rho,${data.design.upperParamRho},,,,,10000,FALSE,0,never,,Upper efficacy Rho parameter
+65.4,658,ExtractResults,ResultsPage,fill,txt_upper_Param_Gamma,${data.design.upperParamGamma},,,,,10000,FALSE,0,never,,Upper efficacy Gamma parameter
+65.5,661,ExtractResults,ResultsPage,select,ddl_upper_Param,${data.design.upperParam},,,,,10000,FALSE,0,always,,Upper efficacy parameter
+65.6,663,ExtractResults,ResultsPage,fill,txt_lower_Param_Rho,${data.design.lowerParamRho},,,,,10000,FALSE,0,never,,Lower efficacy Rho parameter
+65.7,665,ExtractResults,ResultsPage,fill,txt_lower_Param_Gamma,${data.design.lowerParamGamma},,,,,10000,FALSE,0,never,,Lower efficacy Gamma parameter
+65.8,667,ExtractResults,ResultsPage,select,ddl_lower_Param,${data.design.lowerParam},,,,,10000,FALSE,0,always,,Lower efficacy parameter
+65.9,669,ExtractResults,ResultsPage,select,ddl_upper_Fix,${data.design.upperFix},,,,,10000,FALSE,0,always,,Upper efficacy boundary fix
 66,660,ExtractResults,ResultsPage,select,ddl_Parameter,${data.design.effParam},,,,,10000,FALSE,0,always,,Efficacy spending Parameter select (#effParam)
 67,670,ExtractResults,ResultsPage,fill,txt_Parameter,${data.design.effParamRho},,,,,10000,FALSE,0,never,,Efficacy Rho parameter (#effParamRho - fixed from the importer's Computed-Parameter guess)
 68,680,ExtractResults,ResultsPage,fill,txt_eff_Param_Gamma,${data.design.effParamGamma},,,,,10000,FALSE,0,never,,Efficacy Gamma parameter (#effParamGamma)
@@ -83,6 +90,8 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 72,720,ExtractResults,ResultsPage,select,ddl_fut_Spend_Func,${data.design.futSpendFunc},,,,,10000,FALSE,0,always,,Futility Spending Function (#futSpendFunc)
 73,730,ExtractResults,ResultsPage,select,ddl_fut_Boundary,${data.design.futBoundary},,,,,10000,FALSE,0,always,,Futility boundary select (#futBoundary)
 74,740,ExtractResults,ResultsPage,fill,txt_fut_Param_Rho,${data.design.futParamRho},,,,,10000,FALSE,0,never,,Futility Rho parameter (#futParamRho - hand-added selector; ITER_01 = 4.55)
+74.1,741,ExtractResults,ResultsPage,select,ddl_fut_Param,${data.design.futParam},,,,,10000,FALSE,0,always,,Futility parameter (#futParam)
+74.2,742,ExtractResults,ResultsPage,fill,txt_fut_Param_Gamma,${data.design.futParamGamma},,,,,10000,FALSE,0,never,,Futility Gamma parameter (#futParamGamma)
 75,750,ExtractResults,ResultsPage,fill,txt_Shape_Parameter_2,${data.design.shapeParamDeltaTwo},,,,,10000,FALSE,0,never,,Futility shape parameter (#shapeParamDeltaTwo)
 76,760,ExtractResults,ResultsPage,select,ddl_Compute_CP_Using,${data.design.computeCP},,,,,10000,FALSE,0,always,,Compute CP Using (Conditional-Power futility only; #computeCP)
 77,770,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Boundary Scale (Score / Z / p-value / cp_deltahat ...)
@@ -94,6 +103,17 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 81.4,815,ExtractResults,ResultsPage,fill,txt_boundary_0_lower_Alpha,${data.design.boundary.0.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 0 Lower alpha
 81.5,816,ExtractResults,ResultsPage,fill,txt_boundary_1_lower_Alpha,${data.design.boundary.1.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 1 Lower alpha
 81.6,817,ExtractResults,ResultsPage,fill,txt_boundary_2_lower_Alpha,${data.design.boundary.2.lowerAlpha},,,,,10000,FALSE,0,never,,Interim 2 Lower alpha
+81.7,818,ExtractResults,ResultsPage,fill,txt_boundary_0_upper_PValue,${data.design.boundary.0.upperPValue},,,,,10000,FALSE,0,never,,Interim 0 Upper p-value
+81.8,819,ExtractResults,ResultsPage,fill,txt_boundary_1_upper_PValue,${data.design.boundary.1.upperPValue},,,,,10000,FALSE,0,never,,Interim 1 Upper p-value
+81.9,821,ExtractResults,ResultsPage,fill,txt_boundary_2_upper_PValue,${data.design.boundary.2.upperPValue},,,,,10000,FALSE,0,never,,Interim 2 Upper p-value
+81.95,822,ExtractResults,ResultsPage,fill,txt_boundary_3_upper_PValue,${data.design.boundary.3.upperPValue},,,,,10000,FALSE,0,never,,Interim 3 Upper p-value
+81.96,823,ExtractResults,ResultsPage,fill,txt_boundary_4_upper_PValue,${data.design.boundary.4.upperPValue},,,,,10000,FALSE,0,never,,Interim 4 Upper p-value
+81.97,824,ExtractResults,ResultsPage,fill,txt_boundary_0_lower_PValue,${data.design.boundary.0.lowerPValue},,,,,10000,FALSE,0,never,,Interim 0 Lower p-value
+81.98,825,ExtractResults,ResultsPage,fill,txt_boundary_1_lower_PValue,${data.design.boundary.1.lowerPValue},,,,,10000,FALSE,0,never,,Interim 1 Lower p-value
+81.99,826,ExtractResults,ResultsPage,fill,txt_boundary_2_lower_PValue,${data.design.boundary.2.lowerPValue},,,,,10000,FALSE,0,never,,Interim 2 Lower p-value
+82.01,827,ExtractResults,ResultsPage,fill,txt_boundary_3_lower_PValue,${data.design.boundary.3.lowerPValue},,,,,10000,FALSE,0,never,,Interim 3 Lower p-value
+82.02,828,ExtractResults,ResultsPage,fill,txt_boundary_4_lower_PValue,${data.design.boundary.4.lowerPValue},,,,,10000,FALSE,0,never,,Interim 4 Lower p-value
+82.03,829,ExtractResults,ResultsPage,fill,txt_boundary_0_cumBetaProportion,${data.design.boundary.0.cumBetaProportion},,,,,10000,FALSE,0,never,,Interim 0 cumulative beta proportion
 82,820,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 0 cumulative alpha spent
 83,830,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 1 cumulative alpha spent
 84,840,ExtractResults,ResultsPage,fill,txt_boundary_2_cum_Alpha_Spent,${data.design.boundary.2.cumAlphaSpent},,,,,10000,FALSE,0,never,,Interim 2 cumulative alpha spent
@@ -129,16 +149,20 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 956,956,ExtractResults,ResultsPage,uncheck,chk_boundary_1_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.1.futilityCheck}!=uncheck,"Per-analysis boundary.1.futilityCheck (checks-LAST, before Calculate)"
 957,957,ExtractResults,ResultsPage,check,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=check,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
 958,958,ExtractResults,ResultsPage,uncheck,chk_boundary_2_futility_Check,,,,,,10000,FALSE,0,never,${data.design.boundary.2.futilityCheck}!=uncheck,"Per-analysis boundary.2.futilityCheck (checks-LAST, before Calculate)"
-96,960,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,15000,FALSE,0,always,${data.design.effBoundaryFam}==EMPTY,"Calculate the GSD boundary. SKIPPED for FIXED designs (effBoundaryFam empty = no boundary table, so no Calculate button - it would time out). Boundary checkbox toggles go LAST, just before this"
+96,960,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,15000,FALSE,0,always,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,"Calculate the GSD boundary. SKIPPED for FIXED designs (no boundary table row at all = no Calculate button - it would time out). effBoundaryFam==EMPTY was the original (broken) gate: that column holds the literal N/A even for iterations that DO have a boundary table (e.g. ITER_02/11-14/17, futility-only or default-family GSD), and is also never truly empty so it never skipped the real fixed designs (ITER_03/04/08) either - confirmed via screenshot (fixed designs show only Save/Save & Compute, no Calculate). boundary.0.analysisSpacingInfo mirrors the StepID=785 loopPeriods gate just below, which already uses this exact column as the authoritative 'has a boundary table' signal. Boundary checkbox toggles go LAST, just before this"
+96.5,965,ExtractResults,ResultsPage,waitForSelector,div_Spinner,,,,,hidden,20000,FALSE,0,always,${data.design.boundary.0.analysisSpacingInfo}==EMPTY,"Wait for the boundary recompute spinner to clear after Calculate before continuing - confirmed live that without this, ITER_14's 5-analysis-period boundary table can still be computing when the next click (btn_Enrollment) fires, which then breaks the Include checkbox interaction 10s later. Same div_Spinner selector as the Details-tab load-check; gated identically to the StepID=960 Calculate it follows"
 97,970,ExtractResults,ResultsPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,Open the Enrollment (accrual) section
 98,980,ExtractResults,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=check,Include Enrollment ON (reveals avg subjects enrolled); gated per iteration (maps to IncludeEnrollment)
 99,990,ExtractResults,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,always,${data.design.IncludeEnrollment}!=uncheck,Include Enrollment OFF; gated per iteration
-100,1000,ExtractResults,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Average subjects enrolled (design enrollment is a single scalar; #enrollmentTable.0.avgSubjectsEnrolled)
+100,1000,ExtractResults,ResultsPage,fill,txt_enrollment_Table_0_avg_Subjects_Enrolled,${data.design.enrollmentTable.0.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,Average subjects enrolled (design enrollment is a single scalar; #enrollmentTable.0.avgSubjectsEnrolled)
 101,1010,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,Save the design
 102,1020,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,Save & Compute (opens the credit dialog)
-103,1030,ExtractResults,ResultsPage,fill,txt_ResultName,DOM_Result_${iterationId},,,,,10000,FALSE,0,never,,Name the result in the credit dialog (#inputId) - runtime token keeps it unique per iteration with no new testdata column
+103,1030,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,Name the result from design testdata in the credit dialog
 104,1040,ExtractResults,ResultsPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,Confirm the credit dialog to start the compute (#credit-alert-primary)
 105,1050,Simulate,ResultsPage,waitForSimulation,lbl_RunStatus,,,,Completed,,120000,FALSE,0,always,,Poll the run status until Completed before opening the result
-106,1060,ExtractResults,ResultsPage,click,lnk_ResultName,DOM_Result_${iterationId},,,,visible,180000,FALSE,0,always,,Open the computed result by its (distinct) name once compute finishes
+106,1060,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by the authored design result name once compute finishes
 107,1070,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page (shared _shared/customSteps.extractAllResultTables)
 108,1080,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells vs 06_baseline/AD/. First run writes the baseline (green but verifies nothing); a second run is a real PASS/FAIL
+109,1090,ExtractResults,ResultsPage,click,btn_Details,,,,,,10000,FALSE,0,never,,Details tab load-check (feature_SingleProportion/SinglePoissonRate/MeanofPairedDiff precedent): placed AFTER compareWithBaseline so it never affects the main result comparison - no data extraction/comparison here, just confirming the page and its graph load
+110,1100,ExtractResults,ResultsPage,waitForSelector,div_Spinner,,,,,hidden,30000,FALSE,0,always,,Wait for the Details page's loading spinner to clear before checking it rendered
+111,1110,ExtractResults,ResultsPage,assertVisible,div_Details_Chart,,,,,visible,15000,FALSE,0,always,,Verify the Details tab's chart actually rendered (not just that the tab navigated) - no data extraction/comparison, just a load check

@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f1210cf8f1ee12d47de754fdcac5115617154fd46c393a499cff69cf3be0e31a)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f0b45df27f994b3365b285738ab730d372c570cfbe4b9590f4f5b2e544d13ce2)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -8,6 +8,11 @@ export class Page {
     private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
+
+  /** Simulation use T distribution boundary toggle */
+  chk_use_T_Distribution_Boundary(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'chk_use_T_Distribution_Boundary', { dynamicArgs });
+  }
 
   /** textbox from codegen */
   txt_ResultName(...dynamicArgs: string[]): Promise<Locator> {
@@ -172,6 +177,116 @@ export class Page {
   /** textbox from codegen */
   txt_boundary_Sim_0_futility_ZLower(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_futility_ZLower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 cumulative alpha spent */
+  txt_boundary_Sim_1_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 cumulative alpha spent */
+  txt_boundary_Sim_2_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** simulation boundary period 3 cumulative alpha spent */
+  txt_boundary_Sim_3_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_3_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** simulation boundary period 4 cumulative alpha spent */
+  txt_boundary_Sim_4_cum_Alpha_Spent(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_4_cum_Alpha_Spent', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 upper cumulative alpha spent */
+  txt_boundary_Sim_1_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_cum_Alpha_Spent_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 upper cumulative alpha spent */
+  txt_boundary_Sim_2_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_cum_Alpha_Spent_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 3 upper cumulative alpha spent */
+  txt_boundary_Sim_3_cum_Alpha_Spent_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_3_cum_Alpha_Spent_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 lower cumulative alpha spent */
+  txt_boundary_Sim_2_cum_Alpha_Spent_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_cum_Alpha_Spent_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 3 lower cumulative alpha spent */
+  txt_boundary_Sim_3_cum_Alpha_Spent_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_3_cum_Alpha_Spent_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 efficacy Z */
+  txt_boundary_Sim_1_efficacy_Z(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_Z', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 upper efficacy Z */
+  txt_boundary_Sim_2_efficacy_ZUpper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_efficacy_ZUpper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 lower efficacy Z */
+  txt_boundary_Sim_1_efficacy_ZLower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_ZLower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 0 upper efficacy p-value */
+  txt_boundary_Sim_0_efficacy_PValue_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_efficacy_PValue_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 upper efficacy p-value */
+  txt_boundary_Sim_1_efficacy_PValue_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_PValue_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 upper efficacy p-value */
+  txt_boundary_Sim_2_efficacy_PValue_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_efficacy_PValue_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 3 upper efficacy p-value */
+  txt_boundary_Sim_3_efficacy_PValue_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_3_efficacy_PValue_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 4 upper efficacy p-value */
+  txt_boundary_Sim_4_efficacy_PValue_Upper(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_4_efficacy_PValue_Upper', { dynamicArgs });
+  }
+
+  /** simulation boundary period 0 lower efficacy p-value */
+  txt_boundary_Sim_0_efficacy_PValue_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_0_efficacy_PValue_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 1 lower efficacy p-value */
+  txt_boundary_Sim_1_efficacy_PValue_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_1_efficacy_PValue_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 2 lower efficacy p-value */
+  txt_boundary_Sim_2_efficacy_PValue_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_2_efficacy_PValue_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 3 lower efficacy p-value */
+  txt_boundary_Sim_3_efficacy_PValue_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_3_efficacy_PValue_Lower', { dynamicArgs });
+  }
+
+  /** simulation boundary period 4 lower efficacy p-value */
+  txt_boundary_Sim_4_efficacy_PValue_Lower(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_boundary_Sim_4_efficacy_PValue_Lower', { dynamicArgs });
   }
 
   /** button from codegen */
@@ -357,6 +472,31 @@ export class Page {
   /** textbox from codegen */
   txt_sub_Level_Data_Sim_Runs(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'Page', 'txt_sub_Level_Data_Sim_Runs', { dynamicArgs });
+  }
+
+  /** OutputForAllTrialsTable period 0 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName) */
+  txt_outputZForAllTrialsTable_0_percentile(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_outputZForAllTrialsTable_0_percentile', { dynamicArgs });
+  }
+
+  /** OutputForAllTrialsTable period 1 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName) */
+  txt_outputZForAllTrialsTable_1_percentile(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_outputZForAllTrialsTable_1_percentile', { dynamicArgs });
+  }
+
+  /** OutputForAllTrialsTable period 2 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName) */
+  txt_outputZForAllTrialsTable_2_percentile(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_outputZForAllTrialsTable_2_percentile', { dynamicArgs });
+  }
+
+  /** OutputForAllTrialsTable period 3 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName) */
+  txt_outputZForAllTrialsTable_3_percentile(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_outputZForAllTrialsTable_3_percentile', { dynamicArgs });
+  }
+
+  /** OutputForAllTrialsTable period 4 percentile input (confirmed live via trace - no Z in the real id/name despite the ObjectName) */
+  txt_outputZForAllTrialsTable_4_percentile(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'Page', 'txt_outputZForAllTrialsTable_4_percentile', { dynamicArgs });
   }
 
   /** button from codegen */
