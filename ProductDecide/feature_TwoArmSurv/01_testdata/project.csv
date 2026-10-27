@@ -1,12 +1,12 @@
 TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,ControlArm,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,variable,followUpTime
-TC_34,ITER_01,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
-TC_34,ITER_02,FALSE,Decide_TwoArmSurv,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,1.25
-TC_34,ITER_03,FALSE,Decide_TwoArmSurv,Year,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,0.123
-TC_34,ITER_04,FALSE,Decide_TwoArmSurv,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Shorter Duration,uncheck,16
-TC_34,ITER_05,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
-TC_34,ITER_06,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
-TC_34,ITER_07,FALSE,Decide_TwoArmSurv,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Shorter Duration,uncheck,2.2
-TC_34,ITER_08,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,3.123
-TC_34,ITER_09,TRUE,Decide_TwoArmSurv,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,22
+TC_34,ITER_01,TRUE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
+TC_34,ITER_02,TRUE,Decide_TwoArmSurv,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,1.25
+TC_34,ITER_03,TRUE,Decide_TwoArmSurv,Year,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,0.123
+TC_34,ITER_04,TRUE,Decide_TwoArmSurv,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Shorter Duration,uncheck,16
+TC_34,ITER_05,TRUE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
+TC_34,ITER_06,TRUE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,check,N/A
+TC_34,ITER_07,TRUE,Decide_TwoArmSurv,Month,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Shorter Duration,uncheck,2.2
+TC_34,ITER_08,TRUE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,3.123
+TC_34,ITER_09,FALSE,Decide_TwoArmSurv,Day,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,22
 TC_34,ITER_10,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Shorter Duration,check,N/A
 TC_34,ITER_11,FALSE,Decide_TwoArmSurv,Week,8/10/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPTTE,Time to Event,Longer Duration,uncheck,1.88

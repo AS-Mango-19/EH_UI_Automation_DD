@@ -1,4 +1,0 @@
-# Keep git hooks and shell scripts LF-only so the shebang works on every platform.
-# (core.autocrlf=true would otherwise checkout CRLF and break `#!/bin/sh` on Unix.)
-.githooks/** text eol=lf
-*.sh text eol=lf

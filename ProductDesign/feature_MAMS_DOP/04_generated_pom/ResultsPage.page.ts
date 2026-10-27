@@ -329,7 +329,7 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_fut_Param', { dynamicArgs });
   }
 
-  /** VERIFY selector - never recorded in either flow (no eff/fut-mirrored entry exists, unlike every other eff*/fut* pair in this file which IS confirmed live); inferred by mirroring the confirmed #effSpendFunc id pattern. Screenshot-verify on first live run. */
+  /** VERIFY selector - never recorded in either flow (no mirrored efficacy/futility entry exists, unlike every other pair in this file which IS confirmed live); inferred by mirroring the confirmed #effSpendFunc id pattern. Screenshot-verify on first live run. */
   ddl_Futility_Spending_Function(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'ddl_Futility_Spending_Function', { dynamicArgs });
   }

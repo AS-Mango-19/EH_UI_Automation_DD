@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,Control Arm,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse,Follow-up Time�
+TC_41,ITER_01,TRUE,AutoProj_ROM(CO),Week,9/15/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
+TC_41,ITER_02,TRUE,AutoProj_ROM(CO),Month,9/16/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
+TC_41,ITER_03,TRUE,AutoProj_ROM(CO),Year,9/17/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Larger Value,1
+TC_41,ITER_04,TRUE,AutoProj_ROM(CO),Day,9/18/2026,Two Arm Confirmatory,3,Adult,Ctrl,EXP,Primary,EPCont,Continuous,Smaller Value,1

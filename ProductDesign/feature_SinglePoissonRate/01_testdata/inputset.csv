@@ -2,3 +2,4 @@ TC_ID,IterationID,SelectTask,SelectTest,collectionName
 TC_01,ITER_01,Design,Single Poisson Rate,Set 1
 TC_01,ITER_02,Design,Single Poisson Rate,Set 2
 TC_01,ITER_03,Design,Single Poisson Rate,Set 3
+TC_01,ITER_04,Design,Single Poisson Rate,Set 4
