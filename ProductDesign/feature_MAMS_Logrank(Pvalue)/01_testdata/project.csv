@@ -1,0 +1,8 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,priority,endpointName,EndpointType,betterResponse,variable,followUpTime,armName-0,armName-1,armName-2,armName-3,armName-4
+TC_51,ITER_01,TRUE,MAMS-Logrank Pvalue,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Longer Duration,uncheck,2.8,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_51,ITER_02,TRUE,MAMS-Logrank Pvalue,Month,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Shorter Duration,uncheck,3.5,Ctrl,Exp01,Exp02,Exp03,N/A
+TC_51,ITER_03,TRUE,MAMS-Logrank Pvalue,Year,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Shorter Duration,uncheck,0.321,Ctrl,Exp01,Exp02,Exp03,N/A
+TC_51,ITER_04,TRUE,MAMS-Logrank Pvalue,Day,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Longer Duration,uncheck,12.3025,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_51,ITER_05,TRUE,MAMS-Logrank Pvalue,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Longer Duration,uncheck,3,Ctrl,Exp01,Exp02,Exp03,Exp04
+TC_51,ITER_06,TRUE,MAMS-Logrank Pvalue,Week,8/10/2026,Multiple Arm Confirmatory,3,Adult,Primary,EP1 TTE,Time to Event,Shorter Duration,uncheck,2.5555,Ctrl,Exp01,Exp02,Exp03,N/A
+,,,,,,,,,,,,,,,,,,,

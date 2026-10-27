@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: f24f11e088377f229c1b9ed36dd5b340cdf6099d3d4f0f3fb99cef0b6da76875)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: bae7208926bdc7d232157db677ca6b3793f4e2766512ec0ae19cb8bbe17d5da5)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -25,11 +25,6 @@ export class ProjectPage {
   }
 
   /** dropdown (opener+option collapsed into one select step) */
-  ddl_react_creatable_select_input_container(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_react_creatable_select_input_container', { dynamicArgs });
-  }
-
-  /** dropdown (opener+option collapsed into one select step) */
   ddl_Phase(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Phase', { dynamicArgs });
   }
@@ -37,11 +32,6 @@ export class ProjectPage {
   /** textbox from codegen */
   txt_Target_Population(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Target_Population', { dynamicArgs });
-  }
-
-  /** textbox from codegen */
-  txt_Control_Arm(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Control_Arm', { dynamicArgs });
   }
 
   /** textbox from codegen */
@@ -69,11 +59,6 @@ export class ProjectPage {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'ddl_Better_Response', { dynamicArgs });
   }
 
-  /** textbox from codegen */
-  txt_Follow_up_Time_Week(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Follow_up_Time_Week', { dynamicArgs });
-  }
-
   /** button from codegen */
   btn_Create_Project(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Create_Project', { dynamicArgs });
@@ -82,10 +67,5 @@ export class ProjectPage {
   /** button from codegen */
   btn_Inputs(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'btn_Inputs', { dynamicArgs });
-  }
-
-  /** option from codegen */
-  opt_3(...dynamicArgs: string[]): Promise<Locator> {
-    return resolveLocator(this.page, this.selectors, 'ProjectPage', 'opt_3', { dynamicArgs });
   }
 }

@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest
+TC_57,ITER_01,Set 1,Design,Modified Toxicity Probability Interval (mTPI-2)
+TC_57,ITER_02,Set 2,Design,Modified Toxicity Probability Interval (mTPI-2)
+TC_57,ITER_03,Set 3,Design,Modified Toxicity Probability Interval (mTPI-2)
+TC_57,ITER_04,Set 4,Design,Modified Toxicity Probability Interval (mTPI-2)
+TC_57,ITER_05,Set 5,Design,Modified Toxicity Probability Interval (mTPI-2)

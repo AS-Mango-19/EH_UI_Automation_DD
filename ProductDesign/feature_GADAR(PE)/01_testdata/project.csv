@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,projectName,Time Unit,Start Date,Study Objective,Phase,TargetPopulation,controlArm,treatmentArm,Priority,Endpoint Name,Endpoint Type,Better Response,Variable,followUpTime
+TC_55,ITER_01,TRUE,GADAR_PE,Week,7/28/2026,Two Arm Confirmatory,3,Adults,Ctrl,Exp,Primary,EP01,Time to Event,Longer Duration,uncheck,2.5
+TC_55,ITER_02,TRUE,GADAR_PE,Month,7/28/2026,Two Arm Confirmatory,3,Adults,Ctrl,Exp,Primary,EP01,Time to Event,Longer Duration,uncheck,1.5
+TC_55,ITER_03,TRUE,GADAR_PE,Day,7/28/2026,Two Arm Confirmatory,3,Adults,Ctrl,Exp,Primary,EP01,Time to Event,Shorter Duration,check,
+TC_55,ITER_04,TRUE,GADAR_PE,Year,7/28/2026,Two Arm Confirmatory,3,Adults,Ctrl,Exp,Primary,EP01,Time to Event,Longer Duration,uncheck,0.221

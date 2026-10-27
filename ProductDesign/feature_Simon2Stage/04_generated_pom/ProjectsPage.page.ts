@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 34d770aa595f1a05c509188431b3fb50ab6774c251778791fdf1059ee6b956c9)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 54e01d1ddb174398b41e6bb738cde8162cfd9877d2971033e777ca0114e328af)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class ProjectsPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
@@ -82,5 +82,10 @@ export class ProjectsPage {
   /** textbox from codegen */
   txt_Endpoint_Name(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Endpoint_Name', { dynamicArgs });
+  }
+
+  /** clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) - matches GADAR(PD)/SingleMean/SinglePoissonRate convention */
+  obj_Priority(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'obj_Priority', { dynamicArgs });
   }
 }

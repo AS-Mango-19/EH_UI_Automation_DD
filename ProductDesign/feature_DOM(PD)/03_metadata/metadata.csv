@@ -10,6 +10,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 9,90,ConfigureDesign,ProjectPage,select,ddl_Phase,${data.project.Phase},,,,,15000,TRUE,0,always,,Phase (Optional) - tolerant (Optional): this env moved General fields to Program/Indication; Phase is administrative and does not affect the computed design
 10,100,ConfigureDesign,ProjectPage,fill,txt_Target_Population,${data.project.TargetPopulation},,,,,10000,FALSE,0,never,,Target Population
 11,110,ConfigureDesign,ProjectPage,fill,txt_Treatment_Arm,${data.project.TreatmentArm},,,,,10000,FALSE,0,never,,Treatment Arm name (Control Arm left at the app default - testdata only overrides the treatment arm)
+11.5,115,ConfigureDesign,ProjectPage,assertValue,obj_Priority,,,,${data.project.Priority},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional), matching GADAR(PD)/SingleMean/SinglePoissonRate/Simon2Stage convention. Set the expected value in project.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
 12,120,ConfigureDesign,ProjectPage,fill,txt_Endpoint_Name,${data.project.EndpointName},,,,,10000,FALSE,0,never,,Endpoint Name
 13,130,ConfigureDesign,ProjectPage,select,ddl_Endpoint_Type,${data.project.EndpointType},,,,,15000,FALSE,0,always,,"Endpoint Type is a TABLE-CELL dropdown: open via its value-trigger (role button ""Time to Event"", the fresh-project default) then pick Continuous. GADSD-proven pattern"
 14,140,ConfigureDesign,ProjectPage,select,ddl_Larger_Value,${data.project.BetterResponse},,,,,15000,FALSE,0,always,,"Better Response is a TABLE-CELL dropdown: open via its value-trigger (role button ""Larger Value"", the Continuous default) then pick the direction. MUST run after Endpoint Type=Continuous (its options depend on it)"
@@ -17,7 +18,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 16,160,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,Open Inputs
 17,170,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,New Input Set
 18,180,CreateInputSet,InputSetPage,fill,txt_collection_Name,${data.inputset.InputSetname},,,,,10000,FALSE,0,never,,Input-set collection name (mapped to the existing InputSetname column - no new column)
-19,190,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,,,,,,10000,FALSE,0,never,,Open the Design (compute/simulate) card
+19,190,Simulate,DesignPage,click,btn_Design_Compute_or_simulate_a,${data.inputset.SelectTask},,,,,10000,FALSE,0,never,,Open the Design (compute/simulate) card (carries the SelectTask token, matching MCPMod/MAMS_DOM/SinglePoissonRate/Simon2Stage convention)
 20,200,ExtractResults,ResultsPage,select,ddl_react_select_input_container,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Pick the statistical test from the inputset SelectTest (Difference of Means) - the react-select test card
 21,210,ExtractResults,ResultsPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,Continue into the design inputs
 22,220,ExtractResults,ResultsPage,select,ddl_Hypothesis,${data.design.hypothesis},,,,,10000,FALSE,0,always,,Hypothesis (Superiority / Noninferiority / Super Superiority) - controls which margin fields render

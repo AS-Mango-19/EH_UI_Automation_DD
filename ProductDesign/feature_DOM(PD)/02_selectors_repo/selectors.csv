@@ -161,6 +161,7 @@ txt_boundary_1_lower_Alpha,ResultsPage,css,"[id=""boundary.1.lowerAlpha""]",,,FA
 txt_boundary_2_lower_Alpha,ResultsPage,css,"[id=""boundary.2.lowerAlpha""]",,,FALSE,Interim 2 Lower alpha (asymmetric Interpolated),FALSE
 btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
 txt_ResultName,Page,css,#inputId,,,FALSE,textbox from codegen,FALSE
+div_Spinner,Page,css,#spinner,,,FALSE,app-global loading overlay (same #spinner id confirmed live on GADAR(PD)/ProjectsPage this session) - used to wait out GSD boundary recompute instead of a fixed sleep,FALSE
 txt_credit_alert_primary,Page,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
 txt_left_Panel_designs,Page,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
 txt_Sample_Size_n,Page,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
@@ -177,6 +178,11 @@ txt_boundary_Sim_0_analysis_Spacing_Info,Page,css,"[id=""boundarySim.0.analysisS
 txt_boundary_Sim_0_cum_Alpha_Spent,Page,css,"input[name=""boundarySim.0.cumAlphaSpent""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_0_futility_CP,Page,css,"input[name=""boundarySim.0.futilityCP""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_1_analysis_Spacing_Info,Page,css,"[id=""boundarySim.1.analysisSpacingInfo""]",,,FALSE,textbox from codegen,FALSE
+txt_boundary_Sim_2_analysis_Spacing_Info,Page,css,"[id=""boundarySim.2.analysisSpacingInfo""]",,,FALSE,textbox from codegen (period 2 - same id scheme as periods 0/1),FALSE
+txt_boundary_Sim_1_cum_Alpha_Spent_Lower,Page,css,"input[name=""boundarySim.1.cumAlphaSpentLower""]",,,FALSE,textbox from codegen (period 1 - same name scheme as period 0),FALSE
+txt_boundary_Sim_1_efficacy_ZUpper,Page,css,"[id=""boundarySim.1.efficacyZUpper""]",,,FALSE,textbox from codegen (period 1 - same id scheme as period 0),FALSE
+txt_boundary_Sim_2_efficacy_ZLower,Page,css,"[id=""boundarySim.2.efficacyZLower""]",,,FALSE,textbox from codegen (period 2 - same id scheme as period 0),FALSE
+txt_boundary_Sim_1_futility_Z,Page,css,"input[name=""boundarySim.1.futilityZ""]",,,FALSE,textbox from codegen (period 1 - same name scheme as period 0),FALSE
 txt_boundary_Sim_0_efficacy_PValue,Page,css,"[id=""boundarySim.0.efficacyPValue""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_0_futility_PValue,Page,css,"[id=""boundarySim.0.futilityPValue""]",,,FALSE,textbox from codegen,FALSE
 txt_boundary_Sim_0_cum_Alpha_Spent_Upper,Page,css,"input[name=""boundarySim.0.cumAlphaSpentUpper""]",,,FALSE,textbox from codegen,FALSE

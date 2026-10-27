@@ -1,0 +1,9 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest
+TC_36,ITER_01,Set1,Design,MCPMod
+TC_36,ITER_02,Set2,Design,MCPMod
+TC_36,ITER_03,Set3,Design,MCPMod
+TC_36,ITER_04,Set4,Design,MCPMod
+TC_36,ITER_05,Set5,Design,MCPMod
+TC_36,ITER_06,Set6,Design,MCPMod
+TC_36,ITER_07,Set7,Design,MCPMod
+TC_36,ITER_08,Set8,Design,MCPMod

@@ -1,0 +1,6 @@
+TC_ID,IterationID,PeriodIndex,analysisSpacingInfo,futilityHR,futilityDelta
+TC_51,ITER_01,0,62,0.8568,N/A
+TC_51,ITER_02,0,58,N/A,-0.16589
+TC_51,ITER_03,0,70,0.911658,N/A
+TC_51,ITER_04,0,67,N/A,-0.23568
+TC_51,ITER_05,0,63,N/A,N/A

@@ -1,0 +1,14 @@
+TC_ID,IterationID,Run,ProjectName,TimeUnit,StartDate,StudyObjective,Phase,TargetPopulation,TreatmentArm,Priority,EndpointName,EndpointType,BetterResponse
+TC_25,ITER_01,TRUE,AutoProj_SingleProportion,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_02,TRUE,AutoProj_SingleProportion,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_03,TRUE,AutoProj_SingleProportion,Year,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Smaller Value
+TC_25,ITER_04,TRUE,AutoProj_SingleProportion,Day,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_05,TRUE,AutoProj_SingleProportion,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_06,TRUE,AutoProj_SingleProportion,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_07,TRUE,AutoProj_SingleProportion,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Smaller Value
+TC_25,ITER_08,TRUE,AutoProj_SingleProportion,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_09,TRUE,AutoProj_SingleProportion,Day,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Smaller Value
+TC_25,ITER_10,TRUE,AutoProj_SingleProportion,Year,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_11,TRUE,AutoProj_SingleProportion,Week,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Smaller Value
+TC_25,ITER_12,TRUE,AutoProj_SingleProportion,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value
+TC_25,ITER_13,TRUE,AutoProj_SingleProportion,Month,8/10/2026,One Arm Exploratory / Confirmatory,3,Adult,EXP,Primary,EP BIN,Binary,Larger Value

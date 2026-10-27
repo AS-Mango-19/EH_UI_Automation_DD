@@ -294,6 +294,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 274,2800,ExtractResults,ResultsPage,fill,txt_boundary_2_efficacy_PValue,${data.design.boundary.2.efficacyPValue},,,,,10000,FALSE,0,never,,fill boundary.2.efficacyPValue
 275,2819,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
 276,2820,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==N/A,click Calculate (boundary table; skip for fixed designs with no boundary family)
+276.5,2825,ExtractResults,ResultsPage,sleep,,2000,,,,,5000,FALSE,0,never,${data.design.effBoundaryFam}==N/A,Settle after Calculate (boundary table)
 277,2830,ExtractResults,ResultsPage,fill,txt_boundary_0_futility_PValue,${data.design.boundary.0.futilityPValue},,,,,10000,FALSE,0,never,,fill boundary.0.futilityPValue
 278,2840,ExtractResults,ResultsPage,select,ddl_compute_CP,${data.design.computeCP},,,,,10000,FALSE,0,always,,Select computeCP. Native <select> - select matches by visible label first
 279,2810,ExtractResults,ResultsPage,select,ddl_boundary_Scale,${data.design.boundaryScale},,,,,10000,FALSE,0,always,,Select boundaryScale. Native <select> - select matches by visible label first
@@ -310,6 +311,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 291,2960,ExtractResults,ResultsPage,uncheck,chk_boundary_0_efficacy_Check,,,,,,10000,FALSE,0,always,${data.design.boundary.0.efficacyCheck}!=uncheck,uncheck boundary.0.efficacyCheck when testdata boundary.0.efficacyCheck=uncheck (SkipIf gates it per iteration)
 292,2969,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
 293,2970,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,${data.design.effBoundaryFam}==N/A,click Calculate (boundary table; skip for fixed designs with no boundary family)
+293.5,2975,ExtractResults,ResultsPage,sleep,,2000,,,,,5000,FALSE,0,never,${data.design.effBoundaryFam}==N/A,Settle after Calculate (boundary table)
 294,2980,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Alpha_Spent,${data.design.boundary.0.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumAlphaSpent
 295,3000,ExtractResults,ResultsPage,fill,txt_boundary_0_cum_Beta_Spent,${data.design.boundary.0.cumBetaSpent},,,,,10000,FALSE,0,never,,fill boundary.0.cumBetaSpent
 296,3020,ExtractResults,ResultsPage,fill,txt_boundary_1_cum_Alpha_Spent,${data.design.boundary.1.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundary.1.cumAlphaSpent
@@ -325,14 +327,11 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 304,3090,ExtractResults,ResultsPage,fill,txt_committed_Duration,${data.design.committedDuration},,,,,10000,FALSE,0,never,,fill committedDuration
 305,3109,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
 306,3110,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
+306.5,3150,ExtractResults,ResultsPage,sleep,,2000,,,,,5000,FALSE,0,never,,Settle after Calculate before Save
 307,3095,ExtractResults,ResultsPage,fill,txt_committed_Subjects,${data.design.committedSubjects},,,,,10000,FALSE,0,never,,fill committedSubjects
-308,3139,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
-309,3140,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
 310,3072,ExtractResults,ResultsPage,click,btn_Add_Period,,,,,,10000,FALSE,0,never,${data.design.enrollmentTable.1.avgSubjectsEnrolled}==N/A,click Add Period
 311,3074,ExtractResults,ResultsPage,fill,txt_enrollment_Table_1_starting_At_Time,${data.design.enrollmentTable.1.startingAtTime},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.startingAtTime
 312,3076,ExtractResults,ResultsPage,fill,txt_enrollment_Table_1_avg_Subjects_Enrolled,${data.design.enrollmentTable.1.avgSubjectsEnrolled},,,,,10000,FALSE,0,never,,fill enrollmentTable.1.avgSubjectsEnrolled
-313,3189,ExtractResults,ResultsPage,click,btn_Close_Banner,,,,,,3000,TRUE,0,never,,dismiss info banner (optional) before Calculate
-314,3190,ExtractResults,ResultsPage,click,btn_Calculate,,,,,,10000,FALSE,0,never,,click Calculate
 315,3200,ExtractResults,ResultsPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
 316,3210,ExtractResults,ResultsPage,click,btn_Save_Compute,,,,,,10000,FALSE,0,never,,click Save Compute
 317,3220,ExtractResults,ResultsPage,fill,txt_ResultName,${data.design.Result Name},,,,,10000,FALSE,0,never,,fill Result Name

@@ -1,0 +1,8 @@
+TC_ID,IterationID,sampleSize,type1Error,followUpTime,variance,mcpMethods,effBoundaryFam,effSpendFunc,effParam,effParamGamma,futBoundaryFam,includeTrtmntSelection,trtmntSelAtInterimAnalysis,trtsel_basedOn,distributionSelect,commonProbabilityofDropout,numOfSimRun,randomNumberSeed,fixedSeed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,ResultName
+TC_49,ITER_01,385,0.05685,3.859,Unpooled,Weighted Bonferroni,Spending Functions,Gamma Family,N/A,-5.3256,Difference from Control,check,1,Difference From Control,Binomial,uncheck,100,Fixed,100,check,check,100,Result - Set01
+TC_49,ITER_02,488,0.06288,3.658945,Pooled,Bonferroni,Spending Functions,Lan-DeMets,Pocock,N/A,Difference from Control,check,1,Difference From Control,Binomial,check,100,Fixed,100,check,N/A,N/A,Result - Set02
+TC_49,ITER_03,500,0.06389,4.12356,Unpooled,Fallback,Spending Functions,Lan-DeMets,O'Brien-Fleming,N/A,Difference from Control,check,1,Difference From Control,Binomial,uncheck,100,Fixed,100,check,check,100,Result - Set03
+TC_49,ITER_04,618,0.071235,10,Pooled,Fixed Sequence,Spending Functions,Gamma Family,N/A,-6.66586,N/A,check,1,Difference From Control,Binomial,check,100,Fixed,100,check,check,100,Result - Set04
+TC_49,ITER_05,600,0.089568,3.66589,Pooled,Hochberg's Step Up,Spending Functions,Lan-DeMets,Pocock,N/A,Difference from Control,check,1,Difference From Control,Binomial,uncheck,100,Fixed,100,check,N/A,N/A,Result - Set05
+TC_49,ITER_06,666,0.0777,1.589,Unpooled,Simes,None,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Binomial,check,100,Fixed,100,check,check,100,Result - Set06
+TC_49,ITER_07,700,0.06548,4.447,Pooled,Weighted Bonferroni,None,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Binomial,uncheck,100,Fixed,100,uncheck,check,100,Result - Set07

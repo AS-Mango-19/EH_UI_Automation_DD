@@ -1,0 +1,15 @@
+TC_ID,IterationID,collectionName,SelectTask,SelectTest
+TC_26,ITER_01,Set1,Design,Mean of Paired Differences
+TC_26,ITER_02,Set2,Design,Mean of Paired Differences
+TC_26,ITER_03,Set3,Design,Mean of Paired Differences
+TC_26,ITER_04,Set4,Design,Mean of Paired Differences
+TC_26,ITER_05,Set5,Design,Mean of Paired Differences
+TC_26,ITER_06,Set6,Design,Mean of Paired Differences
+TC_26,ITER_07,Set7,Design,Mean of Paired Differences
+TC_26,ITER_08,Set8,Design,Mean of Paired Differences
+TC_26,ITER_09,Set9,Design,Mean of Paired Differences
+TC_26,ITER_10,Set10,Design,Mean of Paired Differences
+TC_26,ITER_11,Set11,Design,Mean of Paired Differences
+TC_26,ITER_12,Set12,Design,Mean of Paired Differences
+TC_26,ITER_13,Set13,Design,Mean of Paired Differences
+TC_26,ITER_14,Set14,Design,Mean of Paired Differences

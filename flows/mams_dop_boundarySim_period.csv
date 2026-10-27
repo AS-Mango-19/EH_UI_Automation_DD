@@ -1,0 +1,9 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,Page,fill,txt_boundarySim_analysisSpacingInfo,${runtime.period.analysisSpacingInfo},,,,,10000,FALSE,0,never,,fill boundarySim analysisSpacingInfo for the current looped period (blank/N/A auto-skips),${runtime.period.n}
+20,ConfigureDesign,Page,check,chk_boundarySim_efficacyCheck,,,,,,10000,FALSE,0,never,${runtime.period.efficacyCheck}!=check,check this period's efficacyCheck when testdata=check,${runtime.period.n}
+30,ConfigureDesign,Page,uncheck,chk_boundarySim_efficacyCheck,,,,,,10000,FALSE,0,never,${runtime.period.efficacyCheck}!=uncheck,uncheck this period's efficacyCheck when testdata=uncheck,${runtime.period.n}
+40,ConfigureDesign,Page,check,chk_boundarySim_futilityCheck,,,,,,10000,FALSE,0,never,${runtime.period.futilityCheck}!=check,check this period's futilityCheck when testdata=check,${runtime.period.n}
+50,ConfigureDesign,Page,uncheck,chk_boundarySim_futilityCheck,,,,,,10000,FALSE,0,never,${runtime.period.futilityCheck}!=uncheck,uncheck this period's futilityCheck when testdata=uncheck,${runtime.period.n}
+60,ConfigureDesign,Page,fill,txt_boundarySim_cumAlphaSpent,${runtime.period.cumAlphaSpent},,,,,10000,FALSE,0,never,,fill boundarySim cumAlphaSpent for the current looped period (blank/N/A auto-skips),${runtime.period.n}
+70,ConfigureDesign,Page,fill,txt_boundarySim_futilityDelta,${runtime.period.futilityDelta},,,,,10000,FALSE,0,never,,fill boundarySim futilityDelta for the current looped period (blank/N/A auto-skips),${runtime.period.n}
+80,ConfigureDesign,Page,fill,txt_boundarySim_futilityPValue,${runtime.period.futilityPValue},,,,,10000,FALSE,0,never,,fill boundarySim futilityPValue for the current looped period (blank/N/A auto-skips),${runtime.period.n}

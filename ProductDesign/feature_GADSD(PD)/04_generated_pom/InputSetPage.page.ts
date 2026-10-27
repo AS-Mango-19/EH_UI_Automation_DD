@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 8498261c9b29b6d6c1545bbc7cc2b14f93857e80e9d2e7e653e82e555e5a59dc)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c9e5004bb63fba24b9dddeb45fb45044e0a81c73b16331eb2a91b75a9f5fbf33)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';

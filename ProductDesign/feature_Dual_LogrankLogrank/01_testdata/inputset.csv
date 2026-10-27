@@ -1,0 +1,9 @@
+TC_ID,IterationID,InputSetname,SelectTask,SelectTest,winning-condition-select
+TC_37,ITER_01,Set1,Design,Logrank - Logrank,At least EP1
+TC_37,ITER_02,Set2,Design,Logrank - Logrank,Both endpoints
+TC_37,ITER_03,Set3,Design,Logrank - Logrank,At least EP2
+TC_37,ITER_04,Set4,Design,Logrank - Logrank,At least one endpoint
+TC_37,ITER_05,Set5,Design,Logrank - Logrank,Both endpoints
+TC_37,ITER_06,Set6,Design,Logrank - Logrank,At least EP1
+TC_37,ITER_07,Set7,Design,Logrank - Logrank,Both endpoints
+TC_37,ITER_08,Set8,Design,Logrank - Logrank,At least EP2

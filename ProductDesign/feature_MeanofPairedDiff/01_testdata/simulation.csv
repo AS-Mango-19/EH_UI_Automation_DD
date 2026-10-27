@@ -1,0 +1,15 @@
+TC_ID,IterationID,Run,CreateInputSet,sampleSize,testStatistic,nonInf_margin,designStandardDeviation,criticalPoint,upperCriticalPoint,lowerCriticalPoint,meanControl,meanTreatment,standardDeviation,numOfSimRun,randomNumberSeed,fixedSeed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Sim Result Name
+TC_26,ITER_01,TRUE,Sim 1,188,Z,N/A,1.6589,N/A,N/A,N/A,0.28888,0.55658,1.6589,100,Fixed,100,check,check,100,Result - Sim01
+TC_26,ITER_02,TRUE,Sim 2,178,N/A,0.578568,N/A,-0.625895,N/A,N/A,0.1189,0.48596,2.3256,100,Fixed,100,check,check,100,Result - Sim02
+TC_26,ITER_03,TRUE,Sim 3,1122,t,0.66895,N/A,-1.888888,N/A,N/A,0.2115,0.644,3.123,100,Fixed,100,uncheck,uncheck,N/A,Result - Sim03
+TC_26,ITER_04,TRUE,Sim 4,222,Z,N/A,1.321,N/A,1.712454,-1.988888,0.3196,0.58696,2,100,Fixed,100,check,check,100,Result - Sim04
+TC_26,ITER_05,TRUE,Sim 5,235,t,N/A,N/A,N/A,N/A,N/A,0.29655,0.52335,2.1125,100,Fixed,100,check,check,100,Result - Sim05
+TC_26,ITER_06,TRUE,Sim 6,62,t,N/A,N/A,N/A,N/A,N/A,0.189856,0.65889,2.5522,100,Fixed,100,uncheck,uncheck,N/A,Result - Sim06
+TC_26,ITER_07,TRUE,Sim 7,522,t,N/A,N/A,N/A,N/A,N/A,0.66258,0.673325,3.5523,100,Fixed,100,check,check,100,Result - Sim07
+TC_26,ITER_08,TRUE,Sim 8,78,Z,N/A,2.11352,N/A,N/A,N/A,0.322568,1.22546,2.2265,100,Fixed,100,check,uncheck,N/A,Result - Sim08
+TC_26,ITER_09,TRUE,Sim 9,300,t,N/A,N/A,N/A,N/A,N/A,0.257,0.799856,2.12568,100,Fixed,100,check,check,100,Result - Sim09
+TC_26,ITER_10,TRUE,Sim 10,355,Z,N/A,3.552152,N/A,N/A,N/A,0.11523,0.68888,3.321,100,Fixed,100,check,check,100,Result - Sim10
+TC_26,ITER_11,TRUE,Sim 11,211,t,N/A,N/A,N/A,N/A,N/A,0.2265,0.6777,2.1254,100,Fixed,100,check,check,100,Result - Sim11
+TC_26,ITER_12,TRUE,Sim 12,333,t,N/A,N/A,N/A,N/A,N/A,0.18888,0.732152,2.44512,100,Fixed,100,uncheck,uncheck,N/A,Result - Sim12
+TC_26,ITER_13,TRUE,Sim 13,488,Z,N/A,2.89898,N/A,N/A,N/A,0.111,0.666,3.1111,100,Fixed,100,check,check,100,Result - Sim13
+TC_26,ITER_14,TRUE,Sim 14,357,t,N/A,N/A,N/A,N/A,N/A,0.211,0.6666,3.3333,100,Fixed,100,check,check,100,Result - Sim14

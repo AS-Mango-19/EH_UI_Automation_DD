@@ -1,0 +1,5 @@
+TC_ID,IterationID,Run,CreateInputSet,sampleSize,testStatistic,designStandardDeviation,nonInf_margin,criticalPoint,upperCriticalPoint,meanControl,meanTreatment,standardDeviation,numOfSimRun,randomNumberSeed,fixedSeed,saveSummaryStats,saveSubjectLevelData,subLevelDataSimRuns,Sim Result Name
+TC_24,ITER_01,TRUE,Sim 1,588,N/A,,,,1.962252,1.2152,0.8888,1.45256,100,Fixed,100,check,check,100,Result - Sim01
+,ITER_02,TRUE,Sim 2,166,N/A,,2.32156,-3.44585,,1.41252,1.88895,1.4444,100,Fixed,100,uncheck,check,100,Result - Sim02
+,ITER_03,TRUE,Sim 3,200,Z,1.4125,3.1112,-1.78955,,2.7888,2.1111,1.5222,100,Fixed,100,check,uncheck,N/A,Result - Sim03
+,ITER_04,TRUE,Sim 4,135,N/A,,,,1.95585,2.27745,3.52458,2.2222,100,Fixed,100,uncheck,uncheck,N/A,Result - Sim04

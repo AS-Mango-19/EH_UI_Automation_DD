@@ -1,0 +1,9 @@
+TC_ID,IterationID,PeriodIndex,row-id,startingAtTime,byTime,Cumulative % Survival (Control),Hazard Rate (Control)
+TC_51,ITER_02,0,0,N/A,1,96,N/A
+TC_51,ITER_02,1,1,N/A,1.2,95,N/A
+TC_51,ITER_02,2,2,N/A,2.1,94,N/A
+TC_51,ITER_04,0,0,N/A,N/A,N/A,0.04586
+TC_51,ITER_04,1,1,2.2,N/A,N/A,0.063256
+TC_51,ITER_04,2,2,2.8,N/A,N/A,0.07455
+TC_51,ITER_04,3,3,3.5,N/A,N/A,0.048956
+TC_51,ITER_04,4,4,4.5,N/A,N/A,0.08888

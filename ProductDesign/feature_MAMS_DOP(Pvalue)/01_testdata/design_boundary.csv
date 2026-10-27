@@ -1,0 +1,6 @@
+TC_ID,IterationID,PeriodIndex,analysisSpacingInfo,futilityDifferenceFromControl
+TC_49,ITER_01,0,62,0.1256
+TC_49,ITER_02,0,58,0.22256
+TC_49,ITER_03,0,50,0
+TC_49,ITER_04,0,67,N/A
+TC_49,ITER_05,0,60,0.321

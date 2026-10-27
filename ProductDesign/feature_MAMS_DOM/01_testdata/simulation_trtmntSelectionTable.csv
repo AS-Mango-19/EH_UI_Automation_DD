@@ -1,0 +1,7 @@
+TC_ID,IterationID,PeriodIndex,ruleName,trtmntSelType,trtmntSelRuleSelect,trtmntSelRuleInput
+TC_48,ITER_01,0,Rule 01,All Arms,Greater than Threshold,0.3568
+TC_48,ITER_02,0,Rule 01,Best Two Arms,N/A,N/A
+TC_48,ITER_03,0,Rule 01,All Arms,Within,0.111
+TC_48,ITER_04,0,Rule 01,Best Three Arms,N/A,N/A
+TC_48,ITER_05,0,Rule 01,Single Best Arm,N/A,N/A
+TC_48,ITER_06,0,Rule 01,All Arms,Greater than Threshold,0.4115

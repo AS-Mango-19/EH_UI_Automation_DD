@@ -73,6 +73,7 @@ txt_Target_Population,ProjectsPage,css,#populationName-0,,,FALSE,textbox from co
 txt_Treatment_Arm,ProjectsPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
 txt_Endpoint_Name,ProjectsPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
 txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectsPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) - matches GADAR(PD)/SingleMean/SinglePoissonRate convention,FALSE
 btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
 ddl_Design_Type,DesignPage,css,#designType,,,FALSE,native <select> from codegen,FALSE
 ddl_design_Type,DesignPage,css,#designType,,,FALSE,native <select> from codegen,FALSE

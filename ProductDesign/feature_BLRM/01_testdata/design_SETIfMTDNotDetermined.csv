@@ -1,0 +1,6 @@
+TC_ID,IterationID,PeriodIndex,stoppingRuleIfNotMTD,probabilityIfNotMTD,minSSOnDoseIfNotMTD
+TC_59,ITER_01,0,check,0.812574,20
+TC_59,ITER_02,0,check,0.912548,22
+TC_59,ITER_03,0,check,0.875485,30
+TC_59,ITER_04,0,uncheck,N/A,N/A
+TC_59,ITER_05,0,check,0.85699,33

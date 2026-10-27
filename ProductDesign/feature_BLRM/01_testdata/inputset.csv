@@ -1,0 +1,6 @@
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest
+TC_59,ITER_01,Set 1,Design,Bayesian Logistic Regression Model (BLRM)
+TC_59,ITER_02,Set 2,Design,Bayesian Logistic Regression Model (BLRM)
+TC_59,ITER_03,Set 3,Design,Bayesian Logistic Regression Model (BLRM)
+TC_59,ITER_04,Set 4,Design,Bayesian Logistic Regression Model (BLRM)
+TC_59,ITER_05,Set 5,Design,Bayesian Logistic Regression Model (BLRM)

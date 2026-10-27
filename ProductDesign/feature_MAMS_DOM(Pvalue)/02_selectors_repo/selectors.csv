@@ -1,0 +1,190 @@
+ObjectName,Page,SelectorType,SelectorValue,RoleName,FallbackSelector,Dynamic,Description,Exact
+txt_Username,LoginPage,role,textbox,Username,,FALSE,Username field (login flow),FALSE
+btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
+txt_Password,LoginPage,role,textbox,Password,,FALSE,Password field (login flow),FALSE
+btn_Login,LoginPage,role,button,Sign In,input[value='Verify'],FALSE,Sign in button fallback for verification login flow,FALSE
+btn_New_Project,ProjectsPage,role,button,New Project,,FALSE,New Project button (login flow landing),FALSE
+div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
+txt_Project_Name,ProjectPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
+ddl_Time_Unit,ProjectPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Study_Objective,ProjectPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Target_Population,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
+txt_Control_Arm,ProjectPage,css,#controlArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Treatment_Arm,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+txt_Endpoint_Name,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
+ddl_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+ddl_Better_Response,ProjectPage,role,button,Larger Value,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_Follow_up_Time_Week,ProjectPage,css,#followUpTime-0,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,ResultsPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+btn_Create_Project,ProjectPage,role,button,Create Project,,FALSE,button from codegen,FALSE
+btn_Inputs,ProjectPage,role,button,Inputs,,FALSE,button from codegen,FALSE
+div_Spinner,InputSetPage,css,#spinner,,,FALSE,loading overlay after opening Inputs,FALSE
+div_Spinner,DesignPage,css,#spinner,,,FALSE,loading overlay after opening a design panel,FALSE
+btn_New_Input_Set,InputSetPage,role,button,New Input Set,,FALSE,button from codegen,FALSE
+txt_collection_Name,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+ddl_SelectTask,InputSetPage,label,Task,,,FALSE,Task dropdown (Design),FALSE
+ddl_Test,InputSetPage,label,Test,,,FALSE,Statistical test dropdown,FALSE
+btn_Continue,InputSetPage,role,button,Continue,,FALSE,button from codegen,FALSE
+btn_Design_Compute_or_simulate_a,DesignPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,ResultsPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+btn_Continue,ResultsPage,role,button,Continue,,FALSE,button from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,ResultsPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+opt_Computed_Parameter,ResultsPage,role,radio,{0},,TRUE,choice from codegen (substring - recorded name may be truncated; set Exact=TRUE if it matches the wrong option),FALSE
+txt_Sample_Size_n,ResultsPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Type,ResultsPage,css,#testtype,,,FALSE,native <select> from codegen,FALSE
+txt_Type_1_Error,ResultsPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+ddl_Input_Method,ResultsPage,css,#inputMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Ratio_of_Means_t_c,ResultsPage,css,#ratioOfMeans,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,ResultsPage,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_Coefficient_of_Variation_of,ResultsPage,css,#coefficientOfVariation,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,ResultsPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Control_c,ResultsPage,css,#meanControl,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Treatment_t,ResultsPage,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
+radio_Type_1_Error,ResultsPage,role,radio,Type 1 Error,,FALSE,radio button from codegen,FALSE
+txt_Power,ResultsPage,css,#power,,,FALSE,textbox from codegen,FALSE
+ddl_Hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> from codegen,FALSE
+txt_Noninferiority_Margin_0,ResultsPage,css,#nonInf_margin,,,FALSE,textbox from codegen,FALSE
+txt_Ratio_of_Means_1_t1_c,ResultsPage,css,#nonInf_ratioOfMeans,,,FALSE,textbox from codegen,FALSE
+radio_Ratio_of_Means,ResultsPage,role,radio,Ratio of Means,,FALSE,radio button from codegen,FALSE
+btn_Enrollment,ResultsPage,role,button,Enrollment,,FALSE,opens the Enrollment section - name was mis-derived by the importer,FALSE
+chk_Include,ResultsPage,role,checkbox,Include,,FALSE,checkbox from codegen,FALSE
+txt_Enrollment_Rate_per_Week,ResultsPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
+btn_Save,ResultsPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Compute,ResultsPage,role,button,Save & Compute,,FALSE,button from codegen,FALSE
+txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+txt_nonInf_Mean_Control,ResultsPage,css,#nonInf_meanControl,,,FALSE,NI Mean Control (id confirmed present in recording.txt),FALSE
+txt_nonInf_NH_Mean_Treatment,ResultsPage,css,#nonInf_nhMeanTreatment,,,FALSE,Mean Treatment (μt0) under Null Hypothesis - COMPUTED by the app from Mean Control x NI Margin,FALSE
+txt_nonInf_AH_Mean_Treatment,ResultsPage,css,#nonInf_ahMeanTreatment,,,FALSE,Mean Treatment (μt1) under Alternative Hypothesis - COMPUTED by the app from Mean Control x Ratio of Means,FALSE
+btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,AppPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,AppPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_id_left_Panel_designs,AppPage,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_Sample_Size_n,AppPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Allocation_Ratio_nt_nc,AppPage,css,#allocationRatio,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point_Upper,AppPage,css,#upperCriticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_upper_Critical_Point,AppPage,css,#upperCriticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_Noninferiority_Margin_0,AppPage,css,#nonInf_margin,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point,AppPage,css,#criticalPoint,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,AppPage,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_Coefficient_of_Variation_of,AppPage,css,#coefficientOfVariation,,,FALSE,textbox from codegen,FALSE
+btn_Response,AppPage,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Mean_Control_c,AppPage,css,#meanControl,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Treatment_t,AppPage,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
+txt_Coefficient_of_Variation_of_Data_Control,AppPage,css,#cvControl,,,FALSE,textbox from codegen,FALSE
+txt_Coefficient_of_Variation_of_Data_Treatment,AppPage,css,#cvTreatment,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,AppPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+txt_Probability_of_Dropout,AppPage,css,#probabilityOfDropout,,,FALSE,textbox from codegen,FALSE
+btn_Enrollment,AppPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+txt_Enrollment_Rate_per_Week,AppPage,css,"[id=""enrollmentTable.0.avgSubjectsEnrolled""]",,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,AppPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,AppPage,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,AppPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,AppPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,AppPage,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,AppPage,role,button,Save,,FALSE,button from codegen,TRUE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+ddl_sim_Hypothesis,ResultsPage,css,#hypothesis,,,FALSE,native <select> Hypothesis (sim Design tab; shared id with design),FALSE
+ddl_sim_Randomization_Method,ResultsPage,css,#randomizationMethod,,,FALSE,native <select> Randomization Method (sim Design tab; id inferred - confirm in DevTools),FALSE
+ddl_sim_Test_Type,ResultsPage,css,#testtype,,,FALSE,native <select> Test Type (sim Design tab; shared id with design),FALSE
+txt_sim_Critical_Point_Lower,ResultsPage,css,#lowerCriticalPoint,,,FALSE,GREYED/derived Critical Point Lower (id inferred from #upperCriticalPoint - confirm in DevTools),FALSE
+chk_sim_Common_CoV,ResultsPage,css,"[data-testid=""commonCoefficientOfVariation""]",,,FALSE,Common Coefficient of Variation checkbox (uncheck to enable separate Control/Treatment CoV),FALSE
+sw_sim_Include,ResultsPage,role,switch,,,FALSE,Enrollment Include toggle (recording had it already on; a fresh run starts Not Included),FALSE
+chk_sim_Save_Summary_Stats,ResultsPage,css,"[data-testid=""saveSummaryStats""]",,,FALSE,Save Summary Statistics checkbox (Simulation Setup),FALSE
+chk_sim_Save_Subject_Level_Data,ResultsPage,css,"[data-testid=""saveSubjectLevelData""]",,,FALSE,Save Subject-Level Data checkbox - reveals subLevelDataSimRuns,FALSE
+btn_sim_Confirm_Simulate,ResultsPage,css,.modal.show #credit-alert-primary,,,FALSE,Simulate confirm in the shown name-your-result modal (#credit-alert-primary; scoped to .modal.show),FALSE
+lbl_sim_RunStatus,ResultsPage,xpath,"//div[@role='row'][.//*[contains(normalize-space(.),'Simulation')]]//div[@col-id='simStatus']",,,FALSE,Status cell of the SIMULATION result row (scoped so it never matches the design row already Completed),FALSE
+txt_sim_ResultName,ResultsPage,css,.modal.show #inputId,,,FALSE,Result-name field in the shown Simulate modal,FALSE
+lnk_sim_ResultName,ResultsPage,xpath,"(//div[@role='row'][.//*[contains(normalize-space(.),'Simulation')]]//a)[1]",,,FALSE,First link in the Simulation result row = the result name (opens the sim result),FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+txt_arm_Name_0,ProjectPage,css,#armName-0,,,FALSE,textbox from codegen,FALSE
+txt_arm_Name_1,ProjectPage,css,#armName-1,,,FALSE,textbox from codegen,FALSE
+txt_arm_Name_2,ProjectPage,css,#armName-2,,,FALSE,textbox from codegen,FALSE
+btn_Add_Arm,ProjectPage,role,button,Add Arm,,FALSE,button from codegen,FALSE
+txt_arm_Name_3,ProjectPage,css,#armName-3,,,FALSE,textbox from codegen,FALSE
+txt_arm_Name_4,ProjectPage,css,#armName-4,,,FALSE,textbox from codegen,FALSE
+txt_Name_Input_Set,InputSetPage,css,#collectionName,,,FALSE,textbox from codegen,FALSE
+btn_Select_Task,InputSetPage,role,button,Design Compute or simulate a,,FALSE,button from codegen,FALSE
+ddl_Select_Test,InputSetPage,label,Select Test,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_sample_Size,DesignPage,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Type_1_Error,DesignPage,css,#type1Error,,,FALSE,textbox from codegen,FALSE
+txt_Follow_up_Time_Week,DesignPage,css,#followUpTime,,,FALSE,textbox from codegen,FALSE
+ddl_Variance,DesignPage,css,#variance,,,FALSE,native <select> from codegen,FALSE
+ddl_Multiple_Comparison_Procedures,DesignPage,label,Multiple Comparison Procedures,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_mcp_Table_1_alloc_Ratio,DesignPage,css,"input[name=""mcpTable.1.allocRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_1_prop_Of_Alpha,DesignPage,css,"input[name=""mcpTable.1.propOfAlpha""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_2_alloc_Ratio,DesignPage,css,"input[name=""mcpTable.2.allocRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_3_alloc_Ratio,DesignPage,css,"input[name=""mcpTable.3.allocRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_4_alloc_Ratio,DesignPage,css,"input[name=""mcpTable.4.allocRatio""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_2_prop_Of_Alpha,DesignPage,css,"input[name=""mcpTable.2.propOfAlpha""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_3_prop_Of_Alpha,DesignPage,css,"input[name=""mcpTable.3.propOfAlpha""]",,,FALSE,textbox from codegen,FALSE
+txt_mcp_Table_4_prop_Of_Alpha,DesignPage,css,"input[name=""mcpTable.4.propOfAlpha""]",,,FALSE,textbox from codegen,FALSE
+ddl_Efficacy_Boundary_Family,DesignPage,css,#effBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+ddl_Spending_Function,DesignPage,css,#effSpendFunc,,,FALSE,native <select> from codegen,FALSE
+txt_eff_Param_Gamma,DesignPage,css,#effParamGamma,,,FALSE,textbox from codegen,FALSE
+ddl_Parameter,DesignPage,css,#effParam,,,FALSE,native <select> from codegen,FALSE
+ddl_Futility_Boundary_Family,DesignPage,css,#futBoundaryFam,,,FALSE,native <select> from codegen,FALSE
+txt_boundary_0_futility_Difference_From_Control,DesignPage,css,"[id=""boundary.0.futilityDifferenceFromControl""]",,,FALSE,textbox from codegen,FALSE
+chk_include_Trtmnt_Selection,DesignPage,testid,includeTrtmntSelection,,,FALSE,checkbox from codegen,FALSE
+obj_Treatment_Selection_at,DesignPage,label,Treatment Selection at,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
+ddl_Based_On,DesignPage,css,#trtsel_basedOn,,,FALSE,native <select> from codegen,FALSE
+ddl_trtmnt_Selection_Table_0_rule_Name,DesignPage,css,"[id=""trtmntSelectionTable.0.ruleName""]",,,FALSE,textbox from codegen,FALSE
+ddl_id_trtmnt_Selection_Table_0_trtmnt_Sel_Type,DesignPage,css,"[id=""trtmntSelectionTable.0.trtmntSelType""]",,,FALSE,native <select> from codegen,FALSE
+ddl_id_trtmnt_Selection_Table_0_trtmnt_Sel_Rule_Select,DesignPage,css,"[id=""trtmntSelectionTable.0.trtmntSelRuleSelect""]",,,FALSE,native <select> from codegen,FALSE
+ddl_trtmnt_Selection_Table_0_trtmnt_Sel_Rule_Input,DesignPage,css,"[id=""trtmntSelectionTable.0.trtmntSelRuleInput""]",,,FALSE,textbox from codegen,FALSE
+ddl_Adaptation_Method,DesignPage,css,#adaptationMethod,,,FALSE,native <select> from codegen,FALSE
+txt_Upper_Limit_on_Study_Duration,DesignPage,css,#upperLimitStudyDuration,,,FALSE,textbox from codegen,FALSE
+ddl_Enrollment_Rate_After,DesignPage,css,#enrollRateAfterAdapt,,,FALSE,native <select> from codegen,FALSE
+txt_Multiplier_for_Enrollment,DesignPage,css,#multiplierEnrollRate,,,FALSE,textbox from codegen,FALSE
+ddl_Scale,DesignPage,css,#scale,,,FALSE,native <select> from codegen,FALSE
+txt_Min_Test_Statistic,DesignPage,css,#minTestStatistic,,,FALSE,textbox from codegen,FALSE
+txt_Max_Test_Statistic,DesignPage,css,#maxTestStatistic,,,FALSE,textbox from codegen,FALSE
+txt_min_Cp,DesignPage,css,#minCp,,,FALSE,textbox from codegen,FALSE
+txt_Max_CP,DesignPage,css,#maxCp,,,FALSE,textbox from codegen,FALSE
+txt_min_Delta_By_Sigma,DesignPage,css,#minDeltaBySigma,,,FALSE,textbox from codegen,FALSE
+txt_max_Delta_By_Sigma,DesignPage,css,#maxDeltaBySigma,,,FALSE,textbox from codegen,FALSE
+ddl_SSR_Function_in_Promising_Zone,DesignPage,css,#ssrFuntionInPromisingZone,,,FALSE,native <select> from codegen,FALSE
+txt_Target_CP_for_Re_Estimating,DesignPage,css,#targetCpForReEstimatingSampleSize,,,FALSE,textbox from codegen,FALSE
+txt_Multiplier,DesignPage,css,#multiplier,,,FALSE,textbox from codegen,FALSE
+ddl_ssr_Funtion_In_Promising_Zone,DesignPage,css,#ssrFuntionInPromisingZone,,,FALSE,native <select> from codegen,FALSE
+ddl_Number_of_Steps,DesignPage,css,#ssr_numberOfSteps,,,FALSE,native <select> from codegen,FALSE
+txt_Input_Editor,DesignPage,role,textbox,Input Editor,,FALSE,textbox from codegen,FALSE
+btn_Input_Editor,DesignPage,role,spinbutton,Input Editor,,FALSE,textbox from codegen,FALSE
+btn_Response,DesignPage,role,button,Response,,FALSE,button from codegen,FALSE
+ddl_Distribution,DesignPage,css,#distributionSelect,,,FALSE,native <select> from codegen,FALSE
+ddl_distribution_Select,DesignPage,css,#distributionSelect,,,FALSE,native <select> from codegen,FALSE
+chk_common_Std_Deviation,DesignPage,testid,commonStdDeviation,,,FALSE,checkbox from codegen,FALSE
+txt_response_Scenario_Table_0_mean,DesignPage,css,"[id=""responseScenarioTable.0.mean""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_1_mean,DesignPage,css,"[id=""responseScenarioTable.1.mean""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_2_mean,DesignPage,css,"[id=""responseScenarioTable.2.mean""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_3_mean,DesignPage,css,"[id=""responseScenarioTable.3.mean""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_4_mean,DesignPage,css,"[id=""responseScenarioTable.4.mean""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_0_standard_Deviation,DesignPage,css,"[id=""responseScenarioTable.0.standardDeviation""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_1_standard_Deviation,DesignPage,css,"[id=""responseScenarioTable.1.standardDeviation""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_2_standard_Deviation,DesignPage,css,"[id=""responseScenarioTable.2.standardDeviation""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_3_standard_Deviation,DesignPage,css,"[id=""responseScenarioTable.3.standardDeviation""]",,,FALSE,textbox from codegen,FALSE
+txt_response_Scenario_Table_4_standard_Deviation,DesignPage,css,"[id=""responseScenarioTable.4.standardDeviation""]",,,FALSE,textbox from codegen,FALSE
+chk_common_Probabilityof_Dropout,DesignPage,testid,commonProbabilityofDropout,,,FALSE,checkbox from codegen,FALSE
+txt_dropout_Scenario_Table_0_dropout_Control_Arm,DesignPage,css,"[id=""dropoutScenarioTable.0.dropoutControlArm""]",,,FALSE,textbox from codegen,FALSE
+txt_dropout_Scenario_Table_0_dropout_Treatment_Arm1,DesignPage,css,"[id=""dropoutScenarioTable.0.dropoutTreatmentArm1""]",,,FALSE,textbox from codegen,FALSE
+txt_dropout_Scenario_Table_0_dropout_Treatment_Arm2,DesignPage,css,"[id=""dropoutScenarioTable.0.dropoutTreatmentArm2""]",,,FALSE,textbox from codegen,FALSE
+txt_dropout_Scenario_Table_0_dropout_Treatment_Arm3,DesignPage,css,"[id=""dropoutScenarioTable.0.dropoutTreatmentArm3""]",,,FALSE,textbox from codegen,FALSE
+txt_dropout_Scenario_Table_0_dropout_Treatment_Arm4,DesignPage,css,"[id=""dropoutScenarioTable.0.dropoutTreatmentArm4""]",,,FALSE,textbox from codegen,FALSE
+btn_Enrollment,DesignPage,role,button,Enrollment,,FALSE,button from codegen,FALSE
+btn_Add_Period,DesignPage,role,button,Add Period,,FALSE,button from codegen,FALSE
+btn_Simulation_Setup,DesignPage,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,DesignPage,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,DesignPage,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,DesignPage,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,DesignPage,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,DesignPage,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,DesignPage,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save,DesignPage,role,button,Save,,FALSE,button from codegen,TRUE
+txt_ResultName,DesignPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,DesignPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_boundary_analysisSpacingInfo,DesignPage,css,"[id=""boundary.{0}.analysisSpacingInfo""]",,,TRUE,PARAMETRIC boundary analysisSpacingInfo; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_startingAtTime,DesignPage,css,"[id=""enrollmentTable.{0}.startingAtTime""]",,,TRUE,PARAMETRIC enrollmentTable startingAtTime; {0}=period index (loopPeriods),FALSE
+txt_enrollmentTable_avgSubjectsEnrolled,DesignPage,css,"[id=""enrollmentTable.{0}.avgSubjectsEnrolled""]",,,TRUE,PARAMETRIC enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods),FALSE

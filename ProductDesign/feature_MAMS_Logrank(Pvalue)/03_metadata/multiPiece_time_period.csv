@@ -1,0 +1,5 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,DesignPage,doubleClick,cell_multiPiece_Time,,,,,,15000,FALSE,0,never,${runtime.period.byTime}==N/A,Double-click column 2 for authored byTime,${runtime.period.row-id}
+20,ConfigureDesign,DesignPage,fill,txt_Input_Editor,${runtime.period.byTime},,,,,15000,FALSE,0,never,${runtime.period.byTime}==N/A,Fill authored byTime in bulk editor,
+30,ConfigureDesign,DesignPage,doubleClick,cell_multiPiece_Time,,,,,,15000,FALSE,0,never,${runtime.period.startingAtTime}==N/A,Double-click column 2 for authored startingAtTime,${runtime.period.row-id}
+40,ConfigureDesign,DesignPage,fill,txt_Input_Editor,${runtime.period.startingAtTime},,,,,15000,FALSE,0,never,${runtime.period.startingAtTime}==N/A,Fill authored startingAtTime in bulk editor,

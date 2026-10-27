@@ -1,0 +1,5 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,DesignPage,doubleClick,cell_multiPiece_Control,,,,,,15000,FALSE,0,never,${runtime.period.Cumulative % Survival (Control)}==N/A,Double-click column 3 for authored cumulative survival,${runtime.period.row-id}
+20,ConfigureDesign,DesignPage,fill,txt_Input_Editor,${runtime.period.Cumulative % Survival (Control)},,,,,15000,FALSE,0,never,${runtime.period.Cumulative % Survival (Control)}==N/A,Fill authored cumulative survival control value,
+30,ConfigureDesign,DesignPage,doubleClick,cell_multiPiece_Control,,,,,,15000,FALSE,0,never,${runtime.period.Hazard Rate (Control)}==N/A,Double-click column 3 for authored hazard rate,${runtime.period.row-id}
+40,ConfigureDesign,DesignPage,fill,txt_Input_Editor,${runtime.period.Hazard Rate (Control)},,,,,15000,FALSE,0,never,${runtime.period.Hazard Rate (Control)}==N/A,Fill authored hazard-rate control value,

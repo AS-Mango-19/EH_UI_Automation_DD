@@ -1,0 +1,7 @@
+StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description,DynamicArgs
+10,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutByTime,${runtime.period.dropoutByTime},,,,,10000,FALSE,0,never,,Fill authored dropout by-time value,${runtime.period.n}
+20,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutControlArm,${runtime.period.dropoutControlArm},,,,,10000,FALSE,0,never,,Fill authored control-arm dropout value,${runtime.period.n}
+30,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutTreatmentArm1,${runtime.period.dropoutTreatmentArm1},,,,,10000,FALSE,0,never,,Fill authored treatment-arm 1 dropout value,${runtime.period.n}
+40,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutTreatmentArm2,${runtime.period.dropoutTreatmentArm2},,,,,10000,FALSE,0,never,,Fill authored treatment-arm 2 dropout value,${runtime.period.n}
+50,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutTreatmentArm3,${runtime.period.dropoutTreatmentArm3},,,,,10000,FALSE,0,never,,Fill authored treatment-arm 3 dropout value,${runtime.period.n}
+60,ConfigureDesign,DesignPage,fill,txt_dropoutTable_dropoutTreatmentArm4,${runtime.period.dropoutTreatmentArm4},,,,,10000,FALSE,0,never,,Fill authored treatment-arm 4 dropout value,${runtime.period.n}
