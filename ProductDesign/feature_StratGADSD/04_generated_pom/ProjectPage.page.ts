@@ -95,52 +95,52 @@ export class ProjectPage {
   }
 
   /** Factor 1 Level 1 name - confirmed live via new recording.txt */
-  txt_Level_1-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_1-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_1-0', { dynamicArgs });
   }
 
   /** Factor 1 Level 2 name - confirmed live via new recording.txt */
-  txt_Level_2-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_2-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_2-0', { dynamicArgs });
   }
 
   /** Factor 1 Level 3 name - confirmed live via new recording.txt */
-  txt_Level_3-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_3-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_3-0', { dynamicArgs });
   }
 
   /** Factor 1 Level 4 name - id pattern extrapolated, not itself confirmed live */
-  txt_Level_4-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_4-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_4-0', { dynamicArgs });
   }
 
   /** Factor 1 Level 5 name - id pattern extrapolated, not itself confirmed live */
-  txt_Level_5-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_5-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_5-0', { dynamicArgs });
   }
 
   /** Factor 2 Level 1 name - confirmed live via new recording.txt */
-  txt_Level_1-1(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_1-1'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_1-1', { dynamicArgs });
   }
 
   /** Factor 2 Level 2 name - confirmed live via new recording.txt */
-  txt_Level_2-1(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_2-1'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_2-1', { dynamicArgs });
   }
 
   /** Factor 2 Level 3 name - confirmed live via new recording.txt */
-  txt_Level_3-1(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_3-1'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_3-1', { dynamicArgs });
   }
 
   /** Factor 3 Level 1 name - confirmed live via new recording.txt */
-  txt_Level_1-2(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_1-2'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_1-2', { dynamicArgs });
   }
 
   /** Factor 3 Level 2 name - confirmed live via new recording.txt */
-  txt_Level_2-2(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Level_2-2'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectPage', 'txt_Level_2-2', { dynamicArgs });
   }
 

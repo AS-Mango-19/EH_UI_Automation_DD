@@ -216,7 +216,7 @@ export const click: KeywordHandler = async (_page, ctx, step) => {
     );
     const lastSuccessIdx = (() => {
       for (let i = ctx.stepResults.length - 1; i >= 0; i--) {
-        const r = ctx.stepResults[i];
+        const r = ctx.stepResults[i]!;
         if (
           r.action === 'click' &&
           r.objectName === step.objectName &&
@@ -287,7 +287,7 @@ export const click: KeywordHandler = async (_page, ctx, step) => {
       // correctly stands.
       const disabledPrefix = `click ${step.objectName}: button is DISABLED`;
       for (let i = ctx.soft.length - 1; i >= 0; i--) {
-        if (ctx.soft[i].message.startsWith(disabledPrefix)) ctx.soft.splice(i, 1);
+        if (ctx.soft[i]!.message.startsWith(disabledPrefix)) ctx.soft.splice(i, 1);
       }
       return;
     } catch (err) {

@@ -75,7 +75,7 @@ export class ProjectsPage {
   }
 
   /** textbox from codegen */
-  txt_Dose_Name-0(...dynamicArgs: string[]): Promise<Locator> {
+  'txt_Dose_Name-0'(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Dose_Name-0', { dynamicArgs });
   }
 
