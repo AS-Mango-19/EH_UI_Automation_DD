@@ -60,6 +60,9 @@ btn_Save_Compute,DesignPage,role,button,Save & Compute,,FALSE,button from codege
 txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
 txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
 lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,button for opening the result Details tab,FALSE
+div_Details_Spinner,ResultsPage,css,#spinner,,,FALSE,loading overlay for the Details-tab load check,FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,Details tab chart container; validates that the graph rendered,FALSE
 btn_Next,LoginPage,role,button,Next,,FALSE,Next button (login flow),FALSE
 div_Spinner,ProjectsPage,css,#spinner,,,FALSE,loading overlay (login flow landing),FALSE
 ddl_Study_Objective,ProjectsPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE

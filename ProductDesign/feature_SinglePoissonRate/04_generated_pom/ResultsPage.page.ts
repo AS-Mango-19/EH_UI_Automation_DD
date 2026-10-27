@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: eae29ddaa115db363d0595c71b5c3521f9c8b8169d0239c5596ee51de656c76d)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 342260c9b99107739c0dba4a5fca09c51fddf2da1b772224614fc59466d551d1)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -77,6 +77,21 @@ export class ResultsPage {
   /** textbox from codegen */
   txt_credit_alert_primary(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_credit_alert_primary', { dynamicArgs });
+  }
+
+  /** button for opening the result Details tab */
+  btn_Details(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Details', { dynamicArgs });
+  }
+
+  /** loading overlay for the Details-tab load check */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Spinner', { dynamicArgs });
+  }
+
+  /** Details tab chart container; validates that the graph rendered */
+  div_Details_Chart(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Chart', { dynamicArgs });
   }
 
   /** result link from codegen */

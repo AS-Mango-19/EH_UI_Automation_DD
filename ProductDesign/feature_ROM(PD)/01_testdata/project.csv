@@ -4,3 +4,4 @@ TC_04,ITER_02,TRUE,AutoProj_ROM,Month,7/15/2026,Two Arm Confirmatory,3,Adult,EXP
 TC_04,ITER_03,TRUE,AutoProj_ROM,Day,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Smaller Value,3
 TC_04,ITER_04,TRUE,AutoProj_ROM,Year,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Larger Value,3
 TC_04,ITER_05,TRUE,AutoProj_ROM,Week,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Smaller Value,3
+TC_04,ITER_06,TRUE,AutoProj_ROM,Week,7/15/2026,Two Arm Confirmatory,3,Adult,EXP,Crt Arm,Primary,EP1,Continuous,Larger Value,3
