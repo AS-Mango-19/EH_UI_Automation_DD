@@ -29,5 +29,5 @@ export const FRAMEWORK_CONFIG = {
   },
 } as const;
 
-export type BrowserName = 'chromium' | 'firefox' | 'webkit';
+export type BrowserName = 'chromium' | 'firefox' | 'webkit' | 'msedge';
 export type BaselineMode = 'compare' | 'create' | 'update';

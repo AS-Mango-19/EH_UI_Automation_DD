@@ -10,12 +10,16 @@ import type { EnvConfig } from '../../config/environments.js';
 import { ensureDir } from '../utils/paths.js';
 import { FrameworkError } from '../utils/errors.js';
 
-export type BrowserName = 'chromium' | 'firefox' | 'webkit';
+export type BrowserName = 'chromium' | 'firefox' | 'webkit' | 'msedge';
 
 export async function launchBrowser(name: BrowserName, headless: boolean): Promise<Browser> {
   const engine = name === 'firefox' ? firefox : name === 'webkit' ? webkit : chromium;
+  // Edge is Chromium-based - Playwright launches it as a "channel" of the chromium
+  // engine, not a separate browser type, so only the channel option differs here.
+  const channel = name === 'msedge' ? 'msedge' : undefined;
   return engine.launch({
     headless,
+    channel,
     args: headless ? [] : ['--start-maximized'],
   });
 }

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { boolField, strField, strWithDefault } from './common.js';
 
-export const BROWSERS = ['chromium', 'firefox', 'webkit'] as const;
+export const BROWSERS = ['chromium', 'firefox', 'webkit', 'msedge'] as const;
 export const BASELINE_MODES = ['compare', 'create', 'update'] as const;
 
 const browserField = z.preprocess((v) => {

@@ -381,7 +381,7 @@ One row per test case. Schema: `core/schema/master.schema.ts`. The schema is `.p
 | `Execute` | no | `FALSE` | Whether `--all` runs it. `--testcase` **ignores** this. |
 | `Tags` | no | `''` | For `--tags`. OR `,` · AND `+` · NOT `~`. |
 | `StudyObjective` | no | `''` | Human label of the study type (e.g. `Two Arm Confirmatory`). |
-| `Browser` | no | `chromium` | `chromium` \| `firefox` \| `webkit`. |
+| `Browser` | no | `chromium` | `chromium` \| `firefox` \| `webkit` \| `msedge` (Chromium-based; launched via Playwright's `channel` option, needs Edge installed locally/in CI). |
 | `Environment` | no | `''` | Env name — selects **both** `.env.<env>` and `06_baseline/<env>/`. Currently `AD`. |
 | `TestDataFile` | no | `01_testdata` | The testdata folder (a file inside it also resolves to the folder). |
 | `MetadataFile` | no | `03_metadata/metadata.csv` | Relative to the feature dir. |
