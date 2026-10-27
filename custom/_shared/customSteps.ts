@@ -910,6 +910,173 @@ export const scrollGridIntoView: KeywordHandler = async (page, ctx, step) => {
 };
 
 /**
+ * fillGridCell — writes ONE value into an AG-Grid cell addressed purely by its structural
+ * coordinates (`row-index` + `col-id`), for the case recording/codegen CANNOT capture a
+ * usable per-cell selector: AG-Grid cells are typically plain `<div>`s until double-clicked
+ * into edit mode, so a codegen session that doesn't happen to double-click every cell leaves
+ * most of the grid with no recorded selector at all, even though the grid's structure (and
+ * therefore every cell's row-index/col-id) is fully knowable live via `dumpGridDiagnostic`.
+ * This is the WRITE counterpart to that READ-only diagnostic: find the addresses with
+ * `dumpGridDiagnostic` first, then drive them with this.
+ *
+ * Also handles the companion problem of a target row not existing yet: if `addButtonLabel`
+ * is configured, it clicks that button (located RELATIVE to the grid container, same
+ * technique as `reconcilePeriodTable`) until the row renders, and — if the grid requires an
+ * explicit sequence number typed into its own "index"/"Sr. No." column rather than
+ * auto-numbering new rows — fills that column too via `indexColId`, defaulting to the
+ * 1-based row position (`rowIndex + 1`). This default is a REASONABLE GUESS, not a confirmed
+ * convention for every grid — screenshot-verify a newly-added row's index cell on first use
+ * and pass a different `indexColId`/value scheme if the app numbers differently (e.g. 0-based,
+ * or a non-sequential id).
+ *
+ * Config comes from ExpectedValue (InputValue is already consumed by callCustom as the
+ * function-name dispatch key, matching reconcilePeriodTable's convention); the PER-CALL
+ * row-index and value come from DynamicArgs so the same config works standalone (literal
+ * DynamicArgs) or looped per-row inside a `loopPeriods` flow file (`${runtime.period.n}` +
+ * a resolved field token) — DynamicArgs is already `${...}`-resolved and scanned by
+ * `check-testdata-coverage.ts` like any other column, so no extra coverage-tool wiring is
+ * needed for the value token:
+ *   ExpectedValue  = "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]"
+ *   DynamicArgs    = "<rowIndex>|<value>"
+ *     e.g. ExpectedValue = "#singlePieceStratTable|hazardRatio|txt_Input_Editor|Add Stratum|srNo"
+ *          DynamicArgs   = "${runtime.period.n}|${runtime.period.hazardRatio}"
+ * `editorObjectName` is a selectors.csv OBJECT NAME (not raw CSS) for the grid's inline cell
+ * editor, matching `fillCompactIndexedCells`'s convention — AG-Grid typically reuses ONE
+ * editor element for whichever cell is being edited, and that element's selector is usually
+ * already confirmed/recorded per feature (e.g. `txt_Input_Editor`). `addButtonLabel`/
+ * `indexColId` are optional — omit both for a grid whose rows are never short of the target
+ * (fails loudly instead of silently if the row still doesn't exist and no add button is given).
+ *
+ * Row-index/col-id are on DIFFERENT elements (the row `<div>` vs a nested cell `<div>`), so
+ * the cell locator uses a DESCENDANT combinator — `[row-index="N"] [col-id="X"]` — never a
+ * compound `[row-index="N"][col-id="X"]`, which silently matches nothing (confirmed live via
+ * `dumpGridDiagnostic` on more than one feature's grid).
+ */
+const AG_GRID_CELL_FILL_MAX_SCROLL_PASSES = 40;
+
+async function scrollAndFillAgGridCell(
+  page: Page,
+  containerSel: string,
+  cellLoc: Locator,
+  editorLoc: Locator,
+  value: string,
+  timeout: number,
+  label: string,
+): Promise<void> {
+  for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+    if (await cellLoc.count().catch(() => 0)) break;
+    const moved = await page
+      .evaluate((containerSel) => {
+        const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+        return viewport.scrollTop !== before;
+      }, containerSel)
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+  await cellLoc.dblclick({ timeout });
+  await editorLoc.first().waitFor({ state: 'visible', timeout });
+  await editorLoc.first().fill(value, { timeout });
+  // Explicit Enter commit — AG-Grid's React cell editor may only save to its data model on
+  // blur/Enter, not on fill()'s input/change events alone (same finding as fillCompactIndexedCells).
+  await editorLoc.first().press('Enter', { timeout }).catch(() => undefined);
+  logger.info(`fillGridCell[${label}]: filled "${value}"`);
+  await page.waitForTimeout(300);
+}
+
+export const fillGridCell: KeywordHandler = async (page, ctx, step) => {
+  const [containerSel, colId, editorObject, addButtonLabel, indexColId] = (step.expected || '')
+    .split('|')
+    .map((s) => s.trim());
+  if (!containerSel || !colId || !editorObject) {
+    throw new Error(
+      `fillGridCell: ExpectedValue must be "<gridContainerCssSelector>|<colId>|<editorObjectName>[|<addButtonLabel>[|<indexColId>]]" — got "${step.expected}"`,
+    );
+  }
+  const [rowIndex, rawValue] = step.dynamicArgs;
+  if (rowIndex === undefined || rawValue === undefined) {
+    throw new Error(`fillGridCell: DynamicArgs must resolve to "<rowIndex>|<value>" — got "${step.dynamicArgs.join('|')}"`);
+  }
+  const isNa = (v: string) => v.trim() === '' || /^(n\/a|not applicable)$/i.test(v.trim());
+  if (isNa(rowIndex) || isNa(rawValue)) {
+    logger.info(`fillGridCell[${containerSel} row=${rowIndex} col=${colId}]: testdata value blank/N/A — skipping.`);
+    return;
+  }
+  const timeout = step.timeout;
+  const label = `${containerSel} row=${rowIndex} col=${colId}`;
+  const targetCell = () => page.locator(containerSel).locator(`[row-index="${rowIndex}"] [col-id="${colId}"]`);
+  const editorLoc = await resolveLocator(ctx.root(), ctx.feature.selectorIndex, step.page, editorObject);
+
+  // First pass: is the row already rendered (possibly just off-screen in the virtualized grid)?
+  for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+    if (await targetCell().count().catch(() => 0)) break;
+    const moved = await page
+      .evaluate((containerSel) => {
+        const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+        if (!viewport) return false;
+        const before = viewport.scrollTop;
+        viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+        return viewport.scrollTop !== before;
+      }, containerSel)
+      .catch(() => false);
+    if (!moved) break;
+    await page.waitForTimeout(120);
+  }
+
+  let rowWasAdded = false;
+  if (!(await targetCell().count().catch(() => 0))) {
+    if (!addButtonLabel) {
+      throw new Error(`fillGridCell[${label}]: row not found and no addButtonLabel configured — cannot create it`);
+    }
+    const addBtn = page
+      .locator(containerSel)
+      .locator(`xpath=following::button[contains(normalize-space(), ${JSON.stringify(addButtonLabel)})][1]`)
+      .first();
+    let guard = 0;
+    while (!(await targetCell().count().catch(() => 0)) && guard++ < Number(rowIndex) + 10) {
+      if (!(await addBtn.count().catch(() => 0))) {
+        throw new Error(`fillGridCell[${label}]: no "${addButtonLabel}" button found after the grid (attempt ${guard})`);
+      }
+      await addBtn.click({ timeout }).catch(async () => {
+        await addBtn.click({ timeout, force: true }).catch(() => undefined);
+      });
+      await page.waitForTimeout(400);
+      rowWasAdded = true;
+      // Re-scroll in case the new row rendered off-screen too.
+      for (let pass = 0; pass < AG_GRID_CELL_FILL_MAX_SCROLL_PASSES; pass++) {
+        if (await targetCell().count().catch(() => 0)) break;
+        const moved = await page
+          .evaluate((containerSel) => {
+            const viewport = document.querySelector(containerSel)?.querySelector('.ag-body-viewport') as HTMLElement | null;
+            if (!viewport) return false;
+            const before = viewport.scrollTop;
+            viewport.scrollTop = before + Math.max(viewport.clientHeight * 0.7, 40);
+            return viewport.scrollTop !== before;
+          }, containerSel)
+          .catch(() => false);
+        if (!moved) break;
+        await page.waitForTimeout(120);
+      }
+    }
+    if (!(await targetCell().count().catch(() => 0))) {
+      throw new Error(`fillGridCell[${label}]: row still not found after ${guard} "${addButtonLabel}" click(s)`);
+    }
+    logger.info(`fillGridCell[${label}]: row did not exist — added via "${addButtonLabel}" (${guard} click(s))`);
+  }
+
+  if (rowWasAdded && indexColId) {
+    const indexCell = page.locator(containerSel).locator(`[row-index="${rowIndex}"] [col-id="${indexColId}"]`);
+    const indexValue = String(Number(rowIndex) + 1); // 1-based default — verify live, see doc comment above.
+    await scrollAndFillAgGridCell(page, containerSel, indexCell, editorLoc, indexValue, timeout, `${label} (index col=${indexColId})`);
+  }
+
+  await scrollAndFillAgGridCell(page, containerSel, targetCell(), editorLoc, rawValue, timeout, label);
+};
+
+/**
  * clickCheckboxIfNeeded — a state-aware alternative to `click` for checkboxes that open a
  * confirmation dialog on toggle (which makes Playwright's own `check`/`uncheck` throw,
  * since their built-in post-click state verification races the dialog). Plain `click` is

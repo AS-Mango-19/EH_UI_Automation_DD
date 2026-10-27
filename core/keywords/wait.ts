@@ -16,7 +16,7 @@ import { ensureDir } from '../utils/paths.js';
 import { logger } from '../utils/logger.js';
 import { SimulationFailedError, SimulationTimeoutError } from '../utils/errors.js';
 
-type WaitState = 'attached' | 'detached' | 'visible' | 'hidden';
+type WaitState = 'attached' | 'detached' | 'visible' | 'hidden' | 'enabled' | 'disabled';
 function waitState(cond: string): WaitState {
   switch (cond.trim().toLowerCase()) {
     case 'attached':
@@ -25,6 +25,10 @@ function waitState(cond: string): WaitState {
       return 'detached';
     case 'hidden':
       return 'hidden';
+    case 'enabled':
+      return 'enabled';
+    case 'disabled':
+      return 'disabled';
     default:
       return 'visible';
   }
@@ -35,7 +39,23 @@ function contains(haystack: string, needle: string): boolean {
 }
 
 export const waitForSelector: KeywordHandler = async (_page, ctx, step) => {
-  await (await targetLocator(ctx, step)).first().waitFor({ state: waitState(step.waitCondition), timeout: step.timeout });
+  const state = waitState(step.waitCondition);
+  const loc = (await targetLocator(ctx, step)).first();
+  // Playwright's Locator#waitFor only covers attached/detached/visible/hidden - there is
+  // no native wait for an enabled/disabled state (that's `isEnabled()`, checked once, not
+  // polled). 'enabled'/'disabled' are added here as a manual poll, same shape as
+  // waitForText below, so a step can wait for a control to become interactive instead of
+  // sleeping a fixed duration and hoping the recompute/re-render finished in time.
+  if (state === 'enabled' || state === 'disabled') {
+    const deadline = Date.now() + step.timeout;
+    while (Date.now() < deadline) {
+      const enabled = await loc.isEnabled().catch(() => false);
+      if (state === 'enabled' ? enabled : !enabled) return;
+      await sleepMs(200);
+    }
+    throw new Error(`waitForSelector: "${step.objectName}" never became ${state} within ${step.timeout}ms`);
+  }
+  await loc.waitFor({ state, timeout: step.timeout });
 };
 
 export const waitForText: KeywordHandler = async (_page, ctx, step) => {
