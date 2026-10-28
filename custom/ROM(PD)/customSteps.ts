@@ -227,11 +227,22 @@ export const selectTestOption: KeywordHandler = async (page, ctx, step) => {
 };
 
 export const selectInputSetTaskAndTest: KeywordHandler = async (page, ctx, step) => {
+  const resolvedTask = ctx.resolve('${data.inputset.SelectTask}', { stepId: step.stepId, column: 'InputValue' });
   const resolvedTest = ctx.resolve('${data.inputset.SelectTest}', { stepId: step.stepId, column: 'InputValue' });
 
-  logger.info(`selectInputSetTaskAndTest -> ${resolvedTest}`);
+  logger.info(`selectInputSetTaskAndTest -> task=${resolvedTask} test=${resolvedTest}`);
 
-  await page.getByRole('button', { name: 'Design Compute or simulate a' }).click({ timeout: step.timeout });
+  // Data-driven task button (SelectTask, e.g. "Design") with a substring match, falling
+  // back to the proven hardcoded name if the data-driven lookup ever misses - every
+  // current row's SelectTask value is a substring of the hardcoded label, so behavior is
+  // unchanged in practice while the column is now genuinely consulted (was previously
+  // flagged by validate as an unentered testdata value).
+  const taskButton = page.getByRole('button', { name: resolvedTask, exact: false });
+  if (await taskButton.count().catch(() => 0)) {
+    await taskButton.first().click({ timeout: step.timeout });
+  } else {
+    await page.getByRole('button', { name: 'Design Compute or simulate a' }).click({ timeout: step.timeout });
+  }
   await page.getByRole('heading', { name: 'Select Test' }).click({ timeout: step.timeout }).catch(() => undefined);
 
   const testContainer = page.locator('.react-select__input-container').last();
@@ -281,6 +292,103 @@ export const confirmSimulateModal: KeywordHandler = async (page, _ctx, step) => 
   const btn = btns.last();
   await btn.waitFor({ state: 'attached', timeout: step.timeout }).catch(() => undefined);
   await btn.evaluate((el: HTMLElement) => el.click());
+};
+
+/**
+ * reconcileSimEnrollment: click "Add Period" on the sim Enrollment table until its live
+ * row count matches the iteration's simulation_enrollmentTable.csv period count. Must run
+ * BEFORE the per-period loopPeriods fill. Feature-agnostic (copied from feature_DOM(PD),
+ * confirmed live there) - reused verbatim since ROM(PD)'s sim enrollment table shares the
+ * same enrollmentTable.<n>.<field> id pattern (confirmed live via screenshot 2026-10-28,
+ * ITER_06's 6-period table; Add Period button id=addButton).
+ */
+export const reconcileSimEnrollment: KeywordHandler = async (page, ctx, step) => {
+  const timeout = step.timeout;
+  const parsed = ctx.feature.testDataParsed.get('simulation');
+  const row = parsed?.records.find(
+    (r) => r.data['TC_ID'] === ctx.tcId && r.data['IterationID'] === ctx.iterationId,
+  )?.data;
+  if (!parsed || !row) return;
+  const re = /^enrollmentTable\.(\d+)\./;
+  const periods = new Set<string>();
+  for (const h of parsed.headers) {
+    const m = re.exec(h);
+    if (m && row[h] !== undefined && !/^(n\/a|not applicable|)$/i.test(row[h]!.trim())) periods.add(m[1]);
+  }
+  const target = periods.size;
+  const liveCount = async (): Promise<number> =>
+    page
+      .locator('[id^="enrollmentTable."][id$=".avgSubjectsEnrolled"], [name^="enrollmentTable."][name$=".avgSubjectsEnrolled"]')
+      .count()
+      .catch(() => 0);
+  let current = await liveCount();
+  logger.info(`reconcileSimEnrollment: live ${current} row(s), sim testdata wants ${target}`);
+  if (target <= current) return;
+  let guard = 0;
+  while (current < target && guard++ < target + 5) {
+    const anchor = page.locator('[id^="enrollmentTable."], [name^="enrollmentTable."]').last();
+    const addBtn = anchor
+      .locator('xpath=following::button[contains(normalize-space(), "Add Period")][1]')
+      .first();
+    if (!(await addBtn.count().catch(() => 0))) {
+      throw new Error(`reconcileSimEnrollment: no "Add Period" button after the enrollment table (current=${current}, target=${target})`);
+    }
+    await addBtn.click({ timeout }).catch(async () => {
+      await addBtn.click({ timeout, force: true }).catch(() => undefined);
+    });
+    await page.waitForTimeout(400);
+    const next = await liveCount();
+    if (next <= current) {
+      throw new Error(`reconcileSimEnrollment: "Add Period" did not add a row (still ${next}, target ${target})`);
+    }
+    current = next;
+  }
+  logger.info(`reconcileSimEnrollment: now ${current} period(s)`);
+};
+
+/**
+ * waitAndInspectSaveSimulate: poll the "Save & Simulate" button (#save-compute) until it
+ * re-enables after Save, and INSPECT the page state if it never does. Copied verbatim from
+ * feature_DOM(PD) (feature-agnostic, uses only the #save-compute id) - confirmed live needed
+ * here too: ITER_04 (IncludeEnrollment=uncheck) left Save & Simulate disabled long enough
+ * that the plain click's short auto-wait force-clicked through before the app had actually
+ * re-enabled it, leaving the next step (naming the sim result) unable to find its field
+ * because the Save & Simulate dialog never genuinely opened.
+ */
+export const waitAndInspectSaveSimulate: KeywordHandler = async (page, _ctx, step) => {
+  const btn = page.locator('#save-compute');
+  const start = Date.now();
+  const deadline = start + step.timeout;
+  let enabled = false;
+  while (Date.now() < deadline) {
+    const present = await btn.count().catch(() => 0);
+    const isEnabled = present > 0 ? await btn.isEnabled().catch(() => false) : false;
+    if (isEnabled) { enabled = true; break; }
+    await page.waitForTimeout(1000);
+  }
+  const waited = Date.now() - start;
+  if (enabled) {
+    logger.info(`waitAndInspectSaveSimulate: Save & Simulate enabled after ~${waited}ms`);
+    return;
+  }
+  const grab = async (loc: Locator): Promise<string[]> =>
+    (await loc.allInnerTexts().catch(() => [])).map((t) => t.trim()).filter(Boolean);
+  const buttonHtml = await btn.evaluate((el) => el.outerHTML).catch(() => '(button not found)');
+  const toasts = await grab(page.locator('[class*="toast"], [role="alert"], [class*="notification"]'));
+  const alerts = await grab(page.locator('[class*="alert"], [class*="Alert"]'));
+  const invalids = await grab(page.locator('[aria-invalid="true"], [class*="invalid"], [class*="error"], [class*="Error"]'));
+  const spinnerCount = await page.locator('[class*="spinner"], [class*="Spinner"], [class*="loading"]').count().catch(() => 0);
+  const notSaved = await page.getByText('Not Saved', { exact: false }).count().catch(() => 0);
+  logger.error(
+    `waitAndInspectSaveSimulate: Save & Simulate STILL DISABLED after ${waited}ms — inspect:\n` +
+      `  button   = ${buttonHtml}\n` +
+      `  toasts   = ${JSON.stringify(toasts)}\n` +
+      `  alerts   = ${JSON.stringify(alerts)}\n` +
+      `  invalids = ${JSON.stringify(invalids.slice(0, 20))}\n` +
+      `  spinners = ${spinnerCount}\n` +
+      `  notSavedIndicators = ${notSaved}`,
+  );
+  throw new Error(`waitAndInspectSaveSimulate: #save-compute never enabled within ${step.timeout}ms (see inspect log)`);
 };
 
 /* ------------------------------------------------------------------ *

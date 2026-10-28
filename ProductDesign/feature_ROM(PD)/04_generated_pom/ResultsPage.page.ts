@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 863e7d5c8a40ebc4cd9bd7d56e0b0d86581c8356505ebf636b35a4df4f91819f)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 9967f3353e7f68a9baae587a2266cbf916691d4cd6679aa65ac22d6124e6b40a)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class ResultsPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
@@ -232,5 +232,20 @@ export class ResultsPage {
   /** First link in the Simulation result row = the result name (opens the sim result) */
   lnk_sim_ResultName(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'lnk_sim_ResultName', { dynamicArgs });
+  }
+
+  /** hand-added - Details tab load-check (DOM(PD)/SinglePoissonRate/MeanofPairedDiff precedent) - SCREENSHOT-VERIFY on first live run */
+  btn_Details(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Details', { dynamicArgs });
+  }
+
+  /** hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Spinner', { dynamicArgs });
+  }
+
+  /** hand-added - the Details tab's Plotly chart container, id proven across sibling means-family features via dumpSubtree - SCREENSHOT-VERIFY it matches here on first live run */
+  div_Details_Chart(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Chart', { dynamicArgs });
   }
 }

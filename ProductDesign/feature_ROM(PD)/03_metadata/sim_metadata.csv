@@ -1,6 +1,6 @@
 Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,ExpectedValue,WaitCondition,Timeout,Optional,Retry,Screenshot,SkipIf,Description
 1,10,Simulate,DesignPage,click,btn_Simulate,,,,,,10000,FALSE,0,never,,click Simulate
-2,20,ConfigureDesign,AppPage,fill,txt_ResultName,${data.simulation.Result Name},,,,,10000,FALSE,0,never,,fill Result Name
+2,20,ConfigureDesign,AppPage,fill,txt_ResultName,${data.simulation.CreateInputSet},,,,,10000,FALSE,0,never,,"fill Simulation Input set name (CreateInputSet - matching the GADAR(PD)/StratGADSD/MAMS_DOP established pattern: CreateInputSet names the input set here, distinct from Result Name which is filled later in the Save & Simulate modal)"
 3,30,ConfigureDesign,AppPage,click,txt_credit_alert_primary,,,,,,10000,FALSE,0,never,,click credit alert primary
 4,40,ConfigureDesign,AppPage,click,txt_id_left_Panel_designs,,,,,,10000,FALSE,0,never,,click id leftPanel designs
 5,44,Simulate,ResultsPage,select,ddl_sim_Hypothesis,${data.simulation.Hypothesis},,,,,10000,FALSE,0,never,,Select Hypothesis FIRST (controls which fields exist)
@@ -13,29 +13,36 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 12,90,ConfigureDesign,AppPage,fill,txt_Noninferiority_Margin_0,${data.simulation.Noninferiority Margin},,,,,10000,FALSE,0,never,,fill Noninferiority Margin (ρ0 = µ
 13,100,ConfigureDesign,AppPage,fill,txt_Critical_Point,${data.simulation.Critical Point},,,,,10000,FALSE,0,never,,fill Critical Point
 14,110,ConfigureDesign,AppPage,select,ddl_Test_Statistic,${data.simulation.Test Statistic},,,,,10000,FALSE,0,always,,Select Test Statistic. Native <select> - select matches by visible label first
+14.5,115,ConfigureDesign,AppPage,fill,txt_sim_Coefficient_of_Variation,${data.simulation.coefficientOfVariation},,,,,10000,FALSE,0,never,,"fill Coefficient of Variation of Data - LIVE-CONFIRMED this field does not exist in the DOM until AFTER Test Statistic is selected (moving it here from right after Critical Point Lower fixed a confirmed-live fill failure on ITER_06, the exact iteration screenshot-verified to have this field); N/A for iterations where it does not apply auto-skips"
 15,130,ConfigureDesign,AppPage,click,btn_Response,,,,,,10000,FALSE,0,never,,click Response
 16,140,ConfigureDesign,AppPage,fill,txt_Mean_Control_c,${data.simulation.Mean Control},,,,,10000,FALSE,0,never,,fill Mean Control
 17,150,ConfigureDesign,AppPage,fill,txt_Mean_Treatment_t,${data.simulation.Mean Treatment},,,,,10000,FALSE,0,never,,fill Mean Treatment
-18,155,ConfigureDesign,ResultsPage,uncheck,chk_sim_Common_CoV,,,,,,10000,FALSE,0,never,,Uncheck Common Coefficient of Variation so Control and Treatment CoV are independent
+18,155,ConfigureDesign,ResultsPage,uncheck,chk_sim_Common_CoV,,,,,,10000,FALSE,0,never,${data.simulation.commonCoefficientOfVariation}!=uncheck,Uncheck Common Coefficient of Variation so Control and Treatment CoV are independent. Gated on the new commonCoefficientOfVariation column (rule 8)
+18.5,156,ConfigureDesign,ResultsPage,check,chk_sim_Common_CoV,,,,,,10000,FALSE,0,never,${data.simulation.commonCoefficientOfVariation}!=check,Counterpart of StepID 155 - checks Common CoV when commonCoefficientOfVariation=check (e.g. ITER_03/06)
 19,160,ConfigureDesign,AppPage,fill,txt_Coefficient_of_Variation_of_Data_Control,${data.simulation.Coefficient of Variation of Data Control},,,,,10000,FALSE,0,never,,fill Coefficient of Variation of Data Control
 20,170,ConfigureDesign,AppPage,fill,txt_Coefficient_of_Variation_of_Data_Treatment,${data.simulation.Coefficient of Variation of Data Treatment},,,,,10000,FALSE,0,never,,fill CoV Data Treatment (editable after unchecking Common CoV)
-21,180,ConfigureDesign,AppPage,fill,txt_Follow_up_Time_Week,${data.simulation.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+21,180,ConfigureDesign,AppPage,fill,txt_Follow_up_Time_Week,${data.simulation.followUpTime},,,,,10000,FALSE,0,never,,fill Follow-up Time
 22,190,ConfigureDesign,AppPage,fill,txt_Probability_of_Dropout,${data.simulation.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
 23,200,ConfigureDesign,AppPage,click,btn_Enrollment,,,,,,10000,FALSE,0,never,,click Enrollment
-24,205,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,never,,Turn Enrollment Include ON (reuses the design chk_Include: role=checkbox name=Include)
-25,210,ConfigureDesign,AppPage,fill,txt_Enrollment_Rate_per_Week,${data.simulation.Enrollment Rate},,,,,10000,FALSE,0,never,,fill Enrollment Rate
+24,205,ConfigureDesign,ResultsPage,check,chk_Include,,,,,,10000,FALSE,0,never,${data.simulation.IncludeEnrollment}!=check,Turn Enrollment Include ON (reuses the design chk_Include: role=checkbox name=Include). Gated on IncludeEnrollment (rule 8)
+24.5,206,ConfigureDesign,ResultsPage,uncheck,chk_Include,,,,,,10000,FALSE,0,never,${data.simulation.IncludeEnrollment}!=uncheck,Counterpart of StepID 205 - unchecks Include when IncludeEnrollment=uncheck (e.g. ITER_04)
+25.2,212,ConfigureDesign,AppPage,callCustom,,reconcileSimEnrollment,,,,,20000,FALSE,0,never,${data.simulation.IncludeEnrollment}!=check,"Add sim enrollment periods to match simulation_enrollmentTable.csv's count for this iteration (Include shows 1 row; multi-period needs Add Period - id=addButton, confirmed live 2026-10-28). Must run before the per-period loopPeriods fill"
+25.4,214,ConfigureDesign,AppPage,loopPeriods,simulation,flows/rom_pd_enrollmentTable_period.csv,,,enrollmentTable|avgSubjectsEnrolled,,30000,FALSE,0,never,${data.simulation.enrollmentTable.0.avgSubjectsEnrolled}==EMPTY,"loopPeriods (mirrors DOM(PD)'s proven pattern): fill sim enrollmentTable startingAtTime + avgSubjectsEnrolled per period from simulation_enrollmentTable.csv - count-agnostic, covers period 0 through N. reconcileSimEnrollment above sizes the table first"
 26,220,ConfigureDesign,AppPage,click,btn_Simulation_Setup,,,,,,10000,FALSE,0,never,,click Simulation Setup
-27,230,ConfigureDesign,AppPage,fill,txt_Number_of_Simulations_Run,${data.simulation.Number of Simulations Run},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
-28,240,ConfigureDesign,AppPage,select,ddl_Random_Number_Seed,${data.simulation.Random Number Seed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
-29,250,ConfigureDesign,AppPage,fill,txt_Fixed_Seed,${data.simulation.Fixed Seed},,,,,10000,FALSE,0,never,,fill Fixed Seed
-30,254,ConfigureDesign,ResultsPage,check,chk_sim_Save_Summary_Stats,,,,,,10000,FALSE,0,never,,Check Save Summary Statistics
-31,256,ConfigureDesign,ResultsPage,check,chk_sim_Save_Subject_Level_Data,,,,,,10000,FALSE,0,never,,Check Save Subject-Level Data (reveals the sub-level sim-runs field)
+27,230,ConfigureDesign,AppPage,fill,txt_Number_of_Simulations_Run,${data.simulation.numOfSimRun},,,,,10000,FALSE,0,never,,fill Number of Simulations Run
+28,240,ConfigureDesign,AppPage,select,ddl_Random_Number_Seed,${data.simulation.randomNumberSeed},,,,,10000,FALSE,0,always,,Select Random Number Seed. Native <select> - select matches by visible label first
+29,250,ConfigureDesign,AppPage,fill,txt_Fixed_Seed,${data.simulation.fixedSeed},,,,,10000,FALSE,0,never,,fill Fixed Seed
+30,254,ConfigureDesign,ResultsPage,check,chk_sim_Save_Summary_Stats,,,,,,10000,FALSE,0,never,${data.simulation.saveSummaryStats}!=check,Check Save Summary Statistics. Gated on saveSummaryStats (rule 8)
+30.5,255,ConfigureDesign,ResultsPage,uncheck,chk_sim_Save_Summary_Stats,,,,,,10000,FALSE,0,never,${data.simulation.saveSummaryStats}!=uncheck,Counterpart of StepID 254 - unchecks Save Summary Stats when saveSummaryStats=uncheck (e.g. ITER_04)
+31,256,ConfigureDesign,ResultsPage,check,chk_sim_Save_Subject_Level_Data,,,,,,10000,FALSE,0,never,${data.simulation.saveSubjectLevelData}!=check,Check Save Subject-Level Data (reveals the sub-level sim-runs field). Gated on saveSubjectLevelData (rule 8)
+31.5,257,ConfigureDesign,ResultsPage,uncheck,chk_sim_Save_Subject_Level_Data,,,,,,10000,FALSE,0,never,${data.simulation.saveSubjectLevelData}!=uncheck,Counterpart of StepID 256 - unchecks Save Subject-Level Data when saveSubjectLevelData=uncheck (e.g. ITER_02/06)
 32,260,ConfigureDesign,AppPage,fill,txt_sub_Level_Data_Sim_Runs,${data.simulation.subLevelDataSimRuns},,,,,10000,FALSE,0,never,,fill subLevelDataSimRuns
 33,270,ConfigureDesign,AppPage,click,btn_Save,,,,,,10000,FALSE,0,never,,click Save
+33.5,275,ConfigureDesign,AppPage,callCustom,,waitAndInspectSaveSimulate,,,,,120000,FALSE,0,always,,"Wait for Save & Simulate (#save-compute) to re-enable after Save; if it never enables INSPECT + log the reason instead of a bare disabled-click failure. Confirmed live needed (ITER_04, IncludeEnrollment=uncheck) - mirrors feature_DOM(PD)'s proven fix for the same symptom. Timeout raised 60000->120000: ITER_04's IncludeEnrollment=uncheck + followUpTime=0 combo is confirmed to eventually enable (one successful live run produced a real diff against the old stale baseline), just intermittently slower than 60s - this is a 1s-interval poll with early exit, so other iterations are unaffected"
 34,280,Simulate,DesignPage,click,btn_Save_Simulate,,,,,,10000,FALSE,0,never,,click Save Simulate
+34.5,285,ExtractResults,ResultsPage,fill,txt_sim_ResultName,${data.simulation.Result Name},,,,,10000,FALSE,0,never,,"name the simulation result in the shown Save & Simulate dialog (.modal.show #inputId) - wires the previously-orphaned txt_sim_ResultName selector; matches the GADAR(PD) pattern of naming the result distinctly before confirming"
 35,288,ExtractResults,ResultsPage,callCustom,,confirmSimulateModal,,,,,10000,FALSE,0,always,,Confirm the Simulate modal via native click on the last .modal.show #credit-alert-primary (starts the run)
 36,300,Simulate,ResultsPage,waitForSimulation,lbl_sim_RunStatus,,,,Completed,,300000,FALSE,0,always,,"Wait for the SIMULATION row status to change In-progress -> Completed (its own row, not the design result)"
 37,310,ExtractResults,ResultsPage,click,lnk_sim_ResultName,,,,,visible,180000,FALSE,0,always,,Open the simulation result by its Simulation-row link (app auto-names it)
 38,320,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
-39,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,"Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
-"
+39,330,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,"Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL"

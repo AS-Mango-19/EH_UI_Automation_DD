@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 863e7d5c8a40ebc4cd9bd7d56e0b0d86581c8356505ebf636b35a4df4f91819f)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 9967f3353e7f68a9baae587a2266cbf916691d4cd6679aa65ac22d6124e6b40a)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class AppPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
@@ -137,5 +137,20 @@ export class AppPage {
   /** button from codegen */
   btn_Save(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'AppPage', 'btn_Save', { dynamicArgs });
+  }
+
+  /** PARAMETRIC sim enrollmentTable startingAtTime; {0}=period index (loopPeriods) - id pattern confirmed live via user screenshot 2026-10-28 (ITER_06 multi-period Enrollment table, Add Period button id=addButton) */
+  txt_sim_enrollmentTable_startingAtTime(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'AppPage', 'txt_sim_enrollmentTable_startingAtTime', { dynamicArgs });
+  }
+
+  /** PARAMETRIC sim enrollmentTable avgSubjectsEnrolled; {0}=period index (loopPeriods) - same id pattern as the pre-existing period-0 selector (txt_Enrollment_Rate_per_Week), confirmed live */
+  txt_sim_enrollmentTable_avgSubjectsEnrolled(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'AppPage', 'txt_sim_enrollmentTable_avgSubjectsEnrolled', { dynamicArgs });
+  }
+
+  /** hand-added - the single 'Coefficient of Variation of Data' field shown on the sim Design tab for the Fixed Allocation randomization method (confirmed live via user screenshot 2026-10-28, ITER_06) - distinct from the Response-tab Control/Treatment split fields (#cvControl/#cvTreatment) */
+  txt_sim_Coefficient_of_Variation(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'AppPage', 'txt_sim_Coefficient_of_Variation', { dynamicArgs });
   }
 }
