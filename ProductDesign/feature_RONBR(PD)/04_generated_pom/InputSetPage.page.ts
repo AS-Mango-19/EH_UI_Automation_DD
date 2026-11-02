@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 6eafddfd82d8c95dd73059692125f8d2a3efb0188bcc62d1c2648011c114828b)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 976275d0cadee598f8c5bd9da834535164a80b96b2e34616375b0262b610f135)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -17,5 +17,20 @@ export class InputSetPage {
   /** textbox from codegen */
   txt_collection_Name(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'InputSetPage', 'txt_collection_Name', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Select_Task(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'InputSetPage', 'btn_Select_Task', { dynamicArgs });
+  }
+
+  /** dropdown (opener+option collapsed into one select step) */
+  ddl_Select_Test(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'InputSetPage', 'ddl_Select_Test', { dynamicArgs });
+  }
+
+  /** button from codegen */
+  btn_Continue(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'InputSetPage', 'btn_Continue', { dynamicArgs });
   }
 }
