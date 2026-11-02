@@ -19,8 +19,8 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 19,190,ConfigureDesign,ProjectsPage,click,btn_Follow_up_Time_Year,,,,,,10000,FALSE,0,never,,click Follow-up Time
 20,200,ConfigureDesign,ProjectsPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs
 21,210,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set
-22,220,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.Name Input Set},,,,,10000,FALSE,0,never,,fill Name Input Set
-23,230,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task
+22,220,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.collectionName},,,,,10000,FALSE,0,never,,fill collectionName (DOM id is the authoritative input-set field)
+23,230,ConfigureDesign,InputSetPage,click,btn_Select_Task,${data.inputset.SelectTask},,,,,10000,FALSE,0,never,,click Select Task (carries the authored task token)
 24,240,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.SelectTest},,,,,15000,FALSE,0,always,,Select react select input container. select opens the menu and commits the option itself - works for native and custom dropdowns
 25,250,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue
 26,260,ConfigureDesign,DesignPage,fill,txt_Allocation_Ratio_nt_nc,${data.design.Allocation Ratio},,,,,10000,FALSE,0,never,,fill Allocation Ratio
@@ -30,7 +30,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 31,310,ExtractResults,ResultsPage,assertValue,obj_Test_Type,,,,${data.design.Test Type},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
 32,320,ConfigureDesign,ResultsPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,fill Type 1 Error
 33,330,ConfigureDesign,ResultsPage,fill,txt_Proportion_Control_c,${data.design.Proportion Control},,,,,10000,FALSE,0,never,,fill Proportion Control
-34,340,ConfigureDesign,ResultsPage,fill,txt_Follow_up_Time_Year,${data.project.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
+34,340,ConfigureDesign,ResultsPage,fill,txt_Follow_up_Time_Year,${data.design.Follow-up Time},,,,,10000,FALSE,0,never,,fill Follow-up Time
 35,350,ConfigureDesign,ResultsPage,fill,txt_Probability_of_Dropout,${data.design.Probability of Dropout},,,,,10000,FALSE,0,never,,fill Probability of Dropout
 36,360,ConfigureDesign,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
 37,370,ConfigureDesign,ResultsPage,fill,txt_Odds_Ratio_of_Proportions,${data.design.Odds Ratio of Proportions},,,,,10000,FALSE,0,never,,fill Odds Ratio of Proportions
@@ -50,3 +50,6 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 52,520,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
 53,530,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
 54,540,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+55,550,ExtractResults,ResultsPage,click,btn_Details,,,,,,10000,FALSE,0,never,,Details tab load-check: placed after compareWithBaseline so it does not affect result comparison
+56,560,ExtractResults,ResultsPage,waitForSelector,div_Details_Spinner,,,,,hidden,30000,FALSE,0,always,,Wait for the Details page loading spinner to clear before checking the graph
+57,570,ExtractResults,ResultsPage,assertVisible,div_Details_Chart,,,,,visible,15000,FALSE,0,always,,Verify that the Details tab graph rendered
