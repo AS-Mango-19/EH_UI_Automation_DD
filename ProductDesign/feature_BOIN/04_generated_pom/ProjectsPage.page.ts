@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 5cff643c4fcbf55cdb907caf29cf19133c89f01086692bdc51f4db8eb0660725)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 3c55202d92c1052013114cc766c805ebd889992c681dd10242125a1feee4a5ac)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -34,6 +34,11 @@ export class ProjectsPage {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Time_Unit', { dynamicArgs });
   }
 
+  /** Start date input */
+  txt_StartDate(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_StartDate', { dynamicArgs });
+  }
+
   /** dropdown (opener+option collapsed into one select step) */
   ddl_Study_Objective(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Study_Objective', { dynamicArgs });
@@ -57,6 +62,11 @@ export class ProjectsPage {
   /** dropdown (opener+option collapsed into one select step) */
   ddl_Unit(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Unit', { dynamicArgs });
+  }
+
+  /** optional project priority assertion selector */
+  obj_Priority(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'obj_Priority', { dynamicArgs });
   }
 
   /** textbox from codegen */

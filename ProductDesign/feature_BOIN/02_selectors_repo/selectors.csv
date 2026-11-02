@@ -9,11 +9,13 @@ obj_Username,Page,label,Username,,,FALSE,clicked but not filled during recording
 btn_Password,ProjectsPage,role,button,New Project,,FALSE,button from codegen,FALSE
 txt_Project_Name,ProjectsPage,css,#projectName,,,FALSE,textbox from codegen,FALSE
 ddl_Time_Unit,ProjectsPage,label,Time Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+txt_StartDate,ProjectsPage,label,Start Date,,,FALSE,Start date input,FALSE
 ddl_Study_Objective,ProjectsPage,label,Study Objective,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
 ddl_Agent_Type,ProjectsPage,css,#agentType-0,,,FALSE,native <select> from codegen,FALSE
 ddl_Phase,ProjectsPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
 txt_Target_Population,ProjectsPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
 ddl_Unit,ProjectsPage,label,Unit,,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
+obj_Priority,ProjectsPage,label,Priority,,,FALSE,optional project priority assertion selector,FALSE
 txt_Endpoint_Name,ProjectsPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
 obj_Endpoint_Type,ProjectsPage,label,Endpoint Type,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
 obj_Outcome,ProjectsPage,label,Outcome,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
@@ -74,10 +76,10 @@ txt_Hill,ResultsPage,css,#hill,,,FALSE,textbox from codegen,FALSE
 txt_add_Sce_But,ResultsPage,css,#addSceBut,,,FALSE,textbox from codegen,FALSE
 txt_,ResultsPage,css,#beta,,,FALSE,textbox from codegen,FALSE
 txt_beta,ResultsPage,css,#beta,,,FALSE,Four Parameter Logistic: beta (clean alias of the codegen txt_ id),FALSE
-txt_delta,ResultsPage,css,#delta,,,FALSE,Four Parameter Logistic: delta (in recording; added for the scenario loop),FALSE
-txt_theta,ResultsPage,css,#theta,,,FALSE,Four Parameter Logistic: theta (in recording; added for the scenario loop),FALSE
-txt_tau,ResultsPage,css,#tau,,,FALSE,Four Parameter Logistic: tau (in recording; added for the scenario loop),FALSE
-txt_lin_Intercept,ResultsPage,css,#linIntercept,,,FALSE,Linear: Intercept (distinct id from Quadratic #intercept; added for the scenario loop),FALSE
+txt_delta,ResultsPage,css,#delta,,,FALSE,textbox from codegen,FALSE
+txt_theta,ResultsPage,css,#theta,,,FALSE,textbox from codegen,FALSE
+txt_tau,ResultsPage,css,#tau,,,FALSE,textbox from codegen,FALSE
+txt_lin_Intercept,ResultsPage,css,#linIntercept,,,FALSE,textbox from codegen,FALSE
 txt_Intercept_E0,ResultsPage,css,#intercept,,,FALSE,textbox from codegen,FALSE
 txt_Linear_Coefficient_1,ResultsPage,css,#linCoefficient,,,FALSE,textbox from codegen,FALSE
 txt_Quadratic_Coefficient_2,ResultsPage,css,#quadCoefficient,,,FALSE,textbox from codegen,FALSE
@@ -109,3 +111,6 @@ lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
 txt_close_tab_0,ResultsPage,css,#close-tab-0,,,FALSE,textbox from codegen,FALSE
 txt_ag_icon_ag_icon_tree_closed,ResultsPage,css,.ag-icon.ag-icon-tree-closed,,,FALSE,textbox from codegen,FALSE
 lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,Details tab load-check,FALSE
+div_Details_Spinner,ResultsPage,css,#spinner,,,FALSE,Details tab loading spinner,FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,Details tab chart container; validates that the graph rendered,FALSE

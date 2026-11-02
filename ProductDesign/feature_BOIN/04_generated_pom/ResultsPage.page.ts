@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 5cff643c4fcbf55cdb907caf29cf19133c89f01086692bdc51f4db8eb0660725)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 3c55202d92c1052013114cc766c805ebd889992c681dd10242125a1feee4a5ac)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -154,22 +154,22 @@ export class ResultsPage {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_beta', { dynamicArgs });
   }
 
-  /** Four Parameter Logistic: delta (in recording; added for the scenario loop) */
+  /** textbox from codegen */
   txt_delta(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_delta', { dynamicArgs });
   }
 
-  /** Four Parameter Logistic: theta (in recording; added for the scenario loop) */
+  /** textbox from codegen */
   txt_theta(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_theta', { dynamicArgs });
   }
 
-  /** Four Parameter Logistic: tau (in recording; added for the scenario loop) */
+  /** textbox from codegen */
   txt_tau(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_tau', { dynamicArgs });
   }
 
-  /** Linear: Intercept (distinct id from Quadratic #intercept; added for the scenario loop) */
+  /** textbox from codegen */
   txt_lin_Intercept(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'txt_lin_Intercept', { dynamicArgs });
   }
@@ -317,5 +317,20 @@ export class ResultsPage {
   /** Run status cell. VERIFY col-id against your app and adjust */
   lbl_RunStatus(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'lbl_RunStatus', { dynamicArgs });
+  }
+
+  /** Details tab load-check */
+  btn_Details(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Details', { dynamicArgs });
+  }
+
+  /** Details tab loading spinner */
+  div_Details_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Spinner', { dynamicArgs });
+  }
+
+  /** Details tab chart container; validates that the graph rendered */
+  div_Details_Chart(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Chart', { dynamicArgs });
   }
 }
