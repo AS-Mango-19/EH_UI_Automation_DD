@@ -1,6 +1,7 @@
-TC_ID,IterationID,Name Input Set,SelectTask,SelectTest,collectionName
-TC_16,ITER_01,Set 1,Design,i3+3,Set 1 C
-TC_16,ITER_02,Set 2,Design,i3+3,Set 2 C
-TC_16,ITER_03,Set 3,Design,i3+3,Set 3 C
-TC_16,ITER_04,Set 4,Design,i3+3,Set 4 C
-TC_16,ITER_05,Set 5,Design,i3+3,Set 5 C
+TC_ID,IterationID,Name Input Set,SelectTask,SelectTest
+TC_16,ITER_01,Set 1,Design,i3+3
+TC_16,ITER_02,Set 2,Design,i3+3
+TC_16,ITER_03,Set 3,Design,i3+3
+TC_16,ITER_04,Set 4,Design,i3+3
+TC_16,ITER_05,Set 5,Design,i3+3
+TC_16,ITER_06,Set 6,Design,i3+3

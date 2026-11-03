@@ -1,6 +1,7 @@
-TC_ID,IterationID,Max. Sample Size,Cohort Size,Target Probability of Toxicity,epsilon1,epsilon2,Stopping Rule,maxNoOfPatientsAtDoseLevel,startingDose,Number of Simulations Run,Random Number Seed,Fixed Seed,Result Name
-TC_16,ITER_01,29,2,0.33,0.065,0.058,Checked,13,Dose 5,100,Fixed,100,Result - Input Set 1 Group
-TC_16,ITER_02,29,2,0.33,0.06,0.0621,Checked,14,Dose 2,100,Fixed,100,Result - Input Set 1 Group
-TC_16,ITER_03,29,2,0.33,0.077,0.058,Checked,15,Dose 3,100,Fixed,100,Result - Input Set 1 Group
-TC_16,ITER_04,29,2,0.33,0.065,0.058,Checked,16,Dose 1,100,Fixed,100,Result - Input Set 1 Group
-TC_16,ITER_05,29,2,0.33,0.068,0.058,Checked,17,Dose 4,100,Fixed,100,Result - Input Set 1 Group
+TC_ID,IterationID,Max. Sample Size,Cohort Size,Target Probability of Toxicity,epsilon1,epsilon2,stoppingRules,maxNoOfPatientsAtDoseLevel,startingDose,numOfSimRun,fixedSeed,randomNumberSeed,Result Name
+TC_16,ITER_01,29,2,0.33,0.065,0.058,check,13,Dose 5,100,Fixed,100,Result - Input Set 01
+TC_16,ITER_02,35,4,0.44,0.06,0.0621,check,14,Dose 2,100,Fixed,100,Result - Input Set 02
+TC_16,ITER_03,44,4,0.35895,0.077,0.058,check,15,Dose 3,100,Fixed,100,Result - Input Set 03
+TC_16,ITER_04,45,2,0.45852,0.065,0.058,check,16,Dose 1,100,Fixed,100,Result - Input Set 04
+TC_16,ITER_05,55,3,0.45595,0.068,0.058,check,17,Dose 4,100,Fixed,100,Result - Input Set 05
+TC_16,ITER_06,42,4,0.4225,0.08956,0.075658,uncheck,N/A,Dose 2,100,Fixed,100,Result - Input Set 06
