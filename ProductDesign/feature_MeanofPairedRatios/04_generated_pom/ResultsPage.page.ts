@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: aa613734c48dd61ceb33b4b538f825875f3f1e1f911be49c7d2a97ff88b36b1e)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 05125950a9a976c64b79b1894552cb33d0027b89548b44c4d7f174b0d8213a68)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class ResultsPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
@@ -132,5 +132,20 @@ export class ResultsPage {
   /** result link from codegen */
   lnk_ResultName(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ResultsPage', 'lnk_ResultName', { dynamicArgs });
+  }
+
+  /** hand-added - Details tab load-check (user request; feature_MeanofPairedDiff/SingleProportion/SinglePoissonRate precedent) - SCREENSHOT-VERIFY on first live run */
+  btn_Details(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'btn_Details', { dynamicArgs });
+  }
+
+  /** hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check */
+  div_Spinner(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Spinner', { dynamicArgs });
+  }
+
+  /** hand-added - the Details tab's Plotly chart container, id proven across sibling means-family features via dumpSubtree - SCREENSHOT-VERIFY it matches here on first live run */
+  div_Details_Chart(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ResultsPage', 'div_Details_Chart', { dynamicArgs });
   }
 }

@@ -825,6 +825,8 @@ This is NOT the familiar S8 "Calculate/Recalculate button is disabled for a fixe
 
 **Fix:** gate the sim-side click/wait/assertVisible triplet with the same `SkipIf ${data.design.<ComputedParameterColumn>}==Type 1 Error` condition already used for the sim-side Recalculate gate — do NOT assume the design-side gate (or lack thereof) tells you anything about what the sim side needs. Confirmed live on TC_25 ITER_03: the design Details check passed ungated; the identical click on the sim result timed out with `getByRole('button', { name: 'Details' })` simply not existing.
 
+**Confirmed twice more, a 3rd and 4th time, in a WHOLE-FEATURE shape rather than per-iteration:** `feature_MeanofPairedDiff` TC_26 and `feature_MeanofPairedRatios` TC_05 are both simple fixed one-arm/paired designs with NO boundary/interim table for ANY iteration — not just some. There's no per-iteration condition to `SkipIf` on; the right fix is deleting the sim-side Details triplet outright rather than gating it. Same symptom both times: a `locator.dispatchEvent`/click timeout (~30s) on `btn_Details`, occurring immediately AFTER the sim's own `compareWithBaseline` had already gone `PASS`/`BASELINE_CREATED` cleanly — so when you see this exact shape (simulation itself is fine, only the Details click hangs), check whether the feature has a boundary/interim table at all before assuming it's a per-iteration gate you're missing.
+
 ---
 
 ## Worked family reference — two-arm continuous "Difference of Means" (DOM / ROM / ROPR)

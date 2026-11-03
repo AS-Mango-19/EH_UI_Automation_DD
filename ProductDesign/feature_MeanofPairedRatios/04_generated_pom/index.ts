@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: aa613734c48dd61ceb33b4b538f825875f3f1e1f911be49c7d2a97ff88b36b1e)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 05125950a9a976c64b79b1894552cb33d0027b89548b44c4d7f174b0d8213a68)
 import type { Page as PlaywrightPage } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { LoginPage } from './LoginPage.page.js';
@@ -7,6 +7,7 @@ import { ProjectPage } from './ProjectPage.page.js';
 import { InputSetPage } from './InputSetPage.page.js';
 import { DesignPage } from './DesignPage.page.js';
 import { ResultsPage } from './ResultsPage.page.js';
+import { Page } from './Page.page.js';
 
 export { LoginPage } from './LoginPage.page.js';
 export { ProjectsPage } from './ProjectsPage.page.js';
@@ -14,6 +15,7 @@ export { ProjectPage } from './ProjectPage.page.js';
 export { InputSetPage } from './InputSetPage.page.js';
 export { DesignPage } from './DesignPage.page.js';
 export { ResultsPage } from './ResultsPage.page.js';
+export { Page } from './Page.page.js';
 
 export function createPages(page: PlaywrightPage, selectors: Map<string, SelectorRow>) {
   return {
@@ -23,6 +25,7 @@ export function createPages(page: PlaywrightPage, selectors: Map<string, Selecto
     InputSetPage: new InputSetPage(page, selectors),
     DesignPage: new DesignPage(page, selectors),
     ResultsPage: new ResultsPage(page, selectors),
+    Page: new Page(page, selectors),
   };
 }
 export type Pages = ReturnType<typeof createPages>;

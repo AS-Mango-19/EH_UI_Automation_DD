@@ -6,7 +6,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compareRows } from '../../core/comparator/comparator.js';
+import { runComparison } from '../../core/comparator/runCompare.js';
 import { numericToleranceIssue, CompareColumnSchema, type CompareColumn } from '../../core/schema/compareConfig.schema.js';
+import { findInvalidResultValues } from '../../core/comparator/resultValueGuard.js';
 
 function col(over: Partial<CompareColumn> & { ColumnName: string }): CompareColumn {
   return CompareColumnSchema.parse({
@@ -103,4 +105,32 @@ test('integer-vs-float: 95 vs 95.0 with exact integer tolerance passes', () => {
   const cols = [KEY, n];
   const r = compareRows([{ DesignType: 'A', n: '95' }], [{ DesignType: 'A', n: '95.0' }], cols);
   assert.equal(r.outcome, 'PASS');
+});
+
+test('result guard rejects serialized JSON and JSON property paths', () => {
+  const invalid = findInvalidResultValues([
+    { TableName: 'Summary', RowLabel: 'row_1', ColumnName: 'Value', Value: '{"endpoint":42}' },
+    { TableName: 'Summary', RowLabel: 'row_2', ColumnName: 'Value', Value: 'SummaryResult.endpointWiseByCrossCntPerAnlys[0].stopForUtIncrPerAnlys[2]' },
+  ]);
+  assert.equal(invalid.length, 2);
+  assert.match(invalid[0]?.reason ?? '', /serialized JSON/);
+  assert.match(invalid[1]?.reason ?? '', /property path/);
+});
+
+test('result guard keeps ordinary result values valid', () => {
+  const invalid = findInvalidResultValues([
+    { TableName: 'Summary', RowLabel: 'row_1', ColumnName: 'Value', Value: 'Optimal' },
+    { TableName: 'Summary', RowLabel: 'row_2', ColumnName: 'Value', Value: '95.0' },
+    { TableName: 'Summary', RowLabel: 'row_3', ColumnName: 'Value', Value: '95% CI [0.1, 0.2]' },
+  ]);
+  assert.equal(invalid.length, 0);
+});
+
+test('comparison rejects JSON-like values before baseline handling', () => {
+  const ctx = {
+    tcId: 'TC_JSON',
+    iterationId: 'ITER_01',
+    lastActualRows: [{ TableName: 'Summary', RowLabel: 'row_1', ColumnName: 'Value', Value: '{"unexpected":true}' }],
+  } as unknown as Parameters<typeof runComparison>[0];
+  assert.throws(() => runComparison(ctx), /No baseline was created or updated/);
 });

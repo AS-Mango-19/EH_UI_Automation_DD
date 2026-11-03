@@ -1,5 +1,5 @@
 TC_ID,IterationID,collectionName,SelectTask,SelectTest
-TC_05,ITER_01,Set1,Design,Mean of Paired Ratios (Paired Design)
-TC_05,ITER_02,Set1,Design,Mean of Paired Ratios (Paired Design)
-TC_05,ITER_03,Set1,Design,Mean of Paired Ratios (Paired Design)
-TC_05,ITER_04,Set1,Design,Mean of Paired Ratios (Paired Design)
+TC_05,ITER_01,Set1,Design,Mean of Paired Ratios
+TC_05,ITER_02,Set2,Design,Mean of Paired Ratios
+TC_05,ITER_03,Set3,Design,Mean of Paired Ratios
+TC_05,ITER_04,Set4,Design,Mean of Paired Ratios

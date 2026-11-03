@@ -1,4 +1,5 @@
-TC_ID,IterationID,Hypothesis,Computed Parameter,Sample Size,power,Test Type,Type 1 Error,Input Method,Hazard Rate under Null,Hazard Rate under Alternative,Hazard Ratio,Weibull Shape Parameter,Result Name,Select Test,Median Survival Time under Null,Median Survival Time under Alternative,By Time,Cumulative % Survival under Null,Cumulative % Survival under Alternative,Accrual Duration,Study Duration
-TC_06,ITER_01,Superiority,Sample Size,Computed,0.555,1-Sided,0.0456,Hazard Rates,0.045456,0.0256,Computed,5,Result - Set1,Logrank Weibull Distribution,N/A,N/A,N/A,N/A,N/A,39,55
-TC_06,ITER_02,Superiority,Type 1 Error,105,0.654,2-Sided,Computed,Median Survival Times,N/A,N/A,Computed,5,Result - Set1,Logrank Weibull Distribution,1.89898,2.899,N/A,N/A,N/A,39,55
-TC_06,ITER_03,Superiority,Power,110,Computed,1-Sided,0.0546,Cumulative % Survival,N/A,N/A,Computed,5,Result - Set1,Logrank Weibull Distribution,N/A,N/A,2,98,99.989,39,55
+TC_ID,IterationID,Hypothesis,Computed Parameter,Sample Size,power,Test Type,Type 1 Error,Input Method,hazardRateNull,hazardRateAlter,hazardRatioHR,medianSurvivalTimeNull,medianSurvivalTimeAlter,By Time,Cumulative % Survival under Null,Cumulative % Survival under Alternative,weibullShapeParam,Accrual Duration,Study Duration,Result Name
+TC_06,ITER_01,Superiority,Sample Size,Computed,0.7545,1-Sided,0.0456,Hazard Rates,0.045456,0.0256,Computed,N/A,N/A,N/A,N/A,N/A,5,40,55,Result - Set01
+TC_06,ITER_02,Superiority,Type 1 Error,155,0.81245,2-Sided,Computed,Median Survival Times,N/A,N/A,N/A,2.65856,3.898989,N/A,N/A,N/A,4.589856,44.58585,60.256485,Result - Set02
+TC_06,ITER_03,Superiority,Power,169,Computed,1-Sided,0.0546,Cumulative % Survival,N/A,N/A,N/A,N/A,N/A,2,97.56859,98.888888,5.8858,42.28585,61.22585,Result - Set03
+TC_06,ITER_04,Superiority,Hazard Ratio (HR),200,0.854856,2-Sided,0.069858,Cumulative % Survival,,,,,,2.225,95.88568,Computed,6.11253,45,65,Result - Set04

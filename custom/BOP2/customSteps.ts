@@ -178,6 +178,18 @@ async function expandResultTree(page: Page, timeout: number): Promise<void> {
   }
 }
 
+async function validateResultDetails(page: Page, timeout: number, resultName: string): Promise<void> {
+  await page.getByRole('button', { name: 'Details', exact: true }).first().click({ timeout });
+
+  const spinner = page.locator('#spinner').first();
+  if (await spinner.count().catch(() => 0)) {
+    await spinner.waitFor({ state: 'hidden', timeout });
+  }
+
+  await page.locator('#chartRender-0').first().waitFor({ state: 'visible', timeout });
+  logger.info(`extractAllResultTables: Details chart validated for "${resultName}".`);
+}
+
 export const extractAllResultTables: KeywordHandler = async (page, ctx, step) => {
   let prefix = '';
   try {
@@ -228,6 +240,8 @@ export const extractAllResultTables: KeywordHandler = async (page, ctx, step) =>
         TableName: `${resultName} | ${row['TableName'] ?? ''}`,
       });
     }
+
+    await validateResultDetails(page, step.timeout, resultName);
 
     if (i < completedNames.length - 1) {
       await closeResultTab(page, step.timeout);

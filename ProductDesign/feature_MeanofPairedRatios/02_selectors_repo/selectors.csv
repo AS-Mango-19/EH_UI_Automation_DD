@@ -11,6 +11,7 @@ opt_Study_Objective,ProjectPage,role,link,{0},,TRUE,choice from codegen,TRUE
 ddl_Phase,ProjectPage,label,Phase (Optional),,,FALSE,dropdown (opener+option collapsed into one select step),FALSE
 txt_population_Name_0,ProjectPage,css,#populationName-0,,,FALSE,textbox from codegen,FALSE
 txt_treatment_Arm_0,ProjectPage,css,#treatmentArm-0,,,FALSE,textbox from codegen,FALSE
+obj_Priority,ProjectPage,label,Priority,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field) - matches GADAR(PD)/SingleMean/SinglePoissonRate/Simon2Stage convention,FALSE
 txt_endpoint_Name_0,ProjectPage,css,#endpointName-0,,,FALSE,textbox from codegen,FALSE
 btn_Endpoint_Type,ProjectPage,role,button,Time to Event,,FALSE,button from codegen,FALSE
 opt_Endpoint_Type,ProjectPage,role,link,{0},,TRUE,choice from codegen,TRUE
@@ -51,3 +52,28 @@ ddl_Test_Statistic,ResultsPage,css,#testStatistic,,,FALSE,native <select> from c
 txt_standard_Deviation,ResultsPage,css,#standardDeviation,,,FALSE,textbox from codegen,FALSE
 txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
 lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
+btn_Simulate,DesignPage,role,button,Simulate,,FALSE,button from codegen,FALSE
+txt_ResultName,Page,css,#inputId,,,FALSE,textbox from codegen,FALSE
+txt_credit_alert_primary,Page,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
+txt_left_Panel_designs,Page,css,"[id=""leftPanel.designs""]",,,FALSE,textbox from codegen,FALSE
+txt_Sample_Size_n,Page,css,#sampleSize,,,FALSE,textbox from codegen,FALSE
+ddl_Test_Statistic,Page,css,#testStatistic,,,FALSE,native <select> from codegen,FALSE
+txt_Standard_Deviation_of_Log,Page,css,#designStandardDeviation,,,FALSE,textbox from codegen,FALSE
+txt_Critical_Point,Page,css,#criticalPoint,,,FALSE,textbox from codegen,FALSE
+txt_non_Inf_margin,Page,css,#nonInf_margin,,,FALSE,"mirrors the design flow's #nonInf_margin (ResultsPage) - sim Design tab re-exposes the same id for Noninferiority iterations; not in the recording (recorded iteration was Superiority) - VERIFY live",FALSE
+txt_Critical_Point_Upper,Page,css,#upperCriticalPoint,,,FALSE,"Superiority (2-Sided) sim config shows Critical Point Upper (editable, #upperCriticalPoint per ROM(PD) codegen precedent) + Critical Point Lower (greyed/derived, mirrors -Upper) instead of the single Noninferiority #criticalPoint field. Confirmed live via screenshot - the single-selector-reuse guess failed with field-not-found on ITER_01",FALSE
+btn_Response,Page,role,button,Response,,FALSE,button from codegen,FALSE
+txt_Mean_Control_c,Page,css,#meanControl,,,FALSE,textbox from codegen,FALSE
+txt_Mean_Treatment_t,Page,css,#meanTreatment,,,FALSE,textbox from codegen,FALSE
+txt_standard_Deviation,Page,css,#standardDeviation,,,FALSE,textbox from codegen,FALSE
+btn_Simulation_Setup,Page,role,button,Simulation Setup,,FALSE,button from codegen,FALSE
+txt_Number_of_Simulations_Run,Page,css,"input[name=""numOfSimRun""]",,,FALSE,textbox from codegen,FALSE
+ddl_Random_Number_Seed,Page,css,#randomNumberSeed,,,FALSE,native <select> from codegen,FALSE
+txt_Fixed_Seed,Page,css,#fixedSeed,,,FALSE,textbox from codegen,FALSE
+chk_save_Summary_Stats,Page,testid,saveSummaryStats,,,FALSE,checkbox from codegen,FALSE
+chk_save_Subject_Level_Data,Page,testid,saveSubjectLevelData,,,FALSE,checkbox from codegen,FALSE
+txt_sub_Level_Data_Sim_Runs,Page,css,#subLevelDataSimRuns,,,FALSE,textbox from codegen,FALSE
+btn_Save_Simulate,DesignPage,role,button,Save & Simulate,,FALSE,button from codegen,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,"hand-added - Details tab load-check (user request; feature_MeanofPairedDiff/SingleProportion/SinglePoissonRate precedent) - SCREENSHOT-VERIFY on first live run",FALSE
+div_Spinner,ResultsPage,css,#spinner,,,FALSE,"hand-added - same #spinner loading overlay as the login flow's div_Spinner, scoped to ResultsPage for the Details-tab load-check",FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,"hand-added - the Details tab's Plotly chart container, id proven across sibling means-family features via dumpSubtree - SCREENSHOT-VERIFY it matches here on first live run",FALSE

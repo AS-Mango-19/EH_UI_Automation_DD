@@ -57,3 +57,6 @@ txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
 txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
 lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE
 lbl_RunStatus,ResultsPage,css,div[role=gridcell][col-id=simStatus],,,FALSE,Run status cell. VERIFY col-id against your app and adjust,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,Details tab load-check,FALSE
+div_Details_Spinner,ResultsPage,css,#spinner,,,FALSE,Details tab loading overlay,FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,Details tab chart container; validates that the graph rendered,FALSE

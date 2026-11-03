@@ -1,11 +1,11 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 811732a6f0aa0383bf753e551c58753c943e3e4b2b7a7b1fb0366768c3dd047f)
-import type { Page, Locator } from 'playwright';
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: 52195e0c761bcc7a24e21f04c251ad04b56d7fafe73049685f42b5667b675263)
+import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
 
 export class ProjectsPage {
   constructor(
-    private readonly page: Page,
+    private readonly page: PlaywrightPage,
     private readonly selectors: Map<string, SelectorRow>,
   ) {}
 
@@ -52,6 +52,11 @@ export class ProjectsPage {
   /** textbox from codegen */
   txt_Treatment_Arm(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Treatment_Arm', { dynamicArgs });
+  }
+
+  /** clicked but not filled during recording - optional read-back assertion */
+  obj_Priority(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'obj_Priority', { dynamicArgs });
   }
 
   /** textbox from codegen */

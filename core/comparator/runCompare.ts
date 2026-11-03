@@ -18,6 +18,7 @@ import { writeCsv } from '../csv/writer.js';
 import { ensureDir } from '../utils/paths.js';
 import { logger } from '../utils/logger.js';
 import { FrameworkError } from '../utils/errors.js';
+import { findInvalidResultValues } from './resultValueGuard.js';
 
 const DIFF_CSV_COLUMNS = [
   'column',
@@ -44,6 +45,19 @@ export function runComparison(ctx: RunContext): ComparisonResult {
       tcId: ctx.tcId,
       iterationId: ctx.iterationId,
     });
+  }
+  const invalidValues = findInvalidResultValues(actualRows);
+  if (invalidValues.length > 0) {
+    const details = invalidValues
+      .slice(0, 10)
+      .map((item) => `${item.tableName}/${item.rowLabel}/${item.columnName}: ${item.reason} (${item.value.slice(0, 160)})`)
+      .join('; ');
+    const suffix = invalidValues.length > 10 ? `; plus ${invalidValues.length - 10} more` : '';
+    throw new FrameworkError(
+      `Invalid JSON-like result value(s) detected before baseline/comparison for ${ctx.tcId}/${ctx.iterationId}. ` +
+      `No baseline was created or updated. ${details}${suffix}`,
+      { tcId: ctx.tcId, iterationId: ctx.iterationId },
+    );
   }
   const columns = ctx.feature.compareColumns;
   const columnOrder = columns.map((c) => c.ColumnName);

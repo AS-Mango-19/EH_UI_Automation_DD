@@ -65,7 +65,7 @@ judgment. These are the calls that remain.*
 | 8 | **Checkbox convention** differs in the same testdata (`TRUE/FALSE` vs `check/uncheck`) | Gate each `check`/`uncheck` on its **own** convention (`…!=TRUE` vs `…!=check`). | A mismatch silently skips the toggle; the section it reveals never renders. | No |
 | 9 | **Ambiguous prefix/suffix** — importer logs "ambiguous … seeded/left UNWIRED" | The importer refuses to guess; **you** pick the column and repoint. | Guessing wrong exercises numbers nobody chose. | Yes |
 | 10 | **Multi-iteration** — a column has data for some iterations only | Fill each iteration; `N/A` the hypothesis-suffix / period cells that don't apply to that row. | One metadata serves every combination; the recording only exercised one. | No |
-| 11 | **A param field FAILS `not found` right after its own family/spending-function `select`** (e.g. `fill txt_fut_Param_Rho` fails; `select ddl_fut_Spend_Func` is the very next row) | Check the **StepID order**, not row order: the `select` that PICKS the family (e.g. `futSpendFunc=Rho Family`) must have a **lower StepID** than every param field it unlocks (`futParamRho`/`futParamGamma`/…). The importer/recording often captures the select-before-fill in row order but numbers them in reverse. Move the `select`'s StepID earlier — no data change. | The param field doesn't render until the family select commits; a later-numbered select runs too late even if the row looks right above it. Proven on `DOP(PD)` and `OROP(PD)` (`futSpendFunc`). | No |
+| 11 | **A param field FAILS `not found` right after its own family/spending-function `select`** (e.g. `fill txt_fut_Param_Rho` fails; `select ddl_fut_Spend_Func` is the very next row) | Check the **StepID order**, not row order: the `select` that PICKS the family (e.g. `futSpendFunc=Rho Family`) must have a **lower StepID** than every param field it unlocks (`futParamRho`/`futParamGamma`/…). The importer/recording often captures the select-before-fill in row order but numbers them in reverse. Move the `select`'s StepID earlier — no data change. | The param field doesn't render until the family select commits; a later-numbered select runs too late even if the row looks right above it. Proven on `DOP(PD)` and `OROP(PD)` (`futSpendFunc`); same root mechanism confirmed in a non-StepID-reversal shape on `ROM(PD)` TC_04 — `coefficientOfVariation` genuinely does not exist in the DOM until AFTER the Test Statistic `select` commits, found by live-failing a wrong earlier placement even on the exact iteration a user screenshot had proven the field works. | No |
 | 12 | **An unconditional `click` on an object that ALSO has a properly `N/A`-gated `fill`/`select` right after it** — hangs/times out only on SOME iterations | **Delete the click**, never gate it. It's leftover recording noise (a stray focus-click), and the following value-driven step already auto-skips on blank/`N/A`. This applies in **design metadata too, not just sim** — S9 below was written for the sim case but the same signal/fix applies wherever a bare click precedes a data-driven step. | A bare click with no `${data.*}` token can't be "not applicable" for an iteration — it always fires, so it breaks exactly when the field isn't rendered. Proven on `OROP(PD)` (`boundary.0.lowerAlpha` click, `priorDistributionFor` click — 2 separate instances, same fix). | No |
 | 13 [promoted — `AI_IMPORT_AGENT.md`'s "Worked family reference — ProductDecide" §1, proven 4× on DOM/ROM/DOP/ROP] | **A child period-table's rows never fold into the parent, OR validate errors `<file> has no row for TC_XX/<iter>, but another referenced testdata file does`** — the SAME symptom shows up two ways: (a) child-table fold — every row warns `no matching design.csv row` and every token referencing the synthetic `<table>.<n>.<field>` column then errors `unknown column`; (b) top-level join — `project.csv`/`inputset.csv`/`design.csv` disagree with each other row-for-row even though each individually looks complete | The join — child-to-parent fold AND the `project`/`inputset`/`design` join itself — is **exact-string, case-sensitive** on `IterationID`. Check EVERY testdata file's `IterationID` values character-for-character against each other — one file typed by hand (or copy-pasted from a different source) can drift to a different casing (`Iter_04` vs `ITER_04`) with no error, it just silently never joins/folds. Fix the drifted file's casing to match the rest (values only, not a rename/new-column decision) — `grep`/eyeball every testdata file's `IterationID` column for the feature at once rather than fixing one file and re-discovering the next. | Proven case (a) on `ProductDecide/feature_DOM` TC_29 (`design_decideInterimTable.csv` used `Iter_04..Iter_11`, `design.csv` used `ITER_04..ITER_11`) — fixing the casing alone resolved 9 of 11 validate errors in one pass. Proven case (b) on `ProductDecide/feature_ROM` TC_30 (`design.csv` used `Iter_01..Iter_04` while `project.csv`/`inputset.csv` used `ITER_01..ITER_04`, imported straight off a recording without cross-checking against the sibling files) — 12 validate errors, one normalize-the-column fix. | No |
 | 14 | **`validate` reports `metadata StepID: StepID must be an integer`** after inserting a new row between two existing StepIDs | **Decimals are only valid in the `Seq` column**, never `StepID` (unlike `Seq`, which can be `53.1`, `53.2`, … to insert without renumbering). To insert metadata rows between e.g. StepID 530 and 540 with no free integer left, renumber the block: use plain integers for the new rows and bump the next existing StepID (and only that one, if there's room after it) rather than giving `StepID` a decimal. | `Seq` is a cosmetic ordering label with no schema check; `StepID` is what the runner sorts and executes by, and its schema requires an integer. Proven on `ProductDecide/feature_DOM` TC_29 — a first-pass insert used `539.2`/`539.4`/`539.6` as StepIDs and validate rejected all three; fixed by using plain 540-542 and moving the pre-existing `click btn_Save` from StepID 540→545. | No |
@@ -198,11 +198,84 @@ actually landed. Proven on `ProductDesign/feature_MAMS_Logrank(Pvalue)` TC_51 IT
   sibling's checkbox-row behavior for another — confirm live per feature.** BLRM additionally has the
   Direct/Metropolis-Hastings posterior-sampling split (S27) which mTPI/CRM don't have (different stats
   method entirely).
-- **(add survival / means / one-arm family rules as you import them)**
+- **One-arm paired mean/ratio (MeanofPairedDiff, MeanofPairedRatios):** both are simple FIXED
+  one-arm designs — no boundary/interim table, ever — so the sim result's Details tab doesn't
+  exist for ANY iteration (not a per-iteration `SkipIf`, just delete the sim-side Details steps;
+  S31). Each test's own effect/margin field is hypothesis-branched: **Superiority renders a
+  DIFFERENT pair of DOM fields than Noninferiority, not the same field with a different value**
+  (S34) — on MeanofPairedRatios, Superiority shows `#upperCriticalPoint` (editable, same id
+  ROM(PD) already proved) + a greyed/derived `#criticalPointLower`-equivalent, while
+  Noninferiority shows a single `#criticalPoint` plus `#nonInf_margin` (mirrors the design flow's
+  own `#nonInf_margin` id). Screenshot the branch the recording DIDN'T capture before assuming a
+  shared selector. Sim-side result naming needs the usual `CreateInputSet`-then-`Sim Result Name`
+  two-step split (rule 2) — the importer's superset-dedup collapses both `#inputId` prompts into
+  one by default; always check for this on a fresh `--sim` import rather than trusting the
+  generated `sim_metadata.csv` as-is. Reference: `feature_MeanofPairedRatios` TC_05, all 4
+  iterations green 2026-10-28.
+- **(add survival / one-arm family rules as you import them)**
 
 ---
 
 ## Feature log *(append-only; newest first)*
+
+- **2026-10-28/29 · `ProductDesign/feature_ROM(PD)` TC_04 — testdata-restructure repair (all 6 iterations stabilized, COMMITTED) + `ProductDesign/feature_MeanofPairedRatios` TC_05 — removed 2 dead columns, added a fresh simulation-flow import + Details-tab validation on both flows, switched to Edge (all 4 iterations real `PASS`, UNCOMMITTED).**
+  **ROM(PD) TC_04**: the user restructured `01_testdata` column names/merges on an already-stable feature;
+  repaired every broken `${data.*}` token in both `metadata.csv`/`sim_metadata.csv` by mirroring
+  sibling-proven patterns (GADAR(PD)/DOM(PD) for `Priority`/`CreateInputSet`/multi-period enrollment). Added
+  a Details-tab check to the design flow (ungated, works); added it to the simulation flow too per explicit
+  user request, then REMOVED it after a live 30s timeout proved ROM(PD)'s sim results page has no Details
+  tab at all (nav = Overview/Inputs/Results/Compare/Files, no Details — see S31 below for the general
+  pattern). `coefficientOfVariation`'s correct StepID position was only found by live-failing a wrong first
+  guess (placed right after Critical Point Lower) even on the exact iteration a user screenshot had proven
+  the field works — extended rule 11's proof list above, same root mechanism in a non-StepID-reversal shape.
+  ITER_04's `#save-compute` stayed disabled intermittently (3 of 4 attempts; `IncludeEnrollment=uncheck` +
+  `followUpTime=0` is the only such combination in the sheet) — a new `waitAndInspectSaveSimulate` custom
+  step (poll + diagnostic dump: button HTML, toasts, alerts, invalid-field markers, spinner count, "Not
+  Saved" indicator) confirmed every attempt had a fully, correctly populated form with zero visible error,
+  so the fix was simply raising the poll's own `Timeout` 60000→120000 (a 1s-interval poll with early exit —
+  free for the other 5 iterations) rather than any wiring change; it enabled in ~26.5s on the next attempt
+  and has held clean since.
+
+  **MeanofPairedRatios TC_05**: two columns flagged as unwired in an earlier audit pass (`MM dd yyyy`,
+  `Follow-up Time ()`) were confirmed dead via screenshot (the former is literally the Start Date field's
+  placeholder text; the latter doesn't exist anywhere on the page) and removed by the user. The user then
+  recorded a real `02_selectors_repo/sim_recording.txt` — ran `import-codegen --sim`, then fixed what it
+  couldn't infer:
+  - **The importer's superset-recording dedup collapsed TWO different-valued `#inputId` prompts into one**
+    (rule 2's exact failure mode): the first prompt names the input set from `CreateInputSet`, right after
+    the Simulate click; the second — after Save & Simulate — names the SIMULATION RESULT from
+    `Sim Result Name`, needed distinct per the simulation-import hard-cases section so the open-by-name
+    click doesn't match the design result too. Split back into two steps at the two real recorded positions.
+  - **New lesson (S34): a mutually-exclusive hypothesis/branch column pair can map to an ENTIRELY DIFFERENT
+    SET OF DOM FIELDS, not just a different value in the same field.** `simulation.csv`'s `criticalPoint`
+    (Noninferiority) and `upperCriticalPoint` (Superiority) looked like the same "critical point" concept
+    wearing two testdata names, so the first attempt filled both into the one recorded `#criticalPoint`
+    selector, gated on each other's N/A. Live-FAILED on the Superiority iteration with `field not found` —
+    a screenshot showed the Superiority config actually renders TWO separate fields, **Critical Point
+    Upper** (editable, `#upperCriticalPoint`, same id ROM(PD) already proved) and **Critical Point Lower**
+    (greyed/derived as −Upper), not a relabeled single field. **Don't assume a shared selector across a
+    branch pair just because the testdata column names look like synonyms — screenshot the OTHER branch
+    before wiring it**, especially when the recording only ever captured one branch (this recording was
+    Superiority-only; the NI-side `nonInf_margin`/`criticalPoint` fields were never recorded at all and had
+    to be wired from the design flow's existing `#nonInf_margin` id + the one `#criticalPoint` value in the
+    recording — both confirmed live on the first try).
+  - **S31 (fixed-design sim has no Details tab) confirmed a 3rd time**, now also in the "whole feature,
+    every iteration" shape rather than S31's original per-iteration-conditional one: MeanofPairedRatios has
+    no boundary/interim table AT ALL (a simple fixed one-arm test), so unlike SingleProportion's
+    `SkipIf`-gated version, the right fix here was deleting the two sim-side Details steps outright —
+    confirmed via the same symptom (a `locator.dispatchEvent` 30s timeout on `btn_Details`) immediately
+    after the sim's own `compareWithBaseline` had just gone `BASELINE_CREATED` cleanly, so the simulation
+    itself was never in question, only the tab.
+  - Fixed the user's own data entry: a stray `TC_24` plus 3 blank `TC_ID` cells in `simulation.csv` (→
+    `TC_05`), and every genuinely-blank cell filled with the literal string `N/A` (framework convention —
+    the comparator/`SkipIf` gates all key off the literal string, not an empty cell).
+  - Across ~6 live runs stabilizing all 4 iterations, hit 3 one-off failures — a 220s login-page `#spinner`
+    stuck visible, one `txt_collection_Name` not-found on a modal — each on a DIFFERENT iteration each run,
+    each vanishing on an isolated re-run with zero code changes: ordinary environment flakiness, not a
+    wiring regression (the established "retry the specific iteration alone before debugging" discipline
+    caught it cleanly each time).
+  Switched `master.csv`'s Browser to `msedge` (Simulation already turned on). All 4 iterations design+sim
+  `PASS`, each confirmed clean at least twice.
 
 - **2026-10-27 · `ProductDesign/feature_MeanofPairedDiff` TC_26 — reviewed and fixed another agent's (Copilot) pre-built wiring, all 14 iterations real `PASS` on the combined reproducibility run (13 chained simulations, 0 fails; 2 apparent full-suite FAILs on ITER_05/ITER_07 confirmed as environment flakiness on isolated re-run, not real bugs).**
   Paired-data continuous-endpoint feature. Unlike every other feature logged here, this one arrived with

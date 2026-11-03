@@ -1,4 +1,5 @@
 TC_ID,IterationID,Name Input Set,SelectTask,SelectTest
-TC_08,ITER_01,Set 1,Design,Parametric Weibull
-TC_08,ITER_02,Set 1,Design,Parametric Weibull
-TC_08,ITER_03,Set 1,Design,Parametric Weibull
+TC_08,ITER_01,Set 1,Design,Parametric Weibull Distribution
+TC_08,ITER_02,Set 2,Design,Parametric Weibull Distribution
+TC_08,ITER_03,Set 3,Design,Parametric Weibull Distribution
+TC_08,ITER_04,Set 4,Design,Parametric Weibull Distribution

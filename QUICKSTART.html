@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EH UI Automation — Quick Start</title>
+<style>
+  :root{
+    --bg:#fbfaf8; --bg-raised:#ffffff; --bg-sunken:#f1efe9;
+    --text:#24231f; --text-dim:#5c594f; --text-faint:#8a8678;
+    --border:#e3dfd3; --border-strong:#cfc9b8;
+    --accent:#8a4a2a; --accent-ink:#ffffff; --accent-soft:#f3e3d5;
+    --ok:#2f6f4e; --ok-soft:#e3efe6;
+    --warn:#9a6b00; --warn-soft:#fbf1d8;
+    --bad:#a23b2e; --bad-soft:#f8e3df;
+    --code-bg:#2b2a25; --code-text:#f1efe4; --code-accent:#e7b273;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(30,25,10,.06), 0 6px 20px -8px rgba(30,25,10,.12);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17160f; --bg-raised:#201f17; --bg-sunken:#141309;
+      --text:#eeece2; --text-dim:#b9b5a4; --text-faint:#847f6c;
+      --border:#36331f; --border-strong:#4a4528;
+      --accent:#e2a06a; --accent-ink:#1c1206; --accent-soft:#332310;
+      --ok:#7fc99e; --ok-soft:#163222;
+      --warn:#e8c467; --warn-soft:#352a0c;
+      --bad:#e68a7c; --bad-soft:#3a1a14;
+      --code-bg:#0f0e09; --code-text:#f1efe4; --code-accent:#e7b273;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17160f; --bg-raised:#201f17; --bg-sunken:#141309;
+    --text:#eeece2; --text-dim:#b9b5a4; --text-faint:#847f6c;
+    --border:#36331f; --border-strong:#4a4528;
+    --accent:#e2a06a; --accent-ink:#1c1206; --accent-soft:#332310;
+    --ok:#7fc99e; --ok-soft:#163222;
+    --warn:#e8c467; --warn-soft:#352a0c;
+    --bad:#e68a7c; --bad-soft:#3a1a14;
+    --code-bg:#0f0e09; --code-text:#f1efe4; --code-accent:#e7b273;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  code, pre, kbd, .mono{ font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace; }
+
+  a{ color:var(--accent); }
+  h1,h2,h3,h4{ text-wrap:balance; line-height:1.25; }
+
+  /* ---------- Layout shell ---------- */
+  .shell{ display:flex; min-height:100%; max-width:1280px; margin:0 auto; }
+  .side{
+    flex:0 0 260px; padding:28px 18px 60px 24px; position:sticky; top:0;
+    align-self:flex-start; max-height:100vh; overflow-y:auto;
+  }
+  .main{ flex:1 1 auto; min-width:0; padding:28px 28px 100px; }
+  @media (max-width:880px){
+    .shell{ display:block; }
+    .side{ position:static; max-height:none; padding:16px 16px 0; }
+    .main{ padding:8px 18px 80px; }
+  }
+
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .brand .mark{
+    width:30px; height:30px; border-radius:8px; background:var(--accent); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex:none;
+  }
+  .brand .name{ font-weight:650; font-size:15px; }
+  .brand .sub{ font-size:11.5px; color:var(--text-faint); }
+
+  nav.toc{ font-size:13px; }
+  nav.toc .grp-title{
+    text-transform:uppercase; letter-spacing:.06em; font-size:10.5px; color:var(--text-faint);
+    margin:18px 0 6px; font-weight:650;
+  }
+  nav.toc .grp-title:first-child{ margin-top:0; }
+  nav.toc a{
+    display:block; padding:5px 8px; margin:1px 0; border-radius:7px; color:var(--text-dim);
+    text-decoration:none; border-left:2px solid transparent;
+  }
+  nav.toc a:hover{ background:var(--bg-sunken); color:var(--text); }
+  nav.toc a.active{ background:var(--accent-soft); color:var(--accent); border-left-color:var(--accent); font-weight:600; }
+
+  .theme-toggle{
+    display:inline-flex; gap:4px; background:var(--bg-sunken); border:1px solid var(--border);
+    border-radius:8px; padding:3px; margin-bottom:4px;
+  }
+  .theme-toggle button{
+    border:0; background:transparent; color:var(--text-dim); font:inherit; font-size:12px;
+    padding:4px 9px; border-radius:6px; cursor:pointer;
+  }
+  .theme-toggle button.active{ background:var(--bg-raised); color:var(--text); box-shadow:var(--shadow); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:linear-gradient(155deg, var(--accent-soft), var(--bg-raised) 60%);
+    border:1px solid var(--border); border-radius:16px; padding:34px 32px; margin-bottom:34px;
+  }
+  .hero .eyebrow{
+    display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--accent); background:var(--bg-raised); border:1px solid var(--border-strong);
+    padding:4px 10px; border-radius:999px; margin-bottom:14px;
+  }
+  .hero h1{ margin:0 0 10px; font-size:30px; letter-spacing:-.01em; }
+  .hero p.lede{ margin:0 0 18px; color:var(--text-dim); font-size:16px; max-width:62ch; }
+  .hero .pillrow{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{
+    font-size:12.5px; background:var(--bg-raised); border:1px solid var(--border);
+    padding:5px 11px; border-radius:999px; color:var(--text-dim);
+  }
+  .pill b{ color:var(--text); }
+
+  /* ---------- Sections ---------- */
+  section{ margin:0 0 52px; scroll-margin-top:16px; }
+  section h2{
+    font-size:22px; margin:0 0 6px; display:flex; align-items:center; gap:10px;
+  }
+  section h2 .num{
+    font-size:12px; color:var(--accent); background:var(--accent-soft); border-radius:7px;
+    width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+    flex:none;
+  }
+  section > .deck{ color:var(--text-dim); margin:0 0 20px; max-width:72ch; }
+  h3{ font-size:16px; margin:28px 0 10px; }
+  p{ margin:0 0 12px; }
+  ul,ol{ padding-left:22px; margin:0 0 14px; }
+  li{ margin:0 0 6px; }
+  .muted{ color:var(--text-faint); }
+
+  /* ---------- Code blocks ---------- */
+  .code-card{
+    position:relative; background:var(--code-bg); color:var(--code-text); border-radius:var(--radius);
+    margin:10px 0 16px; overflow:hidden; box-shadow:var(--shadow);
+  }
+  .code-card .bar{
+    display:flex; align-items:center; justify-content:space-between; padding:7px 10px 7px 14px;
+    font-size:11px; color:#c9c4b0; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.07);
+  }
+  .code-card pre{ margin:0; padding:14px; overflow-x:auto; font-size:13px; line-height:1.55; }
+  .code-card .copy{
+    border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:#e8e5d8;
+    font:inherit; font-size:11px; padding:3px 9px; border-radius:6px; cursor:pointer;
+  }
+  .code-card .copy:hover{ background:rgba(255,255,255,.14); }
+  .code-card .copy.done{ color:var(--ok); border-color:var(--ok); }
+  .tok-flag{ color:var(--code-accent); }
+  .tok-ph{ color:#8fc1e3; }
+  .tok-cmt{ color:#8d8a78; }
+
+  code.inline{
+    background:var(--bg-sunken); border:1px solid var(--border); border-radius:5px;
+    padding:1px 6px; font-size:.9em; color:var(--text);
+  }
+
+  /* ---------- Cards / grids ---------- */
+  .grid{ display:grid; gap:14px; }
+  .grid.cols-2{ grid-template-columns:repeat(2,1fr); }
+  .grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+  @media (max-width:760px){ .grid.cols-2, .grid.cols-3{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--bg-raised); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .card h4{ margin:0 0 6px; font-size:14.5px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0 0 8px; color:var(--text-dim); font-size:13.5px; }
+  .card:last-child p:last-child{ margin-bottom:0; }
+
+  .cmd-card{ background:var(--bg-raised); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .cmd-card .title{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .cmd-card .title h4{ margin:0; font-size:15.5px; }
+  .cmd-card .scope{
+    font-size:11px; font-weight:650; letter-spacing:.03em; text-transform:uppercase;
+    padding:2px 8px; border-radius:999px;
+  }
+  .scope.one-feature{ background:var(--ok-soft); color:var(--ok); }
+  .scope.housekeeping{ background:var(--bg-sunken); color:var(--text-faint); border:1px solid var(--border); }
+  .cmd-card .desc{ color:var(--text-dim); font-size:13.5px; margin:4px 0 2px; }
+
+  /* ---------- Error / signal-fix cards ---------- */
+  .err-card{
+    border:1px solid var(--border); border-left:4px solid var(--bad); border-radius:10px;
+    padding:14px 16px; margin-bottom:12px; background:var(--bg-raised); box-shadow:var(--shadow);
+  }
+  .err-card .sig{ font-size:13px; margin-bottom:8px; }
+  .err-card .sig .lbl{ font-weight:700; color:var(--bad); font-size:11px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
+  .err-card .fix{ font-size:13px; }
+  .err-card .fix .lbl{ font-weight:700; color:var(--ok); font-size:11px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
+  .err-card .why{ font-size:12.5px; color:var(--text-faint); margin-top:6px; }
+
+  /* ---------- Callouts ---------- */
+  .callout{ border-radius:10px; padding:14px 16px; margin:14px 0; border:1px solid var(--border); font-size:13.5px; }
+  .callout.tip{ background:var(--ok-soft); border-color:color-mix(in srgb, var(--ok) 35%, var(--border)); }
+  .callout.warn{ background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 35%, var(--border)); }
+  .callout .lbl{ font-weight:700; margin-right:4px; }
+
+  /* ---------- Prompt blocks ---------- */
+  .prompt{
+    background:var(--bg-sunken); border:1px dashed var(--border-strong); border-radius:10px;
+    padding:12px 14px; margin:10px 0; font-size:13.5px; position:relative;
+  }
+  .prompt .speaker{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); margin-bottom:5px; display:block; }
+  .prompt q{ quotes:none; font-style:normal; }
+
+  /* ---------- Table ---------- */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; margin:10px 0 16px; }
+  th,td{ text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ color:var(--text-faint); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; font-weight:650; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+
+  .kbd{ background:var(--bg-sunken); border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:5px; padding:1px 6px; font-size:.85em; font-family:ui-monospace,monospace; }
+
+  footer{ color:var(--text-faint); font-size:12.5px; padding-top:24px; border-top:1px solid var(--border); }
+
+  ::selection{ background:var(--accent-soft); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">EH</div>
+      <div>
+        <div class="name">UI Automation</div>
+        <div class="sub">Quick Start Guide</div>
+      </div>
+    </div>
+
+    <div class="theme-toggle" id="themeToggle">
+      <button data-theme="light">Light</button>
+      <button data-theme="dark">Dark</button>
+      <button data-theme="system" class="active">Auto</button>
+    </div>
+
+    <nav class="toc" id="toc">
+      <div class="grp-title">Orientation</div>
+      <a href="#intro">1. What is this?</a>
+      <a href="#setup">2. First-time setup</a>
+      <a href="#layout">3. How a feature is shaped</a>
+
+      <div class="grp-title">Doing the work</div>
+      <a href="#workflow">4. Add a new feature</a>
+      <a href="#commands">5. Commands you'll actually use</a>
+      <a href="#errors">6. Common errors &amp; fixes</a>
+
+      <div class="grp-title">AI assistance</div>
+      <a href="#copilot">7. Prompts for Copilot</a>
+      <a href="#claude">8. Prompts for a custom agent</a>
+
+      <div class="grp-title">Reference</div>
+      <a href="#reference">9. Where to read more</a>
+      <a href="#rules">10. Rules that save you time</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <div class="hero">
+      <span class="eyebrow">Quick Start</span>
+      <h1>EH UI Automation, from zero to a stabilized feature</h1>
+      <p class="lede">
+        This framework regression-tests Cytel East&nbsp;Horizon's design &amp; simulation screens.
+        Everything that makes a test "a test" — the data, the steps, the tolerances — lives in
+        <b>CSV files</b>, not code. This page is the fast path: set up, add a feature, run it,
+        read what breaks, and know which AI assistant prompt to reach for. Every deeper topic links
+        out to the full doc that owns it.
+      </p>
+      <div class="pillrow">
+        <span class="pill">Engine: <b>TypeScript + Playwright</b></span>
+        <span class="pill">Config: <b>CSV, zero code per feature</b></span>
+        <span class="pill">Apps: <b>ProductDesign · ProductDecide</b></span>
+        <span class="pill">Registry: <b>master.csv</b></span>
+      </div>
+    </div>
+
+    <!-- 1. INTRO -->
+    <section id="intro">
+      <h2><span class="num">1</span>What is this?</h2>
+      <p class="deck">The one-paragraph mental model — read this before anything else.</p>
+
+      <p>
+        A <b>feature</b> is one East&nbsp;Horizon test design (e.g. "Simon's Two-Stage", "Mean of
+        Paired Ratios"). For each feature, the framework drives the real app in a real browser,
+        fills it from your test data, captures the computed results, and compares them against a
+        <b>committed baseline</b> with per-column tolerances. The first run of a new data
+        combination can't fail — it just <i>records</i> the baseline (<code class="inline">BASELINE_CREATED</code>).
+        Every run after that is a real regression check.
+      </p>
+      <p>
+        A feature can have a <b>design flow</b> (always) and an optional chained <b>simulation
+        flow</b> (<code class="inline">Simulation=YES</code> in <code class="inline">master.csv</code>) that
+        runs in the same browser session right after a green design.
+      </p>
+
+      <div class="callout tip">
+        <span class="lbl">The promise:</span> adding a feature should take <b>zero changes to
+        <code class="inline">core/</code></b>. If you ever find yourself editing the engine to onboard
+        one feature, the abstraction is wrong — fix the engine, not the feature, and get that past
+        <code class="inline">npm run validate</code> for every other feature first.
+      </div>
+    </section>
+
+    <!-- 2. SETUP -->
+    <section id="setup">
+      <h2><span class="num">2</span>First-time setup</h2>
+      <p class="deck">Five commands, once per machine.</p>
+
+      <div class="code-card">
+        <div class="bar"><span>terminal</span><button class="copy">Copy</button></div>
+        <pre><span class="tok-cmt"># 1. install dependencies</span>
+npm install
+
+<span class="tok-cmt"># 2. install the Chromium browser Playwright drives (Edge/msedge uses your OS install)</span>
+npx playwright install --with-deps chromium
+
+<span class="tok-cmt"># 3. your own environment file — never commit this</span>
+cp .env.example .env
+<span class="tok-cmt"># then edit BASE_URL / APP_USERNAME / APP_PASSWORD inside .env</span>
+
+<span class="tok-cmt"># 4. prove the setup works — no browser opens, just schema checks</span>
+npm run validate
+
+<span class="tok-cmt"># 5. smoke-test a known-good feature to confirm the browser side works too</span>
+npm run test -- --tags smoke</pre>
+      </div>
+
+      <p class="muted">
+        <code class="inline">.env</code> and <code class="inline">.auth/</code> are git-ignored on
+        purpose — never commit real credentials, and never paste them into a recording either (the
+        repo has a pre-commit guard, but don't rely on it).
+      </p>
+    </section>
+
+    <!-- 3. LAYOUT -->
+    <section id="layout">
+      <h2><span class="num">3</span>How a feature is shaped</h2>
+      <p class="deck">Every feature is the same ten folders, numbered in the order you'll touch them.</p>
+
+      <div class="code-card">
+        <div class="bar"><span>&lt;Module&gt;/feature_&lt;Name&gt;/</span><button class="copy">Copy</button></div>
+        <pre>00_config/feature.config.json    <span class="tok-cmt"># simulation polling, result-grid column map</span>
+01_testdata/*.csv                <span class="tok-cmt"># project / inputset / design / simulation values — YOU author these first</span>
+02_selectors_repo/selectors.csv  <span class="tok-cmt"># logical object name -> real locator (role/css/label/testid)</span>
+03_metadata/metadata.csv         <span class="tok-cmt"># the ordered steps (and sim_metadata.csv for the sim flow)</span>
+04_generated_pom/                <span class="tok-cmt"># AUTO-GENERATED Page Objects — never hand-edit</span>
+05_generated_scripts/            <span class="tok-cmt"># AUTO-GENERATED Playwright spec — never hand-edit</span>
+06_baseline/compare.config.csv   <span class="tok-cmt"># per-column tolerances — the most important file</span>
+06_baseline/&lt;env&gt;/baseline_*.csv <span class="tok-cmt"># COMMITTED baselines + .meta.json sidecar</span>
+07_actual_results/               <span class="tok-cmt"># this run's extracted numbers (git-ignored)</span>
+08_diffs/                        <span class="tok-cmt"># cell-level diff.csv/.json per iteration (git-ignored)</span>
+09_html_report/                  <span class="tok-cmt"># per-feature HTML report (git-ignored)</span></pre>
+      </div>
+
+      <p>
+        <code class="inline">master.csv</code> at the repo root is the <b>registry</b> — one row per
+        <code class="inline">TC_ID</code>, naming the Module, Feature, Browser
+        (<code class="inline">chromium</code>/<code class="inline">msedge</code>), whether
+        <code class="inline">Execute</code> runs it in the full suite, the Environment, and whether
+        <code class="inline">Simulation</code> chains on.
+      </p>
+
+      <div class="callout warn">
+        <span class="lbl">The one column that trips everyone up:</span> <code class="inline">Run</code>
+        inside <code class="inline">project.csv</code>/<code class="inline">simulation.csv</code> is a
+        <b>global veto across every testdata file</b> that carries it, not a per-file switch. Setting
+        <code class="inline">Run=FALSE</code> in <code class="inline">simulation.csv</code> alone will
+        silently drop that entire iteration — design included. Flip it in lockstep across every file.
+      </div>
+    </section>
+
+    <!-- 4. WORKFLOW -->
+    <section id="workflow">
+      <h2><span class="num">4</span>Add a new feature</h2>
+      <p class="deck">
+        The real day-to-day loop (not the from-scratch-scaffold path — that one's in
+        <code class="inline">README.md</code> if you ever need it). A small model — or a careful human —
+        can run this verbatim.
+      </p>
+
+      <ol>
+        <li>
+          <b>Record it.</b> Walk the real flow once in Playwright codegen
+          (<code class="inline">npm run codegen -- --env test</code>) and save the recording as
+          <code class="inline">recording.ts</code> (design) and/or <code class="inline">sim_recording.txt</code>
+          (simulation) under the feature's <code class="inline">02_selectors_repo/</code>.
+        </li>
+        <li>
+          <b>Author <code class="inline">01_testdata/</code> first.</b> Write
+          <code class="inline">project.csv</code>, <code class="inline">inputset.csv</code>,
+          <code class="inline">design.csv</code> (and <code class="inline">simulation.csv</code> if there's
+          a sim flow) with real values, keyed by <code class="inline">TC_ID</code> +
+          <code class="inline">IterationID</code>. The importer <b>conforms to your columns</b> — it
+          never invents them.
+        </li>
+        <li>
+          <b>Run the importer</b> — see the <code class="inline">import-codegen</code> card below. It
+          writes <code class="inline">selectors.csv</code>, <code class="inline">metadata.csv</code>, and a
+          config skeleton, binding each recorded field to your column by DOM id or on-screen label.
+        </li>
+        <li>
+          <b>Resolve every <code class="inline">UNWIRED</code> line.</b> A field the importer couldn't
+          match prints as <code class="inline">! design.csv &lt;- wire id="sampleSize" or label="Sample
+          Size" (recorded value: 100)</code>. Add that column (named after the id or label) or rename an
+          existing one, then re-run — never with <code class="inline">--seed</code> once real data exists.
+        </li>
+        <li>
+          <b>Add one row to <code class="inline">master.csv</code>.</b>
+        </li>
+        <li>
+          <b><code class="inline">npm run validate</code></b> — schema-checks every CSV, no browser.
+          Fix line-numbered errors and coverage warnings before you run anything.
+        </li>
+        <li>
+          <b>Run it</b> (<code class="inline">npm run test -- --testcase TC_XX</code>). The first pass
+          writes the baseline (<code class="inline">BASELINE_CREATED</code> — green, but nothing was
+          verified yet). <b>Screenshot-verify</b> every iteration under
+          <code class="inline">artifacts/&lt;runId&gt;/&lt;TC&gt;_&lt;ITER&gt;/</code> — green isn't the same
+          as correct.
+        </li>
+        <li>
+          <b>Stabilize.</b> Fix what fails, re-run, repeat — see the error list below. Re-run the whole
+          feature at least twice clean before calling it done.
+        </li>
+        <li>
+          <b>Commit</b> — scoped to that feature's folder + its <code class="inline">master.csv</code> row
+          only.
+        </li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="lbl">Start from a sibling, not a blank page.</span> Pick the closest existing
+        feature in the same family and reuse its column names/selectors so id/label wiring matches on
+        the first pass — means → <code class="inline">feature_DOM(PD)</code>; survival →
+        <code class="inline">feature_GADAR(PD)</code>; proportions →
+        <code class="inline">feature_RONBR(PD)</code>; one-arm →
+        <code class="inline">feature_SinglePoissonRate</code>; multi-scenario →
+        <code class="inline">feature_BOIN</code>. Full family map in <code class="inline">AI_IMPORT_AGENT.md</code>.
+      </div>
+    </section>
+
+    <!-- 5. COMMANDS -->
+    <section id="commands">
+      <h2><span class="num">5</span>Commands you'll actually use</h2>
+      <p class="deck">
+        Grouped by what you're doing. The ones scoped to <b>one feature</b> are tagged — swap in your own
+        <code class="inline">&lt;Module&gt;</code>, <code class="inline">feature_&lt;Name&gt;</code> and
+        <code class="inline">TC_XX</code>.
+      </p>
+
+      <h3>Import &amp; wire a feature</h3>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Import the design flow</h4>
+          <span class="scope one-feature">one feature</span>
+        </div>
+        <div class="desc">Reads <code class="inline">recording.ts</code>/<code class="inline">.txt</code> from
+          <code class="inline">02_selectors_repo/</code>, writes <code class="inline">selectors.csv</code> +
+          <code class="inline">metadata.csv</code>, binds tokens to your existing
+          <code class="inline">01_testdata</code> columns. Creates the feature folder if it doesn't exist yet.</div>
+        <div class="code-card">
+          <div class="bar"><span>design import</span><button class="copy">Copy</button></div>
+          <pre>npm run import-codegen -- &lt;Module&gt; feature_&lt;Name&gt; <span class="tok-flag">--tc</span> TC_XX</pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>real example</span><button class="copy">Copy</button></div>
+          <pre>npm run import-codegen -- ProductDesign feature_MeanofPairedRatios <span class="tok-flag">--tc</span> TC_05</pre>
+        </div>
+      </div>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Import the simulation flow</h4>
+          <span class="scope one-feature">one feature</span>
+        </div>
+        <div class="desc">Same importer, <code class="inline">--sim</code> flag. Reads
+          <code class="inline">sim_recording.txt</code>, writes <code class="inline">sim_metadata.csv</code>,
+          binds tokens to <code class="inline">simulation.csv</code>. No login/navigate steps — the sim flow
+          starts mid-app, right at the "Simulate" click, and chains after a green design run in the same
+          browser. Selectors and <code class="inline">compare.config.csv</code> are shared with the design flow.</div>
+        <div class="code-card">
+          <div class="bar"><span>simulation import</span><button class="copy">Copy</button></div>
+          <pre>npm run import-codegen -- &lt;Module&gt; feature_&lt;Name&gt; <span class="tok-flag">--tc</span> TC_XX <span class="tok-flag">--sim</span></pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>real example</span><button class="copy">Copy</button></div>
+          <pre>npm run import-codegen -- ProductDesign feature_MeanofPairedRatios <span class="tok-flag">--tc</span> TC_05 <span class="tok-flag">--sim</span></pre>
+        </div>
+        <p class="muted">Don't forget to set <code class="inline">Simulation=YES</code> for that
+          <code class="inline">TC_ID</code> in <code class="inline">master.csv</code> — otherwise the sim flow
+          is wired but never runs.</p>
+      </div>
+
+      <h3>Validate &amp; run</h3>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Validate one test case</h4>
+          <span class="scope one-feature">one feature</span>
+        </div>
+        <div class="desc">Schema-checks that feature's CSVs only — unknown actions, missing locators,
+          dangling <code class="inline">${data...}</code> references, and the "column has a value but no
+          step reads it" coverage warning. Opens no browser; run this constantly while wiring.</div>
+        <div class="code-card">
+          <div class="bar"><span>validate (scoped)</span><button class="copy">Copy</button></div>
+          <pre>npm run validate -- <span class="tok-flag">--testcase</span> TC_XX</pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>real example</span><button class="copy">Copy</button></div>
+          <pre>npm run validate -- <span class="tok-flag">--testcase</span> TC_05
+<span class="tok-cmt"># --feature feature_MeanofPairedRatios works the same way</span>
+<span class="tok-cmt"># no flags at all = validate every feature in master.csv</span></pre>
+        </div>
+      </div>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Run one test case</h4>
+          <span class="scope one-feature">one feature</span>
+        </div>
+        <div class="desc"><code class="inline">--testcase</code> (alias <code class="inline">--tc</code>) is the
+          <b>only</b> flag that runs a row even when its <code class="inline">Execute</code> column is
+          <code class="inline">FALSE</code> — handy for a feature you're still stabilizing.</div>
+        <div class="code-card">
+          <div class="bar"><span>run (scoped)</span><button class="copy">Copy</button></div>
+          <pre>npm run test -- <span class="tok-flag">--testcase</span> TC_XX
+npm run test -- <span class="tok-flag">--testcase</span> TC_XX <span class="tok-flag">--headed</span>            <span class="tok-cmt"># watch it in a visible browser</span>
+npm run test -- <span class="tok-flag">--testcase</span> TC_XX <span class="tok-flag">--update-baseline</span>   <span class="tok-cmt"># approve current actuals as the new baseline</span></pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>real example</span><button class="copy">Copy</button></div>
+          <pre>npm run test -- <span class="tok-flag">--testcase</span> TC_05</pre>
+        </div>
+      </div>
+
+      <h3>Share a report</h3>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Package one run as a single file</h4>
+          <span class="scope housekeeping">any recent run</span>
+        </div>
+        <div class="desc">Re-renders <code class="inline">reports/&lt;runId&gt;/results.json</code> into
+          <b>one self-contained HTML file</b> you can email or Slack — the normal reports link out to
+          <code class="inline">artifacts/</code> for screenshots and break the moment you move them.</div>
+        <div class="code-card">
+          <div class="bar"><span>share a run</span><button class="copy">Copy</button></div>
+          <pre>npm run report:share -- &lt;runId&gt;</pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>real example</span><button class="copy">Copy</button></div>
+          <pre>npm run report:share -- 20261028T153445_2d1097
+<span class="tok-cmt"># -&gt; reports/20261028T153445_2d1097/run_20261028T153445_2d1097_shareable.html</span></pre>
+        </div>
+      </div>
+
+      <div class="cmd-card">
+        <div class="title">
+          <h4>Same, without screenshots</h4>
+          <span class="scope housekeeping">any recent run</span>
+        </div>
+        <div class="desc"><code class="inline">--lite</code> drops the embedded screenshots — ~40&nbsp;KB
+          instead of several MB, still every step with its description and baseline comparison.
+          Good for email, bad for "what did the UI actually look like" questions.</div>
+        <div class="code-card">
+          <div class="bar"><span>share, lite</span><button class="copy">Copy</button></div>
+          <pre>npm run report:share -- &lt;runId&gt; <span class="tok-flag">--lite</span></pre>
+        </div>
+        <div class="code-card">
+          <div class="bar"><span>other useful forms</span><button class="copy">Copy</button></div>
+          <pre>npm run report:share                 <span class="tok-cmt"># no args = newest run, screenshots embedded</span>
+npm run report:share -- <span class="tok-flag">--list</span>        <span class="tok-cmt"># show which run IDs are available to share</span></pre>
+        </div>
+      </div>
+
+      <h3>Housekeeping</h3>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>Scaffold a brand-new folder by hand</h4>
+          <p>When you don't have a recording yet and want the empty CSV skeleton first.</p>
+          <div class="code-card">
+            <div class="bar"><span>scaffold</span><button class="copy">Copy</button></div>
+            <pre>npm run scaffold-feature -- ProductDesign "YourFeature"</pre>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Clean up crashed-run leftovers</h4>
+          <p>Deletes app-side projects a killed/crashed run never cleaned up.</p>
+          <div class="code-card">
+            <div class="bar"><span>cleanup</span><button class="copy">Copy</button></div>
+            <pre>npm run cleanup:orphans</pre>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Generate POM/spec only</h4>
+          <p>Regenerate <code class="inline">04_generated_pom</code>/<code class="inline">05_generated_scripts</code>
+            without running anything — useful after a selector edit.</p>
+          <div class="code-card">
+            <div class="bar"><span>generate</span><button class="copy">Copy</button></div>
+            <pre>npm run generate -- <span class="tok-flag">--testcase</span> TC_XX</pre>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Typecheck / unit tests</h4>
+          <p>Run before committing any change under <code class="inline">core/</code> or
+            <code class="inline">custom/</code>.</p>
+          <div class="code-card">
+            <div class="bar"><span>checks</span><button class="copy">Copy</button></div>
+            <pre>npm run typecheck
+npm run unit</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="lbl">Selection precedence, highest wins:</span>
+        <code class="inline">--testcase</code> › <code class="inline">--tags</code> (+ <code class="inline">Execute</code>) ›
+        <code class="inline">Execute</code> column › <code class="inline">--all</code>.
+        There is no <code class="inline">--iteration</code> flag — scope to one iteration by toggling
+        <code class="inline">Run=FALSE</code> on the others in <code class="inline">project.csv</code>
+        <i>and</i> <code class="inline">simulation.csv</code>, then restoring it afterwards.
+      </div>
+    </section>
+
+    <!-- 6. ERRORS -->
+    <section id="errors">
+      <h2><span class="num">6</span>Common errors, and the fix</h2>
+      <p class="deck">
+        The handful you'll hit on nearly every feature. For the exhaustive A–Z catalog (30+ more,
+        with log excerpts) see <code class="inline">Error_Reference_Guide.md</code> — this is the
+        curated top of that list.
+      </p>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span><code class="inline">validate</code> warns:
+          <i>"column X has a value but no step enters it"</i></div>
+        <div class="fix"><span class="lbl">Fix</span>Either wire a step to read
+          <code class="inline">${data.&lt;file&gt;.X}</code>, or the column is dead (often a leftover
+          duplicate, or literally a field's placeholder text mistaken for a real column) — confirm with a
+          screenshot before deleting it, never guess.</div>
+        <div class="why">A clean <code class="inline">validate</code> proves columns exist and parse — it does
+          NOT prove every cell is actually read and filled.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span><code class="inline">fill</code>/<code class="inline">select</code>
+          fails <i>"field not found"</i> immediately after a dependent dropdown's own <code class="inline">select</code> step</div>
+        <div class="fix"><span class="lbl">Fix</span>Check the <code class="inline">StepID</code> order, not
+          row order. The <code class="inline">select</code> that picks the family/branch must have a
+          <b>lower StepID</b> than every field it unlocks — move it earlier, no data change needed. The
+          field sometimes genuinely doesn't exist in the DOM until the prior selection commits.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span>A token like
+          <code class="inline">${data.design.Select Test}</code> stops resolving after someone restructured
+          <code class="inline">01_testdata</code></div>
+        <div class="fix"><span class="lbl">Fix</span>The column was probably a duplicate of one that already
+          exists elsewhere (classic pair: a stray <code class="inline">Select Test</code> column in
+          <code class="inline">design.csv</code> duplicating <code class="inline">inputset.csv</code>'s
+          <code class="inline">SelectTest</code>). Repoint the token to the surviving column instead of
+          re-adding the deleted one.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span><code class="inline">compareWithBaseline</code> FAILs
+          with a <code class="inline">VALUE_MISMATCH</code> right after you fixed something</div>
+        <div class="fix"><span class="lbl">Fix</span>Don't assume your fix is wrong. Open
+          <code class="inline">08_diffs/diff_&lt;TC&gt;_&lt;ITER&gt;.csv</code>, screenshot-verify the live
+          result against testdata — if it now matches, the OLD baseline was stale. Delete
+          <code class="inline">06_baseline/&lt;env&gt;/baseline_&lt;TC&gt;_&lt;ITER&gt;.csv</code> +
+          its <code class="inline">.meta.json</code> (or re-run with
+          <code class="inline">--update-baseline</code>) and regenerate — <b>with the user's go-ahead</b>,
+          it discards the previous regression reference.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span>A checkbox-driven field only works for the
+          <code class="inline">check</code> direction, never <code class="inline">uncheck</code> (or vice versa)</div>
+        <div class="fix"><span class="lbl">Fix</span>When testdata uses the literal strings
+          <code class="inline">check</code>/<code class="inline">uncheck</code>, wire it as <b>two steps</b> —
+          a <code class="inline">check</code> action gated <code class="inline">SkipIf …!=check</code> and an
+          <code class="inline">uncheck</code> action gated <code class="inline">SkipIf …!=uncheck</code>. The
+          action itself doesn't read the cell as a direction.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span>Opening the simulation result by name also matches the
+          design result (<i>"resolved to 2 elements"</i>)</div>
+        <div class="fix"><span class="lbl">Fix</span>Give the sim result a <b>distinct</b> name — fill the
+          result-name field again after Save &amp; Simulate from its own <code class="inline">Sim Result
+          Name</code> column, and open by that exact name. Also check the importer didn't collapse this
+          second fill into the first one (same id, different recorded value) — a common superset-recording
+          artifact.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span>One iteration fails at a step that has nothing to do
+          with anything you changed, right after a DIFFERENT iteration failed in the same run</div>
+        <div class="fix"><span class="lbl">Fix</span>Re-run just that pair in isolation
+          (<code class="inline">Run=FALSE</code> on everything else) before debugging the later iteration's
+          own steps — a crashed iteration can leave the shared browser session in a state that breaks the
+          next iteration's fresh start. Plain environment flakiness (a stuck login spinner, a slow modal)
+          shows the same way and usually clears on an isolated retry with zero code changes.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span><code class="inline">validate</code>:
+          <i>"StepID must be an integer"</i> after inserting a row between two existing steps</div>
+        <div class="fix"><span class="lbl">Fix</span>Decimals are only valid in <code class="inline">Seq</code>
+          (cosmetic ordering, e.g. <code class="inline">53.1</code>) — <code class="inline">StepID</code> is
+          what the engine actually sorts and executes by, and it must be a plain integer. Renumber the block
+          instead.</div>
+      </div>
+
+      <div class="err-card">
+        <div class="sig"><span class="lbl">Signal</span>A Details/secondary tab exists on the design result
+          but times out on the simulation result (or vice versa)</div>
+        <div class="fix"><span class="lbl">Fix</span>The two result pages aren't guaranteed to have the same
+          tabs. A simple fixed design with no boundary/interim table often has NO sim-side Details tab at
+          all — confirm with a live screenshot, then either delete the sim-side check (whole-feature case)
+          or gate it with <code class="inline">SkipIf</code> on whatever testdata column decides it
+          (per-iteration case).</div>
+      </div>
+
+      <div class="callout warn">
+        <span class="lbl">Blank vs <code class="inline">N/A</code>:</span> always write the literal string
+        <code class="inline">N/A</code> in a not-applicable cell, never leave it truly blank. The
+        comparator, <code class="inline">SkipIf</code> gates, and the coverage validator all key off that
+        literal string — a blank cell doesn't reliably mean the same thing to every part of the engine.
+      </div>
+    </section>
+
+    <!-- 7. COPILOT -->
+    <section id="copilot">
+      <h2><span class="num">7</span>Prompts for GitHub Copilot</h2>
+      <p class="deck">
+        This repo ships <code class="inline">.github/copilot-instructions.md</code> — Copilot reads it
+        automatically for any task here, so you don't need to re-explain the framework every time.
+      </p>
+
+      <h3>Two ways to invoke the import playbook</h3>
+      <div class="grid cols-2">
+        <div class="card">
+          <h4>① Slash prompt</h4>
+          <p>Type <code class="inline">/import-feature</code> in Copilot Chat, then name the feature. One-off,
+            doesn't change your chat mode.</p>
+        </div>
+        <div class="card">
+          <h4>② Custom agent</h4>
+          <p>Open the Chat mode dropdown → <b>"Import Feature"</b>. Stays in that persona (the
+            <code class="inline">AI_IMPORT_AGENT.md</code> non-negotiables) for the whole session —
+            better when you're stabilizing one feature across many turns.</p>
+        </div>
+      </div>
+
+      <h3>Prompts that work well</h3>
+
+      <div class="prompt">
+        <span class="speaker">Fresh import</span>
+        <q>Import ProductDesign feature_&lt;Name&gt; as TC_XX from the recording I just saved in
+        02_selectors_repo/. I've already written 01_testdata. Resolve every UNWIRED field — ask me
+        before adding or renaming any testdata column.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Reviewing someone else's wiring</span>
+        <q>feature_&lt;Name&gt; was wired by [you / another session] but never stabilized. Audit it
+        against IMPORT_LESSONS.md and AI_IMPORT_AGENT.md, run npm run validate, then run TC_XX and fix
+        whatever fails. Screenshot-verify, don't just chase green.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">After a testdata restructure</span>
+        <q>I've updated 01_testdata for TC_XX — column names changed. Review the wiring against the
+        new columns, fix every broken ${data.*} token, and tell me before you touch any testdata
+        value yourself.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Adding the Details-tab check</span>
+        <q>Add the Details-tab load-only check (click → wait for the spinner to hide → assert the
+        chart is visible) to both the design and simulation flows for feature_&lt;Name&gt;, the same
+        pattern as feature_SingleProportion / feature_MeanofPairedDiff. Don't assume the sim side has
+        the tab — confirm live.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">A stale-looking baseline failure</span>
+        <q>TC_XX/ITER_03 just failed compareWithBaseline. Check IMPORT_LESSONS.md's stale-baseline
+        pattern first — screenshot-verify the live result against testdata before deciding whether
+        this is a regression or just a stale baseline.</q>
+      </div>
+
+      <div class="callout tip">
+        <span class="lbl">Why these work:</span> each one names the exact doc/pattern to apply and sets
+        the scope boundary (one feature, ask before touching testdata) up front — Copilot's own
+        instructions already enforce most of this, but repeating it in-prompt keeps a long session on rails.
+      </div>
+    </section>
+
+    <!-- 8. CLAUDE / CUSTOM AGENT -->
+    <section id="claude">
+      <h2><span class="num">8</span>Prompts for a custom agent (Claude Code)</h2>
+      <p class="deck">
+        Claude Code has the same playbook wired up as an invokable skill —
+        <code class="inline">.claude/skills/import-feature/</code>. It follows
+        <code class="inline">AI_IMPORT_AGENT.md</code> exactly, the same source of truth Copilot uses.
+      </p>
+
+      <div class="code-card">
+        <div class="bar"><span>invoke the skill directly</span><button class="copy">Copy</button></div>
+        <pre>/import-feature ProductDesign feature_&lt;Name&gt; TC_XX</pre>
+      </div>
+
+      <p>Plain-language prompts work just as well — and are what this team actually types day to day:</p>
+
+      <div class="prompt">
+        <span class="speaker">Kick off a fresh import</span>
+        <q>Import and wire ProductDesign feature_&lt;Name&gt; as TC_XX. I've recorded
+        02_selectors_repo/recording.ts and written 01_testdata already.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Hand back updated test data</span>
+        <q>I have updated the data for TC_XX. Review and analyse, make changes accordingly and let
+        me know if any issues.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">A broad "make it work" ask</span>
+        <q>Check, validate, fix wiring and run TC_XX.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Closing out the last few coverage warnings</span>
+        <q>Handle the remaining warnings as well, only then start execution.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Pre-approving a known, repeatable action</span>
+        <q>You may also need to regenerate the baseline files for a few iterations — I approve, you
+        can regenerate those baseline files.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Switching browsers for a stabilized feature</span>
+        <q>Switch TC_XX to Edge in master.csv and re-run it to confirm it's still green.</q>
+      </div>
+
+      <div class="prompt">
+        <span class="speaker">Keeping the shared docs current</span>
+        <q>Update the docs so the lessons from this session are captured for next time (and for
+        Copilot) — IMPORT_LESSONS.md and AI_IMPORT_AGENT.md, not just the local handoff notes.</q>
+      </div>
+
+      <div class="callout tip">
+        <span class="lbl">Ambiguity gets surfaced, not guessed.</span> If testdata looks wrong,
+        incomplete, or ambiguous, expect the agent to stop and list the exact file/iteration/field
+        rather than silently picking a value — that's the standing rule in both
+        <code class="inline">AI_IMPORT_AGENT.md</code> and <code class="inline">copilot-instructions.md</code>,
+        and the fastest way to answer is a plain "use X" / "N/A that field" reply.
+      </div>
+    </section>
+
+    <!-- 9. REFERENCE -->
+    <section id="reference">
+      <h2><span class="num">9</span>Where to read more</h2>
+      <p class="deck">This page is the fast path. Every deeper topic has a dedicated doc at the repo root.</p>
+
+      <table>
+        <thead><tr><th>Doc</th><th>Read it when…</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">README.md</code></td><td>You want the project overview, the from-scratch (no-recording) scaffold path, or how to review a baseline change in a PR.</td></tr>
+          <tr><td><code class="inline">FRAMEWORK_KT.md</code></td><td>You need the full reference: every keyword, every CSV column, how variable interpolation works, how a run actually executes.</td></tr>
+          <tr><td><code class="inline">RUN_FLOW.md</code></td><td>You want the end-to-end lifecycle picture — recording → importer → validation → one iteration executing.</td></tr>
+          <tr><td><code class="inline">AI_IMPORT_AGENT.md</code></td><td>You're importing or wiring a feature — this is the playbook both Copilot and Claude Code follow. Start here for any family-specific pattern (survival, proportions, dual-endpoint, multi-scenario, simulation hard cases).</td></tr>
+          <tr><td><code class="inline">IMPORT_LESSONS.md</code></td><td>Before resolving any judgment call — the cross-tool "Signal → Decision" ledger both AIs read first and append to. Check it before you re-derive something from scratch.</td></tr>
+          <tr><td><code class="inline">AI_TESTDATA_AGENT.md</code></td><td>You're preparing a feature's testdata from a raw API export, before any wiring starts.</td></tr>
+          <tr><td><code class="inline">FIELD_WIRING_PATTERNS.md</code></td><td>You're wiring effect-size, prior/assurance, or early-stopping boundary fields — concrete, copyable GADAR(PD) patterns.</td></tr>
+          <tr><td><code class="inline">MULTI_SCENARIO_GUIDE.md</code></td><td>A page lets you add the same kind of record many times through one re-opened modal (dose scenarios, candidate models).</td></tr>
+          <tr><td><code class="inline">Error_Reference_Guide.md</code></td><td>Something broke and you want the full, beginner-friendly A–Z catalog with real log excerpts.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 10. RULES -->
+    <section id="rules">
+      <h2><span class="num">10</span>Rules that save you time</h2>
+      <p class="deck">The short list of things every new user eventually learns the hard way.</p>
+
+      <div class="grid cols-3">
+        <div class="card">
+          <h4>Never add/rename a column silently</h4>
+          <p>Check whether an existing column already covers it, propose the exact name/file/values, and
+            wait for a yes — including while resolving <code class="inline">UNWIRED</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Follow the testdata, don't force green</h4>
+          <p>A valued field that isn't found is a real FAIL. Fix the data or the selector — never delete
+            a step just to pass.</p>
+        </div>
+        <div class="card">
+          <h4>Every value-entering step needs a token</h4>
+          <p>A blank <code class="inline">InputValue</code> on a <code class="inline">fill</code>/
+            <code class="inline">select</code>/<code class="inline">check</code> fires every iteration
+            and silently overrides earlier data-driven choices.</p>
+        </div>
+        <div class="card">
+          <h4>Green ≠ correct</h4>
+          <p>Screenshot-verify every iteration under <code class="inline">artifacts/</code>, especially
+            the first run of any new data combination.</p>
+        </div>
+        <div class="card">
+          <h4>Scope stays inside one feature</h4>
+          <p>Edit only that feature's folder + its <code class="inline">master.csv</code> row. A real
+            framework bug gets tested on a throwaway feature first, then re-validated across everything.</p>
+        </div>
+        <div class="card">
+          <h4>Baselines are a reviewed act</h4>
+          <p>Never let a run write into <code class="inline">06_baseline/</code> implicitly.
+            <code class="inline">--update-baseline</code> is an explicit, confirmed decision — commit the
+            baseline change in its own reviewed diff.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Generated for the EH UI Automation workspace — update alongside <code class="inline">README.md</code> /
+      <code class="inline">AI_IMPORT_AGENT.md</code> / <code class="inline">IMPORT_LESSONS.md</code> when the
+      workflow changes. This file is plain, dependency-free HTML — open it straight from the repo, no build step.
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  // ---- theme toggle ----
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('eh-quickstart-theme'); } catch(e){}
+  function applyTheme(t){
+    if(t === 'light'){ root.setAttribute('data-theme','light'); }
+    else if(t === 'dark'){ root.setAttribute('data-theme','dark'); }
+    else { root.removeAttribute('data-theme'); }
+    document.querySelectorAll('.theme-toggle button').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-theme') === (t||'system'));
+    });
+  }
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-theme]');
+    if(!btn) return;
+    var t = btn.getAttribute('data-theme');
+    applyTheme(t);
+    try { localStorage.setItem('eh-quickstart-theme', t); } catch(e){}
+  });
+
+  // ---- copy buttons ----
+  document.querySelectorAll('.code-card .copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.closest('.code-card').querySelector('pre');
+      var text = pre.innerText;
+      var done = function(){
+        var orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('done');
+        setTimeout(function(){ btn.textContent = orig; btn.classList.remove('done'); }, 1400);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){
+          fallbackCopy(text); done();
+        });
+      } else {
+        fallbackCopy(text); done();
+      }
+    });
+  });
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  // ---- scrollspy for the TOC ----
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var sections = links.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); });
+  function onScroll(){
+    var y = window.scrollY + 90;
+    var active = 0;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i] && sections[i].offsetTop <= y) active = i;
+    }
+    links.forEach(function(a,i){ a.classList.toggle('active', i === active); });
+  }
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

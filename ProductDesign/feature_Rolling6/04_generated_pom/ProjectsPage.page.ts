@@ -1,4 +1,4 @@
-// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: c8fd84efeb2202f53bf0b7af03f71dd45d305cecf9fe05ae1eccdd3dc9d83525)
+// AUTO-GENERATED — DO NOT EDIT. Source: 02_selectors_repo/selectors.csv (hash: b1f5ed0834422709ccf0df6a97319c4eda1328882b601224c52015882568c569)
 import type { Page as PlaywrightPage, Locator } from 'playwright';
 import type { SelectorRow } from '../../../core/schema/selectors.schema.js';
 import { resolveLocator } from '../../../core/locators/resolver.js';
@@ -59,6 +59,11 @@ export class ProjectsPage {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'ddl_Unit', { dynamicArgs });
   }
 
+  /** optional priority assertion from project testdata */
+  obj_Priority(...dynamicArgs: string[]): Promise<Locator> {
+    return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'obj_Priority', { dynamicArgs });
+  }
+
   /** textbox from codegen */
   txt_Endpoint_Name(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Endpoint_Name', { dynamicArgs });
@@ -75,7 +80,7 @@ export class ProjectsPage {
   }
 
   /** textbox from codegen */
-  'txt_Dose_Name-0'(...dynamicArgs: string[]): Promise<Locator> {
+  txt_Dose_Name_0(...dynamicArgs: string[]): Promise<Locator> {
     return resolveLocator(this.page, this.selectors, 'ProjectsPage', 'txt_Dose_Name-0', { dynamicArgs });
   }
 

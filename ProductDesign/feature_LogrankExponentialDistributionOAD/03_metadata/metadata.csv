@@ -28,17 +28,17 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 27,270,ExtractResults,ResultsPage,select,ddl_Test_Type,${data.design.Test Type},,,,,10000,FALSE,0,always,,Select Test Type. Native <select> - select matches by visible label first
 28,280,ExtractResults,ResultsPage,fill,txt_type1Error,${data.design.Type 1 Error},,,,,10000,FALSE,0,never,,fill type1Error
 29,290,ExtractResults,ResultsPage,select,ddl_Input_Method,${data.design.inputMethod},,,,,10000,FALSE,0,always,,Select Input Method. Native <select> - select matches by visible label first
-30,300,ExtractResults,ResultsPage,fill,txt_Median_Survival_Time_under_Null_m0,${data.design.Median Survival Time under Null},,,,,10000,FALSE,0,never,,fill Median Survival Time under Null
-31,310,ExtractResults,ResultsPage,fill,txt_Median_Survival_Time_under_Alternative_m1,${data.design.Median Survival Time under Alternative},,,,,10000,FALSE,0,never,,fill Median Survival Time under Alternative
-32,320,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_m0_m1,,,,${data.design.hazardRatioMS},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
-33,330,ExtractResults,ResultsPage,fill,txt_Hazard_Rate_under_Null_0,${data.design.Hazard Rate under Null},,,,,10000,FALSE,0,never,,fill Hazard Rate under Null
-34,340,ExtractResults,ResultsPage,fill,txt_Hazard_Rate_under_Alternative,${data.design.Hazard Rate under Alternative},,,,,10000,FALSE,0,never,,fill Hazard Rate under Alternative
-35,350,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_1_0,,,,${data.design.hazardRatioHR},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
+30,300,ExtractResults,ResultsPage,fill,txt_Median_Survival_Time_under_Null_m0,${data.design.medianSurvivalTimeNull},,,,,10000,FALSE,0,never,,fill Median Survival Time under Null
+31,310,ExtractResults,ResultsPage,fill,txt_Median_Survival_Time_under_Alternative_m1,${data.design.medianSurvivalTimeAlter},,,,,10000,FALSE,0,never,,fill Median Survival Time under Alternative
+32,320,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_m0_m1,,,,${data.design.hazardRatioMS},,10000,TRUE,0,always,${data.design.hazardRatioMS}==Computed,assert computed Hazard Ratio HR when a numeric value is supplied
+33,330,ExtractResults,ResultsPage,fill,txt_Hazard_Rate_under_Null_0,${data.design.hazardRateNull},,,,,10000,FALSE,0,never,,fill Hazard Rate under Null
+34,340,ExtractResults,ResultsPage,fill,txt_Hazard_Rate_under_Alternative,${data.design.hazardRateAlter},,,,,10000,FALSE,0,never,,fill Hazard Rate under Alternative
+35,350,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_1_0,,,,${data.design.hazardRatioHR},,10000,TRUE,0,always,${data.design.hazardRatioHR}==Computed,assert computed Hazard Ratio HR when a numeric value is supplied
 36,360,ExtractResults,ResultsPage,fill,txt_By_Time_t_Week,${data.design.byTime},,,,,10000,FALSE,0,never,,fill By Time
-37,370,ExtractResults,ResultsPage,fill,txt_Cumulative_Survival_under_Null_s0,${data.design.Cumulative % Survival under Null},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Null
-38,380,ExtractResults,ResultsPage,fill,txt_Cumulative_Survival_under_Alternative_s1,${data.design.Cumulative % Survival under Alternative},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Alternative
-39,390,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_log_S1_100,,,,${data.design.hazardRatioCS},,10000,TRUE,0,always,,"clicked but not filled during recording - defaulted to assertValue (Optional). Set the expected value in design.csv; fix the selector and flip Optional=FALSE to enforce, or change the action"
-40,400,ExtractResults,ResultsPage,select,ddl_Event_Calculation_Method,${data.design.Event Calculation Method},,,,,10000,FALSE,0,always,,Select Event Calculation Method. Native <select> - select matches by visible label first
+37,370,ExtractResults,ResultsPage,fill,txt_Cumulative_Survival_under_Null_s0,${data.design.cumulativeSurvivalNull},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Null
+38,380,ExtractResults,ResultsPage,fill,txt_Cumulative_Survival_under_Alternative_s1,${data.design.cumulativeSurvivalAlter},,,,,10000,FALSE,0,never,,fill Cumulative % Survival under Alternative
+39,390,ExtractResults,ResultsPage,assertValue,obj_Hazard_Ratio_HR_log_S1_100,,,,${data.design.hazardRatioCS},,10000,TRUE,0,always,${data.design.hazardRatioCS}==Computed,assert computed Hazard Ratio HR when a numeric value is supplied
+40,400,ExtractResults,ResultsPage,select,ddl_Event_Calculation_Method,${data.design.eventCalculationMethod},,,,,10000,FALSE,0,always,,Select Event Calculation Method. Native <select> - select matches by visible label first
 ,,,,,,,,,,,,,,,,
 41,410,ExtractResults,ResultsPage,select,ddl_Dropout_Input_Method,${data.design.dropoutInputMethod},,,,,10000,FALSE,0,always,,Select Dropout Input Method
 42,420,ExtractResults,ResultsPage,fill,txt_Dropout_By_Time,${data.design.dropoutByTime},,,,,10000,FALSE,0,never,,fill Dropout By Time
@@ -56,3 +56,6 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 54,540,ExtractResults,ResultsPage,click,lnk_ResultName,${data.design.Result Name},,,,visible,180000,FALSE,0,always,,Open the computed result by name (only appears once compute finishes)
 55,550,ExtractResults,ResultsPage,callCustom,,extractAllResultTables,,,,,120000,FALSE,0,always,,Capture EVERY table on the result page. Requires custom/<Feature>/customSteps.ts to export extractAllResultTables
 56,560,ExtractResults,-,compareWithBaseline,,,,,,,60000,FALSE,0,never,,Compare captured cells against 06_baseline/<env>/. First run writes the baseline and reports BASELINE_CREATED (green but verifies nothing); every later run is a real PASS/FAIL
+57,570,ExtractResults,ResultsPage,click,btn_Details,,,,,,10000,FALSE,0,never,,Open the result Details tab after the main result comparison
+58,580,ExtractResults,ResultsPage,waitForSelector,div_Details_Spinner,,,,,hidden,30000,FALSE,0,always,,Wait for the Details page loading spinner to clear
+59,590,ExtractResults,ResultsPage,assertVisible,div_Details_Chart,,,,,visible,15000,FALSE,0,always,,Verify the Details page and graph rendered successfully

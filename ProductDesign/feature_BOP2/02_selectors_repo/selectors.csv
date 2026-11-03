@@ -43,6 +43,9 @@ btn_Save_Simulate,ResultsPage,role,button,Save & Simulate,,FALSE,button from cod
 txt_ResultName,ResultsPage,css,#inputId,,,FALSE,textbox from codegen,FALSE
 txt_credit_alert_primary,ResultsPage,css,#credit-alert-primary,,,FALSE,textbox from codegen,FALSE
 txt_ag_icon_ag_icon_tree_closed,ResultsPage,css,.ag-icon.ag-icon-tree-closed,,,FALSE,textbox from codegen,FALSE
+btn_Details,ResultsPage,role,button,Details,,FALSE,Details tab load-check,FALSE
+div_Details_Spinner,ResultsPage,css,#spinner,,,FALSE,Details tab loading spinner,FALSE
+div_Details_Chart,ResultsPage,css,#chartRender-0,,,FALSE,Details tab chart container; validates that the graph rendered,FALSE
 obj_Status,DesignPage,label,Status,,,FALSE,clicked but not filled during recording - VERIFY selector (set a real id if this is a computed/greyed field),FALSE
 txt_Completed,ResultsPage,text,Name,,,FALSE,textbox from codegen,FALSE
 lnk_ResultName,ResultsPage,role,link,{0},,TRUE,result link from codegen,FALSE

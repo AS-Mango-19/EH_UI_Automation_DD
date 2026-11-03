@@ -18,7 +18,7 @@ Seq,StepID,StepGroup,Page,Action,ObjectName,InputValue,StoreAs,AssertType,Expect
 17,170,ConfigureDesign,ProjectPage,click,btn_Inputs,,,,,,10000,FALSE,0,never,,click Inputs,,,,
 18,180,CreateInputSet,InputSetPage,click,btn_New_Input_Set,,,,,,10000,FALSE,0,never,,click New Input Set,,,,
 19,190,CreateInputSet,InputSetPage,fill,txt_Name_Input_Set,${data.inputset.Name Input Set},,,,,10000,FALSE,0,never,,fill Name Input Set,,,,
-20,200,ConfigureDesign,InputSetPage,click,btn_Select_Task,,,,,,10000,FALSE,0,never,,click Select Task,,,,
+20,200,ConfigureDesign,InputSetPage,select,btn_Select_Task,${data.inputset.SelectTask},,,,,10000,FALSE,0,always,,Select the authored task from the Select Task control,,, 
 21,210,ConfigureDesign,InputSetPage,select,ddl_Select_Test,${data.inputset.Select Test},,,,,15000,FALSE,0,always,,Select Select Test. select opens the menu and commits the option itself - works for native and custom dropdowns,,,,
 22,220,ConfigureDesign,InputSetPage,click,btn_Continue,,,,,,10000,FALSE,0,never,,click Continue,,,,
 23,230,ConfigureDesign,DesignPage,fill,txt_Type_1_Error,${data.design.Type 1 Error},,,,,10000,TRUE,0,always,,fill Type 1 Error,,,,

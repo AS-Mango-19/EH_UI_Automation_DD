@@ -22,6 +22,26 @@ export interface PomGenResult {
   removed: string[];
 }
 
+export function toTypeScriptMethodName(objectName: string): string {
+  const sanitized = objectName.replace(/[^A-Za-z0-9_$]/g, '_');
+  const prefixed = /^[A-Za-z_$]/.test(sanitized) ? sanitized : `_${sanitized}`;
+  return prefixed === 'constructor' ? `selector_${prefixed}` : prefixed;
+}
+
+function methodNames(objects: SelectorRow[]): Map<string, string> {
+  const names = new Map<string, string>();
+  const used = new Set<string>();
+  for (const object of objects) {
+    const base = toTypeScriptMethodName(object.ObjectName);
+    let name = base;
+    let suffix = 2;
+    while (used.has(name)) name = `${base}_${suffix++}`;
+    used.add(name);
+    names.set(object.ObjectName, name);
+  }
+  return names;
+}
+
 function groupByPage(selectors: SelectorRow[]): Map<string, SelectorRow[]> {
   const byPage = new Map<string, SelectorRow[]>();
   for (const s of selectors) {
@@ -33,11 +53,12 @@ function groupByPage(selectors: SelectorRow[]): Map<string, SelectorRow[]> {
 }
 
 function renderClass(pageName: string, objects: SelectorRow[], header: string): string {
+  const names = methodNames(objects);
   const methods = objects
     .map((o) => {
       const desc = o.Description ? `  /** ${o.Description} */\n` : '';
       return (
-        `${desc}  ${o.ObjectName}(...dynamicArgs: string[]): Promise<Locator> {\n` +
+        `${desc}  ${names.get(o.ObjectName)}(...dynamicArgs: string[]): Promise<Locator> {\n` +
         `    return resolveLocator(this.page, this.selectors, '${pageName}', '${o.ObjectName}', { dynamicArgs });\n` +
         `  }`
       );
